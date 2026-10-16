@@ -25,7 +25,7 @@ brain-train/
   manifest.json                                # the only mutable object; uploaded last
   registries/symbols-<sha12>.json              # content-addressed symbol registry
   levels/level-0001-<sha12>.json … level-0200-<sha12>.json   # content-addressed levels
-  symbols/v4/*.webp                            # static symbol art
+  symbols/v1/*.webp                            # static symbol art
   animated-symbols/*.json                      # Lottie symbols
 ```
 
@@ -56,8 +56,8 @@ Paths inside JSON are relative to `brain-train/`. The client rejects absolute UR
 }
 ```
 
-- `difficulty`: the tier id (`easy`, `medium`, `hard`, `veryHard`); the app labels it ("Very Hard")
-  and colours its badge. Unknown ids still get a label made from the id.
+- `difficulty`: the tier id, `"1"` (very easy) to `"10"` (hardest); the app shows it as `7/10` on a
+  green-to-red badge. Named ids (`easy`, `veryHard`) and unknown ids still get a label made from the id.
 - `tileCount`, `trayCapacity`: copied from the level (since 2026.10.16.10), so the app shows titles,
   tiers, sizes and tray slots for levels whose file is not on the device. Older builds ignore them.
 - `contentVersion`: dotted integers. The app only installs a version **higher** than the one it has
@@ -121,16 +121,19 @@ The app checks structure, IDs, symbols, overlaps, floating tiles, even pairs and
 The solver proves a pair-removal order. The game plays through a 4-slot tray, and every pair order
 is also a winning tray order (tap one tile of the pair, then the other), so a proven level is winnable.
 
-## The campaign (200 levels)
+## The campaign
 
-`tool/content.dart build` generates every level from `catalog.json` `campaign`
-(`lib/game_engine/campaign/`):
+The rules every level follows (difficulty 1–10, tray 2–5, 85/15 symbols, at most 2 pairs per symbol,
+every symbol used, batches) are in **docs/level-design-rules.md**. `tool/content.dart build`
+generates every level from `catalog.json` `campaign` (`lib/game_engine/campaign/`):
 
-- **Tiers** are data: `tiers` lists `id`, `count`, `tiles`, `layers`, `trayCapacity`,
-  `pairsPerStaticSymbol`/`pairsPerAnimatedSymbol` (symbol repeats; higher is easier),
-  `stalePairing` (decoy pairs), `freeRatio` (share of tiles free at the start) and `winRate`
-  (accepted win rate of the simulated tray player). The order is a seeded shuffle with every tier at
-  exactly its `count`, level 1 = `firstTier`, and no tier more than `maxTierRun` times in a row.
+- **Tiers** are data: `tiers` lists `id` (`1`..`10`), `tiles`, `layers`, `trayCapacity` (one size or
+  `[min, max]`, picked per level), `pairsPerStaticSymbol`/`pairsPerAnimatedSymbol` (symbol repeats;
+  higher is easier), `stalePairing` (decoy pairs), `freeRatio` (share of tiles free at the start) and
+  `winRate` (accepted win rate of the simulated tray player). `batches` lists levels per tier; each
+  batch is a seeded shuffle with every tier at exactly its count, level 1 = `firstTier`, and no tier
+  more than `maxTierRun` times in a row. A batch depends only on earlier batches, so new levels go in
+  a new batch.
 - **Boards** come from 22 mirror-symmetric shape families (pyramid, terrace, diamond, cross, ring,
   fortress, arch, bridge, hourglass, heart, flower, grove, furrows, chevron, isles, oval, star,
   butterfly, turtle, lattice, crown, pillars) and stacking programs (aligned pyramid, half-offset
@@ -144,18 +147,18 @@ is also a winning tray order (tap one tile of the pair, then the other), so a pr
   tile that matches the tray, else a random free tile; the level's own tray capacity). The first
   candidate inside the tier's `winRate` band is taken (else the closest of 36). `dart run
   tool/content.dart stats` prints the rates of the published tree.
-- **Symbols (70/30)**: each level gets `floor(30% of its pairs)` animated pairs (at least one, never
-  above 30%) and static pairs for the rest, with at most `maxDistinctAnimated` (12) distinct animated
-  symbols (big boards reuse one for two or more pairs). Which codes a level uses is chosen by
-  rendezvous hashing over the integrated pools: each level ranks every code by a hash of the level and
-  the code and takes the best ones.
+- **Symbols (85/15)**: each level gets `floor(15% of its pairs)` animated pairs (at least one) and
+  static pairs for the rest, with at most `maxDistinctAnimated` (12) distinct animated symbols and at
+  most `maxPairsPerSymbol` (2) pairs of any one symbol. Which codes a level uses: level by level, the
+  codes used least so far first (ties by a hash of the level and the code), so every integrated
+  symbol is on some level; the build fails if one is not.
 - **Titles** are two nature words (a first word plus a noun that fits the shape: "Heron Bridge"),
   unique across the campaign; `backdrop.colors` come from 20 nature palettes.
 
 The build is reproducible: the same catalog and symbol pools give byte-identical files (and an
 unchanged manifest keeps its `publishedAt`). Boards, tiers, titles, tray sizes, removal orders and
-simulated win rates do not depend on the symbol pools at all, so new symbols change only symbol codes,
-and only in the levels that rank a new code high enough.
+simulated win rates do not depend on the symbol pools at all, so new symbols change only symbol codes
+(from the first level that picks a new code on).
 
 ## Publish
 
@@ -177,7 +180,12 @@ and only in the levels that rank a new code high enough.
 5. `dart run tool/smoke_remote.dart`: the app's own loading code against production. A fresh install
    with the starter pack (what the first launch downloads), then the lazy path from R2 alone:
    manifest and registry, the 5-level window with only its art, the window after ten wins (nothing
-   downloaded twice), and levels 1, 57, 128 and 200 on demand, validated and solver-proven.
+   downloaded twice), and level 1, the middle level and the last level on demand, validated and
+   solver-proven.
+6. Optional cleanup: `dart run tool/r2_prune.dart` lists every `brain-train/` object the live
+   manifest no longer references (old levels, registries, retired symbol sets), grouped by folder. It
+   refuses to run unless the live manifest is the local one. Deleting is the owner's step:
+   `dart run tool/r2_prune.dart --delete` (permanent).
 
 Layouts that only change positions, layers, symbols or tile counts never need a code change.
 

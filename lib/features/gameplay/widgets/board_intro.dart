@@ -4,6 +4,7 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 
+import '../../../game_engine/campaign/campaign_config.dart';
 import '../../../game_engine/geometry/board_projection.dart';
 import '../../../rendering/board_renderer.dart';
 
@@ -55,15 +56,23 @@ abstract final class IntroTiming {
   static const Duration hard = Duration(milliseconds: 2600);
   static const Duration veryHard = Duration(milliseconds: 3000);
 
-  /// For a level's tier (`easy`, `medium`, `hard`, `veryHard`), or by its
-  /// [tileCount] when it has none (or an unknown one).
-  static Duration forLevel({String? difficulty, required int tileCount}) => switch (difficulty) {
-    'easy' => easy,
-    'medium' => medium,
-    'hard' => hard,
-    'veryHard' => veryHard,
-    _ => tileCount < 50 ? easy : (tileCount < 82 ? medium : (tileCount < 130 ? hard : veryHard)),
-  };
+  /// For a level's tier (`1`..`10` from [easy] to [veryHard] in even steps,
+  /// or `easy`, `medium`, `hard`, `veryHard`), or by its [tileCount] when it
+  /// has none (or an unknown one).
+  static Duration forLevel({String? difficulty, required int tileCount}) {
+    final number = difficulty == null ? null : numericDifficulty(difficulty);
+    if (number != null) {
+      final span = veryHard.inMilliseconds - easy.inMilliseconds;
+      return Duration(milliseconds: easy.inMilliseconds + (span * (number - 1) / (kMaxDifficulty - 1)).round());
+    }
+    return switch (difficulty) {
+      'easy' => easy,
+      'medium' => medium,
+      'hard' => hard,
+      'veryHard' => veryHard,
+      _ => tileCount < 50 ? easy : (tileCount < 82 ? medium : (tileCount < 130 ? hard : veryHard)),
+    };
+  }
 }
 
 /// Where a tile is at one moment of the intro (overlay coordinates).

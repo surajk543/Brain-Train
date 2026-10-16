@@ -2,6 +2,7 @@ import 'package:brain_train/app/app.dart';
 import 'package:brain_train/app/app_services.dart';
 import 'package:brain_train/app/theme.dart';
 import 'package:brain_train/content/content_snapshot.dart';
+import 'package:brain_train/data/age_group.dart';
 import 'package:brain_train/data/progress_repository.dart';
 import 'package:brain_train/data/settings_repository.dart';
 import 'package:brain_train/features/gameplay/game_controller.dart';
@@ -18,7 +19,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'lobby_support.dart';
 
 void main() {
-  setUp(() => SharedPreferences.setMockInitialValues({}));
+  // The age screen was answered at an earlier launch (see age_screen_test).
+  setUp(() => SharedPreferences.setMockInitialValues({SettingsRepository.ageGroupKey: AgeGroup.thirteenPlus.storageValue}));
 
   test('playing a level to the end records the win and clears the save', () async {
     final services = await testServices();

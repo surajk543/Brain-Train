@@ -9,6 +9,7 @@ import 'dart:math' as math;
 import 'dart:ui' as ui;
 
 import 'package:brain_train/app/app_services.dart';
+import 'package:brain_train/app/rewarded_ads_controller.dart';
 import 'package:brain_train/app/theme.dart';
 import 'package:brain_train/content/asset_download_manager.dart';
 import 'package:brain_train/content/content_cache.dart';
@@ -37,6 +38,7 @@ import 'package:brain_train/game_engine/models/symbol_registry.dart';
 import 'package:brain_train/game_engine/rules/match_rules.dart';
 import 'package:brain_train/game_engine/state/game_engine.dart';
 import 'package:brain_train/game_engine/validation/solver.dart';
+import 'package:brain_train/platform/rewarded_ads.dart';
 import 'package:brain_train/rendering/symbol_art.dart';
 import 'package:brain_train/rendering/tile_style.dart';
 import 'package:flutter/material.dart';
@@ -49,6 +51,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../helpers.dart';
 import '../helpers/fake_stopwatch.dart';
+import '../platform/fake_rewarded_ads.dart';
 
 final String? _captureDir = Platform.environment['CAPTURE_DIR'];
 
@@ -68,7 +71,7 @@ final BundledContentSource _fullTree = BundledContentSource((key) async {
 
 /// Offline services on the starter pack (levels 1-5), or on every level
 /// with [full].
-Future<AppServices> _services({bool full = false}) async {
+Future<AppServices> _services({bool full = false, RewardedAds? ads}) async {
   final config = ContentConfig(baseUrl: Uri.parse('https://content.test/'), allowedHosts: const {'content.test'});
   final offline = MockClient((r) async => throw http.ClientException('offline', r.url));
   final fetcher = ContentFetcher(client: offline, config: config, delay: (_) async {});
@@ -88,6 +91,7 @@ Future<AppServices> _services({bool full = false}) async {
     progress: await ProgressRepository.open(),
     settings: await SettingsRepository.open(),
     symbolArt: SymbolArtCache(),
+    ads: ads == null ? null : RewardedAdsController(ads),
   );
 }
 
@@ -366,12 +370,12 @@ void main() {
 
   setUp(() => SharedPreferences.setMockInitialValues({}));
 
-  Future<void> start(WidgetTester tester, {bool full = false}) async {
+  Future<void> start(WidgetTester tester, {bool full = false, RewardedAds? ads}) async {
     await tester.runAsync(() async {
-      services = await _services(full: full);
+      services = await _services(full: full, ads: ads);
       snapshot = services.content.snapshot;
-      // A medium level: 4-slot tray, enough distinct symbols to fill it.
-      meadow = snapshot.playableEntries.firstWhere((e) => e.difficulty == 'medium');
+      // A difficulty-4 level: 4-slot tray, enough distinct symbols to fill it.
+      meadow = snapshot.playableEntries.firstWhere((e) => e.difficulty == '4');
     });
   }
 
@@ -438,10 +442,10 @@ void main() {
     await _leave(tester);
   });
 
-  testWidgets('a x2 combo on a hard board (5 wells) at 360x640: Best shows above the tiles', (tester) async {
+  testWidgets('a x2 combo on a 5-well board at 360x640: Best shows above the tiles', (tester) async {
     await start(tester);
     final clock = FakeStopwatch();
-    final entry = snapshot.playableEntries.firstWhere((e) => e.difficulty == 'hard');
+    final entry = snapshot.playableEntries.firstWhere((e) => e.trayCapacity == 5 && e.difficulty == '2');
     final level = snapshot.levels[entry.levelId]!;
     await _pumpGame(tester, services: services, entry: entry, phone: _small, stopwatch: clock);
     final game = _gameOf(tester);
@@ -704,6 +708,31 @@ void main() {
     });
   }
 
+  // Revive waits for a rewarded ad: the card with Revive off and its note,
+  // at the tightest size.
+  for (final (status, note) in [
+    (RewardedAdStatus.loading, kReviveLoadingNote),
+    (RewardedAdStatus.offline, kReviveOfflineNote),
+    (RewardedAdStatus.ready, null),
+  ]) {
+    testWidgets('tray-full overlay, ad ${status.name}, 360x640 at 1.3x text', (tester) async {
+      await start(tester, ads: FakeRewardedAds(status));
+      final (save, last) = _nearlyFull(snapshot, meadow);
+      await _pumpGame(tester, services: services, entry: meadow, phone: _small, textScale: 1.3, resume: save);
+      await _tapTile(tester, snapshot, meadow, save.history, last);
+      await _settle(tester);
+      expect(find.text('Tray full'), findsOneWidget);
+      expect(find.text('Revive'), findsOneWidget);
+      if (note != null) expect(find.text(note), findsOneWidget);
+      expect(find.byIcon(Icons.ondemand_video_rounded), findsOneWidget);
+      _expectBottomHud(tester, _small);
+      expect(tester.getRect(find.text('Restart')).bottom, lessThan(tester.getRect(find.byType(PremiumHudFrame)).top));
+      expect(tester.takeException(), isNull);
+      await _capture(tester, 'gameplay_night_360x640_tray_full_ad_${status.name}', _small.dpr);
+      await _leave(tester);
+    });
+  }
+
   testWidgets('revive flies the tray tiles back to the board', (tester) async {
     await start(tester);
     final (save, last) = _nearlyFull(snapshot, meadow);
@@ -743,7 +772,7 @@ void main() {
   });
 
   // One board per tier, the largest of each, at both phone sizes.
-  for (final tier in ['easy', 'medium', 'hard', 'veryHard']) {
+  for (final tier in ['1', '4', '7', '10']) {
     for (final phone in [_small, _large]) {
       testWidgets('largest $tier board fits ${phone.name}', skip: !_hasFullTree /* needs content/brain-train/ */, (tester) async {
         await start(tester, full: true);
@@ -758,7 +787,8 @@ void main() {
         }
         expect(tester.takeException(), isNull);
         expect(find.text('0/${level.pairCount}'), findsOneWidget);
-        final capacity = tier == 'hard' || tier == 'veryHard' ? 5 : 4;
+        final capacity = level.rules.trayCapacity;
+        expect(capacity, inInclusiveRange(2, 5));
         expect(find.bySemanticsLabel('Tray, 0 of $capacity tiles'), findsOneWidget);
         _expectBottomHud(tester, phone);
         // Tiles stay big enough to tap.
@@ -776,11 +806,11 @@ void main() {
     }
   }
 
-  // The 5-slot tray of hard and very hard levels.
+  // The 5-slot tray of the easiest levels (the widest tray).
   for (final (phone, textScale) in [(_small, 1.3), (_large, 1.0)]) {
     testWidgets('5-slot tray ${phone.name}: empty, four held, full', (tester) async {
       await start(tester);
-      final entry = snapshot.playableEntries.firstWhere((e) => e.difficulty == 'hard');
+      final entry = snapshot.playableEntries.firstWhere((e) => e.trayCapacity == 5 && e.difficulty == '2');
       final level = snapshot.levels[entry.levelId]!;
       expect(level.rules.trayCapacity, 5);
 
@@ -862,11 +892,11 @@ void main() {
       return frames;
     }
 
-    testWidgets('a contact sheet per mix style, on hard and very hard boards', skip: !_hasFullTree /* needs content/brain-train/ */, (tester) async {
+    testWidgets('a contact sheet per mix style, on difficulty 7-10 boards', skip: !_hasFullTree /* needs content/brain-train/ */, (tester) async {
       await start(tester, full: true);
       for (final style in IntroStyle.values) {
         final entry = snapshot.playableEntries.firstWhere(
-          (e) => (e.difficulty == 'hard' || e.difficulty == 'veryHard') && IntroStyle.forLevel(e.levelId) == style,
+          (e) => int.parse(e.difficulty!) >= 7 && IntroStyle.forLevel(e.levelId) == style,
         );
         await _pumpGame(tester, services: services, entry: entry, phone: _large);
         expect(_introOf(tester).isRunning, isFalse);
@@ -876,19 +906,19 @@ void main() {
       }
     });
 
-    testWidgets('the clock starts after the tier\'s intro: 2.6 s on a hard board', (tester) async {
+    testWidgets('the clock starts after the tier\'s intro: 2.333 s on a difficulty-4 board', (tester) async {
       await start(tester);
-      final hard = firstOf('hard');
+      final hard = firstOf('4');
       await _pumpGame(tester, services: services, entry: hard, phone: _large);
       final game = _gameOf(tester);
       game.restart();
       await tester.pump();
       await tester.pump();
-      expect(_introOf(tester).intro!.choreography.total, 2.6);
-      await _introTo(tester, 2.5);
+      expect(_introOf(tester).intro!.choreography.total, closeTo(2.333, 1e-9));
+      await _introTo(tester, 2.25);
       expect(game.introPlaying, isTrue, reason: 'longer than an easy intro');
       expect(game.elapsed, Duration.zero);
-      await _introTo(tester, 2.6);
+      await _introTo(tester, 2.333);
       await tester.pump();
       expect(game.introPlaying, isFalse);
       // The clock is a real stopwatch: give it real time.
@@ -897,14 +927,14 @@ void main() {
       await _leave(tester);
     });
 
-    testWidgets('frame sequence at 411x914: a very hard level and an easy one', skip: !_hasFullTree /* needs content/brain-train/ */, (tester) async {
+    testWidgets('frame sequence at 411x914: a difficulty-10 level and a difficulty-1 one', skip: !_hasFullTree /* needs content/brain-train/ */, (tester) async {
       await start(tester, full: true);
-      final hard = firstOf('veryHard');
+      final hard = firstOf('10');
       await _pumpGame(tester, services: services, entry: hard, phone: _large);
       expect(snapshot.levels[hard.levelId]!.tiles.length, greaterThan(140));
       final hardFrames = await sequence(tester, 'intro_${hard.levelId}_411x914');
       await _leave(tester);
-      final easy = firstOf('easy');
+      final easy = firstOf('1');
       await _pumpGame(tester, services: services, entry: easy, phone: _large);
       final easyFrames = await sequence(tester, 'intro_${easy.levelId}_411x914');
       await _writeSheet(tester, 'intro_sheet', [hardFrames, easyFrames]);
@@ -968,7 +998,7 @@ void main() {
 
     testWidgets('leaving during the intro frees it cleanly', skip: !_hasFullTree /* needs content/brain-train/ */, (tester) async {
       await start(tester, full: true);
-      await _pumpGame(tester, services: services, entry: firstOf('veryHard'), phone: _large, intro: _IntroWait.start);
+      await _pumpGame(tester, services: services, entry: firstOf('10'), phone: _large, intro: _IntroWait.start);
       final intro = _introOf(tester).intro!;
       await _introTo(tester, 0.5);
       await _leave(tester);

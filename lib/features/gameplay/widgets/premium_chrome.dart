@@ -474,7 +474,8 @@ class PremiumBackButton extends StatelessWidget {
 }
 
 /// Serif text button in three weights: gold-filled [primary], gold-outlined
-/// (default) and borderless [quiet].
+/// (default) and borderless [quiet]. [onPressed] null = disabled (dimmer
+/// colours rather than an Opacity layer, not tappable).
 class PremiumButton extends StatelessWidget {
   const PremiumButton({
     super.key,
@@ -483,40 +484,58 @@ class PremiumButton extends StatelessWidget {
     this.primary = false,
     this.quiet = false,
     this.expand = false,
+    this.icon,
   });
 
   final String label;
-  final VoidCallback onPressed;
+  final VoidCallback? onPressed;
   final bool primary;
   final bool quiet;
 
   /// Fills the available width.
   final bool expand;
 
+  /// Shown before the label.
+  final IconData? icon;
+
   @override
   Widget build(BuildContext context) {
+    final enabled = onPressed != null;
     final radius = BorderRadius.circular(26);
-    final textColor = primary ? BrainTrainColors.ink : (quiet ? BrandGold.light : BrainTrainColors.ivory);
+    final ink = primary ? BrainTrainColors.ink : (quiet ? BrandGold.light : BrainTrainColors.ivory);
+    final textColor = enabled ? ink : ink.withValues(alpha: primary ? 0.55 : 0.45);
     final decoration = primary
         ? BoxDecoration(
             borderRadius: radius,
-            gradient: const LinearGradient(
+            gradient: LinearGradient(
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
-              colors: [BrandGold.light, BrandGold.warm, BrandGold.base],
+              colors: [
+                for (final color in const [BrandGold.light, BrandGold.warm, BrandGold.base])
+                  enabled ? color : color.withValues(alpha: 0.38),
+              ],
             ),
-            border: Border.all(color: const Color(0xFFFFF1C4), width: 0.8),
-            boxShadow: const [BoxShadow(color: Color(0x55000000), blurRadius: 10, offset: Offset(0, 4))],
+            border: Border.all(color: const Color(0xFFFFF1C4).withValues(alpha: enabled ? 1 : 0.4), width: 0.8),
+            boxShadow: enabled ? const [BoxShadow(color: Color(0x55000000), blurRadius: 10, offset: Offset(0, 4))] : null,
           )
         : quiet
         ? BoxDecoration(borderRadius: radius)
         : BoxDecoration(
             borderRadius: radius,
             color: Colors.white.withValues(alpha: 0.04),
-            border: Border.all(color: BrandGold.base.withValues(alpha: 0.85), width: 1.1),
+            border: Border.all(color: BrandGold.base.withValues(alpha: enabled ? 0.85 : 0.35), width: 1.1),
           );
+    final fontSize = quiet ? 17.0 : 19.0;
+    final text = Text(
+      label,
+      textAlign: TextAlign.center,
+      maxLines: 1,
+      overflow: TextOverflow.ellipsis,
+      style: displayText(fontSize, color: textColor, weight: FontWeight.w600, spacing: 0.3),
+    );
     return Semantics(
       button: true,
+      enabled: enabled,
       child: ConstrainedBox(
         constraints: BoxConstraints(minHeight: quiet ? 44 : 50, minWidth: expand ? double.infinity : 108),
         child: DecoratedBox(
@@ -533,13 +552,16 @@ class PremiumButton extends StatelessWidget {
                 child: Center(
                   widthFactor: 1,
                   heightFactor: 1,
-                  child: Text(
-                    label,
-                    textAlign: TextAlign.center,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: displayText(quiet ? 17 : 19, color: textColor, weight: FontWeight.w600, spacing: 0.3),
-                  ),
+                  child: icon == null
+                      ? text
+                      : Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(icon, size: fontSize * 1.15, color: textColor),
+                            const SizedBox(width: 8),
+                            Flexible(child: text),
+                          ],
+                        ),
                 ),
               ),
             ),

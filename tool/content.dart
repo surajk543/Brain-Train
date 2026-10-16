@@ -189,12 +189,19 @@ Future<void> build({required bool force}) async {
   // Animated symbols need client content schema 2. Older builds then reject
   // this manifest as a whole and keep their known-good content, instead of
   // installing it with every level that has an animated tile missing.
+  // Trays other than 4/5 and numeric difficulty tiers need schema 3, for the
+  // same reason.
   final usesAnimation = _usesAnimation(entries, registry);
+  final usesSchema3 = entries.any(
+    (e) =>
+        (e.trayCapacity != null && e.trayCapacity != 4 && e.trayCapacity != 5) ||
+        (e.difficulty != null && numericDifficulty(e.difficulty!) != null),
+  );
   if (animated.isEmpty) print('animated  none processed: levels are 100% static (see $animatedSourcesPath)');
   final manifest = LevelManifest(
     schemaVersion: 1,
     contentVersion: catalog['contentVersion']! as String,
-    minClientContentSchema: usesAnimation ? 2 : 1,
+    minClientContentSchema: usesSchema3 ? 3 : (usesAnimation ? 2 : 1),
     publishedAt: DateTime.now().toUtc().toIso8601String().split('.').first.replaceFirst('T', ' '),
     symbolRegistry: ContentRef(url: registryPath, sha256: sha(utf8.encode(registryText))),
     levels: entries,
@@ -211,7 +218,7 @@ Future<void> build({required bool force}) async {
   }
   print(
     'manifest  manifest.json  contentVersion ${manifest.contentVersion}'
-    '${usesAnimation ? ', minClientContentSchema 2 (animated symbols)' : ''}',
+    ', minClientContentSchema ${manifest.minClientContentSchema}',
   );
 
   // Generated files the manifest no longer references (published copies on
@@ -293,7 +300,7 @@ void _printCampaignSummary(CampaignConfig config, List<CampaignLevel> levels, Se
     print(
       '${tier.id.padRight(10)} ${ls.length.toString().padLeft(6)}  '
       '${'${minOf((l) => l.level.tiles.length)}-${maxOf((l) => l.level.tiles.length)}'.padRight(8)}  '
-      '${'${minOf((l) => l.layers)}-${maxOf((l) => l.layers)}'.padRight(6)}  ${tier.trayCapacity.toString().padRight(4)}  '
+      '${'${minOf((l) => l.layers)}-${maxOf((l) => l.layers)}'.padRight(6)}  ${'${minOf((l) => l.level.rules.trayCapacity)}-${maxOf((l) => l.level.rules.trayCapacity)}'.padRight(4)}  '
       '${(avg((l) => l.freeAtStart / l.level.tiles.length) * 100).toStringAsFixed(0).padRight(9)}  '
       '${'${_pct(avg((l) => l.simulation.winRate))} (${_pct(rates.first)}-${_pct(rates.last)})'.padRight(23)}  '
       '${_pct(avg((l) => l.pairSeekingSimulation.winRate)).padRight(12)}  '

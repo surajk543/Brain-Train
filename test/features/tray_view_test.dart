@@ -195,7 +195,7 @@ void main() {
     // Screen width and the tray's largest face width (as GameScreen picks it:
     // 6.2% of the screen height, 34-46 px) on the two reference phones.
     for (final (width, maxFace) in [(360.0, 39.68), (411.0, 46.0)]) {
-      for (final capacity in [4, 5]) {
+      for (final capacity in [2, 3, 4, 5]) {
         test('$capacity wells fit ${width.toInt()} px, centred, apart, in the frame', () {
           final layout = TrayLayout.fit(
             width: width,

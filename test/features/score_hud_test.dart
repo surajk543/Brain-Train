@@ -54,7 +54,7 @@ Future<List<(String, String)>> _pumpGame(
   }
   addTearDown(tester.platformDispatcher.clearAccessibilityFeaturesTestValue);
   final snapshot = services.content.snapshot;
-  final entry = snapshot.playableEntries.firstWhere((e) => e.difficulty == 'medium');
+  final entry = snapshot.playableEntries.firstWhere((e) => e.difficulty == '4');
   final level = snapshot.levels[entry.levelId]!;
   final probe = GameController(
     entry: entry,

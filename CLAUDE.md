@@ -11,18 +11,20 @@ flutter pub get
 flutter analyze                         # must be clean
 flutter test                            # unit + widget tests, no network
 flutter run -d emulator-5554            # AVDs (this Mac): Pixel_9 (Play Store), TP_API36/TP_Small/TP_Tall
-flutter build appbundle                 # Play upload; needs android/key.properties (+ play_games.properties for Play Games)
+flutter build appbundle                 # Play upload; needs android/key.properties (+ play_games.properties for Play Games,
+                                        #   admob.properties for real ads: warns while it uses AdMob test IDs)
 dart run tool/content.dart build        # content-src/ -> content/brain-train/ (campaign: generate + solve + simulate + hash)
 dart run tool/content.dart validate     # check content/brain-train/ like the app, plus solver
 dart run tool/content.dart stats        # simulated tray-player win rates per tier of the built tree
 dart run tool/publish.dart --dry-run    # then without --dry-run to upload to R2 (parallel, manifest last)
+dart run tool/r2_prune.dart             # list R2 objects the live manifest no longer uses (--delete: owner only)
 python3 tool/assets/prepare_symbols.py [--placeholders]   # art -> WebP symbols
 python3 tool/assets/make_app_icon.py    # launcher icons from the logo emblem (Android + iOS)
 python3 tool/assets/make_foliage.py     # gameplay edge foliage -> assets/decor/
 python3 tool/assets/make_lobby_art.py   # lobby night art -> assets/lobby/
 python3 tool/assets/make_sounds.py      # sound effects -> assets/sounds/
 CAPTURE_DIR=/tmp/x flutter test test/visual/   # write screenshots of lobby/gameplay at phone sizes
-dart run tool/smoke_remote.dart         # live check: app's content client vs production R2 (+ levels 1/57/128/200)
+dart run tool/smoke_remote.dart         # live check: app's content client vs production R2 (+ first/middle/last level)
 ```
 
 ## Layout
@@ -47,12 +49,18 @@ dart run tool/smoke_remote.dart         # live check: app's content client vs pr
   board↔tray flights + `TrayFlightDirector`; `widgets/tile_shatter.dart` match strike + shards;
   `widgets/tile_art.dart` single-tile art; `widgets/board_intro.dart` level-start intro; `widgets/win_trophy.dart` trophy Lottie
   on the win card; `widgets/combo_badge.dart`, `widgets/score_popups.dart`); `common/` shared lobby chrome, `glass_painters.dart` (`GlassRimPainter`/`GlassShadowPainter`), `PremiumMahjongTile`,
-  lobby background + fireflies; `intro/` studio video + logo screen.
+  lobby background + fireflies; `intro/` studio video + logo screen + `age_screen.dart` (neutral age screen).
 - `lib/app/` — `AppServices` (wiring), `AppScope` (above `MaterialApp`), `theme.dart`
   (`BrainTrainPalette.night`, `LobbyTheme.night`), `brand.dart` (serif display font, gold),
-  `sound_effects.dart`, `play_games_controller.dart` (lobby Play Games state).
+  `sound_effects.dart`, `play_games_controller.dart` (lobby Play Games state), `rewarded_ads_controller.dart`
+  (`AppServices.ads`: Revive's ad state, show with music/SFX held, privacy options).
+- `lib/data/` — `ProgressRepository`, `SettingsRepository` (also the stored `AgeGroup`), `age_group.dart`.
 - `lib/platform/` — `play_games.dart` (`PlayGames` interface, statuses, `UnavailablePlayGames`, pure Dart);
-  `games_services_play_games.dart` (the only file importing `games_services`; `createPlayGames()`).
+  `games_services_play_games.dart` (the only file importing `games_services`; `createPlayGames()`);
+  `rewarded_ads.dart` (`RewardedAds` interface, statuses, `AdAudience` per age group, `UnavailableRewardedAds`, pure
+  Dart); `managed_rewarded_ads.dart` (`ManagedRewardedAds` over an `AdsBackend`: consent, one ad kept loaded,
+  backoff, timeouts); `google_mobile_ads_rewarded.dart` (the only file importing `google_mobile_ads`;
+  `createRewardedAds()`).
 - `content-src/` — authoring: `catalog.json` (`campaign`: seed, tiers, counts, bands). `layouts/*.layout.json`
   are the old hand layouts (not in the catalog; the tool still accepts catalog `levels` entries).
 - `content/brain-train/` — generated, published tree (not in git; local output of `tool/content.dart build`,
@@ -62,7 +70,8 @@ dart run tool/smoke_remote.dart         # live check: app's content client vs pr
 - `art/` — `asset_sources.json` (IconScout attribution + status), masters, review sheets.
   `art/source/` (licensed originals) is gitignored.
 - `infra/cloudflare/braintrain-assets/worker.js` — the deployed Worker's source of truth.
-- `docs/` — `CONTENT_PUBLISHING.md`, `ASSET_PIPELINE.md`.
+- `docs/` — `level-design-rules.md` (all level rules: difficulty 1–10, tray 2–5, 85/15, batches),
+  `CONTENT_PUBLISHING.md`, `ASSET_PIPELINE.md`, `PLAY_GAMES.md`, `ADS.md` (AdMob setup, IDs, age screen, consent).
 
 ## Rules that are easy to break
 
@@ -76,12 +85,12 @@ dart run tool/smoke_remote.dart         # live check: app's content client vs pr
   or blend-mode passes behind ambient animation: flatten static subtrees with `StaticLayer` (no repaint
   boundaries inside it) and use `FrostedGlass` (blurred copy from a `FrostSource`) for glass. The board caches
   itself (`BoardLayers`: static image + moving symbols via `SymbolFrameAtlas`).
-- Play goes through a tray whose size is per level: `rules.trayCapacity` = 4 by default (and when absent), 5 for
-  hard and very hard levels; the validator allows 4 or 5, and `GameEngine`/`GameController`/`TrayController`
-  take it from the level (old builds ignore the field and play with 4, which is safe: every level is
-  pair-solvable). A tapped free tile leaves the board for the tray; if it matches a tray tile both clear;
+- Play goes through a tray whose size is per level: `rules.trayCapacity` 2–5, tied to difficulty (5 for the easiest,
+  2 for the hardest; docs/level-design-rules.md), 4 when absent; the validator allows 2–5 (`kAllowedTrayCapacities`),
+  and `GameEngine`/`GameController`/`TrayController` take it from the level (2/3 slots need content schema 3). A tapped free tile leaves the board for the tray; if it matches a tray tile both clear;
   `capacity` tiles without a match lose (`GameStatus.trayFull`) and show a Revive / Restart card. Revive
-  (`GameEngine.revive`, unlimited, not a move) puts all the tray tiles back in their board places. Saves store the tap sequence plus `GameEngine.reviveMarker` entries
+  (`GameEngine.revive`, unlimited, not a move) puts all the tray tiles back in their board places, only after a
+  rewarded ad's reward (see Ads below). Saves store the tap sequence plus `GameEngine.reviveMarker` entries
   (`progress.current.v2`); a tray-full game is saved so it can be revived later. Only the first level not won is saved:
   `saveGame` skips already-won levels (replays), `clearSavedGame(levelId:)` clears only that level's save, so a replay
   never wipes the highest level's game (an unfinished replay is dropped). Solver/generator still prove
@@ -95,8 +104,8 @@ dart run tool/smoke_remote.dart         # live check: app's content client vs pr
   cards wait until flights, the tray and shatters are still.
 - Level intro (`widgets/board_intro.dart`): every game start (new, Restart, resumed save; not Revive; skipped with
   reduce-motion) flies the board tiles in from all four sides, mixes them, then settles them by layer onto the
-  board. Length by tier (`IntroTiming`: easy 2.0 s, medium 2.3, hard 2.6, very hard 3.0; by tile count without a
-  tier); fly-in always 0.8 s, the extra time goes to the mix and a calmer settle; mix style per level
+  board. Length by tier (`IntroTiming`: difficulty 1 2.0 s to 10 3.0 s in even steps; named tiers easy 2.0 s,
+  medium 2.3, hard 2.6, very hard 3.0; by tile count without a tier); fly-in always 0.8 s, the extra time goes to the mix and a calmer settle; mix style per level
   (`IntroStyle.forLevel`: swirl / figure-8 weave / spiral / row waves; neighbouring level numbers differ),
   seeded by level id. `GameController(playIntro: true)` blocks taps and holds the clock until `endIntro()`; the
   board paints nothing meanwhile (`BoardPainter.hidden`). The overlay draws every tile with one `drawRawAtlas`
@@ -110,13 +119,17 @@ dart run tool/smoke_remote.dart         # live check: app's content client vs pr
 - Symbols: only entries with `"status": "integrated"` (and a processed file) in `art/asset_sources.json` /
   `art/animated_sources.json` enter the registry. Another agent may be editing `art/**` and `tool/assets/**`:
   do not edit them; the build reads them fresh.
-- 70/30 rule: each level has `floor(30% of pairs)` animated pairs (at least 1, never above 30%), the rest
-  static; at most 12 distinct animated symbols per level (`SymbolFrameAtlas` renders each once per frame
-  step, so big boards reuse one for 2+ pairs). Codes per level come from rendezvous hashing (level × code):
-  new symbols change only codes, never boards, tiers, titles or win rates.
-- Tiers are data (`campaign.tiers`): `easy`, `medium`, `hard`, `veryHard`, 50 levels each, seeded shuffle,
-  level 1 easy, never 3 of a tier in a row; stored as `difficulty` in levels and manifest. The app labels any
-  id (`difficultyLabel`: "Very Hard") and colours the badge (`DifficultyStyle`).
+- Level design rules (owner) live in **docs/level-design-rules.md**; read it before creating or changing levels.
+  85/15 rule: each level has `floor(15% of pairs)` animated pairs (at least 1; `animatedShare` 0.15, the code caps
+  it at 0.3), the rest static; at most 12 distinct animated symbols per level (`SymbolFrameAtlas` renders each once
+  per frame step); at most 2 pairs of one symbol per level (`maxPairsPerSymbol`). Codes per level: least used so far
+  first (ties by a hash of level × code), so every integrated symbol is on some level (the build fails otherwise);
+  new symbols change codes, never boards, tiers, trays, titles or win rates.
+- Tiers are data (`campaign.tiers`): difficulty `1`..`10` (1 very easy, 10 hardest), stored as the string
+  `difficulty` in levels and manifest; the app shows `7/10` on a green-to-red badge (`difficultyLabel`,
+  `DifficultyStyle`; named ids like `veryHard` still work). `campaign.batches` lists levels per tier; each batch is
+  a seeded shuffle (level 1 is difficulty 1, never 3 of a tier in a row) that depends only on earlier batches:
+  add levels by appending a batch, never by editing one.
 - Content delivery (owner): R2 is the source of truth; static and animated symbol files live only there (plus the
   starter pack's). The app downloads the manifest (every level's title, tier, tile count and `trayCapacity`, so
   lists and panels never need level files) and the registry in the background, and keeps a rolling window of the
@@ -131,6 +144,18 @@ dart run tool/smoke_remote.dart         # live check: app's content client vs pr
   imports the plugin; every call is caught and timed out. The app ID comes from gitignored
   `android/play_games.properties`; without it `PlayGamesInitProvider` is disabled and Dart sees
   `UnavailablePlayGames`. Release signing reads gitignored `android/key.properties`. iOS min is 14.0 (plugin).
+- Ads (owner, docs/ADS.md): Revive shows an AdMob rewarded ad (`GameScreen._revive`); the revive runs only once the
+  ad has closed with its reward earned (and the app is in the foreground). Closed early / failed → no revive, the card
+  stays. No ad loaded (loading, no fill, errors) → Revive off with "Loading an ad…"; offline → off with "Connect to the
+  internet to watch an ad and revive"; Restart always works; a resumed tray-full save needs an ad too. Never on the
+  startup path: the lobby starts ads after its first frame (configuration by age group → UMP consent → `initialize` →
+  load); a game opening, the Tray full card and app resume preload; failures retry 5/10/20/30 s then every minute.
+  Only `google_mobile_ads_rewarded.dart` imports the plugin; every call is caught and timed out. While an ad shows the
+  clock stays stopped (a full tray stops it), music is held (`BackgroundMusic.interrupted`) and SFX stop. Builds
+  without the SDK (tests) have ads `off`: Revive needs no ad. Under 13: TFCD + TFUA + `ageRestrictedTreatment.child`,
+  rated G, non-personalized, UMP `tagForUnderAgeOfConsent`; 13+: rated PG, normal UMP flow. IDs: Android
+  `android/admob.properties` (gitignored; Gradle → manifest + `rewardedAdUnitId` on the `brain_train/platform`
+  channel), iOS `Info.plist` (`GADApplicationIdentifier`, `BrainTrainRewardedAdUnitId`); Google's test IDs otherwise.
 - Scoring (owner): a match scores `100 x min(combo, 5)` + speed bonus (+50 gap < 1 s, +25 < 2 s, +10 for 2-4 s);
   combo window 4 s on the game clock (pauses with it), every match restarts it from that match, a gap > 4 s starts over
   at x1; only `TapOutcome.matched` scores; a blocked-tile tap costs 1 (never below 0) and ends the combo; Revive ends
@@ -145,9 +170,15 @@ dart run tool/smoke_remote.dart         # live check: app's content client vs pr
 ## Product decisions (from the owner)
 
 - Night look only: no day mode, no theme setting. `MaterialApp` is always dark.
-- Settings contains only Sound, Vibration and the app version. Do not add other options.
+- Settings contains only Sound, Vibration and the app version. Do not add other options. One exception (owner):
+  a "Privacy choices" row (Google's UMP privacy options form) shown only when UMP says the entry point is required
+  (EEA/UK); hidden everywhere else.
+- Rewarded ads on Revive (owner, 2026-10-16): every Revive plays an AdMob rewarded ad (Revive stays unlimited); no
+  ad, no revive. The audience includes children under 13 (Play Families policy, mixed audience): neutral age screen,
+  child-directed ads for under 13. No other ads anywhere.
 - Background music `assets/music/water_flowing.mp3` loops at volume 0.6 (`lib/app/background_music.dart`),
-  starts after the studio intro, pauses in background, and follows the Sound switch (no separate music toggle).
+  starts after the studio intro, pauses in background and while a rewarded ad shows, and follows the Sound switch
+  (no separate music toggle).
 - Sounds: `assets/sounds/tap.wav` (one tap cut from the owner's Tap.mp3) on every playable tap; `assets/sounds/strike.wav` (one hit cut from the owner's strike.mp3, 0.95 s) is `Sfx.match`, played when a matched pair strikes in the tray; the last pair's strike is followed by `Sfx.win` 450 ms later.
 - No Undo and no Hint in the game; Restart is the only action (the engine has no undo). Reachable from the round HUD
   icon (`PremiumRoundIconButton`, right end; only while playing, not during the intro or result cards) with a confirm
@@ -162,7 +193,11 @@ dart run tool/smoke_remote.dart         # live check: app's content client vs pr
   clash: piece 3 merges (union of wins, fastest time) before play; no hard one-device lock.
 - Every launch: navy native screen (no icon) → `assets/video/sun_game_studio_intro.mp4`
   (Sun Game Studio) → Brain Train logo on white (`assets/branding/brain_train_logo.jpg`, at least
-  2.2 s and until content is loaded) → lobby. Sequence lives in `lib/app/app.dart`.
+  2.2 s and until content is loaded) → lobby. Sequence lives in `lib/app/app.dart`. Once, at first launch (and
+  once after updating from a version without it), the neutral age screen (`AgeScreen`: "What year were you born?",
+  decade then year, nothing preselected, no hint of why) comes between the logo and the lobby; only the derived group
+  (`privacy.ageGroup` = `under13` / `13plus`; the year someone may still be 12 counts as under 13) is stored, on the
+  phone, never sent.
 - App icon = the round emblem of the official logo (`art/branding/brain-train-logo.jpg`), adaptive on
   Android 8+. Regenerate with `python3 tool/assets/make_app_icon.py`.
 - No "Mahjong Solitaire" subtitle on the lobby.
@@ -176,17 +211,19 @@ dart run tool/smoke_remote.dart         # live check: app's content client vs pr
 
 ## Current state (2026-10-16)
 
-- Published content 2026.10.16.10 (manifest `minClientContentSchema: 2`; .10 = .9 plus `trayCapacity` per manifest
-  entry, no other object changed): a generated campaign of 200 levels
-  (`catalog.json` `campaign`, seed 20261039, chosen so levels 2–4 are easy/medium), content-addressed keys.
-  The registry (`registries/symbols-b932cfbdc9d6.json`) holds every integrated symbol: 82 static (set v4: owner
-  cut-outs + IconScout 3D/illustration packs) and 83 animated (IconScout Lottie: Emoji, Valentine, Dog, Cute
-  Monster, Shapes Loader restyled bold/coloured). 100 static IconScout entries are `awaiting download`
-  (IconScout 3D downloads hit a daily limit); finish them, then rebuild and publish.
-- Tiers (50 each; tiles / layers / tray / simulated random-player win rate over 200 games per level):
-  easy 24–48 / 1–2 / 4 / ~92%; medium 48–78 / 2–3 / 4 / ~42%; hard 84–120 / 3–4 / 5 / ~13%;
-  very hard 144–172 / 5–7 / 5 / ~0% (a pair-seeking player wins ~58%). Every level is solver-proven and keeps
-  tile faces >= 31 px wide on a 360x640 phone.
+- Published content 2026.10.16.12 (manifest `minClientContentSchema: 3`, from branch `feat/campaign-v2`): a fresh
+  campaign of 100 levels, one batch of 10 per difficulty 1–10 (`catalog.json` `campaign`, seed 20261641, chosen so
+  levels 1–10 open 1 2 1 4 4 5 2 6 1 1), trays 2–5, 85/15 symbols, at most 2 pairs per symbol; rules in
+  docs/level-design-rules.md. The registry (`registries/symbols-c49aee2044e5.json`) holds 314 symbols: 203 static
+  (set v1) and 111 animated, every one on some level (static 10–11 levels each, animated 3–4). .12 = .11 minus 4 tiles
+  unsuitable for a 6+ audience (CINEMA_NO_SMOKING, TRIP_COCKTAIL, MONSTER_POOP, EMOJI_KNIFE: tobacco, alcohol, crude
+  humour, weapon; IARC rating). Apps built before
+  schema 3 (master, Play versionCode 1/2) reject this manifest and keep their known-good content, whose old level files
+  are still on R2 until `tool/r2_prune.dart --delete` runs (455 unreferenced objects: 345 old levels, 7 registries,
+  85 `symbols/v4/`, 18 old `shapes-loader-*` animations).
+- Simulated random-player win rate per difficulty (200 games per level): 1 98%, 2 90%, 3 68%, 4 52%, 5 29%, 6 12%,
+  7 2%, 8–10 0% (a pair-seeking player still wins ~50% of 8–10). Every level is solver-proven and keeps tile faces
+  >= 31 px wide on a 360x640 phone.
 - Rebuild after new symbols: bump `contentVersion`, `dart run tool/content.dart build` (the registry key and the
   levels that rank a new code change by themselves), `validate`, `flutter test`, `publish --dry-run`, `publish`,
   `smoke_remote`.
@@ -204,20 +241,29 @@ dart run tool/smoke_remote.dart         # live check: app's content client vs pr
 - All levels won (owner): `AllLevelsCompleteNote` ("All N levels complete! New levels are coming soon.") in the
   lobby (Play becomes "Replay · Level N") and in place of the next-level panel on Completed Levels; the last
   level's win card says so instead of "Next level". No list of all levels and no locked cells; an empty message before the first win.
-  Tray UI lays out 4 or 5 wells.
-- Static art pipeline: `art/asset_sources.json` → `python3 tool/assets/prepare_symbols.py` → `content/brain-train/symbols/v4/`.
+  Tray UI lays out 2 to 5 wells.
+- Static art pipeline: `art/asset_sources.json` → `python3 tool/assets/prepare_symbols.py` → `content/brain-train/symbols/v1/`
+  (image set renamed v4 → v1 on 2026-10-16: `art/source/symbols-v1/`, `art/masters/v1/`, `art/review/v1-contact-sheet.png`).
   Animated: `art/animated_sources.json` → `python3 tool/assets/prepare_animated.py` → `content/brain-train/animated-symbols/`.
   Originals live in `art/source/` (gitignored). IconScout downloads use the owner's subscription via the iconscout MCP.
-- Art sources: each entry has a `status`; builds take only `integrated` ones. Static: 82 integrated (62 original
-  + 6 fitness `FIT_*` + 5 `JULY4_*` + 9 `SPORT_*`), 3 `rejected` (unreadable at 31 px), 100 `awaiting download`
-  (rest of Sport + Christmas `XMAS_*`, Technology `TECH_*`, Robot & AI `ROBOT_*`, Cinema `CINEMA_*`, Holiday Trip
-  `TRIP_*`: IconScout 3D downloads failed with server errors after ~24 that day; rerun the download, copy to
-  `art/source/symbols-v4/<expectedSourceFile>.png`, `prepare_symbols.py`, check at 31 px, set `integrated`).
-  Animated: 83 integrated (50 + Cute Monster `MONSTER_*` 20 + Shapes Loader `SHAPE_*` 13, restyled bold/coloured
-  via `restyle` into `*-bold.json`), 5 `SHAPE_*` rejected. Check new art at 31 px and 64 px tile width.
+- Art sources: each entry has a `status`; builds take only `integrated` ones. Static: 203 integrated (82 earlier +
+  23 owner nano-banana cut-outs + 76 IconScout 3D Sport/Christmas/Tech/Robot/Cinema/Trip + 24 from the Sport, Sport
+  Equipment, Equipment and Medicine packs, minus 2 rejected for 6+), 60 `rejected` (unreadable at 31 px, look-alikes, duplicates; each has a
+  reason), 16 `awaiting download`. Duplicate subjects are never added (owner). Animated: 111 integrated (2 rejected for 6+; 83 earlier +
+  9 owner LottieFiles `LF_*` + India map + 20 country flags `FLAG_*` restyled with a zoom), rejected ones have a
+  reason. Check new art at 31 px and 64 px tile width.
 - Not yet integrated: 4 IconScout AI images (spring rolls ×2, salad, nachos) — not reachable via the IconScout API.
 - Tray mechanic is integrated (tray at the top, flights, strike-and-shatter matches, Tray full card with
-  Revive / Restart), with 4 or 5 slots per level.
+  Revive / Restart), with 2 to 5 slots per level.
+- App version 1.0.0+4 (`feat/rewarded-ads`, merged into `feat/campaign-v2`): rewarded ads on Revive, age screen,
+  Privacy choices row, built with Google's AdMob test IDs (`google_mobile_ads` 9.1.0). This bundle (66.7 MB AAB,
+  19.2 MB install) is the Closed testing - Alpha release in the Play Console.
+- Play Store listing (owner-approved): texts in `art/store/listing-en-US.md`, `art/store/icon-512.png`,
+  `art/store/feature-graphic.png` (1024x500), 6 phone screenshots in `art/store/phone/` (1080x1920, from
+  `test/visual/` captures, taken before ads). AI asset declaration: "Don't label assets" (owner).
+- Studio website sungamestudio.com (static, nginx on game-server-01): Brain Train page `/brain-train`, privacy policy
+  `/brain-train/privacy/` (source `website/brain-train/privacy/index.html`, same text as the deployed page); the
+  premium night redesign was deployed on 2026-10-16 (source repo `~/Project/sungamestudio-site` on the Linux machine).
 
 ## Working on another machine
 
@@ -228,21 +274,38 @@ dart run tool/smoke_remote.dart         # live check: app's content client vs pr
   `emulator -avd Pixel_6_API_34 -gpu host -no-snapshot-load`). This Mac: Flutter `~/flutter`, SDK
   `/opt/homebrew/share/android-commandlinetools`, AVD `Pixel_9` = Play Store image (use for Play Games), `TP_*` AVDs
   have no Play Store, `Pixel_6_API_34` does not exist. Python 3 + Pillow for `tool/assets/*.py`, ffmpeg for audio.
-- `flutter analyze` and `flutter test` work on a fresh clone (tests use fixtures and `content/starter/`); on this Mac 6
-  tests currently fail (see Open work).
+- `flutter analyze` and `flutter test` work on a fresh clone (tests use fixtures and `content/starter/`); on the Linux
+  machine all 512 pass (2026-10-16); on the Mac 6 tests failed before (see Open work).
 - Content tree: `content/brain-train/` is not in git. Before `tool/content.dart build|validate` or `tool/publish.dart`
   on a new machine, mirror the live tree: `dart run tool/fetch_content.dart` (public prefix, no keys, sha256-checked).
 - Secrets: copy `.env` by a secure channel (password manager), never git/chat/email, likewise `android/key.properties`,
-  `android/play_games.properties` and the upload keystore. Keys: `R2_ACCOUNT_ID`,
+  `android/play_games.properties`, `android/admob.properties` and the upload keystore. Keys: `R2_ACCOUNT_ID`,
   `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_BUCKET_NAME`, `ASSET_TOKEN_SECRET`. Only publishing needs it.
 - Licensed originals `art/source/` are not in git; needed only to re-process art. Re-download through the IconScout
   MCP (`claude mcp add --transport http iconscout https://mcp.iconscout.com/mcp`) from `art/asset_sources.json` /
-  `art/animated_sources.json` (`sourceUrl`; slug `<name>_<assetId>`). IconScout caps 3D downloads at ~24/day.
-- Open work: 100 static entries `awaiting download` in `art/asset_sources.json` (then prepare_symbols, build, bump
-  contentVersion, publish); a frame-time slowdown after hours of play on the emulator (Impeller GLES; watch
+  `art/animated_sources.json` (`sourceUrl`; slug `<name>_<assetId>`). IconScout 3D downloads once failed after ~24 in a
+  day, but 150 went through on 2026-10-16 evening; stop at the first server error.
+- Open work: 16 static entries `awaiting download` (MED_VIRUS + 15 SCI_, not downloaded on the owner's stop); a frame-time slowdown after hours of play on the emulator (Impeller GLES; watch
   `adb logcat | grep app_time_stats`, app restart resets it) is not explained yet.
-- Open work: Play Console setup (docs/PLAY_GAMES.md) and Play Games pieces 2–3 (piece 2 builds on
-  `bestScore`/`bestCombo`). Scoring + combo is implemented (4 s window).
+- Play Console setup (2026-10-16, docs/PLAY_GAMES.md steps 1–6 done): app "Brain Train" in the sungamestudio.com
+  developer account (personal account), Play App Signing on; Games Services project = Play Games app ID `923515226118`
+  (in `android/play_games.properties`), linked Cloud project `brain-train-511814` (OAuth consent screen External,
+  Testing; test user + PGS tester surajk543@gmail.com); 3 Android credentials (Play App Signing key, upload key,
+  this Linux machine's debug key — another machine's debug key needs its own credential). Upload keystore:
+  `~/keys/brain-train-upload-keystore.jks` on the Linux machine (password only in `android/key.properties`).
+  Internal testing release draft exists (versionCode 1 was built before the app ID existed: replace with a newer build).
+- Play Console release state (2026-10-16): every App content declaration is done (privacy policy, ads = yes,
+  Advertising ID, content rating, target audience 6+ incl. under 13 (Families), Data safety, Health/Financial/
+  Government); category Puzzle; store listing saved. Closed testing - Alpha: versionCode 4 (1.0.0), all countries,
+  testers = Google Group sungamestudiotesters@googlegroups.com, feedback contact@sungamestudio.com. Its 16 changes sit
+  in Publishing overview, not yet sent for review (owner decides; Google Play Games on PC is opted in by default).
+  Production needs 12+ opted-in testers for 14 days, then real AdMob IDs.
+- Open work (ads, docs/ADS.md "Owner setup"): AdMob account, app and "Revive" rewarded unit → real IDs in
+  `android/admob.properties` and `ios/Runner/Info.plist`; app-ads.txt on sungamestudio.com; AdMob Families /
+  mixed-audience settings and a published GDPR consent message; Play Console Ads, Advertising ID, Target audience and
+  Data safety answers. The iOS `AppDelegate.swift` channel (`rewardedAdUnitId`) is untested until the first Xcode build.
+- Open work: Play Games pieces 2–3 (piece 2 builds on `bestScore`/`bestCombo`; publishing the PGS configuration needs
+  at least 5 achievements). Scoring + combo is implemented (4 s window).
 - Open work: Play Games / scoring follow-ups after the PR #2 merge: run an iOS build on a Mac with full Xcode (iOS min
   14.0, never built yet); check the combo pill on a phone (its top overlaps the tray wells by ~5 px at 360×640).
 - Open work: 5–6 tests fail on this Mac (predate PR #2): RenderFlex overflow of 4.4 px at

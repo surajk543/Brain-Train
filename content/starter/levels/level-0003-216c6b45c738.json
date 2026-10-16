@@ -1,0 +1,53 @@
+{
+  "schemaVersion": 1,
+  "levelId": "level-0003",
+  "title": "Pine Bridge",
+  "difficulty": "1",
+  "tileSetId": "classic-ivory",
+  "board": {
+    "tileWidth": 2,
+    "tileHeight": 2,
+    "layerOffsetX": -0.07,
+    "layerOffsetY": -0.07
+  },
+  "rules": {
+    "matchingMode": "same_symbol",
+    "requireSolvable": true,
+    "trayCapacity": 5
+  },
+  "backdrop": {
+    "colors": [
+      "#1E5631",
+      "#4C9A2A",
+      "#A4DE02"
+    ]
+  },
+  "tiles": [
+    {"tileId":"t001","symbolCode":"EQUIP_DRILL","x":0,"y":0,"layer":0},
+    {"tileId":"t002","symbolCode":"JULY4_FLAG_BALLOONS","x":2,"y":0,"layer":0},
+    {"tileId":"t003","symbolCode":"JULY4_FLAG_BALLOONS","x":18,"y":0,"layer":0},
+    {"tileId":"t004","symbolCode":"TRIP_MAP_PHONE","x":20,"y":0,"layer":0},
+    {"tileId":"t005","symbolCode":"TRIP_HOTEL","x":0,"y":2,"layer":0},
+    {"tileId":"t006","symbolCode":"JULY4_FLAG_BALLOONS","x":2,"y":2,"layer":0},
+    {"tileId":"t007","symbolCode":"JULY4_FLAG_BALLOONS","x":18,"y":2,"layer":0},
+    {"tileId":"t008","symbolCode":"EMOJI_FLEXED_BICEPS","x":20,"y":2,"layer":0},
+    {"tileId":"t009","symbolCode":"EQUIP_DRILL","x":0,"y":4,"layer":0},
+    {"tileId":"t010","symbolCode":"ICE_CREAM_BOWL","x":2,"y":4,"layer":0},
+    {"tileId":"t011","symbolCode":"EQUIP_DRILL","x":4,"y":4,"layer":0},
+    {"tileId":"t012","symbolCode":"TRIP_CAR","x":6,"y":4,"layer":0},
+    {"tileId":"t013","symbolCode":"TRIP_MAP_PHONE","x":8,"y":4,"layer":0},
+    {"tileId":"t014","symbolCode":"TRIP_HOTEL","x":12,"y":4,"layer":0},
+    {"tileId":"t015","symbolCode":"ICE_CREAM_BOWL","x":14,"y":4,"layer":0},
+    {"tileId":"t016","symbolCode":"TRIP_CAR","x":16,"y":4,"layer":0},
+    {"tileId":"t017","symbolCode":"TRIP_HOTEL","x":18,"y":4,"layer":0},
+    {"tileId":"t018","symbolCode":"TRIP_MAP_PHONE","x":20,"y":4,"layer":0},
+    {"tileId":"t019","symbolCode":"EMOJI_FLEXED_BICEPS","x":0,"y":6,"layer":0},
+    {"tileId":"t020","symbolCode":"ICE_CREAM_BOWL","x":2,"y":6,"layer":0},
+    {"tileId":"t021","symbolCode":"ICE_CREAM_BOWL","x":18,"y":6,"layer":0},
+    {"tileId":"t022","symbolCode":"TRIP_CAR","x":20,"y":6,"layer":0},
+    {"tileId":"t023","symbolCode":"TRIP_CAR","x":0,"y":8,"layer":0},
+    {"tileId":"t024","symbolCode":"TRIP_MAP_PHONE","x":2,"y":8,"layer":0},
+    {"tileId":"t025","symbolCode":"TRIP_HOTEL","x":18,"y":8,"layer":0},
+    {"tileId":"t026","symbolCode":"EQUIP_DRILL","x":20,"y":8,"layer":0}
+  ]
+}

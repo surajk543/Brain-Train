@@ -8,8 +8,8 @@
 //    what the first launch downloads.
 // 2. The lazy path from R2 alone (a bundle with only metadata, pretend-old):
 //    manifest and registry, then the 5-level window with only its art, then
-//    the window after ten wins, then levels 57, 128 and 200 on demand, each
-//    validated like the app does plus the solver.
+//    the window after ten wins, then level 1, the middle level and the last
+//    level on demand, each validated like the app does plus the solver.
 // Unlike `flutter test`, this needs the network.
 
 import 'dart:convert';
@@ -77,7 +77,8 @@ Future<void> main() async {
   print('  again:    ${mark.delta()} (nothing twice)');
   ok &= again.ready == again.window.length && mark.files == 0;
 
-  for (final order in [1, 57, 128, 200]) {
+  final last = snapshot.manifest.levels.map((e) => e.order).reduce((a, b) => a > b ? a : b);
+  for (final order in {1, (last + 1) ~/ 2, last}) {
     final entry = snapshot.manifest.levels.firstWhere((e) => e.order == order);
     mark = _Mark(downloads);
     try {

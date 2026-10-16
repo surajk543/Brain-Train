@@ -7,7 +7,10 @@
 ///   `minClientContentSchema: 2` only when a level uses one, so schema-1
 ///   builds reject that manifest as a whole instead of installing it with
 ///   every animated level missing.
-const int kClientContentSchema = 2;
+/// - 3: trays of 2 or 3 slots and numeric difficulty tiers (`1`..`10`). The
+///   build sets 3 when a level uses either, so schema-2 builds keep their
+///   known-good content instead of rejecting levels one by one.
+const int kClientContentSchema = 3;
 
 /// Asset prefix of the starter pack bundled in the app (levels 1-5, their
 /// art, the manifest and the registry); written by `tool/content.dart build`.
