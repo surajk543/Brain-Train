@@ -20,7 +20,7 @@ import 'dart:io';
 import 'package:crypto/crypto.dart';
 import 'package:http/http.dart' as http;
 
-const _base = 'https://braintrain-assets.surajk543.workers.dev/brain-train/';
+const _base = 'https://braintrain-cdn.sungamestudio.com/brain-train/';
 const _out = 'content/brain-train';
 const _parallel = 8;
 

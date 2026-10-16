@@ -142,8 +142,9 @@ dart run tool/smoke_remote.dart         # live check: app's content client vs pr
   starter pack's). The app downloads the manifest (every level's title, tier, tile count and `trayCapacity`, so
   lists and panels never need level files) and the registry in the background, and keeps a rolling window of the
   next 5 levels (first level not won + the 4 after it) on disk: level file + only the art it uses, a symbol shared
-  by several levels once. Top-ups: at start, after every win, on app resume, and on a backoff timer while offline
-  (`ContentController`). Nothing is ever evicted; a level that was ever ready replays offline, after a content
+  by several levels once. Top-ups: at start, after every win, on app resume, and while any window level is missing (offline, 5xx, 429
+  rate limit, 408) every 5/10/15/30 s then every 30 s until all 5 are on the device; paused in the background
+  (`ContentController`, `ContentException.isTransient`). Nothing is ever evicted; a level that was ever ready replays offline, after a content
   update too (from its older cached file, `CachedLevel` index, until the new file is cached). Other levels download
   on demand when opened. A newer manifest becomes active only once its registry and its window are cached; never a
   downgrade. Startup never waits for the network (`loadInitial` + `warmUp` read only cache and bundle).
@@ -179,10 +180,17 @@ dart run tool/smoke_remote.dart         # live check: app's content client vs pr
   the combo; Restart resets. State is `SavedGame.scoring`; `LevelRecord.bestScore/bestCombo` only go up. The combo badge
   floats on the tray's bottom edge: never add layout space between tray and board (31-px faces).
 - The app never holds R2 keys or `ASSET_TOKEN_SECRET`. `.env` is gitignored and used only by tools.
-- R2 bucket `braintrain` is private. Worker `braintrain-assets` serves `brain-train/*` publicly (GET/HEAD);
-  all other keys need an HMAC token (`aud: "bt-assets"`, max 10 min).
-- Content host is `ContentConfig.production` (`braintrain-assets.surajk543.workers.dev`), not
+- Content host (versionCode 5+) is `ContentConfig.production` = `https://braintrain-cdn.sungamestudio.com/`: the R2
+  bucket `braintrain-public` on a custom domain (min TLS 1.2), which holds ONLY `brain-train/` (everything in it is
+  public; never put private files there). `tool/publish.dart` and `tool/r2_prune.dart` target it (`contentBucket`);
+  publish sets `Cache-Control` (manifest 60 s, everything else immutable). Zone `sungamestudio.com` (free plan):
+  cache rule "Brain Train content cache" (host eligible for cache, query strings ignored) and rate limiting rule
+  "Brain Train content per-IP limit" (300 requests / 10 s per IP, block 10 s); R2 budget alert at $1. Not
   `assets.sungamestudio.com` (that is the king-teenpatti bucket's public domain).
+- R2 bucket `braintrain` is private: symbol masters (`art/masters/`, `tool/r2_art.dart`) and a frozen copy of content
+  2026.10.16.12 for builds before versionCode 5, served by Worker `braintrain-assets`
+  (`braintrain-assets.surajk543.workers.dev`, `brain-train/*` public GET/HEAD; other keys need an HMAC token,
+  `aud: "bt-assets"`, max 10 min). The `.env` R2 token covers both buckets (Object Read & Write).
 
 ## Product decisions (from the owner)
 
@@ -299,6 +307,9 @@ dart run tool/smoke_remote.dart         # live check: app's content client vs pr
   have no Play Store, `Pixel_6_API_34` does not exist. Python 3 + Pillow for `tool/assets/*.py`, ffmpeg for audio.
 - `flutter analyze` and `flutter test` work on a fresh clone (tests use fixtures and `content/starter/`); on the Linux
   machine all 512 pass (2026-10-16); on the Mac 6 tests failed before (see Open work).
+- Run on a Mac (iPhone simulator) or any machine with no secrets: `flutter pub get && flutter run`. Debug builds read
+  content from the public host, use Google's test AdMob IDs, skip Play Games (Android only) and use debug signing;
+  `.env` and the `android/*.properties` files are only for publishing and release builds.
 - Content tree: `content/brain-train/` is not in git. Before `tool/content.dart build|validate` or `tool/publish.dart`
   on a new machine, mirror the live tree: `dart run tool/fetch_content.dart` (public prefix, no keys, sha256-checked).
 - Secrets: copy `.env` by a secure channel (password manager), never git/chat/email, likewise `android/key.properties`,
