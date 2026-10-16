@@ -42,32 +42,70 @@ host allow-list, size cap, retries).
 - `schemaVersion`: this build understands `1` only; a file with another value is ignored (no card). Bump it only for
   an incompatible change, and remember older builds then stop reading the notice, so they can no longer be forced.
 
-## Announce an update
+## Step by step: tell players to update
 
-1. Ship the new build on Google Play (and let it go through review and roll out).
-2. **Only once it is live on Play**, set `android.latestVersionCode` to the new `versionCode`.
-3. Publish the notice (below).
+Follow these steps in order. Steps 1 and 2 are the same for an optional and a forced update.
 
-Caveat: raise `latestVersionCode` only after the build is live for everyone. Before that (in review, staged
-rollout), players see "Update available", but Google Play has nothing to install for them: the in-app update is not
-offered, the store page opens and shows "Open" instead of "Update".
+1. **Release the new build.** Bump the version in `pubspec.yaml` (for example `1.0.1+6`; the number after `+` is
+   the `versionCode`), run `flutter build appbundle`, upload it on Google Play, and wait until the release is
+   **live for everyone** (review passed, rollout at 100%). Never do step 2 before that: players would be sent to a
+   store page with nothing to install, and a forced player could not play at all.
+2. **Edit `content-src/app-update.json`.**
+   - Optional update ("Update available", with Later): set `latestVersionCode` to the new `versionCode`, keep
+     `minVersionCode` lower.
+   - Forced update ("Update required", no way around it): set **both** `latestVersionCode` and `minVersionCode` to
+     the new `versionCode` (every older build is blocked in the lobby).
+   - Optional `message`: your own text for the card (at most 400 characters).
 
-## Force an update
+   Example, forcing everyone onto versionCode 6:
 
-Raise `android.minVersionCode` (`ios.minBuild`) above the builds that must go: every build below it gets the
-blocking card. Same caveat: raise it only once the replacement build is live on Play, or players are locked out with
-nothing to update to. To lift a force update, lower `minVersionCode` again and publish.
+   ```json
+   {
+     "schemaVersion": 1,
+     "android": {
+       "latestVersionCode": 6,
+       "minVersionCode": 6,
+       "storeUrl": "https://play.google.com/store/apps/details?id=com.sungamestudio.braintrain",
+       "message": "A new version is ready with important fixes. Please update to keep playing."
+     },
+     "ios": { "latestBuild": 0, "minBuild": 0, "storeUrl": "" }
+   }
+   ```
 
-## Publish
+3. **Publish the notice** (needs `.env`; only uploads this one file, no content rebuild, no `contentVersion` bump):
 
-`tool/publish.dart` uploads `content-src/app-update.json` to `brain-train/app-update.json` (a mutable key like
-`manifest.json`, short cache; wired by a separate change). Edit the file, commit, publish, then check
-`https://braintrain-assets.surajk543.workers.dev/brain-train/app-update.json`. It needs no `contentVersion` bump of
-its own.
+   ```bash
+   dart run tool/publish.dart --app-update-only --dry-run   # check: "would put brain-train/app-update.json"
+   dart run tool/publish.dart --app-update-only             # upload
+   curl -s https://braintrain-cdn.sungamestudio.com/brain-train/app-update.json   # see what players get
+   ```
 
-The Worker (`infra/cloudflare/braintrain-assets/worker.js`) must list `brain-train/app-update.json` in
-`MUTABLE_PUBLIC_KEYS`; otherwise it is served `immutable` like level files. (The app's HTTP client keeps no cache, so
-the app still sees changes, but proxies and browsers may not.)
+   The file is cached for at most 60 s, so within about a minute every player on an older build sees the card the
+   next time the lobby opens or the app comes back to the foreground.
+4. **Commit and push** the edited file, so the repo matches what is live:
+
+   ```bash
+   git checkout -b chore/app-update-6
+   git add content-src/app-update.json
+   git commit -m "App update notice: latest 6, min 6 (force)"
+   git push -u origin chore/app-update-6
+   gh pr create --fill
+   ```
+
+To lift a forced update, lower `minVersionCode` again and repeat steps 3 and 4. A full content publish
+(`dart run tool/publish.dart`) also uploads the notice, after the manifest.
+
+Only builds that contain this feature (versionCode 5 and later) read the notice. Builds 1–4 never show a card.
+
+## Notes on the fields
+
+- Raising `latestVersionCode` before the build is live (still in review, staged rollout): players see "Update
+  available", but Google Play has nothing to install for them, so the in-app update is not offered and the store page
+  shows "Open" instead of "Update".
+- `minVersionCode` (`ios.minBuild`) blocks every build below it. Players are locked out until they update, also
+  offline (the app keeps the last notice it saw).
+- The notice is served from `https://braintrain-cdn.sungamestudio.com/brain-train/app-update.json` (bucket
+  `braintrain-public`, `Cache-Control: public, max-age=60, must-revalidate`, set by `tool/publish.dart`).
 
 ## How the app checks
 
