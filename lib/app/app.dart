@@ -143,8 +143,8 @@ class _BrainTrainAppState extends State<BrainTrainApp> {
 ///
 /// Debug builds can force a look for a run with
 /// `--dart-define=BRAIN_TRAIN_APPEARANCE=day` (or `night`, `system`); it
-/// wins over the setting and is ignored in release builds. A temporary aid
-/// until Settings has the Appearance choice (redesign 1.1).
+/// wins over the setting and is ignored in release builds. Players choose in
+/// Settings (Game Theme: Day, Night, System).
 class _AppearanceBuilder extends StatefulWidget {
   const _AppearanceBuilder({required this.settings, required this.builder});
 
