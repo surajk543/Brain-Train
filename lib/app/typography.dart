@@ -15,7 +15,7 @@ import 'theme.dart';
 /// draws real ExtraBold. Do not add `fontVariations` to these styles: a
 /// later `copyWith(fontWeight: ...)` would no longer change the weight.
 abstract final class BrainTrainFonts {
-  /// Playfair Display (wght 400-900, roman and italic): the title, level
+  /// Playfair Display (wght 400-900, roman only): the title, level
   /// names and headings.
   static const String display = 'Playfair Display';
 

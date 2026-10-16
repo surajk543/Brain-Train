@@ -1,6 +1,7 @@
 // Day / Night / System (redesign 1.1.0): the stored setting, the app following
 // it (and the platform brightness under System) without a restart, and the
 // design tokens of both looks.
+import 'dart:io';
 import 'dart:math' as math;
 
 import 'package:brain_train/app/app.dart';
@@ -177,8 +178,15 @@ void main() {
       expect(BrainTrainPalette.night.isNight, isTrue);
       expect(BrainTrainPalette.forBrightness(Brightness.light), same(BrainTrainPalette.day));
       expect(LobbyTheme.forBrightness(Brightness.dark), same(LobbyTheme.night));
-      // Night is the look before 1.1.0.
-      expect(LobbyTheme.night.sceneWash, isNull);
+      // Each look has its own garden art; Night is the look before 1.1.0.
+      expect(LobbyTheme.night.baseAsset, 'assets/lobby/night_base.webp');
+      expect(LobbyTheme.day.baseAsset, 'assets/lobby/day/day_base.webp');
+      for (final lobby in [LobbyTheme.day, LobbyTheme.night]) {
+        for (final asset in [lobby.baseAsset, lobby.heroLedgeAsset, for (final d in lobby.decor) d.asset]) {
+          expect(File(asset).existsSync(), isTrue, reason: asset);
+        }
+      }
+      expect(LobbyTheme.day.decor.where((d) => d.asset.contains('lantern')), isEmpty, reason: 'no lanterns by day');
       expect(BrainTrainPalette.night.feltEdge, kFeltEdge);
     });
 

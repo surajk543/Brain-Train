@@ -1,5 +1,6 @@
-// Settings has only Sound, Vibration and the version (owner), plus
-// "Privacy choices" where the consent SDK requires that entry point (EEA/UK).
+// Settings has only the Game Theme, Sound Effects, Music, Vibration and the
+// version (owner), plus "Privacy choices" where the consent SDK requires that
+// entry point (EEA/UK).
 import 'package:brain_train/app/app_services.dart';
 import 'package:brain_train/app/rewarded_ads_controller.dart';
 import 'package:brain_train/features/settings/settings_screen.dart';
@@ -35,11 +36,12 @@ void main() {
 
   testWidgets('hidden where privacy options are not required', (tester) async {
     await open(tester, required: false);
-    expect(find.text('Sound'), findsOneWidget);
+    expect(find.text('Sound Effects'), findsOneWidget);
+    expect(find.text('Music'), findsOneWidget);
     expect(find.text('Vibration'), findsOneWidget);
     expect(find.text('Privacy choices'), findsNothing);
     expect(find.byIcon(Icons.privacy_tip_outlined), findsNothing);
-    expect(find.byType(SwitchListTile), findsNWidgets(2));
+    expect(find.byType(SwitchListTile), findsNWidgets(3));
     await tester.pumpWidget(const SizedBox());
   });
 

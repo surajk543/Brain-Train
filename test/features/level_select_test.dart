@@ -100,7 +100,8 @@ void main() {
       expect(find.bySemanticsLabel(RegExp(r'^Play level 1, ')), findsOneWidget);
       expect(find.text(entries.first.title), findsOneWidget);
       expect(find.text('0 of $total won'), findsOneWidget);
-      expect(find.text('Completed Levels'), findsOneWidget);
+      expect(find.text('Levels'), findsOneWidget);
+      expect(find.text('COMPLETED'), findsNothing, reason: 'no section without completed levels');
       expect(find.textContaining('No levels completed yet'), findsOneWidget);
       expect(find.byType(CompletedLevelRow), findsNothing, reason: 'only completed levels are listed');
       expect(find.byType(BackdropFilter), findsNothing);
@@ -124,7 +125,8 @@ void main() {
     expect(tester.takeException(), isNull);
     expect(find.bySemanticsLabel(RegExp(r'^Continue level 57, ')), findsOneWidget);
     expect(find.text('56 of $total won'), findsOneWidget);
-    expect(find.text('Completed Levels'), findsOneWidget);
+    expect(find.text('Levels'), findsOneWidget);
+    expect(find.text('COMPLETED'), findsOneWidget);
 
     // Completed levels from level 1, each flattened, never behind an opacity layer.
     expect(find.bySemanticsLabel(RegExp(r'^Level 1, .*, completed, best time 0:30, best score none, completed ')), findsOneWidget);

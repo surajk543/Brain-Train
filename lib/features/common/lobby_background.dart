@@ -19,8 +19,9 @@ enum LobbySceneVariant {
 
 /// The garden (Day or Night) behind the home, Levels and Settings screens, as
 /// described by [LobbyTheme]: bundled art layers, Flutter-drawn lighting
-/// (lantern glow, calm centre, vignette), drifting leaves and, on home,
-/// fireflies. All of it stays behind the child and never takes taps.
+/// (sun or lantern glow, calm centre, vignette), drifting leaves and, on home,
+/// fireflies (Night) or pollen (Day). All of it stays behind the child and
+/// never takes taps.
 ///
 /// Everything is bundled, so the scene is complete offline; a gradient in
 /// the scene's colours shows for the first frames while the art decodes.
@@ -109,6 +110,8 @@ class _Scene extends StatelessWidget {
             cacheWidth: (baseWidth * dpr).round(),
             gaplessPlayback: true,
             excludeFromSemantics: true,
+            // A missing layer leaves the fallback gradient, never an error.
+            errorBuilder: _missing,
           ),
           for (final (decor, rect) in placed)
             Positioned.fromRect(
@@ -123,13 +126,13 @@ class _Scene extends StatelessWidget {
                     cacheWidth: (rect.width * dpr).round(),
                     gaplessPlayback: true,
                     excludeFromSemantics: true,
+                    errorBuilder: _missing,
                   ),
                 ),
               ),
             ),
           CustomPaint(
             painter: _LightingPainter(
-              wash: lobby.sceneWash,
               lights: lobby.lights,
               decorGlows: [
                 for (final (decor, rect) in placed)
@@ -144,6 +147,8 @@ class _Scene extends StatelessWidget {
       );
     },
   );
+
+  static Widget _missing(BuildContext context, Object error, StackTrace? stack) => const SizedBox.shrink();
 
   static (LobbyDecor, Rect) _place(LobbyDecor decor, Size size) {
     final w = decor.width * size.width;
@@ -161,12 +166,10 @@ class _Scene extends StatelessWidget {
   }
 }
 
-/// Lighting above the art: Day's daylight wash (screen blend), lantern and
-/// ambient glows (screen blend), a calm vignette behind the content, and
-/// darker edges.
+/// Lighting above the art: lantern, sun and ambient glows (screen blend), a
+/// calm vignette behind the content, and darker edges.
 class _LightingPainter extends CustomPainter {
   _LightingPainter({
-    this.wash,
     required this.lights,
     required this.decorGlows,
     required this.scrim,
@@ -174,8 +177,6 @@ class _LightingPainter extends CustomPainter {
     this.shade,
   });
 
-  /// Lifts the whole scene (Day); null draws nothing.
-  final Color? wash;
   final List<LobbyGlow> lights;
   final List<(LobbyGlow, Rect)> decorGlows;
   final Color? scrim;
@@ -209,15 +210,6 @@ class _LightingPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final rect = Offset.zero & size;
-    final wash = this.wash;
-    if (wash != null) {
-      canvas.drawRect(
-        rect,
-        Paint()
-          ..blendMode = BlendMode.screen
-          ..color = wash,
-      );
-    }
     final shade = this.shade;
     if (shade != null) {
       canvas.drawRect(
@@ -268,7 +260,6 @@ class _LightingPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(_LightingPainter old) =>
-      old.wash != wash ||
       old.lights != lights ||
       old.scrim != scrim ||
       old.vignette != vignette ||
