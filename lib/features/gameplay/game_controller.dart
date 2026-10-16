@@ -257,8 +257,33 @@ class GameController extends ChangeNotifier {
   /// A layer of tiles landed during the intro: one soft tick.
   void introLayerLanded() => sounds?.play(Sfx.select);
 
+  /// True while the first-play tutorial runs: the clock (and with it the
+  /// combo window) waits, and only [tutorialTarget] can be tapped.
+  bool get tutorialActive => _tutorialActive;
+  bool _tutorialActive = false;
+
+  /// The one tile the tutorial lets the player tap now; null: none.
+  String? tutorialTarget;
+
+  /// Holds the game for the first-play tutorial: the clock stops and other
+  /// taps are ignored until [endTutorial].
+  void beginTutorial() {
+    if (_tutorialActive) return;
+    _tutorialActive = true;
+    pauseClock();
+  }
+
+  /// The tutorial is over (finished or skipped): every tile can be tapped
+  /// again and the clock runs.
+  void endTutorial() {
+    if (!_tutorialActive) return;
+    _tutorialActive = false;
+    tutorialTarget = null;
+    resumeClock();
+  }
+
   void tapTile(String tileId) {
-    if (_introPlaying) return;
+    if (_introPlaying || (_tutorialActive && tileId != tutorialTarget)) return;
     final result = engine.tap(tileId);
     switch (result.outcome) {
       case TapOutcome.ignored:
@@ -383,7 +408,7 @@ class GameController extends ChangeNotifier {
   }
 
   void resumeClock() {
-    if (state.status == GameStatus.playing && !_introPlaying) _stopwatch.start();
+    if (state.status == GameStatus.playing && !_introPlaying && !_tutorialActive) _stopwatch.start();
     _scheduleComboEnd();
     if (!_disposed) notifyListeners();
   }

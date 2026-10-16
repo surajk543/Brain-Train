@@ -30,12 +30,14 @@ import '../helpers.dart';
 import 'package:brain_train/app/tablet_scale.dart';
 
 /// Services on the bundled content with the network unreachable (or
-/// answered by [client]).
+/// answered by [client]). Games open as for a returning player (the
+/// first-play tutorial done) unless [tutorialDone] is false.
 Future<AppServices> testServices({
   PlayGamesController? playGames,
   RewardedAdsController? ads,
   AppUpdateController? updates,
   http.Client? client,
+  bool tutorialDone = true,
 }) async {
   final config = ContentConfig(baseUrl: Uri.parse('https://content.test/'), allowedHosts: const {'content.test'});
   final offline = MockClient((r) async => throw http.ClientException('offline', r.url));
@@ -51,10 +53,12 @@ Future<AppServices> testServices({
     ),
   );
   await content.start();
+  final settings = await SettingsRepository.open();
+  if (tutorialDone) await settings.setFirstPlayTutorialDone();
   return AppServices(
     content: content,
     progress: await ProgressRepository.open(),
-    settings: await SettingsRepository.open(),
+    settings: settings,
     symbolArt: SymbolArtCache(),
     playGames: playGames,
     ads: ads,
