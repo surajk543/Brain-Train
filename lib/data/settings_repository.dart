@@ -28,6 +28,17 @@ class SettingsRepository extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// True once the first-play tutorial was finished or skipped (or found not
+  /// needed: a player who has already won a level). Never reset.
+  bool get firstPlayTutorialDone => _prefs.getBool(firstPlayTutorialKey) ?? false;
+
+  static const String firstPlayTutorialKey = 'tutorial.firstPlay.v1';
+
+  /// Not a setting: nothing listens, so it does not notify.
+  Future<void> setFirstPlayTutorialDone() async {
+    await _prefs.setBool(firstPlayTutorialKey, true);
+  }
+
   Future<void> setSound(bool value) => _setBool('settings.sound', value);
   Future<void> setHaptics(bool value) => _setBool('settings.haptics', value);
 

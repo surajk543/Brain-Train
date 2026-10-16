@@ -52,7 +52,8 @@ dart run tool/smoke_remote.dart         # live check: app's content client vs pr
   backdrop, dialogs; `widgets/tray_view.dart` tray + `TrayController`; `widgets/tile_flight_overlay.dart`
   board↔tray flights + `TrayFlightDirector`; `widgets/tile_shatter.dart` match strike + shards;
   `widgets/tile_art.dart` single-tile art; `widgets/board_intro.dart` level-start intro; `widgets/win_trophy.dart` trophy Lottie
-  on the win card; `widgets/combo_badge.dart`, `widgets/score_popups.dart`); `common/` shared lobby chrome, `glass_painters.dart` (`GlassRimPainter`/`GlassShadowPainter`), `PremiumMahjongTile`,
+  on the win card; `widgets/combo_badge.dart`, `widgets/score_popups.dart`;
+  `widgets/first_play_tutorial.dart` first-play coach marks); `common/` shared lobby chrome, `glass_painters.dart` (`GlassRimPainter`/`GlassShadowPainter`), `PremiumMahjongTile`,
   lobby background + fireflies; `intro/` studio video + logo screen + `age_screen.dart` (neutral age screen).
 - `lib/app/` — `AppServices` (wiring), `AppScope` (above `MaterialApp`), `theme.dart`
   (`BrainTrainPalette.night`, `LobbyTheme.night`), `brand.dart` (serif display font, gold),
@@ -216,6 +217,17 @@ dart run tool/smoke_remote.dart         # live check: app's content client vs pr
   card "Restart this level?" / "Your score and time start over." (Restart / Keep playing; clock paused, Android back
   closes it), from the Tray full card and from the win card (Replay).
 - HUD shows SCORE where Moves was (owner); the win card and Completed Levels show score, best score and best combo.
+- First-play tutorial (owner, 2026-10-17): once per install, the first time play begins on a game screen (after the
+  intro, at once with reduce motion) with the flag `tutorial.firstPlay.v1` unset (`SettingsRepository`), coach marks
+  over the real board (`widgets/first_play_tutorial.dart`): 1 "Tap a free tile" (a free matching pair from
+  `tutorialPairFor`: a symbol whose remaining tiles are all free, else a short solver search), 2 "It drops into your
+  tray" (Next), 3 "Find its twin" (twin + tray lit), 4 "Keep your tray clear" (Next), 5 "Clear every pair to win"
+  (Let's play). Dim scrim with gold-rimmed holes (a path and strokes, no blur), one pulsing ring on a tile to tap (none
+  with reduce motion), card placed clear of the holes; only the lit tile can be tapped; the clock and combo window wait
+  (`GameController.beginTutorial`/`endTutorial`, `resumeClock` holds); Skip (steps 1-4) or Android back ends it. The
+  two taps are real moves. Finish or Skip sets the flag; a player with any won level is marked done and never sees
+  it; killed mid-tutorial, it shows again; not started over a result card or with tiles in the tray (a resumed save).
+  Test services (`testServices`, gameplay captures) mark it done unless `tutorialDone: false`.
 - Win card ("Level complete!"): `assets/lottie/trophy_cup_rays.json` (LottieFiles, owner's premium licence) via `WinTrophy`, looping while the card is open
   (owner), last frame with reduce motion, `PremiumEmblem` fallback if it fails to load.
 - Lobby update card and force update (owner, 2026-10-16): installed build below the notice's latest → "Update
@@ -300,7 +312,7 @@ dart run tool/smoke_remote.dart         # live check: app's content client vs pr
 - Not yet integrated: 4 IconScout AI images (spring rolls ×2, salad, nachos) — not reachable via the IconScout API.
 - Tray mechanic is integrated (tray at the top, flights, strike-and-shatter matches, Tray full card with
   Revive / Restart), with 2 to 5 slots per level.
-- App version 1.0.0+6 (2026-10-17): real AdMob IDs. 1.0.0+5: new content host, update popup, iOS release settings. 1.0.0+4 (`feat/rewarded-ads`, merged into `feat/campaign-v2`): rewarded ads on Revive, age screen,
+- App version 1.0.0+7 (2026-10-17): first-play tutorial, Play Games for 13+ only. 1.0.0+6: real AdMob IDs. 1.0.0+5: new content host, update popup, iOS release settings. 1.0.0+4 (`feat/rewarded-ads`, merged into `feat/campaign-v2`): rewarded ads on Revive, age screen,
   Privacy choices row, built with Google's AdMob test IDs (`google_mobile_ads` 9.1.0). This bundle (66.7 MB AAB,
   19.2 MB install) is the Closed testing - Alpha release in the Play Console.
 - Play Store listing (owner-approved): texts in `art/store/listing-en-US.md`, `art/store/icon-512.png`,
@@ -323,7 +335,7 @@ dart run tool/smoke_remote.dart         # live check: app's content client vs pr
   `/opt/homebrew/share/android-commandlinetools`, AVD `Pixel_9` = Play Store image (use for Play Games), `TP_*` AVDs
   have no Play Store, `Pixel_6_API_34` does not exist. Python 3 + Pillow for `tool/assets/*.py`, ffmpeg for audio.
 - `flutter analyze` and `flutter test` work on a fresh clone (tests use fixtures and `content/starter/`); on the Linux
-  machine all 512 pass (2026-10-16); on the Mac 6 tests failed before (see Open work).
+  machine 567 pass, 26 skip without the full content tree (2026-10-17); on the Mac 6 failed before (see Open work).
 - Run on a Mac (iPhone simulator) or any machine with no secrets: `flutter pub get && flutter run`. Debug builds read
   content from the public host, use Google's test AdMob IDs, skip Play Games (Android only) and use debug signing;
   `.env` and the `android/*.properties` files are only for publishing and release builds.

@@ -356,6 +356,14 @@ class TrayViewState extends State<TrayView> with TickerProviderStateMixin {
     return MatrixUtils.transformRect(box.getTransformTo(TabletScale.canvasAbove(box)), face);
   }
 
+  /// Global rect of the tray's panel (its gold frame), once laid out.
+  Rect? panelRect() {
+    final layout = _layout;
+    final box = context.findRenderObject() as RenderBox?;
+    if (layout == null || box == null || !box.hasSize || !box.attached) return null;
+    return MatrixUtils.transformRect(box.getTransformTo(TabletScale.canvasAbove(box)), layout.panel);
+  }
+
   /// Global rect of the face where [tileId] sits (or is about to land) in
   /// the tray's current layout, or null when it is not in the tray.
   Rect? targetRectFor(String tileId) {

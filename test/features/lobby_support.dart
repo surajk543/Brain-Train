@@ -31,12 +31,14 @@ import 'package:brain_train/app/tablet_scale.dart';
 import 'package:brain_train/data/age_group.dart';
 
 /// Services on the bundled content with the network unreachable (or
-/// answered by [client]).
+/// answered by [client]). Games open as for a returning player (the
+/// first-play tutorial done) unless [tutorialDone] is false.
 Future<AppServices> testServices({
   PlayGamesController? playGames,
   RewardedAdsController? ads,
   AppUpdateController? updates,
   http.Client? client,
+  bool tutorialDone = true,
   /// The answered age group; null leaves the age screen unanswered.
   AgeGroup? ageGroup,
 }) async {
@@ -55,6 +57,7 @@ Future<AppServices> testServices({
   );
   await content.start();
   final settings = await SettingsRepository.open();
+  if (tutorialDone) await settings.setFirstPlayTutorialDone();
   if (ageGroup != null) await settings.setAgeGroup(ageGroup);
   return AppServices(
     content: content,

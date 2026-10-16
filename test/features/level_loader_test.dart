@@ -45,10 +45,13 @@ Future<AppServices> _services(_Net net, {Future<void> Function(ProgressRepositor
   final f = fixtureCoordinator(server: net.client, bundle: net.content.starter());
   final content = ContentController(f.coordinator, progress: progress, autoRetry: false);
   await content.start();
+  // As a returning player: the first-play tutorial does not open.
+  final settings = await SettingsRepository.open();
+  await settings.setFirstPlayTutorialDone();
   return AppServices(
     content: content,
     progress: progress,
-    settings: await SettingsRepository.open(),
+    settings: settings,
     symbolArt: SymbolArtCache(),
   );
 }

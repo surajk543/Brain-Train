@@ -16,11 +16,13 @@ import '../../game_engine/scoring/score_format.dart';
 import '../../game_engine/state/game_state.dart';
 import '../../platform/rewarded_ads.dart';
 import '../../rendering/symbol_art.dart';
+import '../../rendering/tile_style.dart';
 import '../levels/level_loader.dart';
 import 'game_controller.dart';
 import 'widgets/board_intro.dart';
 import 'widgets/board_view.dart';
 import 'widgets/combo_badge.dart';
+import 'widgets/first_play_tutorial.dart';
 import 'widgets/premium_chrome.dart';
 import 'widgets/score_popups.dart';
 import 'widgets/tile_flight_overlay.dart';
@@ -100,6 +102,14 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
 
   /// The [GameController.introSerial] of the intro started last.
   int _introServed = -1;
+
+  /// The first-play tutorial while it runs (owner: once per install).
+  FirstPlayTutorialController? _tutorial;
+
+  /// Whether to see, once play first begins on this screen, if the tutorial
+  /// is due (flag unset, no level won yet).
+  bool _tutorialCheck = true;
+  late final AppServices _services;
   late final TrayFlightDirector _director;
   bool _reduceMotion = false;
   Timer? _resultTimer;
@@ -114,7 +124,7 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
     super.didChangeDependencies();
     final reduceMotion = MediaQuery.disableAnimationsOf(context);
     if (_controller == null) {
-      final services = AppScope.of(context);
+      final services = _services = AppScope.of(context);
       _ads = services.ads;
       // Have an ad ready by the time the tray might fill (never waits).
       _ads.preload();
@@ -151,7 +161,8 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
       );
       controller
         ..addListener(_syncResult)
-        ..addListener(_syncIntro);
+        ..addListener(_syncIntro)
+        ..addListener(_syncTutorial);
       _tray.addListener(_syncResult);
       _flights.addListener(_syncResult);
       _shatters.addListener(_syncResult);
@@ -232,6 +243,42 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
         onDone: controller.endIntro,
       ),
     );
+  }
+
+  /// The art is in and the intro has handed over (or there is none): the
+  /// first time on this screen, the tutorial starts if it is due. Players who
+  /// have won a level count as done (installs from before the tutorial).
+  void _syncTutorial() {
+    if (!_tutorialCheck || controller.introPlaying) return;
+    final board = _boardKey.currentState;
+    if (board == null || !board.hasArt) return; // Retried when the art is in.
+    _tutorialCheck = false;
+    final settings = _services.settings;
+    if (settings.firstPlayTutorialDone) return;
+    if (_services.progress.completed().isNotEmpty) {
+      unawaited(settings.setFirstPlayTutorialDone());
+      return;
+    }
+    if (_resultShown.value) return;
+    final pair = tutorialPairFor(controller.engine);
+    if (pair == null) return; // A resumed game with tiles in the tray: next game.
+    final tutorial = FirstPlayTutorialController(
+      game: controller,
+      pair: pair,
+      isBusy: () => _busy,
+      motion: Listenable.merge([_tray, _flights, _shatters]),
+      onDone: _tutorialDone,
+    );
+    setState(() => _tutorial = tutorial);
+    tutorial.start();
+  }
+
+  void _tutorialDone() {
+    unawaited(_services.settings.setFirstPlayTutorialDone());
+    final tutorial = _tutorial;
+    if (tutorial == null || !mounted) return;
+    setState(() => _tutorial = null);
+    WidgetsBinding.instance.addPostFrameCallback((_) => tutorial.dispose());
   }
 
   /// A tile is in the air, or the tray or a shatter is still animating.
@@ -331,7 +378,9 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
     if (_controller != null) {
       controller
         ..removeListener(_syncResult)
-        ..removeListener(_syncIntro);
+        ..removeListener(_syncIntro)
+        ..removeListener(_syncTutorial);
+      _tutorial?.dispose();
       unawaited(_director.dispose());
       _tray.dispose();
       _flights.dispose();
@@ -406,7 +455,10 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
                                       dimBlocked: true,
                                       // Follows the phone's accessibility setting.
                                       reduceMotion: reduceMotion,
-                                      onArtReady: _syncIntro,
+                                      onArtReady: () {
+                                        _syncIntro();
+                                        _syncTutorial();
+                                      },
                                     ),
                                   ),
                                 ),
@@ -522,6 +574,18 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
             // The board intro: tiles fly in from every side, mix and settle.
             // Ticks only while it runs.
             Positioned.fill(child: BoardIntroOverlay(controller: _intro)),
+            // The first-play tutorial's coach marks: over the board, tray and
+            // HUD, under the flights and shatters (they play above its dim).
+            if (_tutorial case final tutorial?)
+              Positioned.fill(
+                child: FirstPlayTutorialOverlay(
+                  controller: tutorial,
+                  tileRect: (id) => _boardKey.currentState?.tileFaceRect(id),
+                  trayRect: () => _trayKey.currentState?.panelRect(),
+                  tileStyle: TileStyle.forTileSet(level.tileSetId),
+                  reduceMotion: reduceMotion,
+                ),
+              ),
             // Flying tiles, above the tray, the board and the HUD. Ticks
             // only while a tile is in the air.
             Positioned.fill(

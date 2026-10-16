@@ -27,6 +27,7 @@ import 'package:brain_train/features/common/flowing_leaves.dart';
 import 'package:brain_train/features/gameplay/game_screen.dart';
 import 'package:brain_train/features/gameplay/widgets/board_intro.dart';
 import 'package:brain_train/features/gameplay/widgets/board_view.dart';
+import 'package:brain_train/features/gameplay/widgets/first_play_tutorial.dart';
 import 'package:brain_train/features/gameplay/widgets/premium_chrome.dart';
 import 'package:brain_train/features/gameplay/widgets/tile_flight_overlay.dart';
 import 'package:brain_train/features/gameplay/widgets/score_popups.dart';
@@ -56,6 +57,7 @@ typedef _Phone = ({String name, double width, double height, double dpr, double 
 
 const _Phone _large = (name: '411x914', width: 411, height: 914, dpr: 2.625, top: 24, bottom: 16);
 const _Phone _small = (name: '360x640', width: 360, height: 640, dpr: 2, top: 24, bottom: 0);
+const _Phone _ipad = (name: 'ipad-13', width: 1032, height: 1376, dpr: 2, top: 24, bottom: 20);
 
 /// The full generated tree (gitignored; present where `dart run
 /// tool/content.dart build` ran). Tests of levels beyond the starter pack
@@ -67,8 +69,9 @@ final BundledContentSource _fullTree = BundledContentSource((key) async {
 }, prefix: 'content/brain-train/');
 
 /// Offline services on the starter pack (levels 1-5), or on every level
-/// with [full].
-Future<AppServices> _services({bool full = false, RewardedAds? ads}) async {
+/// with [full]. Games open as for a returning player (the first-play
+/// tutorial done) unless [tutorialDone] is false.
+Future<AppServices> _services({bool full = false, RewardedAds? ads, bool tutorialDone = true}) async {
   final config = ContentConfig(baseUrl: Uri.parse('https://content.test/'), allowedHosts: const {'content.test'});
   final offline = MockClient((r) async => throw http.ClientException('offline', r.url));
   final fetcher = ContentFetcher(client: offline, config: config, delay: (_) async {});
@@ -83,10 +86,12 @@ Future<AppServices> _services({bool full = false, RewardedAds? ads}) async {
     ),
   );
   await content.start();
+  final settings = await SettingsRepository.open();
+  if (tutorialDone) await settings.setFirstPlayTutorialDone();
   return AppServices(
     content: content,
     progress: await ProgressRepository.open(),
-    settings: await SettingsRepository.open(),
+    settings: settings,
     symbolArt: SymbolArtCache(),
     ads: ads == null ? null : RewardedAdsController(ads),
   );
@@ -942,4 +947,63 @@ void main() {
       await _leave(tester);
     });
   });
+
+  // The first-play tutorial on level 1: each step, with its card clear of
+  // the highlight and inside the screen (1.3x text and iPad too).
+  for (final (phone, textScale) in [(_large, 1.0), (_small, 1.0), (_small, 1.3), (_ipad, 1.0)]) {
+    final suffix = '${phone.name}${textScale == 1 ? '' : '_text$textScale'}';
+    testWidgets('first-play tutorial $suffix', (tester) async {
+      await tester.runAsync(() async {
+        services = await _services(tutorialDone: false);
+        snapshot = services.content.snapshot;
+      });
+      final entry = snapshot.playableEntries.first;
+      await _pumpGame(tester, services: services, entry: entry, phone: phone, textScale: textScale);
+      await tester.pump();
+      await tester.pump();
+      final tutorial = tester.widget<FirstPlayTutorialOverlay>(find.byType(FirstPlayTutorialOverlay)).controller;
+      final board = tester.state<BoardViewState>(find.byType(BoardView));
+      final tray = tester.state<TrayViewState>(find.byType(TrayView));
+
+      /// [finder]'s box on the (tablet) canvas, like the board's and tray's rects.
+      Rect onCanvas(Finder finder) {
+        final box = tester.renderObject<RenderBox>(finder);
+        return MatrixUtils.transformRect(box.getTransformTo(TabletScale.canvasAbove(box)), Offset.zero & box.size);
+      }
+
+      Future<void> step(int number, String title, {List<Rect?> highlights = const []}) async {
+        for (var i = 0; i < 60 && find.text(title).evaluate().isEmpty; i++) {
+          await tester.runAsync(() => Future<void>.delayed(const Duration(milliseconds: 10)));
+          await tester.pump(const Duration(milliseconds: 60));
+        }
+        // The card has risen in; the pulse ring is out of the hole.
+        await tester.pump(const Duration(milliseconds: 400));
+        expect(find.text(title), findsOneWidget);
+        expect(tester.takeException(), isNull);
+        final card = onCanvas(find.ancestor(of: find.text(title), matching: find.byType(PremiumPanel)).first);
+        final screen = onCanvas(find.byType(FirstPlayTutorialOverlay));
+        expect(screen.contains(card.topLeft) && screen.contains(card.bottomRight - const Offset(1, 1)), isTrue);
+        for (final lit in highlights) {
+          expect(card.overlaps(lit!), isFalse, reason: 'step $number: the card clears the highlights');
+        }
+        await _capture(tester, 'tutorial_${number}_$suffix', phone.dpr);
+      }
+
+      await step(1, 'Tap a free tile', highlights: [board.tileFaceRect(tutorial.pair.$1)]);
+      await tapBoardTile(tester, snapshot, entry, gameOf(tester).state.history, tutorial.pair.$1);
+      await step(2, 'It drops into your tray', highlights: [tray.panelRect()]);
+      await tester.tap(find.text('Next'));
+      await step(3, 'Find its twin', highlights: [board.tileFaceRect(tutorial.pair.$2), tray.panelRect()]);
+      await tapBoardTile(tester, snapshot, entry, gameOf(tester).state.history, tutorial.pair.$2);
+      await step(4, 'Keep your tray clear', highlights: [tray.panelRect()]);
+      await tester.tap(find.text('Next'));
+      await step(5, 'Clear every pair to win');
+      await tester.tap(find.text("Let's play"));
+      await tester.pump();
+      await tester.pump();
+      expect(find.byType(FirstPlayTutorialOverlay), findsNothing);
+      expect(gameOf(tester).clockRunning, isTrue);
+      await _leave(tester);
+    });
+  }
 }
