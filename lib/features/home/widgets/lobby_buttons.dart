@@ -63,6 +63,8 @@ class _LobbyGlass extends StatelessWidget {
   final List<Color> rim;
   final double rimWidth;
   final Color shadow;
+  /// Shadow blur is a mask-filter sigma (not a BoxShadow blurRadius, which is
+  /// about twice as wide); the drop is its vertical offset.
   final double shadowBlur;
   final double shadowDrop;
 
@@ -251,12 +253,12 @@ class LobbyPrimaryButton extends StatelessWidget {
       height: height,
       leftLeaf: true,
       rightLeaf: true,
-      splash: lobby.primaryGlassText,
+      splash: Colors.white,
       fill: lobby.primaryGlassFill,
       rim: lobby.primaryGlassRim,
       rimWidth: 1.6,
-      glow: lobby.primaryGlow,
-      glowBlur: 12,
+      glow: lobby.primaryGlassGlow,
+      glowBlur: 14,
       shadowBlur: 14,
       shadowDrop: 6,
       child: Stack(
@@ -272,7 +274,7 @@ class LobbyPrimaryButton extends StatelessWidget {
                 maxLines: 1,
                 softWrap: false,
                 style: displayText(fontSize, color: lobby.primaryGlassText, weight: FontWeight.w700, spacing: 0.3).copyWith(
-                  shadows: [Shadow(color: lobby.textShadow, blurRadius: 4, offset: const Offset(0, 1.5))],
+                  shadows: [Shadow(color: Colors.white.withValues(alpha: 0.5), offset: const Offset(0, 1))],
                 ),
               ),
             ),
@@ -382,7 +384,7 @@ class LobbyRoundButton extends StatelessWidget {
         shadowDrop: 4,
         highlight: lobby.glassHighlight,
         highlightHeight: size * 0.5,
-        overflow: const EdgeInsets.all(24),
+        overflow: const EdgeInsets.all(32),
         splash: lobby.secondaryIcon,
         onPressed: onPressed,
         child: SizedBox.square(
