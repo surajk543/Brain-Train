@@ -484,7 +484,8 @@ class LobbyGlow {
   final double squash;
 }
 
-/// One bundled art layer of the lobby scene (see tool/assets/make_lobby_art.py).
+/// One bundled art layer of the lobby scene (Night: tool/assets/make_lobby_art.py;
+/// Day and the hero ledges: tool/lobby_art/make_day_lobby_art.py).
 @immutable
 class LobbyDecor {
   const LobbyDecor(
@@ -521,15 +522,15 @@ class LobbyDecor {
   final LobbyGlow? glow;
 }
 
+
 /// Everything the lobby (home, Levels, Settings) needs to look right: the
-/// garden's art layers, lighting, fireflies, tagline glass, buttons, panels
-/// and text colours, for Day ([day]) and Night ([night]). Read with
-/// `LobbyTheme.of(context)`; widgets take all colours and assets from here
-/// instead of hard-coding them.
+/// garden's art layers, lighting, ambient particles, the hero ledge and
+/// title, buttons, panels and text colours, for Day ([day]) and Night
+/// ([night]). Read with `LobbyTheme.of(context)`; widgets take all colours
+/// and assets from here instead of hard-coding them.
 @immutable
 class LobbyTheme extends ThemeExtension<LobbyTheme> {
   const LobbyTheme({
-    this.sceneWash,
     required this.baseAsset,
     required this.baseAspect,
     required this.baseFallback,
@@ -544,15 +545,14 @@ class LobbyTheme extends ThemeExtension<LobbyTheme> {
     required this.leafCount,
     required this.subScreenLeafCount,
     required this.leafOpacity,
-    required this.glassFill,
     required this.glassBlur,
-    required this.glassBorder,
     required this.glassHighlight,
     required this.glassShadow,
-    required this.taglineGlow,
-    required this.taglineLead,
-    required this.taglineGradient,
-    required this.taglineTextGlow,
+    required this.heroLedgeAsset,
+    required this.heroLedgeAspect,
+    required this.titleGradient,
+    required this.titleGlow,
+    required this.titleShadow,
     required this.buttonLeafAsset,
     required this.buttonLeafAspect,
     required this.primaryFill,
@@ -580,17 +580,9 @@ class LobbyTheme extends ThemeExtension<LobbyTheme> {
     required this.textShadow,
   });
 
-  // The garden's art layers (tool/assets/make_lobby_art.py), shared by both
-  // looks; Night lights the lanterns.
-  static const LobbyDecor _path = LobbyDecor(
-    'assets/lobby/night_path.webp',
-    anchor: LobbyAnchor.bottomCenter,
-    width: 1.04,
-    aspect: 640 / 1080,
-    opacity: 0.9,
-  );
+  // The night garden's art layers (tool/assets/make_lobby_art.py).
   static const LobbyGlow _lanternLight = LobbyGlow(center: Alignment(0, 0.28), radius: 1.6, color: Color(0x5CFFB65C));
-  static const List<LobbyDecor> _foliage = [
+  static const List<LobbyDecor> _nightFoliage = [
     LobbyDecor(
       'assets/lobby/night_foliage_tr.webp',
       anchor: LobbyAnchor.topRight,
@@ -631,27 +623,36 @@ class LobbyTheme extends ThemeExtension<LobbyTheme> {
     baseAspect: 2340 / 1080,
     baseFallback: [Color(0xFF082824), Color(0xFF0A4433), Color(0xFF08392F), Color(0xFF062C25)],
     decor: [
-      _path,
       LobbyDecor(
-        'assets/lobby/night_lantern.webp',
-        anchor: LobbyAnchor.topLeft,
-        width: 0.18,
-        aspect: 820 / 360,
-        dx: -0.05,
-        dy: 0.3,
-        glow: _lanternLight,
+        'assets/lobby/night_path.webp',
+        anchor: LobbyAnchor.bottomCenter,
+        width: 1.04,
+        aspect: 640 / 1080,
+        dy: -0.06,
+        opacity: 0.9,
       ),
+      // Two lanterns down the right side, beside the hero tiles and the
+      // status line (reference).
       LobbyDecor(
         'assets/lobby/night_lantern.webp',
         anchor: LobbyAnchor.topRight,
-        width: 0.18,
+        width: 0.2,
         aspect: 820 / 360,
-        dx: -0.05,
-        dy: 0.5,
+        dx: -0.045,
+        dy: 0.04,
         flipX: true,
         glow: _lanternLight,
       ),
-      ..._foliage,
+      LobbyDecor(
+        'assets/lobby/night_lantern.webp',
+        anchor: LobbyAnchor.bottomRight,
+        width: 0.15,
+        aspect: 820 / 360,
+        dx: -0.03,
+        dy: 0.1,
+        glow: _lanternLight,
+      ),
+      ..._nightFoliage,
     ],
     lights: [
       LobbyGlow(center: Alignment(0, -1.0), radius: 0.8, color: Color(0x1A9FE0C8), squash: 0.7),
@@ -666,15 +667,14 @@ class LobbyTheme extends ThemeExtension<LobbyTheme> {
     leafCount: 14,
     subScreenLeafCount: 9,
     leafOpacity: 0.9,
-    glassFill: [Color(0x38E8FFF4), Color(0x1A9FE0C2), Color(0x2A0A4433)],
     glassBlur: 14,
-    glassBorder: [Color(0xCCFFF6DC), Color(0x40F4CB72), Color(0x1AFFFFFF), Color(0x66F4CB72)],
     glassHighlight: Color(0x40FFFFFF),
     glassShadow: Color(0x8C000000),
-    taglineGlow: Color(0x4DF4CB72),
-    taglineLead: Color(0xFFFFF3D8),
-    taglineGradient: [Color(0xFFFFF4CC), Color(0xFFF8DA8C), Color(0xFFF4CB72), Color(0xFFC08A2C)],
-    taglineTextGlow: Color(0x80F4CB72),
+    heroLedgeAsset: 'assets/lobby/night_ledge.webp',
+    heroLedgeAspect: 360 / 1080,
+    titleGradient: [Color(0xFFFFF4CC), Color(0xFFF8DA8C), Color(0xFFF4CB72), Color(0xFFC08A2C)],
+    titleGlow: Color(0x4DF4CB72),
+    titleShadow: Color(0xCC000000),
     buttonLeafAsset: 'assets/lobby/button_leaf.webp',
     buttonLeafAspect: 170 / 240,
     primaryFill: [Color(0xFFFAE0A0), Color(0xFFF4CB72), Color(0xFFCF9E42)],
@@ -687,12 +687,12 @@ class LobbyTheme extends ThemeExtension<LobbyTheme> {
     secondaryText: Color(0xFFFFF3D8),
     secondaryIcon: Color(0xFFF4CB72),
     secondaryShadow: Color(0x80000000),
-    primaryGlassFill: [Color(0xD6FFE9A8), Color(0xBAF8D56E), Color(0xC7EBB440)],
+    primaryGlassFill: [Color(0xFFFFE8A8), Color(0xFFF6CC6C), Color(0xFFD9A042)],
     primaryGlassRim: [Color(0xFFFFF4CC), Color(0xCCF4CB72), Color(0x66C08A2C), Color(0xE6F8DA8C)],
     primaryGlassText: Color(0xFF183D2D),
     primaryGlassGlow: Color(0x80F4CB72),
-    secondaryGlassFill: [Color(0x30E8FFF4), Color(0x149FE0C2), Color(0x330A4433)],
-    secondaryGlassRim: [Color(0xCCFFF6DC), Color(0x99F4CB72), Color(0x33FFFFFF), Color(0x99F4CB72)],
+    secondaryGlassFill: [Color(0xC7124A38), Color(0xBF0A3F30), Color(0xD1083528)],
+    secondaryGlassRim: [Color(0xE6FFF0C4), Color(0xCCF4CB72), Color(0x80C08A2C), Color(0xCCF4CB72)],
     footerText: Color(0xB3FFF3D8),
     panelFill: Color(0xD908392F),
     panelBorder: Color(0x80F4CB72),
@@ -702,65 +702,93 @@ class LobbyTheme extends ThemeExtension<LobbyTheme> {
     textShadow: Color(0xB3000000),
   );
 
-  /// The garden by day: garden green and deep foliage, warm sunlight from
-  /// the top, unlit lanterns, a few drifting pollen motes; the same
-  /// dark-green glass with fine gold rims, made a little denser so ivory and
-  /// gold text keep their contrast on the brighter scene.
-  ///
-  /// TODO(redesign 1.1, lobby phase): Day art does not exist yet. Until it
-  /// does, Day reuses the night garden's images ([baseAsset], [decor]) under
-  /// a daylight wash ([sceneWash]) and lighting; replace them with the Day
-  /// base, path, lanterns and foliage (assets/lobby/day_*.webp) when they
-  /// land.
+  /// The garden by day (tool/lobby_art/make_day_lobby_art.py): sun through
+  /// the leaves from the top right, cream flowers, a mossy stone path, no
+  /// lanterns; a few drifting pollen motes instead of fireflies. The same
+  /// dark-green glass with fine gold rims, a little denser so ivory and gold
+  /// keep their contrast on the brighter scene.
   static const day = LobbyTheme(
-    sceneWash: Color(0x4D3E9A64),
-    baseAsset: 'assets/lobby/night_base.webp',
+    baseAsset: 'assets/lobby/day/day_base.webp',
     baseAspect: 2340 / 1080,
-    baseFallback: [Color(0xFF256F47), BrainTrainColors.gardenGreen, Color(0xFF155A3B), BrainTrainColors.deepFoliage],
+    baseFallback: [Color(0xFF9CC27A), Color(0xFF3E8A55), BrainTrainColors.gardenGreen, BrainTrainColors.deepFoliage],
     decor: [
-      _path,
       LobbyDecor(
-        'assets/lobby/night_lantern.webp',
+        'assets/lobby/day/day_path.webp',
+        anchor: LobbyAnchor.bottomCenter,
+        width: 1.04,
+        aspect: 640 / 1080,
+        dy: -0.1,
+      ),
+      LobbyDecor(
+        'assets/lobby/day/day_foliage_ml.webp',
         anchor: LobbyAnchor.topLeft,
-        width: 0.18,
-        aspect: 820 / 360,
-        dx: -0.05,
-        dy: 0.3,
+        width: 0.42,
+        aspect: 900 / 520,
+        dx: -0.12,
+        dy: 0.34,
       ),
       LobbyDecor(
-        'assets/lobby/night_lantern.webp',
+        'assets/lobby/day/day_foliage_mr.webp',
         anchor: LobbyAnchor.topRight,
-        width: 0.18,
-        aspect: 820 / 360,
-        dx: -0.05,
-        dy: 0.5,
-        flipX: true,
+        width: 0.42,
+        aspect: 900 / 520,
+        dx: -0.12,
+        dy: 0.44,
       ),
-      ..._foliage,
+      LobbyDecor(
+        'assets/lobby/day/day_foliage_tr.webp',
+        anchor: LobbyAnchor.topRight,
+        width: 0.66,
+        aspect: 1000 / 780,
+        dx: -0.12,
+        dy: -0.035,
+      ),
+      LobbyDecor(
+        'assets/lobby/day/day_foliage_tl.webp',
+        anchor: LobbyAnchor.topLeft,
+        width: 0.62,
+        aspect: 900 / 760,
+        dx: -0.08,
+        dy: -0.03,
+      ),
+      LobbyDecor(
+        'assets/lobby/day/day_foliage_bl.webp',
+        anchor: LobbyAnchor.bottomLeft,
+        width: 0.62,
+        aspect: 1,
+        dx: -0.08,
+        dy: -0.04,
+      ),
+      LobbyDecor(
+        'assets/lobby/day/day_foliage_br.webp',
+        anchor: LobbyAnchor.bottomRight,
+        width: 0.64,
+        aspect: 1,
+        dx: -0.09,
+        dy: -0.045,
+      ),
     ],
     lights: [
-      LobbyGlow(center: Alignment(0.35, -1.05), radius: 1.15, color: Color(0x47FFE7A8), squash: 0.8),
-      LobbyGlow(center: Alignment(0, -0.2), radius: 0.9, color: Color(0x1FB8F0C8), squash: 1.2),
-      LobbyGlow(center: Alignment(0, 1.05), radius: 0.7, color: Color(0x1FFFE2A0), squash: 0.45),
+      LobbyGlow(center: Alignment(0.6, -1.05), radius: 1.05, color: Color(0x66FFE8A6), squash: 0.9),
+      LobbyGlow(center: Alignment(0, 1.05), radius: 0.7, color: Color(0x24FFE7A6), squash: 0.45),
     ],
-    contentScrim: Color(0x66021A14),
-    edgeVignette: Color(0x4D021A12),
-    subScreenScrim: Color(0x8C03241C),
-    particleCount: 16,
-    particleColor: Color(0xFFFFF0B8),
-    particleSize: 2.2,
-    leafCount: 14,
-    subScreenLeafCount: 9,
-    leafOpacity: 0.9,
-    glassFill: [Color(0x700E4A34), Color(0x5C0A4433), Color(0x80083828)],
+    contentScrim: Color(0x47052A1A),
+    edgeVignette: Color(0x59021A12),
+    subScreenScrim: Color(0x9E05281C),
+    particleCount: 14,
+    particleColor: Color(0xFFFFF6D2),
+    particleSize: 1.9,
+    leafCount: 12,
+    subScreenLeafCount: 8,
+    leafOpacity: 0.95,
     glassBlur: 14,
-    glassBorder: [Color(0xCCFFF6DC), Color(0x59F4CB72), Color(0x1AFFFFFF), Color(0x80F4CB72)],
-    glassHighlight: Color(0x33FFFFFF),
-    glassShadow: Color(0x73000000),
-    taglineGlow: Color(0x40F2C96B),
-    taglineLead: BrainTrainColors.warmIvory,
-    taglineGradient: [Color(0xFFFFF4CC), Color(0xFFF8DA8C), Color(0xFFF2C96B), Color(0xFFC08A2C)],
-    taglineTextGlow: Color(0x66F2C96B),
+    glassHighlight: Color(0x38FFFFFF),
+    glassShadow: Color(0x80021A0E),
+    heroLedgeAsset: 'assets/lobby/day/day_ledge.webp',
+    heroLedgeAspect: 360 / 1080,
+    titleGradient: [Color(0xFFFFF4CC), Color(0xFFF8DA8C), Color(0xFFF2C96B), Color(0xFFB98328)],
+    titleGlow: Color(0x40FFE9A8),
+    titleShadow: Color(0xD9021A0E),
     buttonLeafAsset: 'assets/lobby/button_leaf.webp',
     buttonLeafAspect: 170 / 240,
     primaryFill: [Color(0xFFFAE0A0), BrainTrainColors.dayGold, Color(0xFFCF9E42)],
@@ -773,13 +801,13 @@ class LobbyTheme extends ThemeExtension<LobbyTheme> {
     secondaryText: BrainTrainColors.warmIvory,
     secondaryIcon: BrainTrainColors.dayGold,
     secondaryShadow: Color(0x73000000),
-    primaryGlassFill: [Color(0xE0FFE9A8), Color(0xC7F8D56E), Color(0xD1EBB440)],
+    primaryGlassFill: [Color(0xFFFFE8A8), Color(0xFFF4C966), Color(0xFFD6A042)],
     primaryGlassRim: [Color(0xFFFFF4CC), Color(0xCCF2C96B), Color(0x66C08A2C), Color(0xE6F8DA8C)],
     primaryGlassText: BrainTrainColors.darkGreenText,
     primaryGlassGlow: Color(0x73F2C96B),
-    secondaryGlassFill: [Color(0x660E4A34), Color(0x520A4433), Color(0x75083828)],
-    secondaryGlassRim: [Color(0xCCFFF6DC), Color(0xB3F2C96B), Color(0x33FFFFFF), Color(0xB3F2C96B)],
-    footerText: Color(0xCCFFF6DF),
+    secondaryGlassFill: [Color(0xD1124A36), Color(0xC70C4230), Color(0xD90A3829)],
+    secondaryGlassRim: [Color(0xE6FFF0C4), Color(0xD9F2C96B), Color(0x80C08A2C), Color(0xD9F2C96B)],
+    footerText: Color(0xE6FFF6DF),
     panelFill: Color(0xE00A3F2D),
     panelBorder: Color(0x99F2C96B),
     panelText: BrainTrainColors.warmIvory,
@@ -790,10 +818,6 @@ class LobbyTheme extends ThemeExtension<LobbyTheme> {
 
   /// The lobby for a brightness: light is Day, dark is Night.
   static LobbyTheme forBrightness(Brightness brightness) => brightness == Brightness.light ? day : night;
-
-  /// Day only: a colour screen-blended over the art (in the scene's static
-  /// layer), lifting the night garden toward daylight. Null at night.
-  final Color? sceneWash;
 
   /// Opaque garden backdrop (cover fit; height / width), and the gradient
   /// shown under it while it decodes so the lobby is never blank.
@@ -807,14 +831,14 @@ class LobbyTheme extends ThemeExtension<LobbyTheme> {
   /// Screen-level lighting above the art.
   final List<LobbyGlow> lights;
 
-  /// Calm radial shade behind the tagline and buttons, for contrast.
+  /// Calm radial shade behind the title and buttons, for contrast.
   final Color contentScrim;
   final Color edgeVignette;
 
   /// Extra shade over the scene on the Levels and Settings screens.
   final Color subScreenScrim;
 
-  /// Fireflies.
+  /// Ambient particles on home: fireflies at night, pollen by day.
   final int particleCount;
   final Color particleColor;
   final double particleSize;
@@ -825,43 +849,43 @@ class LobbyTheme extends ThemeExtension<LobbyTheme> {
   final int subScreenLeafCount;
   final double leafOpacity;
 
-  /// Frosted-glass tagline panel: tint (top to bottom), backdrop blur
-  /// sigma, gradient rim (top-left to bottom-right), inner top highlight
-  /// and drop shadow.
-  final List<Color> glassFill;
+  /// Frosted glass (buttons, panels): backdrop blur sigma, the inner top
+  /// highlight and the drop shadow.
   final double glassBlur;
-  final List<Color> glassBorder;
   final Color glassHighlight;
   final Color glassShadow;
 
-  /// Warm light behind the panel.
-  final Color taglineGlow;
+  /// The mossy ledge the hero tiles stand on (height / width); missing art
+  /// just leaves it out.
+  final String heroLedgeAsset;
+  final double heroLedgeAspect;
 
-  /// "Train your" (ivory) and "brain" (gold, top to bottom, with a glow).
-  final Color taglineLead;
-  final List<Color> taglineGradient;
-  final Color taglineTextGlow;
+  /// The "Brain Train" title: gold top to bottom, the warm halo behind it
+  /// and its drop shadow.
+  final List<Color> titleGradient;
+  final Color titleGlow;
+  final Color titleShadow;
 
-  /// Leaves tucked behind button ends.
+  /// Leaves tucked behind the Play button's ends.
   final String buttonLeafAsset;
   final double buttonLeafAspect;
 
-  /// Primary (Play/Continue) button.
+  /// Gold medallions and buttons on panels (Levels).
   final List<Color> primaryFill;
   final Color primaryEdge;
   final Color primaryText;
   final Color primaryShadow;
   final Color primaryGlow;
 
-  /// Secondary (Levels, Settings) buttons.
+  /// Dark-green outlined surfaces on panels.
   final List<Color> secondaryFill;
   final Color secondaryBorder;
   final Color secondaryText;
   final Color secondaryIcon;
   final Color secondaryShadow;
 
-  /// Glass lobby buttons. Play: gold-tinted frost (fill top-left to
-  /// bottom-right), bright gold rim and dark-green label.
+  /// Glass lobby buttons. Play: gold glass (fill top-left to bottom-right),
+  /// bright gold rim and dark-green label.
   final List<Color> primaryGlassFill;
   final List<Color> primaryGlassRim;
   final Color primaryGlassText;
@@ -869,7 +893,8 @@ class LobbyTheme extends ThemeExtension<LobbyTheme> {
   /// Warm halo around the Play glass pill.
   final Color primaryGlassGlow;
 
-  /// Levels, Settings and the round buttons: clear frost with a fine gold rim.
+  /// Levels, Settings and the round buttons: dark-green glass with a fine
+  /// gold rim.
   final List<Color> secondaryGlassFill;
   final List<Color> secondaryGlassRim;
 

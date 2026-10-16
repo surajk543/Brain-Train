@@ -2,8 +2,8 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 
-import '../../../app/brand.dart';
 import '../../../app/theme.dart';
+import '../../../app/typography.dart';
 import '../../common/frosted_glass.dart';
 import '../../common/glass_painters.dart';
 import '../../common/static_layer.dart';
@@ -32,9 +32,9 @@ class _EndLeaf extends StatelessWidget {
   }
 }
 
-/// The one glass structure behind every lobby button, in the tagline panel's
-/// recipe: [FrostedGlass] (outside) -> one [StaticLayer] with shadow, glow and
-/// rim -> tint -> top highlight -> ink and [child].
+/// The one glass structure behind every lobby button: [FrostedGlass]
+/// (outside) -> one [StaticLayer] with shadow, glow and rim -> tint -> top
+/// highlight -> ink and [child].
 ///
 /// Everything but the frost is static, so the blurred shadows are rendered
 /// once (and again only while the ink animates). [radius] larger than half the
@@ -99,7 +99,7 @@ class _LobbyGlass extends StatelessWidget {
             borderRadius: borderRadius,
             child: DecoratedBox(
               decoration: BoxDecoration(
-                gradient: LinearGradient(begin: Alignment.topLeft, end: Alignment.bottomRight, colors: fill),
+                gradient: LinearGradient(begin: Alignment.topCenter, end: Alignment.bottomCenter, colors: fill),
               ),
               child: Stack(
                 children: [
@@ -226,9 +226,9 @@ class _LobbyPill extends StatelessWidget {
   }
 }
 
-/// The main call to action ("Continue · Level 2"): gold-tinted frosted glass
-/// with a bright gold rim and glow, light-gold serif label, chevron, leaves at
-/// both ends.
+/// The main call to action ("Continue · Level 2"): gold glass with a bright
+/// gold rim and a soft glow, dark-green Manrope label, chevron, leaves at both
+/// ends.
 class LobbyPrimaryButton extends StatelessWidget {
   const LobbyPrimaryButton({
     super.key,
@@ -246,7 +246,7 @@ class LobbyPrimaryButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final lobby = LobbyTheme.of(context);
-    final fontSize = (height * 0.34).clamp(17.0, 23.0);
+    final fontSize = (height * 0.3).clamp(17.0, 21.0);
     return _LobbyPill(
       semanticLabel: semanticLabel ?? label,
       onPressed: onPressed,
@@ -273,8 +273,9 @@ class LobbyPrimaryButton extends StatelessWidget {
                 label,
                 maxLines: 1,
                 softWrap: false,
-                style: displayText(fontSize, color: lobby.primaryGlassText, weight: FontWeight.w700, spacing: 0.3).copyWith(
-                  shadows: [Shadow(color: Colors.white.withValues(alpha: 0.5), offset: const Offset(0, 1))],
+                style: BrainTrainType.button(size: fontSize, color: lobby.primaryGlassText).copyWith(
+                  fontWeight: FontWeight.w800,
+                  shadows: [Shadow(color: Colors.white.withValues(alpha: 0.45), offset: const Offset(0, 1))],
                 ),
               ),
             ),
@@ -293,8 +294,8 @@ class LobbyPrimaryButton extends StatelessWidget {
   }
 }
 
-/// Secondary lobby action (Levels, Settings): clear frosted glass, fine gold
-/// rim, gold icon, ivory serif label, chevron, leaf at the left end.
+/// Secondary lobby action (Levels, Settings): dark-green frosted glass, fine
+/// gold rim, gold icon, ivory Manrope label, gold chevron.
 class LobbySecondaryButton extends StatelessWidget {
   const LobbySecondaryButton({
     super.key,
@@ -314,31 +315,44 @@ class LobbySecondaryButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final lobby = LobbyTheme.of(context);
-    final fontSize = (height * 0.34).clamp(16.0, 21.0);
+    final fontSize = (height * 0.3).clamp(16.0, 19.0);
     return _LobbyPill(
       semanticLabel: semanticLabel ?? label,
       onPressed: onPressed,
       height: height,
-      leftLeaf: true,
+      leftLeaf: false,
       rightLeaf: false,
       splash: lobby.secondaryIcon,
       fill: lobby.secondaryGlassFill,
       rim: lobby.secondaryGlassRim,
       rimWidth: 1.2,
       child: Padding(
-        padding: EdgeInsets.symmetric(horizontal: height * 0.5, vertical: 6),
+        padding: EdgeInsets.symmetric(horizontal: height * 0.42, vertical: 6),
         child: Row(
           children: [
-            Icon(icon, size: fontSize * 1.2, color: lobby.secondaryIcon),
+            // Icon and label together in the middle (reference), the
+            // chevron at the end; the empty box on the left balances it.
+            SizedBox(width: fontSize * 1.3),
             Expanded(
-              child: Text(
-                label,
-                textAlign: TextAlign.center,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: displayText(fontSize, color: lobby.secondaryText, weight: FontWeight.w600, spacing: 0.4).copyWith(
-                  shadows: [Shadow(color: lobby.textShadow, blurRadius: 4, offset: const Offset(0, 1.5))],
-                ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(icon, size: fontSize * 1.4, color: lobby.secondaryIcon),
+                  SizedBox(width: fontSize * 0.9),
+                  Flexible(
+                    child: Text(
+                      label,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: BrainTrainType.button(size: fontSize, color: lobby.secondaryText).copyWith(
+                        letterSpacing: 0.4,
+                        shadows: [Shadow(color: lobby.textShadow, blurRadius: 4, offset: const Offset(0, 1.5))],
+                      ),
+                    ),
+                  ),
+                  // Optical centring: the icon's weight is on the left.
+                  SizedBox(width: fontSize * 1.2),
+                ],
               ),
             ),
             Icon(Icons.chevron_right_rounded, size: fontSize * 1.3, color: lobby.secondaryIcon),
@@ -350,7 +364,7 @@ class LobbySecondaryButton extends StatelessWidget {
 }
 
 /// Small round lobby action (Achievements, Leaderboards): the secondary
-/// button's clear glass and fine gold rim as a circle with a gold icon.
+/// button's dark-green glass and fine gold rim as a circle with a gold icon.
 class LobbyRoundButton extends StatelessWidget {
   const LobbyRoundButton({
     super.key,

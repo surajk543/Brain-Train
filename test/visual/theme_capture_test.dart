@@ -1,5 +1,5 @@
 // Renders the existing screens in both looks (Day and Night, redesign 1.1.0)
-// at phone sizes: the lobby (home, Completed Levels, Settings), the age
+// at phone sizes: the lobby (home, Levels, Settings), the age
 // screen and gameplay (mid-game, Level complete, Tray full).
 //
 // Always checks that layout succeeds without exceptions or overflow and that
@@ -64,7 +64,7 @@ void main() {
         expect(tester.takeException(), isNull);
         await captureLobby(tester, '$look-home-${phone.name}', phone.dpr);
 
-        await tester.tap(find.text('Completed Levels'));
+        await tester.tap(find.text('Levels'));
         await settleLobby(tester);
         expect(tester.takeException(), isNull);
         await captureLobby(tester, '$look-levels-${phone.name}', phone.dpr);
@@ -73,7 +73,7 @@ void main() {
 
         await tester.tap(find.text('Settings'));
         await settleLobby(tester);
-        expect(find.text('Sound'), findsOneWidget);
+        expect(find.text('Sound Effects'), findsOneWidget);
         expect(tester.takeException(), isNull);
         await captureLobby(tester, '$look-settings-${phone.name}', phone.dpr);
         await tester.pumpWidget(const SizedBox());

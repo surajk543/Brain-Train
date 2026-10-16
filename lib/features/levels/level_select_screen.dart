@@ -3,8 +3,8 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 
 import '../../app/app_services.dart';
-import '../../app/brand.dart';
 import '../../app/theme.dart';
+import '../../app/typography.dart';
 import '../../content/content_snapshot.dart';
 import '../../content/level_manifest.dart';
 import '../../data/progress_repository.dart';
@@ -21,11 +21,12 @@ import 'level_loader.dart';
 
 enum LevelState { open, inProgress, completed, locked }
 
-/// The player's progress: the level to play next in a panel at the top, and
-/// below it only the levels already completed (owner: no list of all levels,
-/// no locked levels), in order, as a lazily built list to replay from, each
-/// with its best time and when it was completed. A level unlocks when the
-/// previous one is won.
+/// Levels (the lobby's Levels button): the level to play next in a panel at
+/// the top, and below it only the levels already completed (owner: no list
+/// of all levels, no locked levels), in order, as a lazily built list to
+/// replay from, each with its best time and when it was completed. A level
+/// unlocks when the previous one is won. Day and Night take every colour from
+/// [LobbyTheme].
 ///
 /// Each row is flattened by its own [StaticLayer] (the leaves keep moving
 /// behind the list), and only the rows on screen are built.
@@ -89,7 +90,7 @@ class _LevelSelectScreenState extends State<LevelSelectScreen> {
     return Scaffold(
       backgroundColor: lobby.baseFallback.last,
       extendBodyBehindAppBar: true,
-      appBar: const LobbyAppBar(title: 'Completed Levels'),
+      appBar: const LobbyAppBar(title: 'Levels'),
       body: LobbyBackground(
         variant: LobbySceneVariant.subScreen,
         child: SafeArea(
@@ -135,11 +136,12 @@ class _LevelSelectScreenState extends State<LevelSelectScreen> {
                             ),
                           ),
                         ),
+                      if (done.isNotEmpty) const _SectionLabel('Completed'),
                       Expanded(
                         child: done.isEmpty
                             ? const _NoneCompleted()
                             : ListView.builder(
-                                padding: const EdgeInsets.fromLTRB(_padding, 6, _padding, 28),
+                                padding: const EdgeInsets.fromLTRB(_padding, 2, _padding, 28),
                                 // Each row is its own StaticLayer (a repaint boundary).
                                 addRepaintBoundaries: false,
                                 itemExtent: math.max(84, 60 + 26 * textScale),
@@ -202,6 +204,7 @@ class CompletedLevelRow extends StatelessWidget {
       borderRadius: BorderRadius.circular(16),
       side: BorderSide(color: lobby.panelBorder),
     );
+    final detail = BrainTrainType.body(size: 11.5, color: lobby.panelMuted).copyWith(height: 1.25, letterSpacing: 0.2);
     return Semantics(
       button: true,
       label:
@@ -213,12 +216,12 @@ class CompletedLevelRow extends StatelessWidget {
         child: DecoratedBox(
           decoration: ShapeDecoration(
             shape: shape,
-            gradient: const LinearGradient(
+            gradient: LinearGradient(
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
-              colors: [Color(0xE0145440), Color(0xE00A3F31)],
+              colors: [Color.lerp(lobby.panelFill, const Color(0xFFFFFFFF), 0.05)!, lobby.panelFill],
             ),
-            shadows: const [BoxShadow(color: Color(0x66000000), blurRadius: 6, offset: Offset(0, 3))],
+            shadows: [BoxShadow(color: lobby.secondaryShadow, blurRadius: 6, offset: const Offset(0, 3))],
           ),
           child: Material(
             type: MaterialType.transparency,
@@ -240,7 +243,7 @@ class CompletedLevelRow extends StatelessWidget {
                           FittedBox(
                             child: Text(
                               '${entry.order}',
-                              style: displayText(22, color: lobby.panelText, weight: FontWeight.w700),
+                              style: BrainTrainType.scoreValue(size: 21, color: lobby.panelText),
                             ),
                           ),
                           Icon(Icons.check_circle_rounded, size: 14, color: lobby.panelAccent),
@@ -255,7 +258,7 @@ class CompletedLevelRow extends StatelessWidget {
                         children: [
                           Text(
                             entry.title,
-                            style: lobbyHeading(context, 15),
+                            style: BrainTrainType.levelName(size: 16, color: lobby.panelText),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                           ),
@@ -271,7 +274,7 @@ class CompletedLevelRow extends StatelessWidget {
                                   '$tileCount tiles',
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
-                                  style: TextStyle(color: lobby.panelMuted, fontSize: 11.5, letterSpacing: 0.2),
+                                  style: detail,
                                 ),
                               ),
                             ],
@@ -280,32 +283,36 @@ class CompletedLevelRow extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(width: 10),
-                    Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      crossAxisAlignment: CrossAxisAlignment.end,
-                      children: [
-                        Row(
+                    // Scales down rather than overflow with large text or wide
+                    // date formats.
+                    ConstrainedBox(
+                      constraints: const BoxConstraints(maxWidth: 124),
+                      child: FittedBox(
+                        fit: BoxFit.scaleDown,
+                        alignment: Alignment.centerRight,
+                        child: Column(
                           mainAxisSize: MainAxisSize.min,
+                          crossAxisAlignment: CrossAxisAlignment.end,
                           children: [
-                            Icon(Icons.timer_outlined, size: 15, color: lobby.panelAccent),
-                            const SizedBox(width: 4),
-                            Text(
-                              time,
-                              style: displayText(17, color: lobby.panelAccent, weight: FontWeight.w700),
+                            Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(Icons.timer_outlined, size: 15, color: lobby.panelAccent),
+                                const SizedBox(width: 4),
+                                Text(time, style: BrainTrainType.scoreValue(size: 16, color: lobby.panelAccent)),
+                              ],
                             ),
+                            Text(
+                              record.bestScore == null ? '—' : formatScore(record.bestScore!),
+                              style: BrainTrainType.scoreValue(size: 12.5, color: lobby.panelAccent).copyWith(
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                            const SizedBox(height: 2),
+                            Text(when, maxLines: 1, style: detail.copyWith(fontSize: 11)),
                           ],
                         ),
-                        Text(
-                          record.bestScore == null ? '—' : formatScore(record.bestScore!),
-                          style: displayText(13, color: lobby.panelAccent, weight: FontWeight.w600),
-                        ),
-                        const SizedBox(height: 2),
-                        Text(
-                          when,
-                          maxLines: 1,
-                          style: TextStyle(color: lobby.panelMuted, fontSize: 11, letterSpacing: 0.2),
-                        ),
-                      ],
+                      ),
                     ),
                   ],
                 ),
@@ -339,7 +346,7 @@ class DifficultyBadge extends StatelessWidget {
       child: Text(
         label.toUpperCase(),
         maxLines: 1,
-        style: TextStyle(color: color, fontSize: fontSize, fontWeight: FontWeight.w700, letterSpacing: 0.6),
+        style: BrainTrainType.body(size: fontSize, color: color, weight: FontWeight.w800).copyWith(letterSpacing: 0.6),
       ),
     ),
   );
@@ -391,7 +398,12 @@ class _FocusPanel extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(entry.title, style: lobbyHeading(context, 18), maxLines: 1, overflow: TextOverflow.ellipsis),
+                  Text(
+                    entry.title,
+                    style: BrainTrainType.levelName(size: 20, color: lobby.panelText),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
                   const SizedBox(height: 5),
                   Wrap(
                     spacing: 8,
@@ -402,14 +414,14 @@ class _FocusPanel extends StatelessWidget {
                         DifficultyBadge(label: difficulty.label, color: difficulty.color, fontSize: 10),
                       Text(
                         '$tileCount tiles · $trayCapacity-slot tray',
-                        style: TextStyle(color: lobby.panelMuted, fontSize: 12.5, letterSpacing: 0.2),
+                        style: BrainTrainType.body(size: 12.5, color: lobby.panelMuted).copyWith(letterSpacing: 0.2),
                       ),
                     ],
                   ),
                   const SizedBox(height: 6),
                   Text(
                     '$won of $total won',
-                    style: TextStyle(color: lobby.panelMuted, fontSize: 11.5, letterSpacing: 0.3),
+                    style: BrainTrainType.body(size: 11.5, color: lobby.panelMuted).copyWith(letterSpacing: 0.3),
                   ),
                 ],
               ),
@@ -418,6 +430,33 @@ class _FocusPanel extends StatelessWidget {
             Icon(Icons.play_circle_fill_rounded, color: lobby.panelAccent, size: 30),
           ],
         ),
+      ),
+    );
+  }
+}
+
+/// "COMPLETED" above the list of completed levels.
+class _SectionLabel extends StatelessWidget {
+  const _SectionLabel(this.text);
+
+  final String text;
+
+  @override
+  Widget build(BuildContext context) {
+    final lobby = LobbyTheme.of(context);
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(22, 10, 22, 6),
+      child: Row(
+        children: [
+          Text(
+            text.toUpperCase(),
+            style: BrainTrainType.hudLabel(size: 12, color: lobby.panelAccent).copyWith(
+              shadows: [Shadow(color: lobby.textShadow, blurRadius: 4)],
+            ),
+          ),
+          const SizedBox(width: 10),
+          Expanded(child: Container(height: 1, color: lobby.panelBorder.withValues(alpha: 0.4))),
+        ],
       ),
     );
   }
@@ -437,7 +476,9 @@ class _NoneCompleted extends StatelessWidget {
         child: Text(
           'No levels completed yet.\nWin a level and it shows up here.',
           textAlign: TextAlign.center,
-          style: TextStyle(color: lobby.panelMuted, fontSize: 14, height: 1.4, letterSpacing: 0.2),
+          style: BrainTrainType.body(size: 14, color: lobby.panelMuted).copyWith(
+            shadows: [Shadow(color: lobby.textShadow, blurRadius: 4)],
+          ),
         ),
       ),
     );
@@ -468,7 +509,7 @@ class _Medallion extends StatelessWidget {
         child: FittedBox(
           child: Text(
             '$order',
-            style: displayText(19, color: lobby.primaryText, weight: FontWeight.w800),
+            style: BrainTrainType.scoreValue(size: 19, color: lobby.primaryText),
           ),
         ),
       ),

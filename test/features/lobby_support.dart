@@ -83,6 +83,8 @@ typedef Phone = ({String name, double width, double height, double dpr, double t
 
 const Phone largePhone = (name: '411x914', width: 411, height: 914, dpr: 2.625, top: 24, bottom: 16);
 const Phone smallPhone = (name: '360x640', width: 360, height: 640, dpr: 2, top: 24, bottom: 0);
+/// iPhone 15/16 class (the redesign's mid reference size).
+const Phone midPhone = (name: '393x852', width: 393, height: 852, dpr: 3, top: 59, bottom: 34);
 const Phone tallPhone = (name: '430x932', width: 430, height: 932, dpr: 3, top: 47, bottom: 34);
 
 /// Store screenshot sizes, portrait: Google Play phone (1080 x 1920 px),
@@ -95,7 +97,6 @@ const Phone ipad13 = (name: 'ipad-13', width: 1032, height: 1376, dpr: 2, top: 2
 const Map<String, List<String>> bundledFontFiles = {
   'Playfair Display': [
     'assets/fonts/playfair_display/PlayfairDisplay-VariableFont_wght.ttf',
-    'assets/fonts/playfair_display/PlayfairDisplay-Italic-VariableFont_wght.ttf',
   ],
   'Manrope': ['assets/fonts/manrope/Manrope-VariableFont_wght.ttf'],
 };

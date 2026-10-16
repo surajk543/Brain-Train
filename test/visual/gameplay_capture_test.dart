@@ -105,7 +105,6 @@ Future<void> _loadFonts() async {
   final families = {
     'Playfair Display': [
       'assets/fonts/playfair_display/PlayfairDisplay-VariableFont_wght.ttf',
-      'assets/fonts/playfair_display/PlayfairDisplay-Italic-VariableFont_wght.ttf',
     ],
     'Manrope': ['assets/fonts/manrope/Manrope-VariableFont_wght.ttf'],
     'serif': [

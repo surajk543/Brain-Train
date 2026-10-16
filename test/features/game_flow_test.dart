@@ -8,7 +8,7 @@ import 'package:brain_train/features/gameplay/game_controller.dart';
 import 'package:brain_train/game_engine/geometry/tile_mask.dart';
 import 'package:brain_train/game_engine/state/game_state.dart';
 import 'package:brain_train/game_engine/validation/solver.dart';
-import 'package:brain_train/features/home/widgets/lobby_tagline.dart';
+import 'package:brain_train/features/home/widgets/lobby_hero.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:package_info_plus/package_info_plus.dart';
@@ -116,18 +116,21 @@ void main() {
     fresh.dispose();
   });
 
-  test('sound and vibration settings persist and default to on', () async {
+  test('sound, music and vibration settings persist and default to on', () async {
     final settings = await SettingsRepository.open();
     expect(settings.sound, isTrue);
+    expect(settings.music, isTrue);
     expect(settings.haptics, isTrue);
     await settings.setSound(false);
+    await settings.setMusic(false);
     await settings.setHaptics(false);
     final reopened = await SettingsRepository.open();
     expect(reopened.sound, isFalse);
+    expect(reopened.music, isFalse);
     expect(reopened.haptics, isFalse);
   });
 
-  testWidgets('settings shows only sound, vibration and the version', (tester) async {
+  testWidgets('settings shows only the theme, sound effects, music, vibration and the version', (tester) async {
     PackageInfo.setMockInitialValues(
       appName: 'Brain Train',
       packageName: 'com.sungamestudio.braintrain',
@@ -143,14 +146,21 @@ void main() {
     await tester.tap(find.text('Settings'));
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 400));
-    for (final label in ['Sound', 'Vibration', 'Brain Train · Version 1.0.0 (1)']) {
+    for (final label in [
+      'Game Theme',
+      'Day',
+      'Night',
+      'System',
+      'Sound Effects',
+      'Music',
+      'Vibration',
+      'Brain Train · Version 1.0.0 (1)',
+    ]) {
       expect(find.text(label), findsOneWidget, reason: label);
     }
     for (final removed in [
       'Appearance',
-      'System',
-      'Day',
-      'Night',
+      'Sound',
       'Dim blocked tiles',
       'Show timer',
       'Reduce motion',
@@ -159,7 +169,7 @@ void main() {
     ]) {
       expect(find.text(removed), findsNothing, reason: removed);
     }
-    expect(find.byType(SwitchListTile), findsNWidgets(2));
+    expect(find.byType(SwitchListTile), findsNWidgets(3));
     expect(find.byType(SegmentedButton<ThemeMode>), findsNothing);
     await tester.pumpWidget(const SizedBox());
   });
@@ -177,10 +187,10 @@ void main() {
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 50));
     expect(find.bySemanticsLabel('Brain Train'), findsWidgets);
-    expect(find.text('Completed Levels'), findsNothing);
+    expect(find.text('Levels'), findsNothing);
     await tester.pump(const Duration(milliseconds: 400));
     await tester.pump(const Duration(milliseconds: 600));
-    expect(find.text('Completed Levels'), findsOneWidget);
+    expect(find.text('Levels'), findsOneWidget);
     await tester.pumpWidget(const SizedBox());
   });
 
@@ -190,7 +200,7 @@ void main() {
     await tester.pumpWidget(BrainTrainApp(servicesFactory: () async => services, showIntro: false));
     await tester.runAsync(() => Future<void>.delayed(const Duration(milliseconds: 200)));
     await tester.pump();
-    expect(find.byType(LobbyTagline), findsOneWidget);
+    expect(find.byType(LobbyHero), findsOneWidget);
     expect(find.text('Play · Level 1'), findsOneWidget);
 
     final first = services.content.snapshot.playableEntries.first;

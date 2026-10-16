@@ -15,12 +15,14 @@ import '../settings/settings_screen.dart';
 import 'widgets/lobby_buttons.dart';
 import 'widgets/lobby_footer.dart';
 import 'widgets/lobby_play_games.dart';
-import 'widgets/lobby_tagline.dart';
+import 'widgets/lobby_hero.dart';
 import 'widgets/lobby_update_card.dart';
 
-/// The lobby: "Train your brain" on frosted glass, Play/Continue, Levels
-/// and Settings, and the content status, over the night garden. An update
-/// card ([LobbyUpdateCard]) covers it when a new app version is out.
+/// The lobby (reference board): three hero tiles on a mossy ledge and the
+/// gold "Brain Train" title, Play/Continue, Levels and Settings, and the
+/// status line ("5 levels ready · v2026.10.17.1"), over the Day or Night
+/// garden. An update card ([LobbyUpdateCard]) covers it when a new app
+/// version is out.
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
@@ -145,35 +147,37 @@ class _HomeScreenState extends State<HomeScreen> {
     final w = size.width, h = size.height;
     final side = (w * 0.075).clamp(16.0, 40.0);
     final contentWidth = math.min(w - side * 2, 440.0);
-    // Vertical rhythm (fractions of the safe height): breathing room under
-    // the status bar, then the tagline in the upper area and the buttons
-    // just below the middle; spare height is split 2:3 above the tagline and
-    // above the footer. Short screens and large text scroll instead of
-    // overflowing.
-    final topGap = h * 0.04;
-    final taglineWidth = math.min(contentWidth * 0.9, 340.0);
-    final taglineSize = math.min(taglineWidth * 0.3, h * 0.1);
-    final primaryHeight = (h * 0.074).clamp(54.0, 68.0);
-    final secondaryHeight = (h * 0.064).clamp(48.0, 60.0);
-    final gap = (h * 0.018).clamp(10.0, 18.0);
-    final buttonWidth = math.min(contentWidth * 0.9, 360.0);
+    // Vertical rhythm (fractions of the safe height, reference board): the
+    // hero tiles and the title in the upper area, the buttons just below the
+    // middle, the status line near the bottom. Spare height is split 3:2
+    // above the hero and above the footer. Short screens and large text
+    // scroll instead of overflowing.
+    final topGap = h * 0.03;
+    final tileHeight = math.min(h * 0.2, w * 0.38);
+    final titleSize = math.min(math.min(w * 0.145, h * 0.078), 62.0);
+    final primaryHeight = (h * 0.092).clamp(54.0, 76.0);
+    final secondaryHeight = (h * 0.08).clamp(50.0, 68.0);
+    final gap = (h * 0.02).clamp(10.0, 20.0);
+    final buttonWidth = math.min(contentWidth * 0.92, 380.0);
     final label = HomeScreen.playLabel(services);
+    final readiness = services.content.windowReadiness;
 
     return CustomScrollView(
       slivers: [
         SliverFillRemaining(
           hasScrollBody: false,
           child: Padding(
-            padding: EdgeInsets.fromLTRB(side, topGap, side, math.max(10, h * 0.018)),
+            // The status line sits just above the path (reference).
+            padding: EdgeInsets.fromLTRB(side, topGap, side, math.max(10, h * 0.055)),
             child: Column(
               children: [
                 Align(
                   alignment: Alignment.centerRight,
                   child: LobbyPlayGamesButtons(controller: services.playGames),
                 ),
-                const Spacer(flex: 2),
-                LobbyTagline(width: taglineWidth, fontSize: taglineSize),
-                SizedBox(height: h * 0.065),
+                const Spacer(flex: 3),
+                LobbyHero(width: contentWidth, sceneWidth: w, tileHeight: tileHeight, titleSize: titleSize),
+                SizedBox(height: h * 0.04),
                 if (HomeScreen.allCompleted(services) && HomeScreen.resumable(services) == null) ...[
                   SizedBox(
                     width: buttonWidth,
@@ -191,20 +195,20 @@ class _HomeScreenState extends State<HomeScreen> {
                     onPressed: () => _play(services),
                   ),
                 ),
-                SizedBox(height: gap * 1.25),
+                SizedBox(height: gap * 1.4),
                 SizedBox(
-                  width: buttonWidth * 0.92,
+                  width: buttonWidth,
                   child: LobbySecondaryButton(
                     key: const ValueKey('lobby-levels'),
-                    label: 'Completed Levels',
-                    icon: Icons.emoji_events_rounded,
+                    label: 'Levels',
+                    icon: Icons.layers_rounded,
                     height: secondaryHeight,
                     onPressed: () => _open((_) => const LevelSelectScreen()),
                   ),
                 ),
                 SizedBox(height: gap),
                 SizedBox(
-                  width: buttonWidth * 0.92,
+                  width: buttonWidth,
                   child: LobbySecondaryButton(
                     key: const ValueKey('lobby-settings'),
                     label: 'Settings',
@@ -213,11 +217,16 @@ class _HomeScreenState extends State<HomeScreen> {
                     onPressed: () => _open((_) => const SettingsScreen()),
                   ),
                 ),
-                const Spacer(flex: 3),
+                const Spacer(flex: 2),
                 if (services.playGames.notice case final notice?)
                   LobbyNoticeText(notice)
                 else
-                  LobbyContentFooter(snapshot: services.content.snapshot, status: services.content.status),
+                  LobbyContentFooter(
+                    snapshot: services.content.snapshot,
+                    status: services.content.status,
+                    ready: readiness.ready,
+                    window: readiness.window,
+                  ),
               ],
             ),
           ),
