@@ -3,6 +3,7 @@ import 'dart:io';
 import 'dart:typed_data';
 import 'dart:ui' as ui;
 
+import 'package:brain_train/content/content_exception.dart';
 import 'package:brain_train/content/content_sources.dart';
 import 'package:brain_train/content/level_manifest.dart';
 import 'package:brain_train/content/remote_asset_resolver.dart';
@@ -148,7 +149,17 @@ void main() {
       final registry = SymbolRegistry.fromJson(
         decodeJsonBytes(await repoContent.read(manifest.symbolRegistry.url, ContentKind.json), 'registry'),
       );
-      final animated = registry.symbols.values.where((s) => s.isAnimated).toList();
+      // Only the starter pack's art (levels 1-5) is bundled.
+      final bundledArt = <SymbolDefinition>[];
+      for (final symbol in registry.symbols.values.where((s) => s.isAnimated)) {
+        try {
+          await repoContent.read(symbol.assetPath!, ContentKind.animation, sha256: symbol.sha256);
+          bundledArt.add(symbol);
+        } on ContentException {
+          // Downloaded on demand, not bundled.
+        }
+      }
+      final animated = bundledArt;
       expect(animated, isNotEmpty);
       final art = await SymbolArtCache().resolve(animated.first, repoContent, const Size(60, 80), 2);
       expect(art, isA<AnimatedSymbolArt>());

@@ -4,6 +4,7 @@ import 'package:brain_train/data/progress_repository.dart';
 import 'package:brain_train/features/common/static_layer.dart';
 import 'package:brain_train/features/gameplay/game_screen.dart';
 import 'package:brain_train/features/levels/difficulty_style.dart';
+import 'package:brain_train/features/levels/level_loader.dart';
 import 'package:brain_train/features/levels/level_select_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -132,6 +133,15 @@ void main() {
     expect(find.text('EASY'), findsWidgets);
     await captureLobby(tester, 'levels-midway-360x640', smallPhone.dpr);
 
+    // A completed level that is on the device (the starter pack) replays offline.
+    await tester.tap(find.bySemanticsLabel(RegExp(r'^Level 1, ')));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 500));
+    expect(find.byType(GameScreen), findsOneWidget);
+    expect(find.text(entries[0].title), findsWidgets);
+    await tester.pageBack();
+    await tester.pump(const Duration(milliseconds: 500));
+
     // The last completed level is built on demand; nothing after it is listed.
     await tester.scrollUntilVisible(
       find.bySemanticsLabel(RegExp(r'^Level 56, ')),
@@ -144,21 +154,27 @@ void main() {
     expect(find.bySemanticsLabel(RegExp(r'^Level 58, ')), findsNothing);
     expect(find.byIcon(Icons.lock_rounded), findsNothing);
 
-    // A completed level replays.
+    // These services are offline and level 56 was never downloaded on this
+    // device: the loader asks for the internet instead of opening the game.
     await tester.tap(find.bySemanticsLabel(RegExp(r'^Level 56, ')));
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 500));
-    expect(find.byType(GameScreen), findsOneWidget);
-    expect(find.text(entries[55].title), findsWidgets);
-    await tester.pageBack();
+    expect(find.byType(GameScreen), findsNothing);
+    expect(find.text(kConnectToDownloadText), findsOneWidget);
+    expect(find.text(entries[55].title), findsOneWidget);
+    expect(find.text('Try again'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+    await tester.tap(find.text('Back'));
+    await tester.pump();
     await tester.pump(const Duration(milliseconds: 500));
+    expect(find.text(kConnectToDownloadText), findsNothing);
 
-    // The panel continues the game in progress.
+    // The panel's Continue goes through the same loader.
     await tester.tap(find.bySemanticsLabel(RegExp(r'^Continue level 57, ')));
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 500));
-    expect(find.byType(GameScreen), findsOneWidget);
-    expect(find.text(entries[56].title), findsWidgets);
+    expect(find.text(kConnectToDownloadText), findsOneWidget);
+    expect(find.text(entries[56].title), findsOneWidget);
     await tester.pageBack();
     await tester.pump(const Duration(milliseconds: 500));
     await _leave(tester);

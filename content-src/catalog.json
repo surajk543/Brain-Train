@@ -1,6 +1,8 @@
 {
   "_comment": "Authoring source for content/brain-train/. Run `dart run tool/content.dart build`. Bump contentVersion on every publish. Levels and the registry are content-addressed (levels/level-0001-<sha>.json), so a changed level gets a new key by itself; published keys never change.",
-  "contentVersion": "2026.10.16.9",
+  "contentVersion": "2026.10.16.10",
+  "_starterLevels": "Levels bundled in the app (with only their art) for a first launch without internet: content/starter/.",
+  "starterLevels": 5,
   "registry": {
     "_comment": "Symbols come from art/asset_sources.json (static, its imageSet) and art/animated_sources.json (Lottie): entries with status \"integrated\" whose processed file exists. registryVersion gets a hash of the symbol table appended.",
     "registryVersion": "brain-train-symbols",

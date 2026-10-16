@@ -17,6 +17,7 @@ import 'package:brain_train/content/content_coordinator.dart';
 import 'package:brain_train/content/content_fetcher.dart';
 import 'package:brain_train/content/content_repositories.dart';
 import 'package:brain_train/content/content_snapshot.dart';
+import 'package:brain_train/content/content_sources.dart';
 import 'package:brain_train/content/level_manifest.dart';
 import 'package:brain_train/content/remote_asset_resolver.dart';
 import 'package:brain_train/data/progress_repository.dart';
@@ -54,7 +55,18 @@ typedef _Phone = ({String name, double width, double height, double dpr, double 
 const _Phone _large = (name: '411x914', width: 411, height: 914, dpr: 2.625, top: 24, bottom: 16);
 const _Phone _small = (name: '360x640', width: 360, height: 640, dpr: 2, top: 24, bottom: 0);
 
-Future<AppServices> _services() async {
+/// The full generated tree (gitignored; present where `dart run
+/// tool/content.dart build` ran). Tests of levels beyond the starter pack
+/// (very hard boards, every intro style) use it, and skip without it.
+final bool _hasFullTree = File('content/brain-train/manifest.json').existsSync();
+final BundledContentSource _fullTree = BundledContentSource((key) async {
+  final file = File(key);
+  return file.existsSync() ? file.readAsBytesSync() : null;
+}, prefix: 'content/brain-train/');
+
+/// Offline services on the starter pack (levels 1-5), or on every level
+/// with [full].
+Future<AppServices> _services({bool full = false}) async {
   final config = ContentConfig(baseUrl: Uri.parse('https://content.test/'), allowedHosts: const {'content.test'});
   final offline = MockClient((r) async => throw http.ClientException('offline', r.url));
   final fetcher = ContentFetcher(client: offline, config: config, delay: (_) async {});
@@ -63,7 +75,7 @@ Future<AppServices> _services() async {
   final content = ContentController(
     ContentCoordinator(
       cache: cache,
-      bundled: repoContent,
+      bundled: full ? _fullTree : repoContent,
       downloads: AssetDownloadManager(cache: cache, fetcher: fetcher, resolver: resolver),
       manifests: ContentManifestService(fetcher: fetcher, resolver: resolver),
     ),
@@ -347,9 +359,9 @@ void main() {
 
   setUp(() => SharedPreferences.setMockInitialValues({}));
 
-  Future<void> start(WidgetTester tester) async {
+  Future<void> start(WidgetTester tester, {bool full = false}) async {
     await tester.runAsync(() async {
-      services = await _services();
+      services = await _services(full: full);
       snapshot = services.content.snapshot;
       // A medium level: 4-slot tray, enough distinct symbols to fill it.
       meadow = snapshot.playableEntries.firstWhere((e) => e.difficulty == 'medium');
@@ -634,8 +646,8 @@ void main() {
   // One board per tier, the largest of each, at both phone sizes.
   for (final tier in ['easy', 'medium', 'hard', 'veryHard']) {
     for (final phone in [_small, _large]) {
-      testWidgets('largest $tier board fits ${phone.name}', (tester) async {
-        await start(tester);
+      testWidgets('largest $tier board fits ${phone.name}', skip: !_hasFullTree /* needs content/brain-train/ */, (tester) async {
+        await start(tester, full: true);
         final entry = snapshot.playableEntries
             .where((e) => e.difficulty == tier)
             .reduce((a, b) => (a.tileCount ?? 0) >= (b.tileCount ?? 0) ? a : b);
@@ -751,8 +763,8 @@ void main() {
       return frames;
     }
 
-    testWidgets('a contact sheet per mix style, on hard and very hard boards', (tester) async {
-      await start(tester);
+    testWidgets('a contact sheet per mix style, on hard and very hard boards', skip: !_hasFullTree /* needs content/brain-train/ */, (tester) async {
+      await start(tester, full: true);
       for (final style in IntroStyle.values) {
         final entry = snapshot.playableEntries.firstWhere(
           (e) => (e.difficulty == 'hard' || e.difficulty == 'veryHard') && IntroStyle.forLevel(e.levelId) == style,
@@ -786,8 +798,8 @@ void main() {
       await _leave(tester);
     });
 
-    testWidgets('frame sequence at 411x914: a very hard level and an easy one', (tester) async {
-      await start(tester);
+    testWidgets('frame sequence at 411x914: a very hard level and an easy one', skip: !_hasFullTree /* needs content/brain-train/ */, (tester) async {
+      await start(tester, full: true);
       final hard = firstOf('veryHard');
       await _pumpGame(tester, services: services, entry: hard, phone: _large);
       expect(snapshot.levels[hard.levelId]!.tiles.length, greaterThan(140));
@@ -855,8 +867,8 @@ void main() {
       await _leave(tester);
     });
 
-    testWidgets('leaving during the intro frees it cleanly', (tester) async {
-      await start(tester);
+    testWidgets('leaving during the intro frees it cleanly', skip: !_hasFullTree /* needs content/brain-train/ */, (tester) async {
+      await start(tester, full: true);
       await _pumpGame(tester, services: services, entry: firstOf('veryHard'), phone: _large, intro: _IntroWait.start);
       final intro = _introOf(tester).intro!;
       await _introTo(tester, 0.5);

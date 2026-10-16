@@ -172,4 +172,22 @@ dart run tool/smoke_remote.dart         # live check: app's content client vs pr
 - Tray mechanic is integrated (tray at the top, flights, strike-and-shatter matches, Tray full card with
   Revive / Restart), with 4 or 5 slots per level.
 
+## Working on another machine
+
+- Code: branch `feat/brain-train-game` (PR #1, repo private).
+  `git clone https://github.com/surajk543/Brain-Train.git && cd Brain-Train && git switch feat/brain-train-game && flutter pub get`.
+  Flutter 3.44.7 / Dart 3.12.2. Android SDK + AVD `Pixel_6_API_34`
+  (`emulator -avd Pixel_6_API_34 -gpu host -no-snapshot-load`). Python 3 + Pillow for `tool/assets/*.py`, ffmpeg for audio.
+- `flutter analyze` and `flutter test` work on a fresh clone (tests use fixtures and `content/starter/`).
+- Content tree: `content/brain-train/` is not in git. Before `tool/content.dart build|validate` or `tool/publish.dart`
+  on a new machine, mirror the live tree: `dart run tool/fetch_content.dart` (public prefix, no keys, sha256-checked).
+- Secrets: copy `.env` by a secure channel (password manager), never git/chat/email. Keys: `R2_ACCOUNT_ID`,
+  `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_BUCKET_NAME`, `ASSET_TOKEN_SECRET`. Only publishing needs it.
+- Licensed originals `art/source/` are not in git; needed only to re-process art. Re-download through the IconScout
+  MCP (`claude mcp add --transport http iconscout https://mcp.iconscout.com/mcp`) from `art/asset_sources.json` /
+  `art/animated_sources.json` (`sourceUrl`; slug `<name>_<assetId>`). IconScout caps 3D downloads at ~24/day.
+- Open work: 100 static entries `awaiting download` in `art/asset_sources.json` (then prepare_symbols, build, bump
+  contentVersion, publish); a frame-time slowdown after hours of play on the emulator (Impeller GLES; watch
+  `adb logcat | grep app_time_stats`, app restart resets it) is not explained yet.
+
 Keep this file current when commands, layout, or these rules change.

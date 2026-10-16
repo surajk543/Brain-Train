@@ -55,8 +55,8 @@ class AssetDownloadManager implements ContentSource {
     return future.whenComplete(() => _inFlight.remove(path));
   }
 
-  Future<Uint8List> _load(String path, ContentKind kind, String? sha256) async {
-    final uri = resolver.resolve(path, kind);
+  /// The cached bytes, else the [seed]'s (copied into the cache), else null.
+  Future<Uint8List?> _local(String path, ContentKind kind, String? sha256) async {
     final cached = await cache.readObject(path, sha256: sha256);
     if (cached != null) return cached;
     final seed = this.seed;
@@ -67,9 +67,16 @@ class AssetDownloadManager implements ContentSource {
         seededObjects++;
         return bytes;
       } on ContentException {
-        // Not bundled (or different bytes): download it.
+        // Not bundled (or different bytes).
       }
     }
+    return null;
+  }
+
+  Future<Uint8List> _load(String path, ContentKind kind, String? sha256) async {
+    final uri = resolver.resolve(path, kind);
+    final local = await _local(path, kind, sha256);
+    if (local != null) return local;
 
     await _acquire();
     final Uint8List bytes;

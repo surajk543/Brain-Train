@@ -263,7 +263,7 @@ void main() {
     });
 
     test('pubspec bundles the animated symbols for offline play', () {
-      expect(File('pubspec.yaml').readAsStringSync(), contains('- content/brain-train/animated-symbols/'));
+      expect(File('pubspec.yaml').readAsStringSync(), contains('- content/starter/animated-symbols/'));
     });
   });
 }

@@ -267,6 +267,44 @@ class ContentCoordinator {
     return result;
   }
 
+  /// Marks the window's levels that are fully on the device (cache or
+  /// bundle) ready, without the network, so they open at once. Called at
+  /// startup, before the lobby; [maintainWindow] fetches the rest later.
+  Future<int> warmUp() async {
+    final snapshot = _current!;
+    var ready = 0;
+    Future<void> local(LevelManifestEntry entry) async {
+      final level = snapshot.levels[entry.levelId];
+      if (level == null || snapshot.isReady(entry.levelId)) return;
+      try {
+        final registry = snapshot.manifest.symbolRegistry;
+        await _copyLocal(registry.url, ContentKind.json, registry.sha256);
+        await _copyLocal(entry.ref.url, ContentKind.json, entry.ref.sha256);
+        await Future.wait([
+          for (final symbol in snapshot.assetSymbolsOf(level))
+            _copyLocal(symbol.assetPath!, ContentKind.forSymbol(symbol)!, symbol.sha256),
+        ]);
+      } on ContentException {
+        return;
+      }
+      snapshot.addLevel(level, ready: true);
+      _remember(entry, snapshot.manifest.symbolRegistry);
+      ready++;
+    }
+
+    await Future.wait([for (final entry in windowOf(snapshot)) local(entry)]);
+    return ready;
+  }
+
+  /// Makes sure [path] is in the cache, copying it from the bundle if it is
+  /// there with the expected checksum. Never the network.
+  Future<void> _copyLocal(String path, ContentKind kind, String? sha256) async {
+    if (await cache.readObject(path, sha256: sha256) != null) return;
+    if (sha256 == null) throw ContentException(ContentErrorKind.missingFromCache, 'no checksum to trust', path: path);
+    final bytes = await bundled.read(path, kind, sha256: sha256);
+    await cache.writeObject(path, bytes);
+  }
+
   /// Gets [entry] of [snapshot] (default: the current one) ready to play,
   /// downloading its file and art if needed. Offline, a level whose current
   /// file is not cached opens from an older cached file of it if there is

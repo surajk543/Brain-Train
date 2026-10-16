@@ -1,7 +1,11 @@
+import 'dart:convert';
+import 'dart:io';
+
 import 'dart:ui';
 
 import 'package:brain_train/content/content_sources.dart';
 import 'package:brain_train/game_engine/models/symbol_definition.dart';
+import 'package:brain_train/game_engine/models/symbol_registry.dart';
 import 'package:brain_train/rendering/mahjong_tile_renderer.dart';
 import 'package:brain_train/rendering/symbol_art.dart';
 import 'package:brain_train/rendering/tile_style.dart';
@@ -14,7 +18,8 @@ void main() {
 
   testWidgets('decodes real WebP symbol art', (tester) async {
     await tester.runAsync(() async {
-      const symbol = SymbolDefinition(code: 'WINGED_APPLE', type: SymbolType.image, assetPath: 'symbols/v4/winged-apple.webp');
+      // Art of the starter pack (levels 1-5), which the app bundles.
+      final symbol = await starterSymbol(SymbolType.image);
       final art = await SymbolArtCache().resolve(symbol, repoContent, box, 2);
       expect(art.isFallback, isFalse);
       expect(art.image.width, 120);
@@ -56,4 +61,15 @@ void main() {
       body.dispose();
     });
   });
+}
+
+/// A symbol of [type] whose art is in the bundled starter pack.
+Future<SymbolDefinition> starterSymbol(SymbolType type) async {
+  final manifest = jsonDecode(File('content/starter/manifest.json').readAsStringSync()) as Map<String, Object?>;
+  final registry = SymbolRegistry.fromJson(
+    jsonDecode(File('content/starter/${(manifest['symbolRegistry']! as Map)['url']}').readAsStringSync()),
+  );
+  return registry.symbols.values.firstWhere(
+    (s) => s.type == type && File('content/starter/${s.assetPath}').existsSync(),
+  );
 }

@@ -88,6 +88,8 @@ class ContentController extends ChangeNotifier with WidgetsBindingObserver {
 
   Future<void> start() async {
     await coordinator.loadInitial();
+    // Window levels already on the device open at once (no network).
+    await coordinator.warmUp();
     _observeLifecycle();
     unawaited(topUp());
   }
