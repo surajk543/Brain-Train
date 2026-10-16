@@ -82,7 +82,6 @@ android {
         // Dart through MainActivity's channel).
         resValue("string", "admob_app_id", admobAppId)
         resValue("string", "admob_rewarded_ad_unit_id", rewardedAdUnitId)
-        manifestPlaceholders["playGamesEnabled"] = playGamesAppId.isNotEmpty().toString()
     }
 
     signingConfigs {
@@ -116,4 +115,9 @@ kotlin {
 
 flutter {
     source = "../.."
+}
+
+dependencies {
+    // PlayGamesSdk.initialize in MainActivity (same version as the games_services plugin).
+    implementation("com.google.android.gms:play-services-games-v2:21.0.0")
 }

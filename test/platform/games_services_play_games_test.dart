@@ -22,6 +22,15 @@ class _FakeBackend implements PlayGamesBackend {
     return controller.stream;
   }
 
+  int initializes = 0;
+  Future<void> Function() onInitialize = () async {};
+
+  @override
+  Future<void> initialize() {
+    initializes++;
+    return onInitialize();
+  }
+
   @override
   Future<void> signIn() => onSignIn();
 
@@ -58,6 +67,7 @@ void main() {
       final seen = <PlayGamesStatus>[];
       playGames.status.listen(seen.add);
       playGames.refresh();
+      await _settle();
       backend.check!.add('Ann');
       await _settle();
       expect(playGames.current, const PlayGamesSignedIn('Ann'));
@@ -66,6 +76,7 @@ void main() {
 
     test('no player or an error means signed out', () async {
       playGames.refresh();
+      await _settle();
       backend.check!.add('Ann');
       await _settle();
       backend.check!.add(null);
@@ -94,9 +105,35 @@ void main() {
     });
   });
 
+  group('SDK start', () {
+    test('the SDK starts once, before the first check or sign-in', () async {
+      expect(backend.initializes, 0);
+      playGames.refresh();
+      await _settle();
+      playGames.refresh();
+      await _settle();
+      await playGames.signIn();
+      expect(backend.initializes, 1);
+    });
+
+    test('a failed start reports signed out and is tried again next time', () async {
+      backend.onInitialize = () async => throw PlatformException(code: 'no_play_services');
+      playGames.refresh();
+      await _settle();
+      expect(playGames.current, const PlayGamesSignedOut());
+      expect(backend.listens, 0);
+      backend.onInitialize = () async {};
+      playGames.refresh();
+      await _settle();
+      expect(backend.initializes, 2);
+      expect(backend.listens, 1);
+    });
+  });
+
   group('signIn', () {
     test('success signs in and checks the player again', () async {
       expect(await playGames.signIn(), PlayGamesSignIn.signedIn);
+      await _settle();
       expect(backend.listens, 1);
     });
 
@@ -133,9 +170,11 @@ void main() {
 
   test('after dispose, refresh and late events are ignored', () async {
     playGames.refresh();
+    await _settle();
     final check = backend.check!;
     playGames.dispose();
     playGames.refresh();
+    await _settle();
     expect(backend.listens, 1);
     check.add('Ann');
     await _settle();
