@@ -42,6 +42,11 @@ abstract class AdsBackend {
 
   Future<void> showPrivacyOptionsForm();
 
+  /// iOS App Tracking Transparency: asks once, if not answered yet, so ads
+  /// may use the advertising identifier. Called only for a 13+ audience,
+  /// after consent and before [initialize]; a no-op on Android.
+  Future<void> requestTracking();
+
   /// Starts the ads SDK (once, after consent).
   Future<void> initialize();
 
@@ -96,6 +101,7 @@ class ManagedRewardedAds implements RewardedAds {
   AdAudience? _audience;
   bool _configured = false;
   bool _consentGathered = false;
+  bool _trackingAsked = false;
   bool _initialized = false;
   LoadedRewardedAd? _ad;
   Future<void>? _working;
@@ -150,6 +156,16 @@ class ManagedRewardedAds implements RewardedAds {
       await _refreshPrivacyOptions();
       if (!await _guard(backend.canRequestAds, callTimeout, 'canRequestAds')) {
         throw consentFailure ?? const AdsFailure('consent not gathered yet');
+      }
+      // Never asked for children (under 13): their ads are not personalized.
+      if (!_trackingAsked && !audience.childDirected) {
+        _trackingAsked = true;
+        try {
+          await _guard(backend.requestTracking, consentTimeout, 'tracking');
+        } on AdsFailure catch (failure) {
+          // Ads still work without the advertising identifier.
+          debugPrint('Rewarded ads: $failure');
+        }
       }
       if (!_initialized) {
         await _guard(backend.initialize, initTimeout, 'initialize');

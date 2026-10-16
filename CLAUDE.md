@@ -162,7 +162,9 @@ dart run tool/smoke_remote.dart         # live check: app's content client vs pr
   Only `google_mobile_ads_rewarded.dart` imports the plugin; every call is caught and timed out. While an ad shows the
   clock stays stopped (a full tray stops it), music is held (`BackgroundMusic.interrupted`) and SFX stop. Builds
   without the SDK (tests) have ads `off`: Revive needs no ad. Under 13: TFCD + TFUA + `ageRestrictedTreatment.child`,
-  rated G, non-personalized, UMP `tagForUnderAgeOfConsent`; 13+: rated PG, normal UMP flow. IDs: Android
+  rated G, non-personalized, UMP `tagForUnderAgeOfConsent`, never the iOS tracking prompt; 13+: rated PG, normal UMP
+  flow, then on iOS Apple's App Tracking Transparency prompt once (`AdsBackend.requestTracking`, `AppDelegate.swift`
+  `requestTrackingAuthorization`, `NSUserTrackingUsageDescription`) before the SDK starts. IDs: Android
   `android/admob.properties` (gitignored; Gradle → manifest + `rewardedAdUnitId` on the `brain_train/platform`
   channel), iOS `Info.plist` (`GADApplicationIdentifier`, `BrainTrainRewardedAdUnitId`); Google's test IDs otherwise.
 - App updates (owner, docs/APP_UPDATES.md): never on the startup path; the lobby checks after its first frame and on

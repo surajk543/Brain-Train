@@ -127,6 +127,15 @@ class GoogleMobileAdsBackend implements AdsBackend {
   }
 
   @override
+  Future<void> requestTracking() async {
+    if (!Platform.isIOS) return;
+    // AppDelegate: ATTrackingManager.requestTrackingAuthorization, only while
+    // not determined (iOS shows the prompt once per install).
+    final status = await const MethodChannel('brain_train/platform').invokeMethod<String>('requestTrackingAuthorization');
+    debugPrint('Rewarded ads: tracking $status');
+  }
+
+  @override
   Future<void> initialize() => MobileAds.instance.initialize();
 
   @override

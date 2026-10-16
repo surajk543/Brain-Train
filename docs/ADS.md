@@ -20,8 +20,8 @@ User Messaging Platform, UMP).
   - 13+: `maxAdContentRating: PG`, no age tags, the normal UMP flow (`tagForUnderAgeOfConsent: false`).
 - **Never on the startup path.** The lobby starts ads after its first frame (like Play Games sign-in): request
   configuration → UMP `requestConsentInfoUpdate` → `loadAndShowConsentFormIfRequired` (a consent form appears over
-  the lobby only where one is required, e.g. EEA/UK, until answered) → `canRequestAds` → `MobileAds.initialize`
-  → load one rewarded ad. Every call is caught and timed out. App measurement is delayed until the SDK starts
+  the lobby only where one is required, e.g. EEA/UK, until answered) → `canRequestAds` → on iOS, for 13+ only,
+  the App Tracking Transparency prompt (below) → `MobileAds.initialize` → load one rewarded ad. Every call is caught and timed out. App measurement is delayed until the SDK starts
   (`DELAY_APP_MEASUREMENT_INIT` / `GADDelayAppMeasurementInit`).
 - **Keeping an ad ready**: one ad is kept loaded. A game screen opening, the Tray full card appearing and the app
   returning to the foreground each load one if none is (and retry at once after a failure); failures retry by
@@ -43,6 +43,15 @@ User Messaging Platform, UMP).
 - **Privacy choices** (Settings): shown only when UMP's `getPrivacyOptionsRequirementStatus()` is `required`
   (EEA/UK users); opens Google's privacy options form, after which the next ad is requested under the new
   choices. Hidden everywhere else. This is the only addition to Settings (owner).
+- **iOS App Tracking Transparency** (owner, 2026-10-17): 13+ players on iOS see Apple's prompt once per install
+  ("Allow … to track your activity …"; text from `NSUserTrackingUsageDescription` in `Info.plist`), after consent
+  and before the SDK starts (`AdsBackend.requestTracking` → channel `brain_train/platform`,
+  `requestTrackingAuthorization` in `AppDelegate.swift`). Allowed: ads may use the IDFA (higher earnings).
+  Denied or no answer: ads still play, without the IDFA. **Under-13 players are never asked** (their ads are never
+  personalized), and the prompt is never shown again after an answer (iOS rule; the player can change it in
+  Settings › Privacy › Tracking). If a UMP "IDFA explainer" message is published in AdMob, UMP shows its explainer
+  and the system prompt itself during consent; the app's call then just reads the answer. Android has no such
+  prompt.
 - A build without the SDK (tests, desktop) has ads "off": Revive needs no ad there.
 
 ## Where the IDs go
@@ -101,9 +110,9 @@ Google's test IDs are the defaults; they only ever show test ads:
      data disclosure" page (at the time of writing: device or other IDs, app interactions, diagnostics, approximate
      location from IP; collected and shared for advertising, analytics and fraud prevention; encrypted in transit).
      The app itself sends no age or personal data (the age group stays on the phone).
-8. **iOS (later)**: App Store privacy labels from the same Google disclosure. App Tracking Transparency is not
-   used (no `NSUserTrackingUsageDescription`), so iOS ads are not personalized by IDFA; adding it later must never
-   prompt under-13 players.
+8. **iOS (later)**: App Store privacy labels from the same Google disclosure, declaring "Device ID … used to track
+   you" (App Tracking Transparency is used for 13+). Do not put the app in the App Store Kids category: Kids-category
+   apps may not use tracking or third-party ads like this.
 
 ## Testing
 

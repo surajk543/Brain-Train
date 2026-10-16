@@ -1,3 +1,4 @@
+import AppTrackingTransparency
 import Flutter
 import UIKit
 
@@ -15,6 +16,7 @@ import UIKit
     // Tells Dart this build's rewarded ad unit (Info.plist BrainTrainRewardedAdUnitId;
     // docs/ADS.md). Dart falls back to Google's test unit without an answer.
     // Opens the App Store page for the lobby's update card (docs/APP_UPDATES.md).
+    // Asks App Tracking Transparency for 13+ players before ads start (docs/ADS.md).
     if let registrar = engineBridge.pluginRegistry.registrar(forPlugin: "BrainTrainPlatform") {
       let channel = FlutterMethodChannel(name: "brain_train/platform", binaryMessenger: registrar.messenger())
       channel.setMethodCallHandler { call, result in
@@ -30,10 +32,29 @@ import UIKit
             return
           }
           UIApplication.shared.open(url, options: [:]) { opened in result(opened) }
+        case "requestTrackingAuthorization":
+          // iOS shows the prompt once per install; later calls get the answer.
+          guard ATTrackingManager.trackingAuthorizationStatus == .notDetermined else {
+            result(AppDelegate.trackingName(ATTrackingManager.trackingAuthorizationStatus))
+            return
+          }
+          ATTrackingManager.requestTrackingAuthorization { status in
+            DispatchQueue.main.async { result(AppDelegate.trackingName(status)) }
+          }
         default:
           result(FlutterMethodNotImplemented)
         }
       }
+    }
+  }
+
+  private static func trackingName(_ status: ATTrackingManager.AuthorizationStatus) -> String {
+    switch status {
+    case .authorized: return "authorized"
+    case .denied: return "denied"
+    case .restricted: return "restricted"
+    case .notDetermined: return "notDetermined"
+    @unknown default: return "unknown"
     }
   }
 }

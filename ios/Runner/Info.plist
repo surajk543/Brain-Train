@@ -28,6 +28,8 @@
 	<string>ca-app-pub-3940256099942544/1712485313</string>
 	<key>GADApplicationIdentifier</key>
 	<string>ca-app-pub-3940256099942544~1458002511</string>
+	<key>NSUserTrackingUsageDescription</key>
+	<string>Allow tracking so the short video you choose to watch for a revive can be more relevant to you.</string>
 	<key>GADDelayAppMeasurementInit</key>
 	<true/>
 	<key>LSRequiresIPhoneOS</key>
