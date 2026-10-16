@@ -10,13 +10,16 @@ import '../../content/content_snapshot.dart';
 import '../../content/level_manifest.dart';
 import '../../data/progress_repository.dart';
 import '../../game_engine/models/level_definition.dart';
+import '../../game_engine/scoring/score_format.dart';
 import '../../game_engine/state/game_state.dart';
 import '../../rendering/symbol_art.dart';
 import '../levels/level_loader.dart';
 import 'game_controller.dart';
 import 'widgets/board_intro.dart';
 import 'widgets/board_view.dart';
+import 'widgets/combo_badge.dart';
 import 'widgets/premium_chrome.dart';
+import 'widgets/score_popups.dart';
 import 'widgets/tile_flight_overlay.dart';
 import 'widgets/tile_shatter.dart';
 import 'widgets/tray_view.dart';
@@ -43,12 +46,15 @@ Color levelAccent(LevelBackdrop? backdrop) {
 /// result card (win or full tray) appears once the tray has finished its
 /// last effect.
 class GameScreen extends StatefulWidget {
-  const GameScreen({super.key, required this.snapshot, required this.entry, this.resume});
+  const GameScreen({super.key, required this.snapshot, required this.entry, this.resume, @visibleForTesting this.stopwatch});
 
   /// Held for the whole game, so content updates cannot change this board.
   final ContentSnapshot snapshot;
   final LevelManifestEntry entry;
   final SavedGame? resume;
+
+  /// Replaces the game clock's stopwatch (tests drive time by hand).
+  final Stopwatch? stopwatch;
 
   @override
   State<GameScreen> createState() => _GameScreenState();
@@ -99,6 +105,7 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
         settings: services.settings,
         sounds: services.sounds,
         resume: widget.resume,
+        stopwatch: widget.stopwatch,
         // Lose feedback lands with the tile; match and win at the strike.
         arrivalFeedbackDelay: _flightTime(reduceMotion),
         matchFeedbackOnImpact: true,
@@ -301,16 +308,32 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
                             children: [
                               Padding(
                                 padding: const EdgeInsets.fromLTRB(12, 6, 12, 0),
-                                child: TrayView(
-                                  key: _trayKey,
-                                  controller: _tray,
-                                  level: level,
-                                  registry: widget.snapshot.registry,
-                                  artwork: widget.snapshot.artwork,
-                                  symbolArt: services.symbolArt,
-                                  reduceMotion: reduceMotion,
-                                  maxFaceWidth: _trayFaceWidth(MediaQuery.sizeOf(context)),
-                                  symbolClock: _symbolClock,
+                                child: Stack(
+                                  clipBehavior: Clip.none,
+                                  children: [
+                                    TrayView(
+                                      key: _trayKey,
+                                      controller: _tray,
+                                      level: level,
+                                      registry: widget.snapshot.registry,
+                                      artwork: widget.snapshot.artwork,
+                                      symbolArt: services.symbolArt,
+                                      reduceMotion: reduceMotion,
+                                      maxFaceWidth: _trayFaceWidth(MediaQuery.sizeOf(context)),
+                                      symbolClock: _symbolClock,
+                                    ),
+                                    // Floats on the tray's bottom edge: no layout
+                                    // change, so the board keeps its size (the
+                                    // 31-px face guarantee).
+                                    Positioned(
+                                      left: 0,
+                                      right: 0,
+                                      bottom: -16,
+                                      child: IgnorePointer(
+                                        child: Center(child: ComboBadge(controller: controller, reduceMotion: reduceMotion)),
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ),
                               Expanded(
@@ -420,6 +443,17 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
             // Matched pairs striking and shattering; shards may fall over
             // the board. Ticks only while a shatter runs.
             Positioned.fill(child: TileShatterOverlay(controller: _shatters)),
+            // Score feedback; ticks only while a popup is alive.
+            Positioned.fill(
+              child: IgnorePointer(
+                child: ScorePopupOverlay(
+                  controller: controller,
+                  traySlotRect: (slot) => _trayKey.currentState?.slotRect(slot),
+                  tileRect: (id) => _boardKey.currentState?.tileFaceRect(id),
+                  reduceMotion: reduceMotion,
+                ),
+              ),
+            ),
           ],
         ),
       ),
@@ -469,7 +503,11 @@ class _Hud extends StatelessWidget {
                         return Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            PremiumStat(label: 'Moves', value: '${state.moveCount}'),
+                            TweenAnimationBuilder<int>(
+                              tween: IntTween(end: controller.score),
+                              duration: MediaQuery.disableAnimationsOf(context) ? Duration.zero : const Duration(milliseconds: 300),
+                              builder: (context, value, _) => PremiumStat(label: 'Score', value: formatScore(value)),
+                            ),
                             const PremiumDivider(),
                             PremiumStat(label: 'Pairs', value: '${state.matchedPairs}/${state.totalPairs}'),
                           ],

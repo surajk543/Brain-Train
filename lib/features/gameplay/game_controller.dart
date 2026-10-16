@@ -141,6 +141,8 @@ class GameController extends ChangeNotifier {
     } else if (engine.state.status == GameStatus.playing) {
       _stopwatch.start();
     }
+    // A resumed active combo needs its expiry timer too (no intro to start it).
+    _scheduleComboEnd();
   }
 
   /// The saved score, or (no or unreadable data) base points per matched

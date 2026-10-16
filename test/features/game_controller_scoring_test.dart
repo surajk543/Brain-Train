@@ -3,6 +3,8 @@ import 'package:brain_train/data/progress_repository.dart';
 import 'package:brain_train/data/settings_repository.dart';
 import 'package:brain_train/features/gameplay/game_controller.dart';
 import 'package:brain_train/game_engine/models/level_definition.dart';
+import 'package:brain_train/game_engine/scoring/score_keeper.dart';
+import 'package:brain_train/game_engine/scoring/scoring_rules.dart';
 import 'package:brain_train/game_engine/state/game_state.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -177,6 +179,26 @@ void main() {
     clock.advance(s(1));
     resumed.tapTile('b2'); // t=4: gap 2 s → ×2 +10
     expect(resumed.score, 100 + 210);
+    resumed.dispose();
+  });
+
+  testWidgets('a resumed active combo without an intro gets an expiry timer that notifies', (tester) async {
+    final keeper = ScoreKeeper(rules: const ScoringRules())..onMatch(s(2)); // match at t=2: the combo runs until t=5
+    final saved = SavedGame(
+      levelId: 'test-level',
+      levelUrl: entry.ref.url,
+      history: const ['a1', 'a2'],
+      elapsedMs: 3000,
+      scoring: keeper.toJson(),
+    );
+    final resumed = controllerFor(resume: saved);
+    var notified = 0;
+    resumed.addListener(() => notified++);
+    expect(resumed.activeCombo, 1);
+    clock.advance(s(2.5));
+    await tester.pump(s(2.5));
+    expect(notified, 1, reason: 'the timer fired at the end of the window');
+    expect(resumed.activeCombo, 0);
     resumed.dispose();
   });
 

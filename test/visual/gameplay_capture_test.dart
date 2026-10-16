@@ -29,6 +29,7 @@ import 'package:brain_train/features/gameplay/widgets/board_intro.dart';
 import 'package:brain_train/features/gameplay/widgets/board_view.dart';
 import 'package:brain_train/features/gameplay/widgets/premium_chrome.dart';
 import 'package:brain_train/features/gameplay/widgets/tile_flight_overlay.dart';
+import 'package:brain_train/features/gameplay/widgets/score_popups.dart';
 import 'package:brain_train/features/gameplay/widgets/tray_view.dart';
 import 'package:brain_train/game_engine/geometry/tile_mask.dart';
 import 'package:brain_train/game_engine/models/level_definition.dart';
@@ -47,6 +48,7 @@ import 'package:http/testing.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../helpers.dart';
+import '../helpers/fake_stopwatch.dart';
 
 final String? _captureDir = Platform.environment['CAPTURE_DIR'];
 
@@ -97,10 +99,14 @@ Future<void> _loadFonts() async {
     'serif': [
       '/usr/share/fonts/truetype/noto/NotoSerif-Regular.ttf',
       '/usr/share/fonts/truetype/noto/NotoSerif-Bold.ttf',
+      '/System/Library/Fonts/Supplemental/Georgia.ttf',
+      '/System/Library/Fonts/Supplemental/Georgia Bold.ttf',
     ],
     'Roboto': [
       '/usr/share/fonts/truetype/noto/NotoSans-Regular.ttf',
       '/usr/share/fonts/truetype/noto/NotoSans-Bold.ttf',
+      '/System/Library/Fonts/Supplemental/Arial.ttf',
+      '/System/Library/Fonts/Supplemental/Arial Bold.ttf',
     ],
     'MaterialIcons': ['$flutterRoot/bin/cache/artifacts/material_fonts/MaterialIcons-Regular.otf'],
   };
@@ -171,6 +177,7 @@ Future<void> _pumpGame(
   SavedGame? resume,
   double textScale = 1,
   _IntroWait intro = _IntroWait.finish,
+  Stopwatch? stopwatch,
 }) async {
   tester.view
     ..physicalSize = Size(phone.width * phone.dpr, phone.height * phone.dpr)
@@ -189,7 +196,7 @@ Future<void> _pumpGame(
         child: MaterialApp(
           debugShowCheckedModeBanner: false,
           theme: buildBrainTrainTheme(Brightness.dark),
-          home: GameScreen(snapshot: services.content.snapshot, entry: entry, resume: resume),
+          home: GameScreen(snapshot: services.content.snapshot, entry: entry, resume: resume, stopwatch: stopwatch),
         ),
       ),
     ),
@@ -394,6 +401,43 @@ void main() {
     });
   }
 
+  testWidgets('a x3 combo badge floats on the tray edge, with a score popup', (tester) async {
+    await start(tester);
+    final clock = FakeStopwatch();
+    await _pumpGame(tester, services: services, entry: meadow, phone: _large, stopwatch: clock);
+    final game = _gameOf(tester);
+    final level = snapshot.levels[meadow.levelId]!;
+    final solution = MahjongSolver(
+      geometry: game.engine.geometry,
+      rules: game.engine.rules,
+    ).solve(TileMask.all(level.tiles.length)).solution;
+    for (final (a, b) in solution.take(3)) {
+      game
+        ..tapTile(level.tiles[a].tileId)
+        ..tapTile(level.tiles[b].tileId);
+      clock.advance(const Duration(milliseconds: 600));
+      await tester.pump(const Duration(milliseconds: 100));
+    }
+    expect(game.activeCombo, 3);
+    final popups = tester.state<ScorePopupOverlayState>(find.byType(ScorePopupOverlay));
+    for (var i = 0; i < 80 && popups.popupCount == 0; i++) {
+      await tester.runAsync(() => Future<void>.delayed(const Duration(milliseconds: 20)));
+      await tester.pump(const Duration(milliseconds: 50));
+    }
+    await tester.pump(const Duration(milliseconds: 250));
+    expect(find.text('COMBO ×3'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+    await _capture(tester, 'gameplay_night_411x914_combo_popup', _large.dpr);
+    for (var i = 0; i < 40; i++) {
+      await tester.runAsync(() => Future<void>.delayed(const Duration(milliseconds: 20)));
+      await tester.pump(const Duration(milliseconds: 100));
+    }
+    expect(popups.popupCount, 0);
+    expect(find.text('COMBO ×3'), findsOneWidget, reason: 'the fake clock keeps the window open');
+    await _capture(tester, 'gameplay_night_411x914_combo', _large.dpr);
+    await _leave(tester);
+  });
+
   testWidgets('a tapped tile flies from the board into the tray', (tester) async {
     await start(tester);
     final saved = _progress(snapshot, meadow, pairs: 2);
@@ -419,7 +463,7 @@ void main() {
     expect(tester.takeException(), isNull);
     expect(find.bySemanticsLabel('Tray, 1 of 4 tiles'), findsOneWidget);
     expect(find.text('2/${pairsOf(meadow)}'), findsOneWidget);
-    expect(find.text('5'), findsOneWidget, reason: 'one move per tap');
+    expect(_gameOf(tester).state.moveCount, 5, reason: 'one move per tap (the HUD shows the score now)');
     await _capture(tester, 'gameplay_night_411x914_tray1', _large.dpr);
     await _leave(tester);
   });
@@ -655,7 +699,7 @@ void main() {
       expect(_inTray(id), findsNothing);
     }
     expect(find.bySemanticsLabel('Tray, 0 of 4 tiles'), findsOneWidget);
-    expect(find.text('4'), findsOneWidget, reason: 'a revive is not a move');
+    expect(_gameOf(tester).state.moveCount, 4, reason: 'a revive is not a move');
     expect(tester.takeException(), isNull);
     await _capture(tester, 'gameplay_night_411x914_revived', _large.dpr);
     // Play goes on: a returned tile can be tapped again.
