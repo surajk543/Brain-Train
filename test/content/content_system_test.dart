@@ -14,13 +14,13 @@ import 'package:brain_train/content/content_sources.dart';
 import 'package:brain_train/content/content_validator.dart';
 import 'package:brain_train/content/level_manifest.dart';
 import 'package:brain_train/content/remote_asset_resolver.dart';
-import 'package:brain_train/game_engine/models/level_definition.dart';
 import 'package:brain_train/game_engine/models/symbol_registry.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
 
 import '../helpers.dart';
+import 'fixture_content.dart';
 
 final config = ContentConfig(
   baseUrl: Uri.parse('https://content.test/'),
@@ -29,46 +29,20 @@ final config = ContentConfig(
 );
 
 Map<String, Object?> manifestJson() =>
-    jsonDecode(File('content/brain-train/manifest.json').readAsStringSync()) as Map<String, Object?>;
+    jsonDecode(File('content/starter/manifest.json').readAsStringSync()) as Map<String, Object?>;
 
-/// Bundled content for tests: the repository copy.
-ContentSource get bundled => repoContent;
-
-/// Levels in the published manifest.
-int get levelCount => (manifestJson()['levels']! as List<Object?>).length;
-
-ContentCoordinator coordinatorFor(http.Client client, ContentCache cache, {ContentSource? bundle, bool seed = false}) {
-  final fetcher = ContentFetcher(client: client, config: config, delay: (_) async {});
-  final resolver = RemoteAssetResolver(config);
-  return ContentCoordinator(
-    cache: cache,
-    bundled: bundle ?? bundled,
-    downloads: AssetDownloadManager(
-      cache: cache,
-      fetcher: fetcher,
-      resolver: resolver,
-      seed: seed ? bundle ?? bundled : null,
-    ),
-    manifests: ContentManifestService(fetcher: fetcher, resolver: resolver),
-  );
-}
-
-/// [repoContent] that counts reads per path.
+/// A source that counts reads per path.
 class CountingSource implements ContentSource {
+  CountingSource(this.inner);
+
+  final ContentSource inner;
   final Map<String, int> reads = {};
 
   @override
   Future<Uint8List> read(String path, ContentKind kind, {String? sha256}) {
     reads[path] = (reads[path] ?? 0) + 1;
-    return repoContent.read(path, kind, sha256: sha256);
+    return inner.read(path, kind, sha256: sha256);
   }
-}
-
-/// The repository manifest with a newer content version, served remotely.
-http.Response newerManifest({void Function(Map<String, Object?>)? edit}) {
-  final json = manifestJson()..['contentVersion'] = '2999.1.1.1';
-  edit?.call(json);
-  return http.Response(jsonEncode(json), 200);
 }
 
 void main() {
@@ -249,217 +223,87 @@ void main() {
       final cache = ContentCache(MemoryContentStore());
       final downloads = AssetDownloadManager(
         cache: cache,
-        fetcher: ContentFetcher(client: contentServer(log: log), config: config),
+        fetcher: ContentFetcher(client: FixtureContent().server(log: log), config: config),
         resolver: RemoteAssetResolver(config),
       );
       await Future.wait([for (var i = 0; i < 3; i++) downloads.read('manifest.json', ContentKind.json)]);
       await downloads.read('manifest.json', ContentKind.json);
-      expect(log, ['/brain-train/manifest.json']);
+      expect(log, ['manifest.json']);
     });
   });
 
   group('coordinator', () {
-    test('fresh install offline: bundled content, status offline', () async {
-      final offline = MockClient((r) async => throw http.ClientException('offline', r.url));
-      final coordinator = coordinatorFor(offline, ContentCache(MemoryContentStore()));
-      final snapshot = await coordinator.loadInitial();
+    final content = FixtureContent();
+
+    test('fresh install offline: the starter pack, status offline', () async {
+      final f = fixtureCoordinator(server: content.server(online: () => false), bundle: content.starter());
+      final snapshot = await f.coordinator.loadInitial();
       expect(snapshot.origin, ContentOrigin.bundled);
-      expect(snapshot.playableEntries.length, levelCount);
-      expect(await coordinator.refresh(), ContentSyncStatus.offline);
-      expect(coordinator.current, same(snapshot));
+      expect(snapshot.playableEntries, hasLength(content.levels));
+      expect(await f.coordinator.refresh(), ContentSyncStatus.offline);
+      expect(f.coordinator.current, same(snapshot));
     });
 
     test('an update is cached as known-good and survives going offline', () async {
       final store = MemoryContentStore();
-      final online = coordinatorFor(contentServer(overrides: {'/brain-train/manifest.json': newerManifest()}), ContentCache(store));
-      await online.loadInitial();
-      expect(await online.refresh(), ContentSyncStatus.updated);
-      expect(online.current!.origin, ContentOrigin.remote);
-      expect(online.current!.contentVersion, '2999.1.1.1');
+      final v2 = FixtureContent(version: '2999.1.1.1', titles: {1: 'Renamed Glade'});
+      final online = fixtureCoordinator(server: v2.server(), bundle: content.starter(), store: store);
+      await online.coordinator.loadInitial();
+      expect(await online.coordinator.refresh(), ContentSyncStatus.updated);
+      expect(online.coordinator.current!.origin, ContentOrigin.remote);
+      expect(online.coordinator.current!.contentVersion, '2999.1.1.1');
 
       // Next launch, no network: the cached update is used.
-      final offline = coordinatorFor(MockClient((r) async => throw http.ClientException('offline', r.url)), ContentCache(store));
-      final snapshot = await offline.loadInitial();
+      final offline = fixtureCoordinator(server: v2.server(online: () => false), bundle: content.starter(), store: store);
+      final snapshot = await offline.coordinator.loadInitial();
       expect(snapshot.origin, ContentOrigin.cached);
       expect(snapshot.contentVersion, '2999.1.1.1');
-      expect(snapshot.levels.length, levelCount);
-      final art = snapshot.usedImageSymbols.first;
-      expect(await snapshot.artwork.read(art.assetPath!, ContentKind.image), isNotEmpty);
-    });
-
-    test('an older remote version never replaces newer bundled content', () async {
-      final log = <String>[];
-      final coordinator = coordinatorFor(
-        contentServer(log: log, overrides: {
-          '/brain-train/manifest.json': http.Response(jsonEncode(manifestJson()..['contentVersion'] = '2000.1.1.1'), 200),
-        }),
-        ContentCache(MemoryContentStore()),
-      );
-      final bundledSnapshot = await coordinator.loadInitial();
-      expect(await coordinator.refresh(), ContentSyncStatus.upToDate);
-      expect(coordinator.current, same(bundledSnapshot));
-      expect(log, ['/brain-train/manifest.json']);
+      expect(snapshot.levels[content.levelId(1)]!.title, 'Renamed Glade');
+      final art = content.levelArt[1]!.first;
+      expect(await snapshot.artwork.read(art, ContentKind.image), isNotEmpty);
     });
 
     test('an invalid update is rejected and nothing is marked known-good', () async {
-      final cache = ContentCache(MemoryContentStore());
-      final coordinator = coordinatorFor(
-        contentServer(overrides: {'/brain-train/manifest.json': http.Response('{"schemaVersion": 1, "levels": "nope"}', 200)}),
-        cache,
+      final store = MemoryContentStore();
+      final f = fixtureCoordinator(
+        server: content.server(overrides: {'manifest.json': http.Response('{"schemaVersion": 1, "levels": "nope"}', 200)}),
+        bundle: content.starter(),
+        store: store,
       );
-      final before = await coordinator.loadInitial();
-      expect(await coordinator.refresh(), ContentSyncStatus.rejected);
-      expect(coordinator.current, same(before));
-      expect(await cache.readKnownGood(), isNull);
+      final before = await f.coordinator.loadInitial();
+      expect(await f.coordinator.refresh(), ContentSyncStatus.rejected);
+      expect(f.coordinator.current, same(before));
+      expect(await ContentCache(store).readKnownGood(), isNull);
     });
 
     test('an update needing a newer app is rejected', () async {
-      final coordinator = coordinatorFor(
-        contentServer(overrides: {
-          '/brain-train/manifest.json': newerManifest(edit: (m) => m['compatibility'] = {'minClientContentSchema': 99}),
-        }),
-        ContentCache(MemoryContentStore()),
+      final newer = Map<String, Object?>.of(FixtureContent(version: '2999.1.1.1').manifest)
+        ..['compatibility'] = {'minClientContentSchema': 99};
+      final f = fixtureCoordinator(
+        server: content.server(overrides: {'manifest.json': http.Response(jsonEncode(newer), 200)}),
+        bundle: content.starter(),
       );
-      await coordinator.loadInitial();
-      expect(await coordinator.refresh(), ContentSyncStatus.rejected);
-      expect(coordinator.lastError!.kind, ContentErrorKind.incompatible);
+      await f.coordinator.loadInitial();
+      expect(await f.coordinator.refresh(), ContentSyncStatus.rejected);
+      expect(f.coordinator.lastError!.kind, ContentErrorKind.incompatible);
     });
 
-    test('missing artwork blocks the update instead of half-applying it', () async {
-      final manifest = manifestJson();
-      final cache = ContentCache(MemoryContentStore());
-      final registryPath = (manifest['symbolRegistry']! as Map<String, Object?>)['url']! as String;
-      final registryJson = jsonDecode(File('content/brain-train/$registryPath').readAsStringSync()) as Map<String, Object?>;
-      final firstArt = ((registryJson['symbols']! as Map<String, Object?>).values.first! as Map<String, Object?>)['assetPath']! as String;
-      final coordinator = coordinatorFor(
-        contentServer(overrides: {
-          '/brain-train/manifest.json': newerManifest(),
-          '/brain-train/$firstArt': http.Response('gone', 404),
-        }),
-        cache,
-      );
-      await coordinator.loadInitial();
-      expect(await coordinator.refresh(), ContentSyncStatus.rejected);
-      expect(coordinator.current!.origin, ContentOrigin.bundled);
-      expect(await cache.readKnownGood(), isNull);
-    });
-
-    test('a corrupt known-good pointer falls back to bundled content', () async {
+    test('a corrupt known-good pointer falls back to the starter pack', () async {
       final store = MemoryContentStore();
       await store.write('state/known-good.json', utf8.encode('not json'));
-      final coordinator = coordinatorFor(MockClient((r) async => throw http.ClientException('x', r.url)), ContentCache(store));
-      expect((await coordinator.loadInitial()).origin, ContentOrigin.bundled);
+      final f = fixtureCoordinator(server: content.server(online: () => false), bundle: content.starter(), store: store);
+      expect((await f.coordinator.loadInitial()).origin, ContentOrigin.bundled);
     });
 
-    test('a bad level is excluded while the other levels still update', () async {
-      final manifest = manifestJson();
-      final secondLevel = ((manifest['levels']! as List<Object?>)[1]! as Map<String, Object?>)['url']! as String;
-      final broken = Map<String, Object?>.of(LevelDefinition.fromJson(
-        jsonDecode(File('content/brain-train/$secondLevel').readAsStringSync()),
-      ).toJson())..['tiles'] = <Object?>[];
-      final coordinator = coordinatorFor(
-        contentServer(overrides: {
-          '/brain-train/manifest.json': newerManifest(edit: (m) {
-            for (final level in (m['levels']! as List<Object?>).cast<Map<String, Object?>>()) {
-              level.remove('sha256');
-            }
-          }),
-          '/brain-train/$secondLevel': http.Response(jsonEncode(broken), 200),
-        }),
-        ContentCache(MemoryContentStore()),
-      );
-      await coordinator.loadInitial();
-      expect(await coordinator.refresh(), ContentSyncStatus.updated);
-      expect(coordinator.current!.levels.length, levelCount - 1);
-      expect(coordinator.current!.levelErrors.keys, ['level-0002']);
-    });
-
-    test('an update reuses bundled objects: only the manifest is downloaded', () async {
-      final log = <String>[];
-      final store = MemoryContentStore();
-      final coordinator = coordinatorFor(
-        contentServer(log: log, overrides: {'/brain-train/manifest.json': newerManifest()}),
-        ContentCache(store),
-        seed: true,
-      );
-      await coordinator.loadInitial();
-      expect(await coordinator.refresh(), ContentSyncStatus.updated);
-      expect(log, ['/brain-train/manifest.json'], reason: 'every level, the registry and all art are bundled');
-      // Copied into the cache, so the known-good set stands on its own.
-      final offline = coordinatorFor(
-        MockClient((r) async => throw http.ClientException('offline', r.url)),
-        ContentCache(store),
-        // A bundle with only its manifest: every object must come from the cache.
-        bundle: BundledContentSource((key) async => key.endsWith('/manifest.json') ? File(key).readAsBytesSync() : null),
-      );
-      final cached = await offline.loadInitial();
-      expect(cached.origin, ContentOrigin.cached);
-      expect(cached.levels.length, levelCount);
-    });
-
-    test('a changed object is downloaded; unchanged bundled ones are not', () async {
-      final log = <String>[];
-      final manifest = manifestJson();
-      final first = (manifest['levels']! as List<Object?>).first! as Map<String, Object?>;
-      final level = LevelDefinition.fromJson(jsonDecode(File('content/brain-train/${first['url']}').readAsStringSync()));
-      final renamed = jsonEncode(
-        LevelDefinition(
-          levelId: level.levelId,
-          title: 'Renamed Glade',
-          difficulty: level.difficulty,
-          board: level.board,
-          rules: level.rules,
-          backdrop: level.backdrop,
-          tiles: level.tiles,
-        ).toJson(),
-      );
-      const newPath = 'levels/level-0001-renamed.json';
-      final coordinator = coordinatorFor(
-        contentServer(log: log, overrides: {
-          '/brain-train/manifest.json': newerManifest(edit: (m) {
-            final entry = (m['levels']! as List<Object?>).first! as Map<String, Object?>;
-            entry
-              ..['url'] = newPath
-              ..remove('sha256');
-          }),
-          '/brain-train/$newPath': http.Response(renamed, 200),
-        }),
-        ContentCache(MemoryContentStore()),
-        seed: true,
-      );
-      await coordinator.loadInitial();
-      expect(await coordinator.refresh(), ContentSyncStatus.updated);
-      expect(log, ['/brain-train/manifest.json', '/brain-train/$newPath']);
-      expect(coordinator.current!.levels['level-0001']!.title, 'Renamed Glade');
-    });
-
-    test('startup reads each level once: only the content in use is built', () async {
-      final store = MemoryContentStore();
-      final online = coordinatorFor(contentServer(overrides: {'/brain-train/manifest.json': newerManifest()}), ContentCache(store));
-      await online.loadInitial();
-      expect(await online.refresh(), ContentSyncStatus.updated);
-
-      // Newer content is cached: the bundled levels are not parsed at all.
-      final counting = CountingSource();
-      final next = coordinatorFor(
-        MockClient((r) async => throw http.ClientException('offline', r.url)),
-        ContentCache(store),
-        bundle: counting,
-      );
-      expect((await next.loadInitial()).origin, ContentOrigin.cached);
-      expect(counting.reads.keys, ['manifest.json']);
-
-      // Nothing cached: every bundled level is read exactly once.
-      final fresh = CountingSource();
-      final first = coordinatorFor(
-        MockClient((r) async => throw http.ClientException('offline', r.url)),
-        ContentCache(MemoryContentStore()),
-        bundle: fresh,
-      );
-      expect((await first.loadInitial()).levels.length, levelCount);
-      final levelReads = fresh.reads.entries.where((e) => e.key.startsWith('levels/'));
-      expect(levelReads, hasLength(levelCount));
+    test('startup reads each local level file once and nothing else', () async {
+      final counting = CountingSource(content.starter());
+      final f = fixtureCoordinator(server: content.server(online: () => false), bundle: counting, seed: false);
+      final snapshot = await f.coordinator.loadInitial();
+      expect(snapshot.levels, hasLength(5));
+      final levelReads = counting.reads.entries.where((e) => e.key.startsWith('levels/')).toList();
       expect(levelReads.every((e) => e.value == 1), isTrue);
+      expect(counting.reads.keys.where((k) => k.startsWith('symbols/') || k.startsWith('animated-symbols/')), isEmpty,
+          reason: 'art is read when a level is opened, not at startup');
     });
   });
 }

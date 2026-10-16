@@ -10,8 +10,6 @@ import 'package:brain_train/game_engine/models/symbol_registry.dart';
 import 'package:brain_train/game_engine/models/tile_definition.dart';
 import 'package:brain_train/game_engine/rules/match_rules.dart';
 import 'package:brain_train/game_engine/state/game_engine.dart';
-import 'package:http/http.dart' as http;
-import 'package:http/testing.dart';
 
 /// Tile spec: (id, symbol, x, y, layer). Footprints are 2x2 logical units.
 typedef T = (String, String, double, double, int);
@@ -36,25 +34,12 @@ SymbolRegistry registry(Iterable<String> codes, {Map<String, String> matchGroups
 GameEngine engineFor(LevelDefinition level, SymbolRegistry registry) =>
     GameEngine(level: level, rules: MatchRules(level: level, registry: registry));
 
-/// Published content, read straight from the repository.
+/// The starter pack the app bundles (manifest and registry of every level,
+/// levels 1-5 and their art), read straight from the repository. Committed
+/// to git, unlike the full generated tree.
 final BundledContentSource repoContent = BundledContentSource((key) async {
   final file = File(key);
   return file.existsSync() ? file.readAsBytesSync() : null;
-});
-
-/// An HTTP client serving `content/<path>` for `/brain-train/<path>`, with
-/// optional per-path overrides (status code or bytes).
-MockClient contentServer({
-  Map<String, http.Response> overrides = const {},
-  List<String>? log,
-}) => MockClient((request) async {
-  final path = request.url.path;
-  log?.add(path);
-  final override = overrides[path];
-  if (override != null) return override;
-  final file = File('content${Uri.decodeComponent(path)}');
-  if (!file.existsSync()) return http.Response('missing', 404);
-  return http.Response.bytes(file.readAsBytesSync(), 200);
-});
+}, prefix: 'content/starter/');
 
 Uint8List bytesOf(String text) => Uint8List.fromList(text.codeUnits);

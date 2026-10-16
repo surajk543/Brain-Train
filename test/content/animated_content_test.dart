@@ -8,7 +8,6 @@ import 'package:brain_train/content/content_config.dart';
 import 'package:brain_train/content/content_coordinator.dart';
 import 'package:brain_train/content/content_exception.dart';
 import 'package:brain_train/content/content_fetcher.dart';
-import 'package:brain_train/content/content_repositories.dart';
 import 'package:brain_train/content/content_snapshot.dart';
 import 'package:brain_train/content/content_sources.dart';
 import 'package:brain_train/content/content_validator.dart';
@@ -21,6 +20,7 @@ import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
 
 import '../helpers.dart';
+import 'fixture_content.dart';
 
 final config = ContentConfig(
   baseUrl: Uri.parse('https://content.test/'),
@@ -29,21 +29,7 @@ final config = ContentConfig(
 );
 
 Map<String, Object?> manifestJson() =>
-    jsonDecode(File('content/brain-train/manifest.json').readAsStringSync()) as Map<String, Object?>;
-
-ContentCoordinator coordinatorFor(http.Client client, ContentCache cache) {
-  final fetcher = ContentFetcher(client: client, config: config, delay: (_) async {});
-  final resolver = RemoteAssetResolver(config);
-  return ContentCoordinator(
-    cache: cache,
-    bundled: repoContent,
-    downloads: AssetDownloadManager(cache: cache, fetcher: fetcher, resolver: resolver),
-    manifests: ContentManifestService(fetcher: fetcher, resolver: resolver),
-  );
-}
-
-/// The repository manifest with a newer content version, served remotely.
-http.Response newerManifest() => http.Response(jsonEncode(manifestJson()..['contentVersion'] = '2999.1.1.1'), 200);
+    jsonDecode(File('content/starter/manifest.json').readAsStringSync()) as Map<String, Object?>;
 
 final Uint8List pulse = File('test/fixtures/pulse.lottie.json').readAsBytesSync();
 
@@ -51,15 +37,6 @@ Uint8List pulseWith(void Function(Map<String, Object?> json) edit) {
   final json = jsonDecode(utf8.decode(pulse)) as Map<String, Object?>;
   edit(json);
   return Uint8List.fromList(utf8.encode(jsonEncode(json)));
-}
-
-/// Animated symbols the repository content's levels use.
-Future<List<SymbolDefinition>> usedAnimated() async {
-  final coordinator = coordinatorFor(
-    MockClient((r) async => throw http.ClientException('offline', r.url)),
-    ContentCache(MemoryContentStore()),
-  );
-  return (await coordinator.loadInitial()).usedAnimatedSymbols.toList();
 }
 
 void main() {
@@ -207,68 +184,55 @@ void main() {
   });
 
   group('coordinator', () {
-    test('the bundled snapshot references its animations and loads them offline', () async {
-      final animated = await usedAnimated();
-      expect(animated, isNotEmpty, reason: 'published levels use animated symbols');
-      final coordinator = coordinatorFor(
-        MockClient((r) async => throw http.ClientException('offline', r.url)),
-        ContentCache(MemoryContentStore()),
-      );
-      final snapshot = await coordinator.loadInitial();
-      expect(snapshot.origin, ContentOrigin.bundled);
-      for (final symbol in animated) {
-        expect(snapshot.referencedPaths, contains(symbol.assetPath));
-        final bytes = await snapshot.artwork.read(symbol.assetPath!, ContentKind.animation, sha256: symbol.sha256);
-        checkLottieJson(bytes, symbol.assetPath!);
-      }
+    final content = FixtureContent();
+    // Level 2 uses animated A2, level 4 animated A0 (see FixtureContent).
+    final animatedPath = content.levelArt[2]!.firstWhere((p) => p.startsWith('animated-symbols/'));
+
+    test('the starter pack plays its animations offline', () async {
+      final f = fixtureCoordinator(server: content.server(online: () => false), bundle: content.starter());
+      final snapshot = await f.coordinator.loadInitial();
+      final ready = await f.coordinator.ensureLevel(snapshot.manifest.entry(content.levelId(2))!);
+      final animated = ready.snapshot.assetSymbolsOf(ready.level).where((s) => s.isAnimated).toList();
+      expect(animated.map((s) => s.assetPath), [animatedPath]);
+      final bytes = await snapshot.artwork.read(animatedPath, ContentKind.animation, sha256: animated.single.sha256);
+      checkLottieJson(bytes, animatedPath);
     });
 
-    test('an update downloads and caches every animation its levels use before committing', () async {
+    test('an update downloads and caches the animations its window uses before committing', () async {
       final log = <String>[];
       final store = MemoryContentStore();
       final cache = ContentCache(store);
-      final coordinator = coordinatorFor(
-        contentServer(log: log, overrides: {'/brain-train/manifest.json': newerManifest()}),
-        cache,
-      );
-      await coordinator.loadInitial();
-      expect(await coordinator.refresh(), ContentSyncStatus.updated);
-      final animated = coordinator.current!.usedAnimatedSymbols.toList();
+      // An app bundle without levels: everything comes from R2.
+      final empty = FixtureContent(version: '2026.1.1.0').starter(count: 0);
+      final f = fixtureCoordinator(server: content.server(log: log), bundle: empty, store: store, seed: false);
+      await f.coordinator.loadInitial();
+      expect(await f.coordinator.refresh(), ContentSyncStatus.updated);
+      final animated = content.artOf([1, 2, 3, 4, 5]).where((p) => p.startsWith('animated-symbols/')).toSet();
       expect(animated, isNotEmpty);
-      for (final symbol in animated) {
-        expect(log, contains('/brain-train/${symbol.assetPath}'));
-        expect(await cache.readObject(symbol.assetPath!, sha256: symbol.sha256), isNotNull);
+      for (final path in animated) {
+        expect(log, contains(path));
+        expect(await cache.readObject(path), isNotNull);
       }
-      // Pruning keeps them: they are referenced by the committed snapshot.
-      await cache.prune(keepPaths: coordinator.current!.referencedPaths);
-      expect(await cache.readObject(animated.first.assetPath!), isNotNull);
-
       // Next launch offline: the cached update plays with its animations.
-      final offline = coordinatorFor(
-        MockClient((r) async => throw http.ClientException('x', r.url)),
-        ContentCache(store),
-      );
-      final snapshot = await offline.loadInitial();
+      final offline = fixtureCoordinator(server: content.server(online: () => false), bundle: empty, store: store);
+      final snapshot = await offline.coordinator.loadInitial();
       expect(snapshot.origin, ContentOrigin.cached);
-      final bytes = await CachedContentSource(
-        ContentCache(store),
-      ).read(animated.first.assetPath!, ContentKind.animation);
-      expect(bytes, isNotEmpty);
+      expect(await CachedContentSource(ContentCache(store)).read(animated.first, ContentKind.animation), isNotEmpty);
     });
 
     test('a missing or invalid animation blocks the update instead of half-applying it', () async {
-      final symbol = (await usedAnimated()).first;
       for (final broken in [http.Response('gone', 404), http.Response('{"not": "lottie"}', 200)]) {
         final cache = ContentCache(MemoryContentStore());
-        final coordinator = coordinatorFor(
-          contentServer(
-            overrides: {'/brain-train/manifest.json': newerManifest(), '/brain-train/${symbol.assetPath}': broken},
-          ),
-          cache,
+        final empty = FixtureContent(version: '2026.1.1.0').starter(count: 0);
+        final f = fixtureCoordinator(
+          server: content.server(overrides: {animatedPath: broken}),
+          bundle: empty,
+          store: cache.store as MemoryContentStore,
+          seed: false,
         );
-        await coordinator.loadInitial();
-        expect(await coordinator.refresh(), ContentSyncStatus.rejected);
-        expect(coordinator.current!.origin, ContentOrigin.bundled);
+        await f.coordinator.loadInitial();
+        expect(await f.coordinator.refresh(), ContentSyncStatus.rejected);
+        expect(f.coordinator.current!.origin, ContentOrigin.bundled);
         expect(await cache.readKnownGood(), isNull);
       }
     });

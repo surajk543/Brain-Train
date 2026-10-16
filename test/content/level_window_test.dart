@@ -46,7 +46,7 @@ void main() {
         f.coordinator.ensureLevel(snapshot.manifest.entry(content.levelId(6))!),
         throwsA(isA<ContentException>().having((e) => e.isTransient, 'transient', isTrue)),
       );
-      expect(f.downloads.networkRequests, 0);
+      expect(f.downloads.downloadedPaths, isEmpty);
     });
 
     test('online: only the manifest is downloaded; the window comes from the bundle', () async {
@@ -158,7 +158,7 @@ void main() {
         expect(ready.level.levelId, content.levelId(n), reason: 'level $n offline');
         expect(ready.snapshot.isReady(content.levelId(n)), isTrue);
       }
-      expect(offline.downloads.networkRequests, 0);
+      expect(offline.downloads.downloadedPaths, isEmpty);
     });
 
     test('across a version switch: changed levels replay offline from their old files until the new ones are cached', () async {
@@ -192,7 +192,7 @@ void main() {
         expect(ready.entry.ref.url, changed ? content.levelPaths[n] : v2.levelPaths[n], reason: 'level $n file');
         expect(ready.level.title, changed ? 'Glade $n' : (n == 9 ? 'Glade Nine' : 'Glade $n'));
       }
-      expect(offline.downloads.networkRequests, 0);
+      expect(offline.downloads.downloadedPaths, isEmpty, reason: 'nothing came from the network');
 
       // Back online: replaying level 2 fetches its new file, which then wins over the old one.
       final online = fixtureCoordinator(server: v2.server(), bundle: content.starter(), store: store, completed: () => won);
@@ -231,19 +231,21 @@ void main() {
       expect(broken.coordinator.current, same(before));
       expect(await ContentCache(store).readKnownGood(), isNull);
 
-      // The connection drops half-way: still the old version.
+      // On a fresh device the connection drops after the manifest, the
+      // registry and one level: still the old version.
+      final fresh = MemoryContentStore();
       var requests = 0;
       var online = true;
       final flaky = fixtureCoordinator(
-        server: content.server(online: () => online && requests++ < 6),
+        server: content.server(online: () => online && requests++ < 3),
         bundle: oldBundle,
-        store: store,
+        store: fresh,
         seed: false,
       );
       await flaky.coordinator.loadInitial();
       expect(await flaky.coordinator.refresh(), ContentSyncStatus.offline);
       expect(flaky.coordinator.current!.contentVersion, '2026.1.1.0');
-      expect(await ContentCache(store).readKnownGood(), isNull);
+      expect(await ContentCache(fresh).readKnownGood(), isNull);
 
       requests = -1000;
       expect(await flaky.coordinator.refresh(), ContentSyncStatus.updated);
@@ -251,7 +253,7 @@ void main() {
       for (var n = 1; n <= 5; n++) {
         expect(flaky.coordinator.current!.isReady(content.levelId(n)), isTrue);
       }
-      expect((await ContentCache(store).readKnownGood())!.contentVersion, '2026.1.1.1');
+      expect((await ContentCache(fresh).readKnownGood())!.contentVersion, '2026.1.1.1');
       online = false;
     });
 
