@@ -1,10 +1,12 @@
 import 'dart:async';
 import 'dart:math' as math;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import '../../app/app_services.dart';
 import '../../app/brand.dart';
+import '../../app/rewarded_ads_controller.dart';
 import '../../app/theme.dart';
 import '../../content/content_snapshot.dart';
 import '../../content/level_manifest.dart';
@@ -12,6 +14,7 @@ import '../../data/progress_repository.dart';
 import '../../game_engine/models/level_definition.dart';
 import '../../game_engine/scoring/score_format.dart';
 import '../../game_engine/state/game_state.dart';
+import '../../platform/rewarded_ads.dart';
 import '../../rendering/symbol_art.dart';
 import '../levels/level_loader.dart';
 import 'game_controller.dart';
@@ -38,6 +41,11 @@ Color levelAccent(LevelBackdrop? backdrop) {
   final value = int.tryParse(hex.substring(1), radix: 16);
   return value == null ? BrandGold.warm : Color(value | 0xFF000000);
 }
+
+/// Notes under the Tray full card's Revive button while it waits for an ad.
+const String kReviveLoadingNote = 'Loading an ad…';
+const String kReviveOfflineNote = 'Connect to the internet to watch an ad and revive';
+const String kReviveDismissedNote = 'Watch the ad to the end to revive.';
 
 /// Plays one level from a fixed content snapshot.
 ///
@@ -76,6 +84,14 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
 
   /// Whether the "Restart this level?" card is open (the clock is paused).
   final ValueNotifier<bool> _confirmingRestart = ValueNotifier(false);
+
+  /// True from a Revive tap until its ad has closed (and the revive, if
+  /// earned, has started): the Revive button is off meanwhile.
+  final ValueNotifier<bool> _adInFlight = ValueNotifier(false);
+
+  /// How the last Revive ad ended, for the Tray full card's note.
+  final ValueNotifier<RewardedAdResult?> _lastAd = ValueNotifier(null);
+  late final RewardedAdsController _ads;
   GameController? _controller;
   late final TrayController _tray;
   late final TileFlightController _flights;
@@ -99,6 +115,9 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
     final reduceMotion = MediaQuery.disableAnimationsOf(context);
     if (_controller == null) {
       final services = AppScope.of(context);
+      _ads = services.ads;
+      // Have an ad ready by the time the tray might fill (never waits).
+      _ads.preload();
       _reduceMotion = reduceMotion;
       _controller = GameController(
         entry: widget.entry,
@@ -152,6 +171,7 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
       _resultTimer?.cancel();
       _resultTimer = null;
       _resultShown.value = false;
+      _lastAd.value = null;
       return;
     }
     if (_resultShown.value || _resultTimer != null || _busy) return;
@@ -166,6 +186,8 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
       // Tray events arrive just after the move: wait for them to play out.
       if (_busy) return;
       _resultShown.value = true;
+      // Revive needs an ad: load one now if none is (retries at once).
+      if (controller.state.status == GameStatus.trayFull) _ads.preload();
     });
   }
 
@@ -225,6 +247,50 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
     }
   }
 
+  /// Revive from the Tray full card: only after a rewarded ad's reward
+  /// (no ad needed in a build without ads). The clock is already stopped (a
+  /// full tray stops it); the tiles fly back once the ad has closed and the
+  /// app is in the foreground again. A closed or failed ad leaves the card
+  /// up, and Revive shows another ad.
+  Future<void> _revive() async {
+    if (controller.state.status != GameStatus.trayFull || _adInFlight.value) return;
+    if (_ads.off) {
+      controller.revive();
+      return;
+    }
+    if (_ads.status != RewardedAdStatus.ready) return;
+    _adInFlight.value = true;
+    _lastAd.value = null;
+    final result = await _ads.show();
+    if (!mounted) return;
+    if (result == RewardedAdResult.earned) await _untilResumed();
+    if (!mounted) return;
+    _adInFlight.value = false;
+    if (result == RewardedAdResult.earned) {
+      if (controller.state.status == GameStatus.trayFull) controller.revive();
+    } else {
+      _lastAd.value = result;
+    }
+  }
+
+  /// The ad was a separate screen: wait (briefly) for the app to be in the
+  /// foreground, so the revive flights are seen.
+  static Future<void> _untilResumed() async {
+    final state = WidgetsBinding.instance.lifecycleState;
+    if (state == null || state == AppLifecycleState.resumed) return;
+    final resumed = Completer<void>();
+    final listener = AppLifecycleListener(
+      onResume: () {
+        if (!resumed.isCompleted) resumed.complete();
+      },
+    );
+    try {
+      await resumed.future.timeout(const Duration(seconds: 2), onTimeout: () {});
+    } finally {
+      listener.dispose();
+    }
+  }
+
   void _askRestart() {
     controller.pauseClock();
     _confirmingRestart.value = true;
@@ -275,6 +341,8 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
     _intro.dispose();
     _resultShown.dispose();
     _confirmingRestart.dispose();
+    _adInFlight.dispose();
+    _lastAd.dispose();
     _symbolClock.dispose();
     super.dispose();
   }
@@ -372,7 +440,14 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
                                     ),
                                     GameStatus.trayFull => _Overlay(
                                       topInset: topInset,
-                                      child: _TrayFullCard(onRevive: controller.revive, onRestart: controller.restart),
+                                      child: _TrayFullCard(
+                                        ads: _ads,
+                                        adInFlight: _adInFlight,
+                                        lastAd: _lastAd,
+                                        reduceMotion: reduceMotion,
+                                        onRevive: _revive,
+                                        onRestart: controller.restart,
+                                      ),
                                     ),
                                     GameStatus.playing => const SizedBox.shrink(),
                                   },
@@ -795,40 +870,108 @@ class _CompletionCard extends StatelessWidget {
 
 /// Shown when the tray fills up: revive (the tray's tiles go back to the
 /// board) or start the level again. The HUD's Back button stays available.
+///
+/// Revive plays a rewarded ad first (owner): it is off while no ad is loaded
+/// (a note says it is loading, or that the internet is needed) and while one
+/// is on screen. Restart always works.
 class _TrayFullCard extends StatelessWidget {
-  const _TrayFullCard({required this.onRevive, required this.onRestart});
+  const _TrayFullCard({
+    required this.ads,
+    required this.adInFlight,
+    required this.lastAd,
+    required this.reduceMotion,
+    required this.onRevive,
+    required this.onRestart,
+  });
 
+  final RewardedAdsController ads;
+  final ValueListenable<bool> adInFlight;
+  final ValueListenable<RewardedAdResult?> lastAd;
+  final bool reduceMotion;
   final VoidCallback onRevive;
   final VoidCallback onRestart;
 
   @override
-  Widget build(BuildContext context) => Column(
-    mainAxisSize: MainAxisSize.min,
-    children: [
-      const PremiumEmblem(icon: Icons.inventory_2_outlined),
-      const SizedBox(height: 12),
-      Text(
-        'Tray full',
-        textAlign: TextAlign.center,
-        style: displayText(28, weight: FontWeight.w600),
-      ),
-      const SizedBox(height: 10),
-      Text(
-        'The tray filled up without a match. Revive to put these tiles back on the board, or start again.',
-        textAlign: TextAlign.center,
-        style: displayText(
-          16,
-          color: BrainTrainColors.ivory.withValues(alpha: 0.85),
-          weight: FontWeight.w400,
-        ).copyWith(height: 1.35),
-      ),
-      const SizedBox(height: 14),
-      const PremiumDivider(horizontal: true),
-      const SizedBox(height: 16),
-      PremiumButton(label: 'Revive', primary: true, expand: true, onPressed: onRevive),
-      const SizedBox(height: 10),
-      PremiumButton(label: 'Restart', expand: true, onPressed: onRestart),
-    ],
+  Widget build(BuildContext context) => ListenableBuilder(
+    listenable: Listenable.merge([ads, adInFlight, lastAd]),
+    builder: (context, _) {
+      final status = ads.status;
+      final busy = adInFlight.value;
+      final canRevive = !busy && (status == RewardedAdStatus.off || status == RewardedAdStatus.ready);
+      final (String? note, bool loading) = busy
+          ? (null, false)
+          : switch (status) {
+              RewardedAdStatus.loading => (kReviveLoadingNote, true),
+              RewardedAdStatus.offline => (kReviveOfflineNote, false),
+              RewardedAdStatus.ready when lastAd.value == RewardedAdResult.dismissed => (kReviveDismissedNote, false),
+              _ => (null, false),
+            };
+      return Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const PremiumEmblem(icon: Icons.inventory_2_outlined),
+          const SizedBox(height: 12),
+          Text(
+            'Tray full',
+            textAlign: TextAlign.center,
+            style: displayText(28, weight: FontWeight.w600),
+          ),
+          const SizedBox(height: 10),
+          Text(
+            ads.off
+                ? 'The tray filled up without a match. Revive to put these tiles back on the board, or start again.'
+                : 'The tray filled up without a match. Watch a short ad to revive and put these tiles back on the board, or start again.',
+            textAlign: TextAlign.center,
+            style: displayText(
+              16,
+              color: BrainTrainColors.ivory.withValues(alpha: 0.85),
+              weight: FontWeight.w400,
+            ).copyWith(height: 1.35),
+          ),
+          const SizedBox(height: 14),
+          const PremiumDivider(horizontal: true),
+          const SizedBox(height: 16),
+          PremiumButton(
+            label: 'Revive',
+            icon: ads.off ? null : Icons.ondemand_video_rounded,
+            primary: true,
+            expand: true,
+            onPressed: canRevive ? onRevive : null,
+          ),
+          if (note != null)
+            Padding(
+              padding: const EdgeInsets.only(top: 8),
+              child: Semantics(
+                liveRegion: true,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    if (loading && !reduceMotion) ...[
+                      // Its own layer: the spinner never repaints the card.
+                      const RepaintBoundary(
+                        child: SizedBox.square(
+                          dimension: 14,
+                          child: CircularProgressIndicator(strokeWidth: 1.8, color: BrandGold.light),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                    ],
+                    Flexible(
+                      child: Text(
+                        note,
+                        textAlign: TextAlign.center,
+                        style: displayText(14.5, color: BrandGold.light, weight: FontWeight.w500).copyWith(height: 1.3),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          const SizedBox(height: 10),
+          PremiumButton(label: 'Restart', expand: true, onPressed: onRestart),
+        ],
+      );
+    },
   );
 }
 

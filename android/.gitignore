@@ -11,5 +11,6 @@ GeneratedPluginRegistrant.java
 # See https://flutter.dev/to/reference-keystore
 key.properties
 play_games.properties
+admob.properties
 **/*.keystore
 **/*.jks

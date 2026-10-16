@@ -16,6 +16,8 @@ sign-in (on failure: a short footer notice).
   Without it, release builds are signed with the debug key (Gradle warns) and cannot go to Play.
 - `android/play_games.properties` — `playGamesAppId=<numeric app ID>` (or `-PplayGamesAppId=` in CI). Without
   it the build has Play Games switched off (init provider disabled, `playGamesConfigured` false).
+- `android/admob.properties` — AdMob app ID and rewarded ad unit (docs/ADS.md). Without it the build uses
+  Google's test IDs (a release build warns).
 
 ## One-time Play Console setup
 

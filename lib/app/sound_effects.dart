@@ -36,9 +36,7 @@ class SoundEffects {
 
   Future<void> preload() async {
     try {
-      await AudioPlayer.global.setAudioContext(
-        AudioContextConfig(focus: AudioContextConfigFocus.mixWithOthers).build(),
-      );
+      await _setAudioContext();
       for (final sfx in Sfx.values) {
         final player = AudioPlayer();
         await player.setPlayerMode(PlayerMode.lowLatency);
@@ -48,6 +46,34 @@ class SoundEffects {
       }
     } on Object {
       // No audio available (tests, unusual devices): stay silent.
+    }
+  }
+
+  static Future<void> _setAudioContext() => AudioPlayer.global.setAudioContext(
+    AudioContextConfig(focus: AudioContextConfigFocus.mixWithOthers).build(),
+  );
+
+  /// Applies the game's audio context again (after a rewarded ad, which may
+  /// have changed the audio session). Never throws.
+  Future<void> restoreAudioContext() async {
+    if (_players.isEmpty) return;
+    try {
+      await _setAudioContext();
+    } on Object {
+      // Ignore: sound effects are never allowed to break the game.
+    }
+  }
+
+  /// Stops every sound effect still playing (before a rewarded ad).
+  void stopAll() {
+    for (final player in _players.values) {
+      unawaited(() async {
+        try {
+          await player.stop();
+        } on Object {
+          // Ignore.
+        }
+      }());
     }
   }
 

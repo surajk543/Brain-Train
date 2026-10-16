@@ -3,15 +3,17 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 
 import '../features/home/home_screen.dart';
+import '../features/intro/age_screen.dart';
 import '../features/intro/brand_logo_screen.dart';
 import '../features/intro/intro_video_screen.dart';
 import 'app_services.dart';
 import 'theme.dart';
 
 /// Launch sequence: Sun Game Studio video, then the Brain Train logo (at
-/// least [logoDuration], and until services are ready), then the game.
-/// Services (bundled or cached content, no network needed) load from the
-/// first frame, in parallel with both.
+/// least [logoDuration], and until services are ready), then the game. At
+/// first launch the neutral age screen comes between the logo and the lobby
+/// (once: its answer is stored). Services (bundled or cached content, no
+/// network needed) load from the first frame, in parallel with both.
 class BrainTrainApp extends StatefulWidget {
   const BrainTrainApp({
     super.key,
@@ -102,7 +104,7 @@ class _BrainTrainAppState extends State<BrainTrainApp> {
             ? AppScope(
                 key: const ValueKey('home'),
                 services: services,
-                child: _app(const HomeScreen()),
+                child: _app(_AgeGate(services: services)),
               )
             : KeyedSubtree(
                 key: const ValueKey('logo'),
@@ -114,5 +116,27 @@ class _BrainTrainAppState extends State<BrainTrainApp> {
               ),
       );
     },
+  );
+}
+
+/// The age screen until it has been answered once, then the lobby (which
+/// starts ads, with the stored age group, after its first frame).
+class _AgeGate extends StatelessWidget {
+  const _AgeGate({required this.services});
+
+  final AppServices services;
+
+  @override
+  Widget build(BuildContext context) => ListenableBuilder(
+    listenable: services.settings,
+    builder: (context, _) => AnimatedSwitcher(
+      duration: const Duration(milliseconds: 450),
+      child: services.settings.ageGroup == null
+          ? AgeScreen(
+              key: const ValueKey('age'),
+              onAnswered: (group) => unawaited(services.settings.setAgeGroup(group)),
+            )
+          : const HomeScreen(key: ValueKey('lobby')),
+    ),
   );
 }

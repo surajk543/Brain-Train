@@ -9,6 +9,7 @@ import 'dart:math' as math;
 import 'dart:ui' as ui;
 
 import 'package:brain_train/app/app_services.dart';
+import 'package:brain_train/app/rewarded_ads_controller.dart';
 import 'package:brain_train/app/theme.dart';
 import 'package:brain_train/content/asset_download_manager.dart';
 import 'package:brain_train/content/content_cache.dart';
@@ -37,6 +38,7 @@ import 'package:brain_train/game_engine/models/symbol_registry.dart';
 import 'package:brain_train/game_engine/rules/match_rules.dart';
 import 'package:brain_train/game_engine/state/game_engine.dart';
 import 'package:brain_train/game_engine/validation/solver.dart';
+import 'package:brain_train/platform/rewarded_ads.dart';
 import 'package:brain_train/rendering/symbol_art.dart';
 import 'package:brain_train/rendering/tile_style.dart';
 import 'package:flutter/material.dart';
@@ -49,6 +51,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../helpers.dart';
 import '../helpers/fake_stopwatch.dart';
+import '../platform/fake_rewarded_ads.dart';
 
 final String? _captureDir = Platform.environment['CAPTURE_DIR'];
 
@@ -68,7 +71,7 @@ final BundledContentSource _fullTree = BundledContentSource((key) async {
 
 /// Offline services on the starter pack (levels 1-5), or on every level
 /// with [full].
-Future<AppServices> _services({bool full = false}) async {
+Future<AppServices> _services({bool full = false, RewardedAds? ads}) async {
   final config = ContentConfig(baseUrl: Uri.parse('https://content.test/'), allowedHosts: const {'content.test'});
   final offline = MockClient((r) async => throw http.ClientException('offline', r.url));
   final fetcher = ContentFetcher(client: offline, config: config, delay: (_) async {});
@@ -88,6 +91,7 @@ Future<AppServices> _services({bool full = false}) async {
     progress: await ProgressRepository.open(),
     settings: await SettingsRepository.open(),
     symbolArt: SymbolArtCache(),
+    ads: ads == null ? null : RewardedAdsController(ads),
   );
 }
 
@@ -366,9 +370,9 @@ void main() {
 
   setUp(() => SharedPreferences.setMockInitialValues({}));
 
-  Future<void> start(WidgetTester tester, {bool full = false}) async {
+  Future<void> start(WidgetTester tester, {bool full = false, RewardedAds? ads}) async {
     await tester.runAsync(() async {
-      services = await _services(full: full);
+      services = await _services(full: full, ads: ads);
       snapshot = services.content.snapshot;
       // A difficulty-4 level: 4-slot tray, enough distinct symbols to fill it.
       meadow = snapshot.playableEntries.firstWhere((e) => e.difficulty == '4');
@@ -700,6 +704,31 @@ void main() {
       expect(find.text('Tray full'), findsNothing);
       expect(find.bySemanticsLabel('Tray, 0 of 4 tiles'), findsOneWidget);
       expect(find.text('0/${pairsOf(meadow)}'), findsOneWidget);
+      await _leave(tester);
+    });
+  }
+
+  // Revive waits for a rewarded ad: the card with Revive off and its note,
+  // at the tightest size.
+  for (final (status, note) in [
+    (RewardedAdStatus.loading, kReviveLoadingNote),
+    (RewardedAdStatus.offline, kReviveOfflineNote),
+    (RewardedAdStatus.ready, null),
+  ]) {
+    testWidgets('tray-full overlay, ad ${status.name}, 360x640 at 1.3x text', (tester) async {
+      await start(tester, ads: FakeRewardedAds(status));
+      final (save, last) = _nearlyFull(snapshot, meadow);
+      await _pumpGame(tester, services: services, entry: meadow, phone: _small, textScale: 1.3, resume: save);
+      await _tapTile(tester, snapshot, meadow, save.history, last);
+      await _settle(tester);
+      expect(find.text('Tray full'), findsOneWidget);
+      expect(find.text('Revive'), findsOneWidget);
+      if (note != null) expect(find.text(note), findsOneWidget);
+      expect(find.byIcon(Icons.ondemand_video_rounded), findsOneWidget);
+      _expectBottomHud(tester, _small);
+      expect(tester.getRect(find.text('Restart')).bottom, lessThan(tester.getRect(find.byType(PremiumHudFrame)).top));
+      expect(tester.takeException(), isNull);
+      await _capture(tester, 'gameplay_night_360x640_tray_full_ad_${status.name}', _small.dpr);
       await _leave(tester);
     });
   }
