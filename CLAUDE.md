@@ -299,6 +299,9 @@ dart run tool/smoke_remote.dart         # live check: app's content client vs pr
   have no Play Store, `Pixel_6_API_34` does not exist. Python 3 + Pillow for `tool/assets/*.py`, ffmpeg for audio.
 - `flutter analyze` and `flutter test` work on a fresh clone (tests use fixtures and `content/starter/`); on the Linux
   machine all 512 pass (2026-10-16); on the Mac 6 tests failed before (see Open work).
+- CI: `.github/workflows/ios-build.yml` builds the iOS simulator app (`flutter build ios --simulator --debug`) on a
+  macOS runner when `ios/**`, `pubspec.*` or the workflow change, or by hand (Actions > Run workflow). macOS runners
+  use the private repo's free Actions minutes faster, so it does not run on every PR.
 - Content tree: `content/brain-train/` is not in git. Before `tool/content.dart build|validate` or `tool/publish.dart`
   on a new machine, mirror the live tree: `dart run tool/fetch_content.dart` (public prefix, no keys, sha256-checked).
 - Secrets: copy `.env` by a secure channel (password manager), never git/chat/email, likewise `android/key.properties`,

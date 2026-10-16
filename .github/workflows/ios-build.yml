@@ -1,0 +1,31 @@
+# Builds the iOS app for the simulator on a macOS runner, so a Mac developer can
+# clone the repo and `flutter run` on an iPhone simulator. No secrets: debug
+# builds use Google's test AdMob IDs and the public content host.
+#
+# macOS runners use the private repo's Actions minutes at a higher rate, so this
+# runs only when iOS-related files change, or by hand (Actions > Run workflow).
+name: iOS simulator build
+
+on:
+  pull_request:
+    paths:
+      - 'ios/**'
+      - 'pubspec.yaml'
+      - 'pubspec.lock'
+      - '.github/workflows/ios-build.yml'
+  workflow_dispatch:
+
+jobs:
+  ios-simulator:
+    runs-on: macos-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: 3.44.7
+          channel: stable
+          cache: true
+      - run: flutter --version
+      - run: flutter pub get
+      - run: flutter build ios --simulator --debug
