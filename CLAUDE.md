@@ -243,6 +243,11 @@ dart run tool/smoke_remote.dart         # live check: app's content client vs pr
   `primaryFill/Edge/Text` stay for the Completed Levels panel button. Level `backdrop.colors` only tints
   the gameplay ambient light. Tune tiles in `TileStyle`, never the art.
 - Every tile everywhere (board, lobby hero) uses `MahjongTileRenderer`; no second tile renderer.
+- Portrait only (owner, 2026-10-17): iOS `UISupportedInterfaceOrientations` portrait (iPad portrait + upside down,
+  `UIRequiresFullScreen`), Android `MainActivity` `screenOrientation="portrait"`. iPhone and iPad are both supported
+  (`TARGETED_DEVICE_FAMILY = "1,2"`).
+- Store names (owner, 2026-10-17): "Brain Train - Tile Match" on the App Store (the name "Brain Train" was taken) and on
+  Google Play; the home-screen name stays "Brain Train".
 
 ## Current state (2026-10-16)
 
@@ -289,7 +294,7 @@ dart run tool/smoke_remote.dart         # live check: app's content client vs pr
 - Not yet integrated: 4 IconScout AI images (spring rolls ×2, salad, nachos) — not reachable via the IconScout API.
 - Tray mechanic is integrated (tray at the top, flights, strike-and-shatter matches, Tray full card with
   Revive / Restart), with 2 to 5 slots per level.
-- App version 1.0.0+4 (`feat/rewarded-ads`, merged into `feat/campaign-v2`): rewarded ads on Revive, age screen,
+- App version 1.0.0+5 (2026-10-17): new content host, update popup, iOS release settings. 1.0.0+4 (`feat/rewarded-ads`, merged into `feat/campaign-v2`): rewarded ads on Revive, age screen,
   Privacy choices row, built with Google's AdMob test IDs (`google_mobile_ads` 9.1.0). This bundle (66.7 MB AAB,
   19.2 MB install) is the Closed testing - Alpha release in the Play Console.
 - Play Store listing (owner-approved): texts in `art/store/listing-en-US.md`, `art/store/icon-512.png`,
@@ -341,6 +346,14 @@ dart run tool/smoke_remote.dart         # live check: app's content client vs pr
   this Linux machine's debug key — another machine's debug key needs its own credential). Upload keystore:
   `~/keys/brain-train-upload-keystore.jks` on the Linux machine (password only in `android/key.properties`).
   Internal testing release draft exists (versionCode 1 was built before the app ID existed: replace with a newer build).
+- App Store Connect (2026-10-17): individual account, Team ID `A47UYXZH7P` (`DEVELOPMENT_TEAM` in the Runner target);
+  bundle ID registered; app "Brain Train - Tile Match", Apple ID `6823729570` (store URL after release:
+  `https://apps.apple.com/app/id6823729570`), SKU `braintrain-ios`, Games › Puzzle + Board, age rating 4+ (not "Made
+  for Kids"), free in all 175 countries, App Privacy published (Google Mobile Ads SDK data: coarse location, device
+  ID, product interaction, advertising data for third-party ads + analytics, not linked, tracking; diagnostics for
+  analytics), version 1.0 texts and URLs saved. `Info.plist`: `ITSAppUsesNonExemptEncryption` false; app privacy
+  manifest `ios/Runner/PrivacyInfo.xcprivacy` (no tracking by the app's own code; UserDefaults CA92.1). Still to do:
+  screenshots, App Review contact, real AdMob iOS IDs, build upload.
 - Play Console release state (2026-10-16): every App content declaration is done (privacy policy, ads = yes,
   Advertising ID, content rating, target audience 6+ incl. under 13 (Families), Data safety, Health/Financial/
   Government); category Puzzle; store listing saved. Closed testing - Alpha: versionCode 4 (1.0.0), all countries,
