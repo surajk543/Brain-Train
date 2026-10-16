@@ -48,7 +48,7 @@ class GameHud extends StatelessWidget {
   /// They shrink to leave the name this share at most (then it ellipsizes),
   /// and never below [_statsMinShare].
   static const double _titleShare = 0.36;
-  static const double _statsMinShare = 0.5;
+  static const double _statsMinShare = 0.46;
 
   @override
   Widget build(BuildContext context) => MediaQuery.withClampedTextScaling(
@@ -173,7 +173,7 @@ class _LevelTitle extends StatelessWidget {
   final bool compact;
 
   /// The smallest the name shrinks to before it ends in an ellipsis.
-  static const double minScale = 0.8;
+  static const double minScale = 0.72;
 
   double get _titleSize => compact ? 15.5 : 18;
 
