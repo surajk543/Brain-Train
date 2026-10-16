@@ -383,7 +383,7 @@ dart run tool/smoke_remote.dart         # live check: app's content client vs pr
   `/opt/homebrew/share/android-commandlinetools`, AVD `Pixel_9` = Play Store image (use for Play Games), `TP_*` AVDs
   have no Play Store, `Pixel_6_API_34` does not exist. Python 3 + Pillow for `tool/assets/*.py`, ffmpeg for audio.
 - `flutter analyze` and `flutter test` work on a fresh clone (tests use fixtures and `content/starter/`); on the Linux
-  machine 591 pass, 26 skip without the full content tree (2026-10-17, design system); on the Mac 6 failed before
+  machine 618 pass, 26 skip without the full content tree (2026-10-17, lobby + settings); on the Mac 6 failed before
   (see Open work).
 - Run on a Mac (iPhone simulator) or any machine with no secrets: `flutter pub get && flutter run`. Debug builds read
   content from the public host, use Google's test AdMob IDs, skip Play Games (Android only) and use debug signing;
