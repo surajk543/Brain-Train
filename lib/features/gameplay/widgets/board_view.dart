@@ -184,9 +184,12 @@ class BoardViewState extends State<BoardView> with SingleTickerProviderStateMixi
         _effects.shake([tileId]);
       case BoardReset():
         _effects.reset();
-      case TileToTray() || TrayPairCleared() || TrayFull() || TrayReturned():
-        // Tiles leave at once; returning ones are hidden and revealed by
-        // the flight director ([hideTiles], [revealTile]).
+      case TileToTray() || TrayPairCleared() || TrayFull() || TrayReturned() || MoveUndone():
+        // Tiles leave at once; returning ones (revive, undo) are hidden and
+        // revealed by the flight director ([hideTiles], [revealTile]).
+        return;
+      case TileHinted() || BoardShuffled():
+        // No board effect of their own here.
         return;
     }
     _effectsRunning = true;

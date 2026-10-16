@@ -304,6 +304,13 @@ class TileShatterController extends ChangeNotifier {
     }
   }
 
+  /// Drops [shatter] without its callbacks (its pair was undone).
+  void cancel(PairShatter shatter) {
+    if (!_shatters.remove(shatter)) return;
+    shatter._dispose();
+    notifyListeners();
+  }
+
   /// Drops every shatter without its callbacks (the level restarted).
   void cancelAll() {
     if (_shatters.isEmpty) return;

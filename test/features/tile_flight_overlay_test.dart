@@ -346,6 +346,131 @@ void main() {
       expect(tray.items, isEmpty);
     });
 
+    group('undo', () {
+      final hidden = <String>{};
+      TileShatterController? shatters;
+
+      Rect slot(int index) => to.shift(Offset(index * 40.0, 0));
+
+      /// A director that hides and reveals board tiles and plays strikes.
+      Future<void> startWithStrikes() async {
+        await start();
+        await director.dispose();
+        hidden.clear();
+        final strikes = shatters = TileShatterController();
+        director = TrayFlightDirector(
+          game: game,
+          tray: tray,
+          flights: flights,
+          boardRect: (id) => from.shift(Offset(game.engine.indexOf(id)! * 50.0, 0)),
+          trayRect: (id) {
+            final index = tray.indexOf(id);
+            return index < 0 ? null : slot(index);
+          },
+          traySlotRect: slot,
+          hideOnBoard: hidden.addAll,
+          revealOnBoard: hidden.remove,
+          shatters: strikes,
+          snapshotTile: (id) {
+            final index = tray.indexOf(id);
+            return index < 0 ? null : _snapshot(slot(index));
+          },
+        );
+      }
+
+      tearDown(() {
+        shatters?.dispose();
+        shatters = null;
+      });
+
+      Future<void> undo() async {
+        expect(game.undo(), isNotNull);
+        await Future<void>.delayed(Duration.zero);
+      }
+
+      test('while the tile flies to the tray, it turns back from mid-air and its slot frees', () async {
+        await startWithStrikes();
+        await tap(['b1']);
+        flights
+          ..tick(Duration.zero)
+          ..tick(d ~/ 2);
+        final midAir = flights.flights.single.rect;
+        await undo();
+        expect(tray.items, isEmpty);
+        final back = flights.flights.single;
+        expect((back.tileId, back.kind, back.duration), ('b1', FlightKind.toBoard, kTileUndoDuration));
+        expect(back.from, midAir);
+        expect(back.to, from.shift(const Offset(50, 0)));
+        expect(hidden, {'b1'}, reason: 'drawn by the flight until it lands');
+        flights
+          ..tick(const Duration(seconds: 1))
+          ..tick(const Duration(seconds: 1) + kTileUndoDuration);
+        expect(hidden, isEmpty);
+        expect(flights.isFlying, isFalse);
+        expect(tray.items, isEmpty, reason: 'the cancelled flight never lands in the tray');
+      });
+
+      test('a landed tile flies back from its slot; the tray keeps the others', () async {
+        await startWithStrikes();
+        await tap(['a1', 'b1']);
+        landFlights();
+        await undo();
+        expect(tray.items.map((i) => i.tileId), ['a1']);
+        final back = flights.flights.single;
+        expect(back.from, slot(1));
+        expect(back.to, from.shift(const Offset(50, 0)));
+      });
+
+      test('an undone match mid-strike: the strike stops, the twin stays settled, no impact feedback comes', () async {
+        await startWithStrikes();
+        await tap(['a1', 'b1', 'a2']);
+        landFlights();
+        expect(shatters!.isRunning, isTrue);
+        shatters!.tick(Duration.zero);
+        await undo();
+        expect(shatters!.isRunning, isFalse);
+        expect(tray.items.map((i) => i.tileId), ['a1', 'b1']);
+        expect(tray.items.every((i) => i.phase == TrayItemPhase.settled), isTrue);
+        expect(tray.itemOf('a1')!.partnerId, isNull);
+        expect(flights.flights.single.tileId, 'a2');
+        expect(game.score, 0);
+        // A stale end of that strike leaves the twin alone.
+        tray.completeClear('a1');
+        expect(tray.items.map((i) => i.tileId), ['a1', 'b1']);
+        expect(tray.items.map((i) => i.tileId), game.state.tray);
+      });
+
+      test('an undone match whose pair is gone: the twin is back in its slot, the tile flies from where it struck',
+          () async {
+        await startWithStrikes();
+        await tap(['b1', 'a1', 'a2']);
+        landFlights();
+        shatters!
+          ..tick(Duration.zero)
+          ..tick(PairShatter.total);
+        expect(tray.items.map((i) => i.tileId), ['b1']);
+        await undo();
+        expect(tray.items.map((i) => i.tileId), ['b1', 'a1']);
+        expect(tray.items.every((i) => i.phase == TrayItemPhase.settled), isTrue);
+        expect(tray.items.map((i) => i.tileId), game.state.tray);
+        final back = flights.flights.single;
+        expect(back.tileId, 'a2');
+        expect(back.from, slot(2), reason: 'the slot it landed in before the pair cleared');
+        // The pair can be made again, with a strike of its own.
+        await tap(['a2']);
+        landFlights();
+        expect(shatters!.isRunning, isTrue);
+      });
+
+      test('with reduced motion the tile is back at once', () async {
+        await start(instant: true);
+        await tap(['a1']);
+        await undo();
+        expect(flights.isFlying, isFalse);
+        expect(tray.items, isEmpty);
+      });
+    });
+
     test('a resumed game shows its tray at once; instant mode lands without flights', () async {
       await start(
         resume: SavedGame(levelId: 'test-level', levelUrl: 'levels/t.json', history: ['a1', 'b1'], elapsedMs: 0),

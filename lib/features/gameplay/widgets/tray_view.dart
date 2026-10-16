@@ -119,6 +119,15 @@ class TrayController extends ChangeNotifier {
   int expect(String tileId) {
     final existing = indexOf(tileId);
     if (existing >= 0) return existing;
+    _makeRoom();
+    _items.add(TrayItem._(tileId, TrayItemPhase.incoming, flew: true));
+    notifyListeners();
+    return _items.length - 1;
+  }
+
+  /// Out of slots while matched pairs are still on show: the oldest such
+  /// pair leaves at once.
+  void _makeRoom() {
     while (_items.length >= capacity) {
       final matched = _items.where((item) => item._partnerId != null).firstOrNull;
       if (matched == null) break;
@@ -126,9 +135,30 @@ class TrayController extends ChangeNotifier {
       if (matched.phase != TrayItemPhase.clearing) onPairReady?.call(matched.tileId, matched._partnerId!, animate: false);
       _removePair(matched);
     }
-    _items.add(TrayItem._(tileId, TrayItemPhase.incoming, flew: true));
+  }
+
+  /// An undo took back the tap of [tileId]: it leaves the tray at once
+  /// (landed, still flying in, or striking; its flight back to the board is
+  /// drawn elsewhere). If that tap had cleared [partnerId], the pair is
+  /// called off: the twin stays (or is back) in the tray, settled, at its
+  /// place in [engineTray] (the engine's tray after the undo, slot order).
+  void takeBack(String tileId, {String? partnerId, List<String> engineTray = const []}) {
+    _items.removeWhere((item) => item.tileId == tileId);
+    if (partnerId != null) {
+      final partner = itemOf(partnerId);
+      if (partner != null) {
+        partner._partnerId = null;
+        // Its strike is called off; a twin still flying in lands as usual.
+        if (partner._phase == TrayItemPhase.clearing) partner._phase = TrayItemPhase.settled;
+      } else {
+        _makeRoom();
+        final order = engineTray.indexOf(partnerId);
+        final after = _items.indexWhere((item) => engineTray.indexOf(item.tileId) > order);
+        _items.insert(after < 0 ? _items.length : after, TrayItem._(partnerId, TrayItemPhase.settled, flew: false));
+      }
+    }
+    _full = false;
     notifyListeners();
-    return _items.length - 1;
   }
 
   /// [tileId]'s flight reached its slot. A matched pair strikes once both
@@ -152,10 +182,11 @@ class TrayController extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// The strike of [tileId] (and so of its pair) is over: remove both.
+  /// The strike of [tileId] (and so of its pair) is over: remove both. A
+  /// tile no longer striking (its pair was undone) stays.
   void completeClear(String tileId) {
     final item = itemOf(tileId);
-    if (item == null) return;
+    if (item == null || item.phase != TrayItemPhase.clearing) return;
     _removePair(item);
     notifyListeners();
   }
