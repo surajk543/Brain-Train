@@ -38,12 +38,13 @@ dart run tool/smoke_remote.dart         # live check: app's content client vs pr
 - `lib/content/` — pure Dart except `file_content_store.dart` (dart:io). Manifest, registry and
   level loading; permanent disk cache (`ContentCache`, with the ready-level index); `ContentCoordinator`
   (known-good / starter pack, gated version switch, 5-level window, on-demand `ensureLevel`, offline fallback to
-  older cached level files); `content_files.dart` (level file encoding, content-addressed keys).
+  older cached level files); `content_files.dart` (level file encoding, content-addressed keys);
+  `app_update_config.dart` (app update notice: parse, `decideAppUpdate` → none / optional / required, fetch).
 - `lib/rendering/` — tile body rasterizer, symbol art cache, board painter, effects.
 - `lib/features/` — screens. `levels/` Completed Levels (`LevelSelectScreen`), `LevelLoaderScreen`
   (`level_loader.dart`: every game opens through it — the game at once when the level is on the device, else
   "Downloading level…", or offline "Connect to the internet to download this level"), `DifficultyStyle`; `home/` lobby (hero tiles, title, footer widgets; `widgets/lobby_buttons.dart` glass buttons via `_LobbyGlass`;
-  `widgets/lobby_play_games.dart` round Play Games buttons);
+  `widgets/lobby_play_games.dart` round Play Games buttons; `widgets/lobby_update_card.dart` update card);
   `gameplay/` (`game_controller.dart` glues engine + UI; `widgets/premium_chrome.dart` HUD, felt
   backdrop, dialogs; `widgets/tray_view.dart` tray + `TrayController`; `widgets/tile_flight_overlay.dart`
   board↔tray flights + `TrayFlightDirector`; `widgets/tile_shatter.dart` match strike + shards;
@@ -53,16 +54,20 @@ dart run tool/smoke_remote.dart         # live check: app's content client vs pr
 - `lib/app/` — `AppServices` (wiring), `AppScope` (above `MaterialApp`), `theme.dart`
   (`BrainTrainPalette.night`, `LobbyTheme.night`), `brand.dart` (serif display font, gold),
   `sound_effects.dart`, `play_games_controller.dart` (lobby Play Games state), `rewarded_ads_controller.dart`
-  (`AppServices.ads`: Revive's ad state, show with music/SFX held, privacy options).
-- `lib/data/` — `ProgressRepository`, `SettingsRepository` (also the stored `AgeGroup`), `age_group.dart`.
+  (`AppServices.ads`: Revive's ad state, show with music/SFX held, privacy options), `app_update_controller.dart`
+  (`AppServices.updates`: the lobby's update card, its check, kept notice, Update / Later).
+- `lib/data/` — `ProgressRepository`, `SettingsRepository` (also the stored `AgeGroup`), `age_group.dart`,
+  `app_update_cache.dart` (last good update notice).
 - `lib/platform/` — `play_games.dart` (`PlayGames` interface, statuses, `UnavailablePlayGames`, pure Dart);
   `games_services_play_games.dart` (the only file importing `games_services`; `createPlayGames()`);
   `rewarded_ads.dart` (`RewardedAds` interface, statuses, `AdAudience` per age group, `UnavailableRewardedAds`, pure
   Dart); `managed_rewarded_ads.dart` (`ManagedRewardedAds` over an `AdsBackend`: consent, one ad kept loaded,
   backoff, timeouts); `google_mobile_ads_rewarded.dart` (the only file importing `google_mobile_ads`;
-  `createRewardedAds()`).
+  `createRewardedAds()`); `app_updates.dart` (`AppUpdater` interface, `UnavailableAppUpdater`, store links, pure
+  Dart); `play_in_app_update.dart` (the only file importing `in_app_update`; `createAppUpdater()`).
 - `content-src/` — authoring: `catalog.json` (`campaign`: seed, tiers, counts, bands). `layouts/*.layout.json`
   are the old hand layouts (not in the catalog; the tool still accepts catalog `levels` entries).
+  `app-update.json` is the app update notice (mutable key `brain-train/app-update.json`, docs/APP_UPDATES.md).
 - `content/brain-train/` — generated, published tree (not in git; local output of `tool/content.dart build`,
   uploaded by `tool/publish.dart`). Mirrors R2 keys `brain-train/...`.
 - `content/starter/` — the starter pack, committed and the only content in pubspec: the full manifest and the
@@ -71,7 +76,8 @@ dart run tool/smoke_remote.dart         # live check: app's content client vs pr
   `art/source/` (licensed originals) is gitignored.
 - `infra/cloudflare/braintrain-assets/worker.js` — the deployed Worker's source of truth.
 - `docs/` — `level-design-rules.md` (all level rules: difficulty 1–10, tray 2–5, 85/15, batches),
-  `CONTENT_PUBLISHING.md`, `ASSET_PIPELINE.md`, `PLAY_GAMES.md`, `ADS.md` (AdMob setup, IDs, age screen, consent).
+  `CONTENT_PUBLISHING.md`, `ASSET_PIPELINE.md`, `PLAY_GAMES.md`, `ADS.md` (AdMob setup, IDs, age screen, consent),
+  `APP_UPDATES.md` (update card, force update, the notice).
 
 ## Rules that are easy to break
 
@@ -156,6 +162,15 @@ dart run tool/smoke_remote.dart         # live check: app's content client vs pr
   rated G, non-personalized, UMP `tagForUnderAgeOfConsent`; 13+: rated PG, normal UMP flow. IDs: Android
   `android/admob.properties` (gitignored; Gradle → manifest + `rewardedAdUnitId` on the `brain_train/platform`
   channel), iOS `Info.plist` (`GADApplicationIdentifier`, `BrainTrainRewardedAdUnitId`); Google's test IDs otherwise.
+- App updates (owner, docs/APP_UPDATES.md): never on the startup path; the lobby checks after its first frame and on
+  app resume: the kept notice (`appUpdate.notice.v1`, last good) applies at once (a force update holds offline), then
+  `brain-train/app-update.json` is fetched (content client, 5 s timeout, every failure caught: 404 forgets the kept
+  copy, malformed/offline keep it). Build numbers: Android `versionCode`, iOS `CFBundleVersion` (`package_info_plus`).
+  The card lives in the lobby route's own Stack (inside `LobbyBackground` for its frost, `StaticLayer`-flattened), so
+  it never shows over a game. Update: Play In-App Updates (immediate) when Play has one, else `storeUrl`
+  (`market://` first; `openUrl` on the `brain_train/platform` channel). Only `play_in_app_update.dart` imports the
+  plugin; builds without it (tests) use `UnavailableAppUpdater` (never asks). Raise `latestVersionCode` /
+  `minVersionCode` only once the new build is live on Play.
 - Scoring (owner): a match scores `100 x min(combo, 5)` + speed bonus (+50 gap < 1 s, +25 < 2 s, +10 for 2-4 s);
   combo window 4 s on the game clock (pauses with it), every match restarts it from that match, a gap > 4 s starts over
   at x1; only `TapOutcome.matched` scores; a blocked-tile tap costs 1 (never below 0) and ends the combo; Revive ends
@@ -187,6 +202,12 @@ dart run tool/smoke_remote.dart         # live check: app's content client vs pr
 - HUD shows SCORE where Moves was (owner); the win card and Completed Levels show score, best score and best combo.
 - Win card ("Level complete!"): `assets/lottie/trophy_cup_rays.json` (LottieFiles, owner's premium licence) via `WinTrophy`, looping while the card is open
   (owner), last frame with reduce motion, `PremiumEmblem` fallback if it fails to load.
+- Lobby update card and force update (owner, 2026-10-16): installed build below the notice's latest → "Update
+  available" / "A new version of Brain Train is ready." (or the notice's `message`) with Update (gold) and Later, at
+  most once per launch (Later or back hides it until the next launch; needs a `storeUrl`). Below its min → "Update
+  required" / "This version of Brain Train is no longer supported. Please update to keep playing.", Update only, not
+  dismissible (back does nothing), Play / Continue / Completed Levels unreachable; still there after a trip to the
+  store. Lobby only, never over a game. The initial notice (latest 4, min 1) prompts nobody on build 4.
 - Google Play Games (owner, 2026-10-16): Android only; silent sign-in; two round lobby buttons top-right
   (Achievements, Leaderboards) open Google's screens, signing in first when needed; no Settings entry.
   Pieces: 1 sign-in (done), 2 achievements + leaderboards, 3 cloud save. Two phones on one account must never
