@@ -6,8 +6,10 @@
 //
 //   CAPTURE_DIR=/tmp/shots flutter test test/visual/lobby_capture_test.dart
 import 'package:brain_train/app/app_services.dart';
+import 'package:brain_train/app/play_games_controller.dart';
 import 'package:brain_train/data/progress_repository.dart';
 import 'package:brain_train/features/home/home_screen.dart';
+import 'package:brain_train/platform/play_games.dart';
 import 'package:brain_train/features/home/widgets/lobby_tagline.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -15,6 +17,7 @@ import 'package:package_info_plus/package_info_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../features/lobby_support.dart';
+import '../platform/fake_play_games.dart';
 
 /// Level 1 won and level 2 in progress, as in the reference ("Continue · Level 2").
 Future<void> _midway(AppServices services) async {
@@ -66,6 +69,24 @@ void main() {
       await captureLobby(tester, 'settings-${phone.name}', phone.dpr);
 
       await tester.pumpWidget(const SizedBox());
+    });
+  }
+
+  for (final phone in [largePhone, smallPhone, tallPhone]) {
+    testWidgets('lobby ${phone.name}: Play Games buttons', (tester) async {
+      late AppServices services;
+      await tester.runAsync(() async {
+        services = await testServices(
+          playGames: PlayGamesController(FakePlayGames(const PlayGamesSignedIn('Tester'))),
+        );
+        await _midway(services);
+      });
+      await pumpLobby(tester, services: services, home: const HomeScreen(), phone: phone);
+      expect(tester.takeException(), isNull);
+      expect(find.byKey(const ValueKey('lobby-achievements')), findsOneWidget);
+      await captureLobby(tester, 'lobby-play-games-${phone.name}', phone.dpr);
+      await tester.pumpWidget(const SizedBox());
+      await tester.pump();
     });
   }
 

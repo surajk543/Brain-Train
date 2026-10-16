@@ -251,3 +251,57 @@ class LobbySecondaryButton extends StatelessWidget {
     );
   }
 }
+
+/// Small round lobby action (Achievements, Leaderboards): the secondary
+/// button's green glass and thin gold border as a circle with a gold icon.
+class LobbyRoundButton extends StatelessWidget {
+  const LobbyRoundButton({
+    super.key,
+    required this.icon,
+    required this.semanticLabel,
+    required this.onPressed,
+    this.size = 48,
+  });
+
+  final IconData icon;
+  final String semanticLabel;
+  final VoidCallback? onPressed;
+  final double size;
+
+  @override
+  Widget build(BuildContext context) {
+    final lobby = LobbyTheme.of(context);
+    return Semantics(
+      button: true,
+      enabled: onPressed != null,
+      label: semanticLabel,
+      onTap: onPressed,
+      excludeSemantics: true,
+      // Rendered once (and again only while its ink animates).
+      child: StaticLayer(
+        overflow: const EdgeInsets.all(24),
+        child: DecoratedBox(
+          decoration: ShapeDecoration(
+            shape: CircleBorder(side: BorderSide(color: lobby.secondaryBorder, width: 1.2)),
+            gradient: LinearGradient(begin: Alignment.topCenter, end: Alignment.bottomCenter, colors: lobby.secondaryFill),
+            shadows: [BoxShadow(color: lobby.secondaryShadow, blurRadius: 10, offset: const Offset(0, 4))],
+          ),
+          child: Material(
+            type: MaterialType.transparency,
+            shape: const CircleBorder(),
+            clipBehavior: Clip.antiAlias,
+            child: InkWell(
+              onTap: onPressed,
+              splashColor: lobby.secondaryIcon.withValues(alpha: 0.22),
+              highlightColor: lobby.secondaryIcon.withValues(alpha: 0.1),
+              child: SizedBox.square(
+                dimension: size,
+                child: Icon(icon, size: size * 0.5, color: lobby.secondaryIcon),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}

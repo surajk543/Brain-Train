@@ -13,6 +13,7 @@ import '../levels/level_select_screen.dart';
 import '../settings/settings_screen.dart';
 import 'widgets/lobby_buttons.dart';
 import 'widgets/lobby_footer.dart';
+import 'widgets/lobby_play_games.dart';
 import 'widgets/lobby_tagline.dart';
 
 /// The lobby: "Train your brain" on frosted glass, Play/Continue, Levels
@@ -83,6 +84,14 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final playGames = AppScope.of(context).playGames;
+    // After the first frame: the lobby never waits for Play Games.
+    WidgetsBinding.instance.addPostFrameCallback((_) => playGames.start());
+  }
+
+  @override
   Widget build(BuildContext context) {
     final services = AppScope.of(context);
     final lobby = LobbyTheme.of(context);
@@ -93,7 +102,7 @@ class _HomeScreenState extends State<HomeScreen> {
           minimum: EdgeInsets.only(top: MediaQuery.viewPaddingOf(context).top),
           child: LayoutBuilder(
             builder: (context, constraints) => ListenableBuilder(
-              listenable: Listenable.merge([services.content, services.progress]),
+              listenable: Listenable.merge([services.content, services.progress, services.playGames]),
               builder: (context, _) => _layout(context, services, constraints.biggest),
             ),
           ),
@@ -128,6 +137,10 @@ class _HomeScreenState extends State<HomeScreen> {
             padding: EdgeInsets.fromLTRB(side, topGap, side, math.max(10, h * 0.018)),
             child: Column(
               children: [
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: LobbyPlayGamesButtons(controller: services.playGames),
+                ),
                 const Spacer(flex: 2),
                 LobbyTagline(width: taglineWidth, fontSize: taglineSize),
                 SizedBox(height: h * 0.065),
@@ -171,7 +184,10 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                 ),
                 const Spacer(flex: 3),
-                LobbyContentFooter(snapshot: services.content.snapshot, status: services.content.status),
+                if (services.playGames.notice case final notice?)
+                  LobbyNoticeText(notice)
+                else
+                  LobbyContentFooter(snapshot: services.content.snapshot, status: services.content.status),
               ],
             ),
           ),
