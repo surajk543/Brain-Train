@@ -153,6 +153,7 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
         flights: _flights,
         boardRect: (id) => _boardKey.currentState?.tileFaceRect(id),
         trayRect: (id) => _trayKey.currentState?.targetRectFor(id),
+        traySlotRect: (slot) => _trayKey.currentState?.slotRect(slot),
         hideOnBoard: (ids) => _boardKey.currentState?.hideTiles(ids),
         revealOnBoard: (id) => _boardKey.currentState?.revealTile(id),
         shatters: _shatters,

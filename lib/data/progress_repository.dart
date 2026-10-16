@@ -41,8 +41,15 @@ class LevelRecord {
   };
 }
 
-/// A game in progress, saved after every accepted tap so it survives
-/// restarts.
+/// A game in progress, saved after every accepted tap (and every Undo,
+/// Hint, Shuffle and granted use) so it survives restarts.
+///
+/// Stored as `progress.current.v3` (1.1.0+): the same JSON shape as v2, but
+/// [history] may hold the action markers of `GameEngine` (`!undo`, `!hint`,
+/// `!shuffle:1:<seed>`, `!grant:<action>`) besides taps and `!revive`, and
+/// [scoring] may hold the score keeper's undo checkpoints. A 1.0 build would
+/// not replay those, so the key changed; a v2 save (taps and revives only)
+/// is still read and moves to v3.
 class SavedGame {
   SavedGame({
     required this.levelId,
@@ -67,8 +74,9 @@ class SavedGame {
   /// Versioned level path; a saved game only resumes on the same revision.
   final String levelUrl;
 
-  /// Tapped tile ids (and revive markers) in order; replaying them rebuilds
-  /// the board and tray.
+  /// Tapped tile ids and markers (revives, undos, hints, shuffles, granted
+  /// uses) in order; replaying them rebuilds the board, the tray and the
+  /// actions' uses.
   final List<String> history;
   final int moveCount;
   final int elapsedMs;
@@ -96,13 +104,22 @@ class ProgressRepository extends ChangeNotifier {
     final prefs = await SharedPreferences.getInstance();
     // Saves from before the tray hold matched pairs, not taps: drop them.
     if (prefs.containsKey(_legacySavedGameKey)) await prefs.remove(_legacySavedGameKey);
+    // A 1.0 save (taps and revives) is a valid v3 save: move it over.
+    final v2 = prefs.getString(_v2SavedGameKey);
+    if (v2 != null) {
+      if (!prefs.containsKey(_savedGameKey)) await prefs.setString(_savedGameKey, v2);
+      await prefs.remove(_v2SavedGameKey);
+    }
     return ProgressRepository(prefs);
   }
 
   final SharedPreferences _prefs;
 
   static const _completedKey = 'progress.completed.v1';
-  static const _savedGameKey = 'progress.current.v2';
+  static const _savedGameKey = 'progress.current.v3';
+
+  /// 1.0 builds' save: no action markers. Read while there is no v3 save.
+  static const _v2SavedGameKey = 'progress.current.v2';
   static const _legacySavedGameKey = 'progress.current.v1';
 
   Map<String, LevelRecord> completed() {
@@ -147,7 +164,7 @@ class ProgressRepository extends ChangeNotifier {
   }
 
   SavedGame? savedGame() {
-    final raw = _prefs.getString(_savedGameKey);
+    final raw = _prefs.getString(_savedGameKey) ?? _prefs.getString(_v2SavedGameKey);
     if (raw == null) return null;
     try {
       return SavedGame.fromJson(jsonDecode(raw) as Map<String, Object?>);
@@ -161,6 +178,7 @@ class ProgressRepository extends ChangeNotifier {
   Future<void> saveGame(SavedGame game) async {
     if (isCompleted(game.levelId)) return;
     await _prefs.setString(_savedGameKey, jsonEncode(game.toJson()));
+    if (_prefs.containsKey(_v2SavedGameKey)) await _prefs.remove(_v2SavedGameKey);
     notifyListeners();
   }
 
@@ -168,6 +186,7 @@ class ProgressRepository extends ChangeNotifier {
   Future<void> clearSavedGame({required String levelId}) async {
     if (savedGame()?.levelId != levelId) return;
     await _prefs.remove(_savedGameKey);
+    await _prefs.remove(_v2SavedGameKey);
     notifyListeners();
   }
 }

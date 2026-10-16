@@ -166,6 +166,96 @@ void main() {
     expect(() => ScoreKeeper.fromJson({'score': -5, 'combo': 0, 'bestCombo': 0, 'pairs': 0}), throwsFormatException);
   });
 
+  group('undo', () {
+    (int, int, int, int, Duration?) stateOf(ScoreKeeper k) =>
+        (k.score, k.currentCombo, k.bestCombo, k.totalPairsMatched, k.lastSuccessfulMatchTime);
+
+    test('takes back the last match: score, combo, best and the combo clock as before it', () {
+      keeper.onMatch(s(0));
+      keeper.onMatch(s(1));
+      final before = stateOf(keeper);
+      expect(keeper.undoableMatches, 2);
+      expect(keeper.pairsBeforeUndo, 1);
+      keeper.onMatch(s(1.5)); // x3, +50
+      expect(keeper.bestCombo, 3);
+      expect(keeper.undoMatch(), isTrue);
+      expect(stateOf(keeper), before);
+      expect(keeper.isComboActive(s(4)), isTrue, reason: 'the window runs from the match before');
+      expect(keeper.undoMatch(), isTrue);
+      expect(keeper.undoMatch(), isTrue);
+      expect(stateOf(keeper), (0, 0, 0, 0, null));
+      expect(keeper.undoMatch(), isFalse);
+      expect(keeper.pairsBeforeUndo, isNull);
+    });
+
+    test('blocked-tap penalties taken after the match stay taken', () {
+      keeper.onMatch(s(0)); // 100
+      keeper.onMatch(s(1)); // 225
+      keeper.onBlockedTap(); // 324, combo ends
+      expect(keeper.undoMatch(), isTrue);
+      expect((keeper.score, keeper.currentCombo, keeper.totalPairsMatched), (99, 0, 1));
+      // A penalty before the match is part of the state it goes back to.
+      final k = ScoreKeeper()
+        ..onMatch(s(0))
+        ..onBlockedTap()
+        ..onMatch(s(10));
+      expect(k.score, 199);
+      expect(k.undoMatch(), isTrue);
+      expect(k.score, 99);
+    });
+
+    test('sealUndo: a revive or a shuffle keeps earlier matches; reset forgets them', () {
+      keeper
+        ..onMatch(s(0))
+        ..sealUndo();
+      expect(keeper.undoMatch(), isFalse);
+      expect(keeper.score, 100);
+      keeper.onMatch(s(10));
+      expect(keeper.undoableMatches, 1);
+      keeper.reset();
+      expect(keeper.undoableMatches, 0);
+    });
+
+    test('checkpoints and blocked taps survive a JSON round trip and restoreFrom', () {
+      keeper
+        ..onMatch(s(0))
+        ..onBlockedTap()
+        ..onMatch(s(1.2));
+      final json = keeper.toJson();
+      expect(json['undo'], [
+        [0, 0, 0, 0, -1, 0],
+        [99, 0, 1, 1, -1, 1],
+      ], reason: 'the blocked tap had ended the combo');
+      expect(json['blockedTaps'], 1);
+      final copy = ScoreKeeper.fromJson(json);
+      final restored = ScoreKeeper()..restoreFrom(copy);
+      for (final k in [copy, restored]) {
+        expect(k.undoableMatches, 2);
+        expect(k.undoMatch(), isTrue);
+        expect((k.score, k.totalPairsMatched, k.lastSuccessfulMatchTime), (99, 1, null));
+        expect(k.undoMatch(), isTrue);
+        expect(k.score, 0, reason: 'the penalty after the first match is taken again, from 0');
+      }
+      // Saves from before undo have neither field.
+      final old = ScoreKeeper.fromJson({'score': 100, 'combo': 1, 'bestCombo': 1, 'pairs': 1, 'lastMatchAtMs': 0});
+      expect(old.undoableMatches, 0);
+      expect(old.toJson().containsKey('undo'), isFalse);
+      expect(old.toJson().containsKey('blockedTaps'), isFalse);
+    });
+
+    test('fromJson rejects bad checkpoints', () {
+      Map<String, Object?> withUndo(Object? undo) => {'score': 0, 'combo': 0, 'bestCombo': 0, 'pairs': 0, 'undo': undo};
+      expect(() => ScoreKeeper.fromJson(withUndo('x')), throwsFormatException);
+      expect(() => ScoreKeeper.fromJson(withUndo([
+        [1, 2, 3],
+      ])), throwsFormatException);
+      expect(() => ScoreKeeper.fromJson(withUndo([
+        [0, 0, 0, 0, -2, 0],
+      ])), throwsFormatException);
+      expect(() => ScoreKeeper.fromJson({...withUndo(const []), 'blockedTaps': -1}), throwsFormatException);
+    });
+  });
+
   test('custom rules are honoured', () {
     final custom = ScoreKeeper(
       rules: const ScoringRules(basePoints: 10, comboWindow: Duration(seconds: 1), maxMultiplier: 2, windowBonus: 1),

@@ -24,6 +24,10 @@ const Duration kTileReturnDuration = Duration(milliseconds: 700);
 /// before the next one leaves the tray.
 const Duration kTileReturnStagger = Duration(milliseconds: 300);
 
+/// How long an undone tile takes to fly back to its board place, settle
+/// included: one tile, so quicker than a revive.
+const Duration kTileUndoDuration = Duration(milliseconds: 450);
+
 enum FlightKind {
   /// From the board up to a tray slot: rises, then glides across.
   toTray,
@@ -216,6 +220,17 @@ class TileFlightController extends ChangeNotifier {
     }
   }
 
+  /// Drops [tileId]'s flight (of [kind], when given) without landing it, and
+  /// returns where its tile is drawn now (where it would take off, if it has
+  /// not yet); null when it has no such flight.
+  Rect? cancel(String tileId, {FlightKind? kind}) {
+    final at = _flights.indexWhere((flight) => flight.tileId == tileId && (kind == null || flight.kind == kind));
+    if (at < 0) return null;
+    final flight = _flights.removeAt(at);
+    notifyListeners();
+    return flight.started ? flight.rect : flight.from;
+  }
+
   /// Drops every flight without landing it (the level restarted).
   void cancelAll() {
     if (_flights.isEmpty) return;
@@ -341,11 +356,15 @@ class _FlightPainter extends CustomPainter {
 /// in. On a
 /// revive the tray's tiles fly back to their board places, one after another,
 /// each hidden on the board ([hideOnBoard]) until it lands
-/// ([revealOnBoard]), so it is never drawn twice.
+/// ([revealOnBoard]), so it is never drawn twice. An undo flies the tile back
+/// the same way, from wherever it is (its slot, or mid-flight to it); an
+/// undone match's strike is called off and its twin stays in the tray.
 ///
 /// [boardRect] and [trayRect] give global face rects (e.g. the board view's
-/// `tileFaceRect` and [TrayViewState.targetRectFor]). When either is
-/// unknown, or with [instant], tiles move without flying.
+/// `tileFaceRect` and [TrayViewState.targetRectFor]); [traySlotRect] a slot's
+/// ([TrayViewState.slotRect]), for an undone tile whose pair has already
+/// gone. When a rect is unknown, or with [instant], tiles move without
+/// flying.
 class TrayFlightDirector {
   TrayFlightDirector({
     required this.game,
@@ -353,6 +372,7 @@ class TrayFlightDirector {
     required this.flights,
     required this.boardRect,
     required this.trayRect,
+    this.traySlotRect,
     this.hideOnBoard,
     this.revealOnBoard,
     this.shatters,
@@ -370,6 +390,7 @@ class TrayFlightDirector {
   final TileFlightController flights;
   final Rect? Function(String tileId) boardRect;
   final Rect? Function(String tileId) trayRect;
+  final Rect? Function(int slot)? traySlotRect;
   final void Function(Iterable<String> tileIds)? hideOnBoard;
   final void Function(String tileId)? revealOnBoard;
 
@@ -387,11 +408,17 @@ class TrayFlightDirector {
     for (final (rank, index) in game.engine.geometry.drawOrder.indexed) index: rank,
   };
 
+  /// Running strikes, by both tiles of their pair.
+  final Map<String, PairShatter> _strikes = {};
+
   void handle(BoardEvent event) {
     switch (event) {
       case TileToTray(:final tileId):
         tray.expect(tileId);
-        final from = instant ? null : boardRect(tileId);
+        // A tile still flying back to the board takes off again from there.
+        final returning = flights.cancel(tileId, kind: FlightKind.toBoard);
+        if (returning != null) revealOnBoard?.call(tileId);
+        final from = instant ? null : returning ?? boardRect(tileId);
         if (from == null || trayRect(tileId) == null) {
           tray.land(tileId);
           return;
@@ -412,10 +439,45 @@ class TrayFlightDirector {
       case BoardReset():
         flights.cancelAll();
         shatters?.cancelAll();
+        _strikes.clear();
         tray.reset();
-      case TileRejected():
+      case MoveUndone():
+        _takeBack(event);
+      case TileRejected() || TileHinted() || BoardShuffled():
         break;
     }
+  }
+
+  /// An undo: the tile flies from where it is now (in the air to the tray,
+  /// in its slot, or the slot it struck in) back to its board place, hidden
+  /// there until it lands; an undone match's strike stops and its twin stays
+  /// in the tray.
+  void _takeBack(MoveUndone event) {
+    final id = event.tileId;
+    final inAir = flights.cancel(id, kind: FlightKind.toTray);
+    final from = instant ? null : inAir ?? trayRect(id) ?? traySlotRect?.call(event.fromSlot);
+    if (event.partnerId case final partner?) {
+      final strike = _strikes.remove(id) ?? _strikes.remove(partner);
+      _strikes
+        ..remove(id)
+        ..remove(partner);
+      if (strike != null) shatters?.cancel(strike);
+    }
+    tray.takeBack(id, partnerId: event.partnerId, engineTray: event.tray);
+    if (from == null || boardRect(id) == null) {
+      revealOnBoard?.call(id);
+      return;
+    }
+    hideOnBoard?.call([id]);
+    flights.launch(
+      tileId: id,
+      symbolCode: _symbolOf(id),
+      from: from,
+      to: () => boardRect(id),
+      kind: FlightKind.toBoard,
+      duration: kTileUndoDuration,
+      onLanded: () => revealOnBoard?.call(id),
+    );
   }
 
   void _returnToBoard(List<String> tileIds) {
@@ -449,7 +511,7 @@ class TrayFlightDirector {
   /// at impact, then free the slots.
   void _onPairReady(String a, String b, {required bool animate}) {
     if (!animate) {
-      game.pairImpact();
+      game.pairImpact(a, b);
       return;
     }
     final shatters = this.shatters;
@@ -457,27 +519,32 @@ class TrayFlightDirector {
     final second = first == null || a == b ? null : snapshotTile?.call(b);
     if (shatters == null || first == null || second == null) {
       first?.dispose();
-      game.pairImpact();
+      game.pairImpact(a, b);
       tray.completeClear(a);
       return;
     }
-    shatters.start(
+    final strike = shatters.start(
       first,
       second,
       onImpact: () {
-        game.pairImpact();
+        game.pairImpact(a, b);
         tray.impact();
       },
-      onDone: () => tray.completeClear(a),
+      onDone: () {
+        _strikes
+          ..remove(a)
+          ..remove(b);
+        tray.completeClear(a);
+      },
     );
+    _strikes[a] = strike;
+    _strikes[b] = strike;
   }
 
   int _rankOf(String tileId) => _drawRank[game.engine.indexOf(tileId)] ?? 0;
 
-  String _symbolOf(String tileId) {
-    final index = game.engine.indexOf(tileId);
-    return index == null ? '' : game.level.tiles[index].symbolCode;
-  }
+  /// The symbol the tile shows now (a shuffle may have changed it).
+  String _symbolOf(String tileId) => game.symbolCodeOf(tileId);
 
   Future<void> dispose() {
     if (tray.onPairReady == _onPairReady) tray.onPairReady = null;

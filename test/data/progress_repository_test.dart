@@ -19,7 +19,60 @@ void main() {
     expect(saved.elapsedMs, 4200);
     expect(saved.levelUrl, 'levels/level-0001-v1.json');
     final prefs = await SharedPreferences.getInstance();
-    expect(jsonDecode(prefs.getString('progress.current.v2')!)['history'], ['a1', 'b1', 'a2']);
+    expect(jsonDecode(prefs.getString('progress.current.v3')!)['history'], ['a1', 'b1', 'a2']);
+    expect(prefs.containsKey('progress.current.v2'), isFalse);
+  });
+
+  test('the history keeps action markers (v3)', () async {
+    SharedPreferences.setMockInitialValues({});
+    final progress = await ProgressRepository.open();
+    const history = ['a1', '!undo', '!hint', '!grant:undo', '!shuffle:1:42', 'b1', '!revive'];
+    await progress.saveGame(game(history: history));
+    expect((await ProgressRepository.open()).savedGame()!.history, history);
+  });
+
+  Map<String, Object?> v2Save(String levelId) => {
+    'levelId': levelId,
+    'levelUrl': 'levels/$levelId-v1.json',
+    'history': ['a1', 'b1', '!revive', 'c1'],
+    'moveCount': 3,
+    'elapsedMs': 9000,
+    'scoring': {'score': 100, 'combo': 0, 'bestCombo': 1, 'pairs': 1, 'lastMatchAtMs': null},
+  };
+
+  test('a 1.0 save (v2) moves to v3 when the repository opens', () async {
+    SharedPreferences.setMockInitialValues({'progress.current.v2': jsonEncode(v2Save('level-0003'))});
+    final progress = await ProgressRepository.open();
+    final saved = progress.savedGame()!;
+    expect((saved.levelId, saved.moveCount, saved.elapsedMs), ('level-0003', 3, 9000));
+    expect(saved.history, ['a1', 'b1', '!revive', 'c1']);
+    expect(saved.scoring!['score'], 100);
+    final prefs = await SharedPreferences.getInstance();
+    expect(prefs.containsKey('progress.current.v2'), isFalse);
+    expect(jsonDecode(prefs.getString('progress.current.v3')!), v2Save('level-0003'));
+  });
+
+  test('a v3 save wins over a leftover v2 one; a v2 save is read until the next save', () async {
+    SharedPreferences.setMockInitialValues({
+      'progress.current.v2': jsonEncode(v2Save('level-0001')),
+      'progress.current.v3': jsonEncode(v2Save('level-0002')),
+    });
+    expect((await ProgressRepository.open()).savedGame()!.levelId, 'level-0002');
+    final prefs = await SharedPreferences.getInstance();
+    expect(prefs.containsKey('progress.current.v2'), isFalse);
+
+    SharedPreferences.setMockInitialValues({'progress.current.v2': jsonEncode(v2Save('level-0004'))});
+    // Constructed directly (as tests do), without the move in open().
+    final direct = ProgressRepository(await SharedPreferences.getInstance());
+    expect(direct.savedGame()!.levelId, 'level-0004');
+    await direct.saveGame(
+      SavedGame(levelId: 'level-0004', levelUrl: 'levels/level-0004-v1.json', history: const ['a1'], elapsedMs: 100),
+    );
+    final after = await SharedPreferences.getInstance();
+    expect(after.containsKey('progress.current.v2'), isFalse);
+    expect(direct.savedGame()!.history, ['a1']);
+    await direct.clearSavedGame(levelId: 'level-0004');
+    expect(direct.savedGame(), isNull);
   });
 
   test('pair-history saves from before the tray are ignored and removed', () async {

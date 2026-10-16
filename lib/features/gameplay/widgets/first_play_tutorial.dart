@@ -10,6 +10,7 @@ import '../../../app/tablet_scale.dart';
 import '../../../app/theme.dart';
 import '../../../game_engine/state/game_engine.dart';
 import '../../../game_engine/state/game_state.dart';
+import '../../../game_engine/state/hint_finder.dart';
 import '../../../game_engine/validation/solver.dart';
 import '../../../rendering/tile_style.dart';
 import '../game_controller.dart';
@@ -39,27 +40,22 @@ enum TutorialStep {
 ///
 /// Prefers a symbol whose remaining tiles are all free: taking two of them
 /// never makes the board harder (freedom only grows as tiles leave; see
-/// [MahjongSolver]). Otherwise the first pair of a short solver search, and
-/// failing that any free pair.
+/// [MahjongSolver], [HintFinder.safePairs]). Otherwise the first pair of a
+/// short solver search, and failing that any free pair.
 TilePair? tutorialPairFor(GameEngine engine) {
   if (engine.state.status != GameStatus.playing || engine.state.tray.isNotEmpty) return null;
   final level = engine.level;
-  final remainingByKey = <String, int>{};
-  final freeByKey = <String, List<int>>{};
-  for (var index = 0; index < level.tiles.length; index++) {
-    if (!engine.isRemaining(index)) continue;
-    final key = engine.rules.keyOf(index);
-    remainingByKey[key] = (remainingByKey[key] ?? 0) + 1;
-    if (engine.isFreeIndex(index)) (freeByKey[key] ??= []).add(index);
-  }
   TilePair pairOf(int a, int b) => (level.tiles[a].tileId, level.tiles[b].tileId);
-  for (final MapEntry(:key, value: free) in freeByKey.entries) {
-    if (free.length >= 2 && free.length == remainingByKey[key]) return pairOf(free[0], free[1]);
-  }
+  final safe = HintFinder.safePairs(engine);
+  if (safe.isNotEmpty) return pairOf(safe.first.$1, safe.first.$2);
   // Small boards solve in a few dozen nodes; the budget keeps this quick.
   final solver = MahjongSolver(geometry: engine.geometry, rules: engine.rules, maxNodes: 2000);
   final solved = solver.solve(engine.remainingMask);
   if (solved.solution.isNotEmpty) return pairOf(solved.solution.first.$1, solved.solution.first.$2);
+  final freeByKey = <String, List<int>>{};
+  for (var index = 0; index < level.tiles.length; index++) {
+    if (engine.isFreeIndex(index)) (freeByKey[engine.rules.keyOf(index)] ??= []).add(index);
+  }
   for (final free in freeByKey.values) {
     if (free.length >= 2) return pairOf(free[0], free[1]);
   }

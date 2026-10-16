@@ -14,12 +14,14 @@ import '../../game_engine/models/symbol_registry.dart';
 import '../../game_engine/rules/match_rules.dart';
 import '../../game_engine/scoring/score_keeper.dart';
 import '../../game_engine/scoring/scoring_rules.dart';
+import '../../game_engine/state/game_actions.dart';
 import '../../game_engine/state/game_engine.dart';
 import '../../game_engine/state/game_state.dart';
 
 /// Visual events for the board and the tray, emitted after the engine has
 /// changed state. Per accepted tap: [TileToTray], then [TrayPairCleared] or
-/// [TrayFull] when that tap matched or lost. A revive: [TrayReturned].
+/// [TrayFull] when that tap matched or lost. A revive: [TrayReturned]. The
+/// helper actions: [MoveUndone], [TileHinted], [BoardShuffled].
 sealed class BoardEvent {
   const BoardEvent();
 }
@@ -81,6 +83,52 @@ class BoardReset extends BoardEvent {
   const BoardReset();
 }
 
+/// Undo: the last tap is taken back. [tileId] is back in its board place:
+/// it left engine tray slot [fromSlot] (or was still flying there); play it
+/// flying from the tray to the board. If that tap had cleared a pair,
+/// [partnerId] is back in engine tray slot [partnerSlot] and the pair's
+/// strike is called off: [GameController.pairImpact] ignores it from now on.
+/// [tray] is the engine's tray after the undo, slot order.
+class MoveUndone extends BoardEvent {
+  const MoveUndone({
+    required this.tileId,
+    required this.fromSlot,
+    required this.tray,
+    this.partnerId,
+    this.partnerSlot,
+    this.pointsTakenBack = 0,
+  });
+
+  final String tileId;
+  final int fromSlot;
+  final String? partnerId;
+  final int? partnerSlot;
+  final List<String> tray;
+
+  /// Score the undo took back (the undone match's points; 0 for a plain tap).
+  final int pointsTakenBack;
+
+  bool get undidMatch => partnerId != null;
+}
+
+/// A hint was used: [hint] names the board tile to tap (and its twin when
+/// known). Nothing moved; show it on the board.
+class TileHinted extends BoardEvent {
+  const TileHinted(this.hint);
+
+  final Hint hint;
+}
+
+/// Shuffle: the board tiles in [changes] (tile id → old and new symbol code)
+/// show other symbols now; places, layers, ids and the tray are unchanged.
+/// Draw the board from [GameController.boardLevel] from now on.
+class BoardShuffled extends BoardEvent {
+  const BoardShuffled(this.changes, {required this.seed});
+
+  final Map<String, (String from, String to)> changes;
+  final int seed;
+}
+
 /// Score feedback for the screen (popups). The score itself is already
 /// updated when these arrive.
 sealed class ScoreEvent {
@@ -103,8 +151,43 @@ class ScorePenalty extends ScoreEvent {
   final int points;
 }
 
+/// What the result card shows for a game: score, time, moves and the helper
+/// actions used (owner, 1.1.0).
+class GameSummary {
+  const GameSummary({
+    required this.score,
+    required this.bestCombo,
+    required this.time,
+    required this.moves,
+    required this.matchedPairs,
+    required this.totalPairs,
+    required this.undosUsed,
+    required this.hintsUsed,
+    required this.shufflesUsed,
+    this.newBestScore = false,
+    this.record,
+  });
+
+  final int score;
+  final int bestCombo;
+  final Duration time;
+  final int moves;
+  final int matchedPairs;
+  final int totalPairs;
+  final int undosUsed;
+  final int hintsUsed;
+  final int shufflesUsed;
+
+  /// The win beat this level's previous best score.
+  final bool newBestScore;
+
+  /// The level's saved record after this win (null until it is saved).
+  final LevelRecord? record;
+}
+
 /// Glue between the rules engine and the UI: input, timer, autosave, wins,
-/// sounds and haptics.
+/// sounds and haptics, and the helper actions (Undo, Hint, Shuffle and their
+/// uses; see [isAvailable], [undo], [useHint], [shuffle], [grant]).
 class GameController extends ChangeNotifier {
   GameController({
     required this.entry,
@@ -200,19 +283,24 @@ class GameController extends ChangeNotifier {
   final Stopwatch _stopwatch;
   Duration _baseElapsed = Duration.zero;
   final StreamController<BoardEvent> _events = StreamController.broadcast();
-  final Set<Timer> _pendingFeedback = {};
-  int _pendingImpacts = 0;
+
+  /// Delayed feedback, by the tile whose move it belongs to (null: none).
+  final Map<Timer, String?> _pendingFeedback = {};
 
   /// The game's score and combo.
   final ScoreKeeper scoring;
   final StreamController<ScoreEvent> _scoreEvents = StreamController.broadcast();
 
-  /// Awards waiting for their pair's strike ([pairImpact]), oldest first.
-  final List<ScoreAwarded> _pendingAwards = [];
+  /// Matches whose strike has not hit yet ([pairImpact]), oldest first.
+  final List<_Unstruck> _unstruck = [];
   Timer? _comboTimer;
+  int _symbolsSerial = 0;
 
   /// True when the last win beat this level's previous best score.
   bool newBestScore = false;
+
+  /// The won game's summary for the result card, once its record is saved.
+  GameSummary? winSummary;
   bool _introPlaying = false;
   int _introSerial = 0;
   int _stateVersion = 0;
@@ -233,6 +321,80 @@ class GameController extends ChangeNotifier {
 
   bool get clockRunning => _stopwatch.isRunning;
   GameState get state => engine.state;
+
+  /// The level as the board shows it now: tiles carry their symbols after
+  /// any shuffle (the level itself until one). Rebuild drawings from it when
+  /// [symbolsSerial] changes.
+  LevelDefinition get boardLevel => engine.boardLevel;
+
+  /// Changes whenever tiles change symbols (a shuffle, or a restart after
+  /// one).
+  int get symbolsSerial => _symbolsSerial;
+
+  /// The symbol [tileId] shows now.
+  String symbolCodeOf(String tileId) {
+    final index = engine.indexOf(tileId);
+    return index == null ? '' : engine.symbolCodeOf(index);
+  }
+
+  /// Uses left and used of each action in this game.
+  ActionCounts get actions => state.actions;
+
+  /// Uses of [action] left in this game.
+  int usesLeft(GameAction action) => engine.usesLeft(action);
+
+  /// Whether [action] makes sense now, uses aside: the game is in play (not
+  /// over, no intro, no tutorial) and Undo has a tap to take back (not past
+  /// a Revive or a Shuffle), Hint a tap to recommend, Shuffle two symbols
+  /// to swap. With no use left the UI can offer a rewarded ad ([grant]).
+  bool isAvailable(GameAction action) {
+    if (_disposed || _introPlaying || _tutorialActive || state.status != GameStatus.playing) return false;
+    return switch (action) {
+      GameAction.undo => _canUndoNow,
+      GameAction.hint => _hintExists,
+      GameAction.shuffle => engine.canShuffleBoard,
+    };
+  }
+
+  /// [action] is available and has a use left.
+  bool canUse(GameAction action) => isAvailable(action) && usesLeft(action) > 0;
+
+  bool get _canUndoNow {
+    if (!engine.undoAvailable) return false;
+    if (engine.undoWouldUnmatch != true) return true;
+    // A match's score comes back from the keeper's checkpoint; a game resumed
+    // from a 1.0 save has none for its earlier matches.
+    return scoring.pairsBeforeUndo == state.matchedPairs - 1;
+  }
+
+  /// A hint exists exactly when some tap neither fills the tray nor loses:
+  /// a free tile that matches the tray, or any free tile while there is room.
+  bool get _hintExists {
+    final tray = state.tray;
+    if (tray.length + 1 < trayCapacity) return true;
+    final rules = engine.rules;
+    final waiting = [for (final id in tray) engine.indexOf(id)!];
+    return state.free.any((id) {
+      final index = engine.indexOf(id)!;
+      return waiting.any((other) => rules.matches(other, index));
+    });
+  }
+
+  /// The game's figures now (the result card reads [winSummary]).
+  GameSummary get summary => GameSummary(
+    score: scoring.score,
+    bestCombo: scoring.bestCombo,
+    time: elapsed,
+    moves: state.moveCount,
+    matchedPairs: state.matchedPairs,
+    totalPairs: state.totalPairs,
+    undosUsed: actions.undosUsed,
+    hintsUsed: actions.hintsUsed,
+    shufflesUsed: actions.shufflesUsed,
+    newBestScore: newBestScore,
+    record: winRecord,
+  );
+
   int get stateVersion => _stateVersion;
   Duration get elapsed => _baseElapsed + _stopwatch.elapsed;
 
@@ -316,17 +478,19 @@ class GameController extends ChangeNotifier {
           ),
         );
         final award = ScoreAwarded(scoring.onMatch(elapsed), result.partnerSlot!);
-        if (matchFeedbackOnImpact) {
-          _pendingAwards.add(award);
-        } else {
-          _emitScore(award);
-        }
+        if (!matchFeedbackOnImpact) _emitScore(award);
+        _unstruck.add(
+          _Unstruck(
+            tileId,
+            result.partnerTileId!,
+            award: matchFeedbackOnImpact ? award : null,
+            awaitsImpact: matchFeedbackOnImpact,
+          ),
+        );
         _scheduleComboEnd();
-        if (matchFeedbackOnImpact) {
-          _pendingImpacts++;
-        } else {
+        if (!matchFeedbackOnImpact) {
           final won = state.status == GameStatus.won;
-          _afterArrival(() => _matchFeedback(won: won));
+          _afterArrival(() => _matchFeedback(won: won), move: tileId);
         }
       case TapOutcome.trayFull:
         _tapFeedback();
@@ -343,11 +507,23 @@ class GameController extends ChangeNotifier {
 
   /// A matched pair's tiles hit each other on screen (with
   /// [matchFeedbackOnImpact]): the match sound and haptic, or the win sound
-  /// for the last pair of a won game.
-  void pairImpact() {
-    if (_pendingAwards.isNotEmpty) _emitScore(_pendingAwards.removeAt(0));
-    if (_pendingImpacts > 0) _pendingImpacts--;
-    _matchFeedback(won: state.status == GameStatus.won && _pendingImpacts == 0);
+  /// for the last pair of a won game, and its score popup.
+  ///
+  /// Name the pair ([tileId], and [otherTileId] if known, in any order) so a
+  /// strike of a pair that no longer exists (undone, or from before a
+  /// restart) does nothing: no feedback, no score. Without names the oldest
+  /// waiting match strikes.
+  void pairImpact([String? tileId, String? otherTileId]) {
+    _Unstruck? match;
+    if (tileId == null) {
+      if (_unstruck.isNotEmpty) match = _unstruck.removeAt(0);
+    } else {
+      final at = _unstruck.indexWhere((m) => m.involves(tileId) || (otherTileId != null && m.involves(otherTileId)));
+      if (at < 0) return;
+      match = _unstruck.removeAt(at);
+    }
+    if (match?.award case final award?) _emitScore(award);
+    _matchFeedback(won: state.status == GameStatus.won && !_unstruck.any((m) => m.awaitsImpact));
   }
 
   void _matchFeedback({required bool won}) {
@@ -363,8 +539,12 @@ class GameController extends ChangeNotifier {
     final returned = engine.revive();
     if (returned == null) return false;
     _cancelFeedback();
-    scoring.endCombo();
-    _pendingAwards.clear();
+    scoring
+      ..endCombo()
+      ..sealUndo();
+    for (final match in _unstruck) {
+      match.award = null;
+    }
     _scheduleComboEnd();
     _stopwatch.start();
     _emit(TrayReturned(returned));
@@ -375,13 +555,100 @@ class GameController extends ChangeNotifier {
     return true;
   }
 
+  /// Takes back the last tap, using one Undo ([canUse]): the tile goes back
+  /// to its board place; a tap that had cleared a pair also brings its twin
+  /// back to the tray and takes back that match's score and combo (blocked-tap
+  /// penalties since stay). The clock runs on. Emits [MoveUndone]; a strike
+  /// of the undone pair still on screen is ignored ([pairImpact]). Null when
+  /// Undo cannot be used now.
+  UndoResult? undo() {
+    if (!canUse(GameAction.undo)) return null;
+    final scoreBefore = scoring.score;
+    final result = engine.undo();
+    if (result == null) return null;
+    _cancelFeedbackFor(result.tileId);
+    if (result.undidMatch) {
+      scoring.undoMatch();
+      final at = _unstruck.lastIndexWhere((m) => m.tileId == result.tileId);
+      if (at >= 0) _unstruck.removeAt(at);
+    }
+    _scheduleComboEnd();
+    _haptic(HapticFeedback.selectionClick);
+    _emit(
+      MoveUndone(
+        tileId: result.tileId,
+        fromSlot: result.fromSlot,
+        partnerId: result.partnerTileId,
+        partnerSlot: result.partnerSlot,
+        tray: state.tray,
+        pointsTakenBack: scoreBefore - scoring.score,
+      ),
+    );
+    // One soft sound as the tile lands.
+    _afterArrival(() => sounds?.play(Sfx.select));
+    _afterMove();
+    _changed();
+    return result;
+  }
+
+  /// Uses one Hint ([canUse]): returns the recommended tap (see
+  /// `HintFinder`) and emits [TileHinted]; nothing moves and nothing scores.
+  /// Null (no use spent) when Hint cannot be used now.
+  Hint? useHint() {
+    if (!canUse(GameAction.hint)) return null;
+    final hint = engine.useHint();
+    if (hint == null) return null;
+    sounds?.play(Sfx.select);
+    _emit(TileHinted(hint));
+    _save();
+    _changed();
+    return hint;
+  }
+
+  /// Uses one Shuffle ([canUse]): the board's symbols move to other board
+  /// tiles (places, the tray and the score stay) into a position that can
+  /// be won; the combo ends and Undo cannot reach earlier taps. Emits
+  /// [BoardShuffled]. Anything but [ShuffleOutcome.shuffled] spends no use
+  /// and changes nothing.
+  ShuffleResult shuffle({int? seed}) {
+    if (!isAvailable(GameAction.shuffle)) {
+      final playing = !_disposed && !_introPlaying && !_tutorialActive && state.status == GameStatus.playing;
+      return ShuffleResult(playing ? ShuffleOutcome.nothingToShuffle : ShuffleOutcome.unavailable);
+    }
+    if (usesLeft(GameAction.shuffle) <= 0) return const ShuffleResult(ShuffleOutcome.noCharges);
+    final result = engine.shuffle(seed: seed);
+    if (!result.shuffled) return result;
+    scoring
+      ..endCombo()
+      ..sealUndo();
+    _symbolsSerial++;
+    _scheduleComboEnd();
+    _haptic(HapticFeedback.selectionClick);
+    sounds?.play(Sfx.select);
+    _emit(BoardShuffled(result.changes, seed: result.seed!));
+    _save();
+    _changed();
+    return result;
+  }
+
+  /// One more use of [action] (its rewarded ad paid out). Saved with the
+  /// game; false once the game is won.
+  bool grant(GameAction action) {
+    if (_disposed || !engine.grant(action)) return false;
+    _save();
+    _changed();
+    return true;
+  }
+
   void restart() {
+    final shuffled = state.actions.shufflesUsed > 0;
     engine.restart();
     _cancelFeedback();
-    _pendingImpacts = 0;
     scoring.reset();
-    _pendingAwards.clear();
+    _unstruck.clear();
+    if (shuffled) _symbolsSerial++;
     newBestScore = false;
+    winSummary = null;
     _scheduleComboEnd();
     _baseElapsed = Duration.zero;
     // reset() alone keeps a running watch running.
@@ -420,11 +687,12 @@ class GameController extends ChangeNotifier {
     sounds?.play(Sfx.tap);
   }
 
-  void _afterArrival(VoidCallback feedback) => _later(arrivalFeedbackDelay, feedback);
+  void _afterArrival(VoidCallback feedback, {String? move}) => _later(arrivalFeedbackDelay, feedback, move: move);
 
   /// Runs [feedback] after [delay] (at once for zero); restart and revive
-  /// drop it if it has not run yet.
-  void _later(Duration delay, VoidCallback feedback) {
+  /// drop it if it has not run yet, and so does an undo of [move] (the
+  /// tapped tile's id).
+  void _later(Duration delay, VoidCallback feedback, {String? move}) {
     if (delay == Duration.zero) {
       feedback();
       return;
@@ -434,14 +702,22 @@ class GameController extends ChangeNotifier {
       _pendingFeedback.remove(timer);
       if (!_disposed) feedback();
     });
-    _pendingFeedback.add(timer);
+    _pendingFeedback[timer] = move;
   }
 
   void _cancelFeedback() {
-    for (final timer in _pendingFeedback) {
+    for (final timer in _pendingFeedback.keys) {
       timer.cancel();
     }
     _pendingFeedback.clear();
+  }
+
+  void _cancelFeedbackFor(String move) {
+    _pendingFeedback.removeWhere((timer, tag) {
+      if (tag != move) return false;
+      timer.cancel();
+      return true;
+    });
   }
 
   void _afterMove() {
@@ -483,6 +759,7 @@ class GameController extends ChangeNotifier {
       bestCombo: scoring.bestCombo,
     );
     newBestScore = previousBest != null && scoring.score > previousBest;
+    winSummary = summary;
     await progress.clearSavedGame(levelId: level.levelId);
     if (!_disposed) notifyListeners();
   }
@@ -548,4 +825,21 @@ class GameController extends ChangeNotifier {
     unawaited(_scoreEvents.close());
     super.dispose();
   }
+}
+
+/// A match whose strike has not hit yet.
+class _Unstruck {
+  _Unstruck(this.tileId, this.partnerId, {required this.award, required this.awaitsImpact});
+
+  /// The tapped tile, and the tray tile it cleared.
+  final String tileId;
+  final String partnerId;
+
+  /// Its score popup, shown at the strike (null: shown already, or dropped).
+  ScoreAwarded? award;
+
+  /// Its sound waits for the strike ([GameController.matchFeedbackOnImpact]).
+  final bool awaitsImpact;
+
+  bool involves(String id) => id == tileId || id == partnerId;
 }
