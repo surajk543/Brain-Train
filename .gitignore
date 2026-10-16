@@ -50,6 +50,9 @@ app.*.map.json
 
 # Licensed third-party source art (IconScout originals). Keep out of git.
 /art/source/
+# Symbol masters (full-size PNGs from tool/assets/prepare_symbols.py) live in R2
+# under art/masters/: dart run tool/r2_art.dart push | pull.
+/art/masters/
 
 # Python tooling
 __pycache__/

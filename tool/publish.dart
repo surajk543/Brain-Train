@@ -163,7 +163,7 @@ String _contentType(String path) => switch (path.split('.').last) {
   _ => 'application/octet-stream',
 };
 
-/// Minimal S3 SigV4 client for R2 (HEAD, PUT, LIST and DELETE).
+/// Minimal S3 SigV4 client for R2 (HEAD, GET, PUT, LIST and DELETE).
 class R2Client {
   R2Client({required this.accountId, required this.accessKeyId, required this.secretAccessKey, required this.bucket});
 
@@ -182,6 +182,14 @@ class R2Client {
     if (response.statusCode != 200) throw HttpException('HEAD $key -> ${response.statusCode}');
     // R2 marks compressible objects' ETags weak (W/"..."); the hash is the same.
     return response.headers['etag']?.replaceFirst('W/', '').replaceAll('"', '');
+  }
+
+  /// The object's bytes, or null if absent.
+  Future<Uint8List?> get(String key) async {
+    final response = await _send('GET', key, Uint8List(0), const {});
+    if (response.statusCode == 404) return null;
+    if (response.statusCode != 200) throw HttpException('GET $key -> ${response.statusCode}');
+    return response.bodyBytes;
   }
 
   Future<void> put(String key, Uint8List bytes, {required String contentType}) async {
