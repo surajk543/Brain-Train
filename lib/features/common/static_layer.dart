@@ -2,6 +2,7 @@ import 'dart:ui' as ui;
 
 import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
+import '../../app/tablet_scale.dart';
 
 /// Called with the image a [StaticLayer] just painted: [bounds] is the area
 /// it covers in the layer's own (logical) coordinates.
@@ -129,7 +130,7 @@ class RenderStaticLayer extends RenderProxyBox {
       onRaster?.call(this, image, bounds, _pixelRatio);
     }
     // Land on whole device pixels so the image is copied 1:1 (crisp text).
-    final origin = localToGlobal(Offset.zero) * _pixelRatio;
+    final origin = localToGlobal(Offset.zero, ancestor: TabletScale.canvasAbove(this)) * _pixelRatio;
     final snap = Offset(origin.dx.roundToDouble() - origin.dx, origin.dy.roundToDouble() - origin.dy) / _pixelRatio;
     context.canvas.drawImageRect(
       image,

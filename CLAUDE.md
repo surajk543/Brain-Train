@@ -243,6 +243,10 @@ dart run tool/smoke_remote.dart         # live check: app's content client vs pr
   `primaryFill/Edge/Text` stay for the Completed Levels panel button. Level `backdrop.colors` only tints
   the gameplay ambient light. Tune tiles in `TileStyle`, never the art.
 - Every tile everywhere (board, lobby hero) uses `MahjongTileRenderer`; no second tile renderer.
+- Tablets (owner, 2026-10-17): `TabletScale` (`lib/app/tablet_scale.dart`, the `MaterialApp` builder) lays the whole UI out
+  on a canvas whose shortest side is 600 and scales it to the screen (at most 1.75x) when the shortest side is 600+;
+  phones are untouched. Code that maps between widgets via "global" coordinates (flights, shatter, intro, score popups,
+  `StaticLayer` pixel snapping, board/tray face rects) must use `TabletScale.canvasAbove(box)` as the ancestor.
 - Portrait only (owner, 2026-10-17): iOS `UISupportedInterfaceOrientations` portrait (iPad portrait + upside down,
   `UIRequiresFullScreen`), Android `MainActivity` `screenOrientation="portrait"`. iPhone and iPad are both supported
   (`TARGETED_DEVICE_FAMILY = "1,2"`).

@@ -7,6 +7,7 @@ import 'package:flutter/scheduler.dart';
 import '../../../app/brand.dart';
 import '../../../game_engine/scoring/score_format.dart';
 import '../game_controller.dart';
+import '../../../app/tablet_scale.dart';
 
 const Duration _popIn = Duration(milliseconds: 120);
 const double _rise = 28;
@@ -128,7 +129,7 @@ class ScorePopupOverlayState extends State<ScorePopupOverlay> with SingleTickerP
   Offset? _toLocal(Rect? global, {required Offset Function(Rect) anchor}) {
     final box = context.findRenderObject() as RenderBox?;
     if (global == null || box == null || !box.hasSize || !box.attached) return null;
-    return box.globalToLocal(anchor(global));
+    return box.globalToLocal(anchor(global), ancestor: TabletScale.canvasAbove(box));
   }
 
   void _onEvent(ScoreEvent event) {
