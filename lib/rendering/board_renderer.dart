@@ -122,7 +122,10 @@ class BoardLayers extends ChangeNotifier {
 
 /// One tile as drawn this frame (effects applied).
 class _TileDraw {
-  _TileDraw(this.index, this.tile, this.rect, TileFx fx, this.shade) : invalidTint = fx.invalidTint;
+  _TileDraw(this.index, this.tile, this.rect, TileFx fx, this.shade)
+    : invalidTint = fx.invalidTint,
+      flipScaleX = fx.flipScaleX,
+      symbolCode = fx.symbolOverride ?? tile.symbolCode;
 
   final int index;
   final TileDefinition tile;
@@ -130,6 +133,13 @@ class _TileDraw {
   /// Face rectangle after the shake.
   final Rect rect;
   final double invalidTint;
+
+  /// Horizontal scale while a shuffle turns the tile over (1: none).
+  final double flipScaleX;
+
+  /// The symbol drawn now: the tile's, or its old one early in a shuffle's
+  /// turn.
+  final String symbolCode;
 
   /// Darkening over the face (lower layer, blocked).
   final double shade;
@@ -226,7 +236,7 @@ class BoardPainter extends CustomPainter {
       return;
     }
     // Everything the static image and the set of moving symbols depend on.
-    final key = (stateVersion, effects.generation, projection, art, dimBlocked, size, pixelRatio, _animate);
+    final key = (stateVersion, effects.generation, projection, art, dimBlocked, size, pixelRatio, _animate, level);
     if (!effects.isAnimating && layers._key != key && layers._pendingKey != key) _buildStatic(layers, key);
     if (effects.isAnimating || layers._key != key) {
       // Effects running, or the new static image is not ready yet.
@@ -309,8 +319,8 @@ class BoardPainter extends CustomPainter {
     }
     if (_animate) {
       for (var i = 0; i < tiles.length; i++) {
-        final symbol = art.symbols[tiles[i].tile.symbolCode];
-        if (symbol is! AnimatedSymbolArt) continue;
+        final symbol = art.symbols[tiles[i].symbolCode];
+        if (symbol is! AnimatedSymbolArt || tiles[i].flipScaleX != 1) continue;
         final area = renderer.symbolRect(tiles[i].rect);
         var covered = false;
         for (var j = i + 1; j < tiles.length && !covered; j++) {
@@ -341,19 +351,33 @@ class BoardPainter extends CustomPainter {
   /// Draws one tile. A [TileDraw.live] symbol is drawn moving from [atlas]
   /// or, without one, straight from its animation at [seconds]; every other
   /// symbol as its still art.
-  void _drawTile(Canvas canvas, _TileDraw t, {SymbolFrameAtlas? atlas, double? seconds}) => _paintTile(
-    canvas,
-    art,
-    style,
-    renderer,
-    t.tile,
-    t.rect,
-    t.shade,
-    invalidTint: t.invalidTint,
-    live: t.live,
-    atlas: atlas,
-    seconds: seconds,
-  );
+  void _drawTile(Canvas canvas, _TileDraw t, {SymbolFrameAtlas? atlas, double? seconds}) {
+    final flipped = t.flipScaleX != 1;
+    if (flipped) {
+      // A shuffle turns the tile over around its face's vertical centre line.
+      final cx = t.rect.center.dx;
+      canvas
+        ..save()
+        ..translate(cx, 0)
+        ..scale(math.max(t.flipScaleX, 0.001), 1)
+        ..translate(-cx, 0);
+    }
+    _paintTile(
+      canvas,
+      art,
+      style,
+      renderer,
+      t.tile,
+      t.rect,
+      t.shade,
+      symbolCode: t.symbolCode,
+      invalidTint: t.invalidTint,
+      live: t.live,
+      atlas: atlas,
+      seconds: seconds,
+    );
+    if (flipped) canvas.restore();
+  }
 
   /// Redraws a moving symbol over the static layer: the face under it, the
   /// current frame, then the same shade the static layer has there, so the
@@ -370,6 +394,7 @@ class BoardPainter extends CustomPainter {
   @override
   bool shouldRepaint(BoardPainter old) =>
       old.stateVersion != stateVersion ||
+      old.level != level ||
       old.projection != projection ||
       old.art != art ||
       old.dimBlocked != dimBlocked ||
@@ -397,6 +422,7 @@ void _paintTile(
   TileDefinition tile,
   Rect face,
   double shade, {
+  String? symbolCode,
   double invalidTint = 0,
   AnimatedSymbolArt? live,
   SymbolFrameAtlas? atlas,
@@ -405,7 +431,7 @@ void _paintTile(
   final imagePaint = Paint()..filterQuality = FilterQuality.medium;
   if (tile.layer > 0) art.raisedShadow?.paint(canvas, face.topLeft, imagePaint);
   art.body.paint(canvas, face.topLeft, imagePaint);
-  final symbol = art.symbols[tile.symbolCode];
+  final symbol = art.symbols[symbolCode ?? tile.symbolCode];
   final symbolRect = renderer.symbolRect(face);
   if (live != null && atlas != null && atlas.paint(canvas, live, symbolRect, imagePaint)) {
     // Drawn from the atlas.
