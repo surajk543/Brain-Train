@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "registryVersion": "brain-train-symbols-70aa0849",
+  "registryVersion": "brain-train-symbols-c01cf59c",
   "symbols": {
     "COSMIC_CHESTNUT": {
       "type": "image",
@@ -1326,48 +1326,6 @@
       "label": "Lion",
       "sha256": "bf0e545070ae910639307baf58c75a42b3bdc341b8cf450a322a3630c9ea795b"
     },
-    "WEAPON_CRYSTAL_SWORD": {
-      "type": "image",
-      "assetPath": "symbols/v1/weapon-crystal-sword.webp",
-      "matchGroup": "WEAPON_CRYSTAL_SWORD",
-      "label": "Crystal Sword",
-      "sha256": "993b54d88feb56000e9a692b9372009dc6e15bff42da0b9637b956ca286baf25"
-    },
-    "WEAPON_CROSSED_SWORDS": {
-      "type": "image",
-      "assetPath": "symbols/v1/weapon-crossed-swords.webp",
-      "matchGroup": "WEAPON_CROSSED_SWORDS",
-      "label": "Crossed Swords",
-      "sha256": "edcc5bb1cc00e529381cfdf85c07f1f2ebe646e295c6dd76865cdc71767f90c8"
-    },
-    "WEAPON_RAY_GUN_ORANGE": {
-      "type": "image",
-      "assetPath": "symbols/v1/weapon-ray-gun-orange.webp",
-      "matchGroup": "WEAPON_RAY_GUN_ORANGE",
-      "label": "Orange Ray Gun",
-      "sha256": "1a2637d906dd89706e11f60a503c98f67ae55236ff5e3d8b43046b5f01497ce8"
-    },
-    "WEAPON_RAY_GUN_VIOLET": {
-      "type": "image",
-      "assetPath": "symbols/v1/weapon-ray-gun-violet.webp",
-      "matchGroup": "WEAPON_RAY_GUN_VIOLET",
-      "label": "Violet Ray Gun",
-      "sha256": "3e32ee398720746d773760cb82ad0b9a9a936d83d650069187f83e172bae55fc"
-    },
-    "WEAPON_SPIRAL_BLASTER": {
-      "type": "image",
-      "assetPath": "symbols/v1/weapon-spiral-blaster.webp",
-      "matchGroup": "WEAPON_SPIRAL_BLASTER",
-      "label": "Spiral Blaster",
-      "sha256": "15b7ca3f5113073187e8ba2f13a0251f0f3e5e7197f12aa895a84a71b09c02a7"
-    },
-    "WEAPON_WAR_HAMMER": {
-      "type": "image",
-      "assetPath": "symbols/v1/weapon-war-hammer.webp",
-      "matchGroup": "WEAPON_WAR_HAMMER",
-      "label": "Crystal War Hammer",
-      "sha256": "aba0db2df13300d6d0348aaf9cd969b306c206fae82e2f7774c672a50401d57d"
-    },
     "HERO_SUPERHERO": {
       "type": "image",
       "assetPath": "symbols/v1/hero-superhero.webp",
@@ -1516,14 +1474,6 @@
       "sha256": "ebcd36b12d58c372b6cb53304c0af32345c8160ba2a17faaabe2c91021d92c31",
       "source": "https://iconscout.com/3d-icon/chisel-3d-icon_11627151"
     },
-    "EQUIP_CUTTER": {
-      "type": "image",
-      "assetPath": "symbols/v1/equip-cutter.webp",
-      "matchGroup": "EQUIP_CUTTER",
-      "label": "Utility Knife",
-      "sha256": "5ddc24921767a9c58782bd0bbba2b1f2e3485f10e93159366a93e6c732220e33",
-      "source": "https://iconscout.com/3d-icon/cutter-3d-icon_11627150"
-    },
     "EQUIP_DRILL": {
       "type": "image",
       "assetPath": "symbols/v1/equip-drill.webp",
@@ -1547,14 +1497,6 @@
       "label": "Hand Saw",
       "sha256": "e93a7bc052ee47826ff4d571fb2876691e47130afd2f37ee686d58898ab5519f",
       "source": "https://iconscout.com/3d-icon/saw-3d-icon_11627153"
-    },
-    "EQUIP_STAPLE_GUN": {
-      "type": "image",
-      "assetPath": "symbols/v1/equip-staple-gun.webp",
-      "matchGroup": "EQUIP_STAPLE_GUN",
-      "label": "Staple Gun",
-      "sha256": "a931b52435cb0d6770fbdce8d399079033ddcddb5d206dcf5e78dd9d32fb6932",
-      "source": "https://iconscout.com/3d-icon/staple-gun-3d-icon_11627142"
     },
     "EQUIP_TAPE_MEASURE": {
       "type": "image",

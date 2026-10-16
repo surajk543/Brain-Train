@@ -1,6 +1,6 @@
 {
   "_comment": "Authoring source for content/brain-train/. Run `dart run tool/content.dart build`. Bump contentVersion on every publish. Levels and the registry are content-addressed (levels/level-0001-<sha>.json), so a changed level gets a new key by itself; published keys never change.",
-  "contentVersion": "2026.10.16.12",
+  "contentVersion": "2026.10.17.1",
   "_starterLevels": "Levels bundled in the app (with only their art) for a first launch without internet: content/starter/.",
   "starterLevels": 5,
   "registry": {

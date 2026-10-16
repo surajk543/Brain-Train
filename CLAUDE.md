@@ -244,16 +244,15 @@ dart run tool/smoke_remote.dart         # live check: app's content client vs pr
 
 ## Current state (2026-10-16)
 
-- Published content 2026.10.16.12 (manifest `minClientContentSchema: 3`, from branch `feat/campaign-v2`): a fresh
+- Published content 2026.10.17.1 on `braintrain-public` (manifest `minClientContentSchema: 3`): a fresh
   campaign of 100 levels, one batch of 10 per difficulty 1–10 (`catalog.json` `campaign`, seed 20261641, chosen so
   levels 1–10 open 1 2 1 4 4 5 2 6 1 1), trays 2–5, 85/15 symbols, at most 2 pairs per symbol; rules in
-  docs/level-design-rules.md. The registry (`registries/symbols-c49aee2044e5.json`) holds 314 symbols: 203 static
-  (set v1) and 111 animated, every one on some level (static 10–11 levels each, animated 3–4). .12 = .11 minus 4 tiles
-  unsuitable for a 6+ audience (CINEMA_NO_SMOKING, TRIP_COCKTAIL, MONSTER_POOP, EMOJI_KNIFE: tobacco, alcohol, crude
-  humour, weapon; IARC rating). Apps built before
-  schema 3 (master, Play versionCode 1/2) reject this manifest and keep their known-good content, whose old level files
-  are still on R2 until `tool/r2_prune.dart --delete` runs (455 unreferenced objects: 345 old levels, 7 registries,
-  85 `symbols/v4/`, 18 old `shapes-loader-*` animations).
+  docs/level-design-rules.md. The registry (`registries/symbols-f2f180674594.json`) holds 306 symbols: 195 static
+  (set v1) and 111 animated, every one on some level (static 11–12 levels each, animated 3–4). Removed for the
+  audience: 4 tiles in .12 for a 6+ Play rating (CINEMA_NO_SMOKING, TRIP_COCKTAIL, MONSTER_POOP, EMOJI_KNIFE: tobacco,
+  alcohol, crude humour, weapon; IARC) and 8 in .17.1 for a 4+ App Store rating (WEAPON_* swords, ray guns, blaster,
+  war hammer, EQUIP_CUTTER, EQUIP_STAPLE_GUN: "guns or other weapons"). Never add weapons, alcohol, tobacco, drugs or
+  crude humour. The private bucket's frozen .12 copy (old Worker) is unchanged.
 - Simulated random-player win rate per difficulty (200 games per level): 1 98%, 2 90%, 3 68%, 4 52%, 5 29%, 6 12%,
   7 2%, 8–10 0% (a pair-seeking player still wins ~50% of 8–10). Every level is solver-proven and keeps tile faces
   >= 31 px wide on a 360x640 phone.
@@ -279,9 +278,9 @@ dart run tool/smoke_remote.dart         # live check: app's content client vs pr
   (image set renamed v4 → v1 on 2026-10-16: `art/source/symbols-v1/`, `art/masters/v1/`, `art/review/v1-contact-sheet.png`).
   Animated: `art/animated_sources.json` → `python3 tool/assets/prepare_animated.py` → `content/brain-train/animated-symbols/`.
   Originals live in `art/source/` (gitignored). IconScout downloads use the owner's subscription via the iconscout MCP.
-- Art sources: each entry has a `status`; builds take only `integrated` ones. Static: 203 integrated (82 earlier +
+- Art sources: each entry has a `status`; builds take only `integrated` ones. Static: 195 integrated (82 earlier +
   23 owner nano-banana cut-outs + 76 IconScout 3D Sport/Christmas/Tech/Robot/Cinema/Trip + 24 from the Sport, Sport
-  Equipment, Equipment and Medicine packs, minus 2 rejected for 6+), 60 `rejected` (unreadable at 31 px, look-alikes, duplicates; each has a
+  Equipment, Equipment and Medicine packs, minus 2 rejected for 6+ and 8 for 4+), 68 `rejected` (unreadable at 31 px, look-alikes, duplicates; each has a
   reason), 16 `awaiting download`. Duplicate subjects are never added (owner). Animated: 111 integrated (2 rejected for 6+; 83 earlier +
   9 owner LottieFiles `LF_*` + India map + 20 country flags `FLAG_*` restyled with a zoom), rejected ones have a
   reason. Check new art at 31 px and 64 px tile width.
