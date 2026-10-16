@@ -9,6 +9,7 @@ import '../../../game_engine/scoring/score_format.dart';
 import '../../../game_engine/state/game_actions.dart';
 import '../../../platform/rewarded_ads.dart';
 import '../game_controller.dart';
+import '../../common/static_layer.dart';
 import 'action_bar.dart';
 import 'game_hud.dart';
 import 'premium_chrome.dart';
@@ -264,15 +265,20 @@ class LevelCompleteView extends StatelessWidget {
                 ..shader = LinearGradient(
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
-                  colors: [const Color(0xFFFFF1C8), palette.accent, const Color(0xFFD49A3A)],
-                  stops: const [0.18, 0.55, 0.95],
+                  colors: [const Color(0xFFFFF4D2), const Color(0xFFF8D67E), const Color(0xFFE3A947)],
+                  stops: const [0.15, 0.5, 0.95],
                 ).createShader(Rect.fromLTWH(0, 0, 10, (compact ? 32 : 38) * 1.15)),
-              shadows: [Shadow(color: palette.textShadow, blurRadius: 6, offset: const Offset(0, 2))],
+              // A hard shadow: no blur to redraw while the trophy animates.
+              shadows: [Shadow(color: palette.textShadow, offset: const Offset(0, 2))],
             ),
           ),
         ),
         SizedBox(height: compact ? 10 : 14),
-        _ResultsPanel(summary: summary, record: record, compact: compact),
+        // Drawn once (its shadows and frost), not on every trophy frame.
+        StaticLayer(
+          overflow: const EdgeInsets.fromLTRB(26, 16, 26, 36),
+          child: _ResultsPanel(summary: summary, record: record, compact: compact),
+        ),
         SizedBox(height: compact ? 14 : 18),
         if (hasNext)
           PremiumButton(

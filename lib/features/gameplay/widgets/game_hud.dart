@@ -10,6 +10,7 @@ import '../../../content/level_manifest.dart';
 import '../../../game_engine/scoring/score_format.dart';
 import '../../../game_engine/state/game_state.dart';
 import '../game_controller.dart';
+import '../../common/static_layer.dart';
 import 'premium_chrome.dart';
 
 /// Minutes and seconds of a game clock: `0:45`, `12:03`.
@@ -52,67 +53,79 @@ class GameHud extends StatelessWidget {
   @override
   Widget build(BuildContext context) => MediaQuery.withClampedTextScaling(
     maxScaleFactor: 1.3,
-    child: PremiumPanel(
-      radius: compact ? 16 : 18,
-      child: LayoutBuilder(
-        builder: (context, constraints) {
-          final width = constraints.maxWidth;
-          final back = compact ? 40.0 : 48.0;
-          // The name at its smallest size, capped at its share: the
-          // statistics take the rest (shrinking a little for a long name).
-          final title = math.min(_LevelTitle.minWidth(context, entry, compact: compact), width * _titleShare);
-          final stats = (width - back - (compact ? 10 : 16) - title).clamp(width * _statsMinShare, width * _statsShare);
-          return Row(
-          children: [
-            _HudBackButton(onPressed: onBack, compact: compact),
-            Expanded(child: _LevelTitle(entry: entry, compact: compact)),
-            SizedBox(width: compact ? 4 : 8),
-            const _HudSeparator(),
-            ConstrainedBox(
-              constraints: BoxConstraints(maxWidth: stats),
-              child: FittedBox(
-                fit: BoxFit.scaleDown,
-                alignment: Alignment.centerRight,
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    ListenableBuilder(
-                      listenable: controller,
-                      builder: (context, _) => Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          TweenAnimationBuilder<int>(
-                            tween: IntTween(end: controller.score),
-                            duration: MediaQuery.disableAnimationsOf(context)
-                                ? Duration.zero
-                                : const Duration(milliseconds: 300),
-                            builder: (context, value, _) =>
-                                HudStat(label: 'Score', value: formatScore(value), compact: compact),
-                          ),
-                          const _HudSeparator(),
-                          _ComboStat(combo: controller.activeCombo, compact: compact),
-                          const _HudSeparator(),
-                          HudStat(
-                            label: 'Pairs',
-                            value: '${controller.state.matchedPairs}/${controller.state.totalPairs}',
-                            compact: compact,
-                          ),
-                        ],
-                      ),
+    child: Stack(
+      children: [
+        // The panel (frost, rim, shadows) is drawn once into an image: the
+        // leaves drifting behind it would otherwise redraw its shadow blurs
+        // every frame. The figures above it are plain text.
+        Positioned.fill(
+          child: StaticLayer(
+            overflow: const EdgeInsets.fromLTRB(26, 16, 26, 36),
+            child: PremiumPanel(radius: compact ? 16 : 18, child: const SizedBox.expand()),
+          ),
+        ),
+        _content(),
+      ],
+    ),
+  );
+
+  Widget _content() => LayoutBuilder(
+    builder: (context, constraints) {
+      final width = constraints.maxWidth;
+      final back = compact ? 40.0 : 48.0;
+      // The name at its smallest size, capped at its share: the statistics
+      // take the rest (shrinking a little for a long name).
+      final title = math.min(_LevelTitle.minWidth(context, entry, compact: compact), width * _titleShare);
+      final stats = (width - back - (compact ? 10 : 16) - title).clamp(width * _statsMinShare, width * _statsShare);
+      return Row(
+        children: [
+          _HudBackButton(onPressed: onBack, compact: compact),
+          Expanded(child: _LevelTitle(entry: entry, compact: compact)),
+          SizedBox(width: compact ? 4 : 8),
+          const _HudSeparator(),
+          ConstrainedBox(
+            constraints: BoxConstraints(maxWidth: stats),
+            child: FittedBox(
+              fit: BoxFit.scaleDown,
+              alignment: Alignment.centerRight,
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  ListenableBuilder(
+                    listenable: controller,
+                    builder: (context, _) => Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        TweenAnimationBuilder<int>(
+                          tween: IntTween(end: controller.score),
+                          duration: MediaQuery.disableAnimationsOf(context)
+                              ? Duration.zero
+                              : const Duration(milliseconds: 300),
+                          builder: (context, value, _) =>
+                              HudStat(label: 'Score', value: formatScore(value), compact: compact),
+                        ),
+                        const _HudSeparator(),
+                        _ComboStat(combo: controller.activeCombo, compact: compact),
+                        const _HudSeparator(),
+                        HudStat(
+                          label: 'Pairs',
+                          value: '${controller.state.matchedPairs}/${controller.state.totalPairs}',
+                          compact: compact,
+                        ),
+                      ],
                     ),
-                    const _HudSeparator(),
-                    // Ticks every second; keep that repaint to the clock.
-                    RepaintBoundary(child: _ClockStat(controller: controller, compact: compact)),
-                  ],
-                ),
+                  ),
+                  const _HudSeparator(),
+                  // Ticks every second; keep that repaint to the clock.
+                  RepaintBoundary(child: _ClockStat(controller: controller, compact: compact)),
+                ],
               ),
             ),
-            SizedBox(width: compact ? 4 : 6),
-          ],
-        );
-        },
-      ),
-    ),
+          ),
+          SizedBox(width: compact ? 4 : 6),
+        ],
+      );
+    },
   );
 }
 
@@ -134,14 +147,17 @@ class _HudBackButton extends StatelessWidget {
       child: Tooltip(
         message: 'Back',
         excludeFromSemantics: true,
-        child: InkResponse(
-          onTap: onPressed,
-          radius: 22,
-          highlightShape: BoxShape.circle,
-          child: SizedBox(
-            width: compact ? 40 : 48,
-            height: 44,
-            child: Icon(Icons.arrow_back_rounded, color: palette.text, size: compact ? 22 : 25),
+        child: Material(
+          type: MaterialType.transparency,
+          child: InkResponse(
+            onTap: onPressed,
+            radius: 22,
+            highlightShape: BoxShape.circle,
+            child: SizedBox(
+              width: compact ? 40 : 48,
+              height: 44,
+              child: Icon(Icons.arrow_back_rounded, color: palette.text, size: compact ? 22 : 25),
+            ),
           ),
         ),
       ),

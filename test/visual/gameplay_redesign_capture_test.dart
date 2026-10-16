@@ -101,6 +101,30 @@ void main() {
     ('day', _small, 1.3),
   ];
 
+  for (final (look, phone) in [('night', _large), ('day', _small)]) {
+    final mode = look == 'day' ? ThemeMode.light : ThemeMode.dark;
+    testWidgets('$look shuffle turning tiles, then the shuffled board ${phone.name}', (tester) async {
+      await start(tester);
+      final clock = FakeStopwatch();
+      await open(tester, phone, mode, resume: solvedSave(snapshot, meadow, pairs: 2), clock: clock);
+      final game = gameOf(tester);
+      final before = {for (final id in game.state.remaining) id: game.symbolCodeOf(id)};
+      await tester.tap(find.byKey(const ValueKey('action-shuffle')));
+      await tester.pump();
+      // The turn runs on real time: catch it part-way.
+      await tester.runAsync(() => Future<void>.delayed(const Duration(milliseconds: 200)));
+      await tester.pump();
+      expect(tester.takeException(), isNull);
+      await captureLobby(tester, 'gameplay-$look-shuffle-turning-${phone.name}', phone.dpr);
+      await tester.runAsync(() => Future<void>.delayed(const Duration(milliseconds: 700)));
+      await settle(tester);
+      expect(before.entries.where((e) => game.symbolCodeOf(e.key) != e.value), isNotEmpty);
+      expect(tester.takeException(), isNull);
+      await captureLobby(tester, 'gameplay-$look-shuffled-${phone.name}', phone.dpr);
+      await tester.pumpWidget(const SizedBox());
+    });
+  }
+
   for (final (look, phone, textScale) in cases) {
     final mode = look == 'day' ? ThemeMode.light : ThemeMode.dark;
     final suffix = '${phone.name}${textScale == 1 ? '' : '-text130'}';

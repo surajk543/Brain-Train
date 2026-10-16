@@ -6,6 +6,7 @@ import '../../../app/theme.dart';
 import '../../../app/typography.dart';
 import '../../../game_engine/state/game_actions.dart';
 import '../../../game_engine/state/game_state.dart';
+import '../../common/static_layer.dart';
 import '../game_controller.dart';
 
 /// Icon and label of each helper action.
@@ -96,11 +97,20 @@ class GameActionBar extends StatelessWidget {
           compact: compact,
           onPressed: restartOn ? onRestart : null,
         );
-        return Row(
-          children: [
-            for (final button in buttons) Expanded(child: Center(child: button)),
-            SizedBox(width: compact ? 50 : 70, child: Center(child: restart)),
-          ],
+        // Drawn once into an image until a button changes (or its ink
+        // plays): the leaves drifting behind would otherwise redraw the
+        // buttons' shadows and text every frame.
+        return StaticLayer(
+          overflow: const EdgeInsets.all(12),
+          child: Material(
+            type: MaterialType.transparency,
+            child: Row(
+              children: [
+                for (final button in buttons) Expanded(child: Center(child: button)),
+                SizedBox(width: compact ? 50 : 70, child: Center(child: restart)),
+              ],
+            ),
+          ),
         );
       },
     ),
