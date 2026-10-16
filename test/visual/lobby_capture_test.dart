@@ -7,8 +7,11 @@
 //   CAPTURE_DIR=/tmp/shots flutter test test/visual/lobby_capture_test.dart
 import 'package:brain_train/app/app_services.dart';
 import 'package:brain_train/app/play_games_controller.dart';
+import 'package:brain_train/app/rewarded_ads_controller.dart';
 import 'package:brain_train/data/progress_repository.dart';
 import 'package:brain_train/features/home/home_screen.dart';
+import 'package:brain_train/features/intro/age_screen.dart';
+import 'package:brain_train/features/settings/settings_screen.dart';
 import 'package:brain_train/platform/play_games.dart';
 import 'package:brain_train/features/home/widgets/lobby_tagline.dart';
 import 'package:flutter/material.dart';
@@ -18,6 +21,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../features/lobby_support.dart';
 import '../platform/fake_play_games.dart';
+import '../platform/fake_rewarded_ads.dart';
 
 /// Level 1 won and level 2 in progress, as in the reference ("Continue · Level 2").
 Future<void> _midway(AppServices services) async {
@@ -99,6 +103,41 @@ void main() {
     await tester.tap(find.text('Completed Levels'));
     await settleLobby(tester);
     await captureLobby(tester, 'levels-360x640-text130', smallPhone.dpr);
+    await tester.pumpWidget(const SizedBox());
+  });
+
+  for (final phone in [largePhone, smallPhone, tallPhone]) {
+    testWidgets('age screen ${phone.name}: decades, then years', (tester) async {
+      late AppServices services;
+      await tester.runAsync(() async => services = await testServices());
+      await pumpLobby(
+        tester,
+        services: services,
+        home: AgeScreen(onAnswered: (_) {}, now: () => DateTime(2026, 10, 16)),
+        phone: phone,
+      );
+      expect(tester.takeException(), isNull);
+      await captureLobby(tester, 'age-decades-${phone.name}', phone.dpr);
+      await tester.tap(find.text('1990s'));
+      await settleLobby(tester);
+      await tester.tap(find.text('1994'));
+      await settleLobby(tester);
+      expect(find.byKey(const ValueKey('age-continue')), findsOneWidget);
+      expect(tester.takeException(), isNull);
+      await captureLobby(tester, 'age-years-${phone.name}', phone.dpr);
+      await tester.pumpWidget(const SizedBox());
+    });
+  }
+
+  testWidgets('settings with Privacy choices (EEA/UK)', (tester) async {
+    late AppServices services;
+    await tester.runAsync(
+      () async => services = await testServices(ads: RewardedAdsController(FakeRewardedAds()..setPrivacyOptionsRequired(true))),
+    );
+    await pumpLobby(tester, services: services, home: const SettingsScreen(), phone: smallPhone);
+    expect(find.text('Privacy choices'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+    await captureLobby(tester, 'settings-privacy-360x640', smallPhone.dpr);
     await tester.pumpWidget(const SizedBox());
   });
 }

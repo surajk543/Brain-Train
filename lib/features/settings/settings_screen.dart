@@ -7,13 +7,17 @@ import '../common/lobby_background.dart';
 import '../common/lobby_chrome.dart';
 import '../common/static_layer.dart';
 
-/// Sound, vibration and the app version. Nothing else.
+/// Sound, vibration and the app version. Nothing else, except "Privacy
+/// choices" (Google's privacy options form) where the consent SDK requires
+/// that entry point (EEA/UK); hidden everywhere else.
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final settings = AppScope.of(context).settings;
+    final services = AppScope.of(context);
+    final settings = services.settings;
+    final ads = services.ads;
     final lobby = LobbyTheme.of(context);
     return Scaffold(
       backgroundColor: lobby.baseFallback.last,
@@ -23,7 +27,7 @@ class SettingsScreen extends StatelessWidget {
         variant: LobbySceneVariant.subScreen,
         child: SafeArea(
           child: ListenableBuilder(
-            listenable: settings,
+            listenable: Listenable.merge([settings, ads]),
             builder: (context, _) => Center(
               child: ConstrainedBox(
                 constraints: const BoxConstraints(maxWidth: 520),
@@ -52,6 +56,19 @@ class SettingsScreen extends StatelessWidget {
                             value: settings.haptics,
                             onChanged: settings.setHaptics,
                           ),
+                          if (ads.privacyOptionsRequired) ...[
+                            Divider(
+                              height: 1,
+                              indent: 64,
+                              endIndent: 18,
+                              color: lobby.panelBorder.withValues(alpha: 0.35),
+                            ),
+                            _SettingLink(
+                              icon: Icons.privacy_tip_outlined,
+                              title: 'Privacy choices',
+                              onTap: () => ads.openPrivacyOptions(),
+                            ),
+                          ],
                         ],
                       ),
                     ),
@@ -103,6 +120,27 @@ class _SettingSwitch extends StatelessWidget {
       title: Text(title, style: lobbyHeading(context, 19, weight: FontWeight.w600)),
       value: value,
       onChanged: onChanged,
+    );
+  }
+}
+
+/// A row that opens something (the privacy options form).
+class _SettingLink extends StatelessWidget {
+  const _SettingLink({required this.icon, required this.title, required this.onTap});
+
+  final IconData icon;
+  final String title;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final lobby = LobbyTheme.of(context);
+    return ListTile(
+      contentPadding: const EdgeInsets.symmetric(horizontal: 18, vertical: 2),
+      leading: Icon(icon, color: lobby.panelAccent),
+      title: Text(title, style: lobbyHeading(context, 19, weight: FontWeight.w600)),
+      trailing: Icon(Icons.chevron_right_rounded, color: lobby.panelAccent),
+      onTap: onTap,
     );
   }
 }
