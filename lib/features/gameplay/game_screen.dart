@@ -20,6 +20,7 @@ import 'widgets/premium_chrome.dart';
 import 'widgets/tile_flight_overlay.dart';
 import 'widgets/tile_shatter.dart';
 import 'widgets/tray_view.dart';
+import 'widgets/win_trophy.dart';
 
 String formatDuration(Duration d) {
   final minutes = d.inMinutes;
@@ -592,7 +593,7 @@ class _CompletionCard extends StatelessWidget {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        const PremiumEmblem(icon: Icons.emoji_events_rounded),
+        const WinTrophy(),
         const SizedBox(height: 12),
         Text(
           'Level complete!',
