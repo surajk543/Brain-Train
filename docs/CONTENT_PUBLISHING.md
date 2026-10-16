@@ -10,13 +10,23 @@ mechanics and renderer types needs **no app release**.
 | Authoring sources | `content-src/catalog.json` (`campaign`: tiers, counts, seed), `art/asset_sources.json`, `art/animated_sources.json` (optional hand layouts: `content-src/layouts/*.layout.json`) |
 | Generated, publishable tree | `content/brain-train/` (not in git: local output of the build, uploaded by `tool/publish.dart`; on another machine mirror it with `dart run tool/fetch_content.dart`) |
 | Starter pack (bundled in the app, in git) | `content/starter/`: the manifest and registry (metadata of every level), levels 1–5 and only their art |
-| R2 bucket | `braintrain` (private) |
-| Public read URL | `https://braintrain-assets.surajk543.workers.dev/brain-train/<path>` |
-| Worker source | `infra/cloudflare/braintrain-assets/worker.js` |
+| R2 bucket (content) | `braintrain-public`: holds only `brain-train/`; everything in it is public |
+| Public read URL (app, versionCode 5+) | `https://braintrain-cdn.sungamestudio.com/brain-train/<path>` (R2 custom domain, minimum TLS 1.2) |
+| R2 bucket (private) | `braintrain`: symbol masters `art/masters/` (`tool/r2_art.dart`) and a frozen copy of content 2026.10.16.12 |
+| Old read URL (builds before versionCode 5) | `https://braintrain-assets.surajk543.workers.dev/brain-train/<path>` (Worker `infra/cloudflare/braintrain-assets/worker.js`, reads the private bucket) |
 
-The Worker serves keys under `brain-train/` publicly (GET/HEAD only, CORS `*`). `manifest.json` is
-served with `max-age=60`; every other object is `immutable`. All other bucket keys require a signed
-token. The app never holds R2 credentials or the token secret.
+`tool/publish.dart` uploads to `braintrain-public` with `Cache-Control: public, max-age=60,
+must-revalidate` on `manifest.json` and `public, max-age=31536000, immutable` on every other object.
+On the `sungamestudio.com` zone (Cloudflare free plan):
+
+- Cache rule "Brain Train content cache": host `braintrain-cdn.sungamestudio.com` is eligible for
+  cache, and the edge follows each object's Cache-Control (so JSON is cached too, not only images).
+- Rate limiting rule "Brain Train content per-IP limit": more than 100 requests per 10 s from one IP
+  on that host are blocked for 10 s.
+- R2 budget alert: an email to the owner when R2 billable usage reaches $1.
+
+The app never holds R2 credentials or the token secret. Reading content needs no key; only
+publishing does (`.env`). Never put anything private in `braintrain-public`.
 
 ### R2 object keys
 
