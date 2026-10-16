@@ -4,6 +4,8 @@ import 'package:brain_train/data/progress_repository.dart';
 import 'package:brain_train/features/gameplay/game_controller.dart';
 import 'package:brain_train/features/gameplay/game_screen.dart';
 import 'package:brain_train/features/gameplay/widgets/board_view.dart';
+import 'package:brain_train/features/gameplay/widgets/action_bar.dart';
+import 'package:brain_train/features/gameplay/widgets/game_hud.dart';
 import 'package:brain_train/features/gameplay/widgets/premium_chrome.dart';
 import 'package:brain_train/game_engine/geometry/tile_mask.dart';
 import 'package:brain_train/game_engine/state/game_state.dart';
@@ -111,7 +113,7 @@ void main() {
     await tester.runAsync(() async => services = await testServices());
   }
 
-  testWidgets('the HUD has a Restart button: disabled during the intro, enabled after', (tester) async {
+  testWidgets('the action bar has a Restart button: disabled during the intro, enabled after', (tester) async {
     final semantics = tester.ensureSemantics();
     await start(tester);
     await _pumpGame(tester, services, waitIntro: false);
@@ -231,18 +233,21 @@ void main() {
     await tester.pumpWidget(const SizedBox());
   });
 
-  testWidgets('360x640: the HUD fits with the extra button and shows the clock', (tester) async {
+  testWidgets('360x640: the HUD shows the clock; Restart sits at the action bar\'s right end', (tester) async {
     await start(tester);
     await _pumpGame(tester, services, phone: smallPhone);
     expect(tester.takeException(), isNull);
     final clock = find.textContaining('0:');
     expect(clock, findsWidgets);
-    final hud = tester.getRect(find.byType(PremiumHudFrame));
+    final hud = tester.getRect(find.byType(GameHud));
+    final bar = tester.getRect(find.byType(GameActionBar));
     final button = tester.getRect(find.byTooltip('Restart'));
     final time = tester.getRect(find.text('TIME'));
-    expect(time.right, lessThanOrEqualTo(button.left), reason: 'the clock sits left of the button');
     expect(time.left, greaterThanOrEqualTo(hud.left));
-    expect(button.right, lessThanOrEqualTo(hud.right));
+    expect(time.right, lessThanOrEqualTo(hud.right));
+    expect(button.top, greaterThanOrEqualTo(bar.top), reason: 'Restart is in the action bar');
+    expect(button.right, lessThanOrEqualTo(bar.right));
+    expect(button.left, greaterThan(tester.getRect(find.text('Shuffle')).right), reason: 'after Undo, Hint and Shuffle');
     await tester.pumpWidget(const SizedBox());
   });
 }

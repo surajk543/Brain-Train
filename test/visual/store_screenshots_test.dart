@@ -145,7 +145,7 @@ void main() {
         final app = await services(tester);
         final entry = _level(app, 4);
         await pumpGame(tester, app, entry, resume: solvedSave(app.content.snapshot, entry, elapsedMs: 83000));
-        expect(find.text('Level complete!'), findsOneWidget);
+        expect(find.text('Level Complete!'), findsOneWidget);
         await shoot(tester, '04-level-complete');
         await tester.pumpWidget(const SizedBox());
       });

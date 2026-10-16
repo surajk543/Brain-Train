@@ -5,6 +5,7 @@ import 'package:brain_train/features/gameplay/game_controller.dart';
 import 'package:brain_train/features/gameplay/game_screen.dart';
 import 'package:brain_train/features/gameplay/widgets/board_view.dart';
 import 'package:brain_train/features/gameplay/widgets/combo_badge.dart';
+import 'package:brain_train/features/gameplay/widgets/game_hud.dart';
 import 'package:brain_train/features/gameplay/widgets/score_popups.dart';
 import 'package:brain_train/game_engine/geometry/tile_mask.dart';
 import 'package:brain_train/game_engine/scoring/score_format.dart';
@@ -161,10 +162,10 @@ void main() {
   testWidgets('the combo badge appears at ×2 and goes when the window closes', (tester) async {
     await start(tester);
     final pairs = await _pumpGame(tester, services, clock);
-    expect(find.textContaining('COMBO'), findsNothing);
+    expect(find.textContaining('COMBO ×'), findsNothing);
     _match(tester, pairs[0]);
     await tester.pump();
-    expect(find.textContaining('COMBO'), findsNothing, reason: 'one match is no combo');
+    expect(find.textContaining('COMBO ×'), findsNothing, reason: 'one match is no combo');
     expect(find.textContaining('Best'), findsNothing);
     clock.advance(const Duration(milliseconds: 500));
     _match(tester, pairs[1]);
@@ -178,25 +179,28 @@ void main() {
     await tester.pumpWidget(const SizedBox());
   });
 
-  testWidgets('the combo badge draws its ring only while a combo runs', (tester) async {
+  testWidgets('the HUD\'s COMBO cell shows the running multiplier; the badge never ticks', (tester) async {
     await start(tester);
     final pairs = await _pumpGame(tester, services, clock);
     await tester.pump(const Duration(milliseconds: 100));
-    expect(find.descendant(of: find.byType(ComboBadge), matching: find.byType(CustomPaint)), findsNothing, reason: 'no badge, no ring');
+    expect(find.descendant(of: find.byType(ComboBadge), matching: find.byType(CustomPaint)), findsNothing, reason: 'no badge');
+    expect(find.bySemanticsLabel('Combo ×1'), findsOneWidget);
     _match(tester, pairs[0]);
     clock.advance(const Duration(milliseconds: 500));
     _match(tester, pairs[1]);
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 100));
-    clock.advance(const Duration(milliseconds: 100));
-    await tester.pump(const Duration(milliseconds: 100));
     expect(find.text('COMBO ×2 · Best ×2'), findsOneWidget);
-    expect(tester.widgetList<CustomPaint>(find.descendant(of: find.byType(ComboBadge), matching: find.byType(CustomPaint))), isNotEmpty);
+    expect(find.bySemanticsLabel('Combo ×2'), findsOneWidget, reason: 'the HUD cell');
+    // The window's countdown is the timer bar's (ComboTimerBar), not the badge's.
+    expect(tester.state<ComboTimerBarState>(find.byType(ComboTimerBar)).ticking, isTrue);
     clock.advance(const Duration(seconds: 5));
     await tester.pump(const Duration(seconds: 5));
     await _watchPopups(tester, frames: 40);
     await tester.pump(const Duration(milliseconds: 100));
     expect(find.text('COMBO ×2 · Best ×2'), findsNothing);
+    expect(find.bySemanticsLabel('Combo ×1'), findsOneWidget);
+    expect(tester.state<ComboTimerBarState>(find.byType(ComboTimerBar)).ticking, isFalse);
     await tester.pumpWidget(const SizedBox());
   });
 
@@ -247,7 +251,7 @@ void main() {
     await tester.pumpWidget(const SizedBox());
   });
 
-  testWidgets('the ring stops while the clock is paused and runs again after resume', (tester) async {
+  testWidgets('the combo timer stops while the clock is paused and runs again after resume', (tester) async {
     await start(tester);
     final pairs = await _pumpGame(tester, services, clock);
     await _watchPopups(tester, frames: 1);
@@ -259,18 +263,18 @@ void main() {
     expect(find.text('COMBO ×2 · Best ×2'), findsOneWidget);
     expect(_popupsOf(tester).popupCount, 0);
     final running = tester.binding.transientCallbackCount;
-    expect(running, greaterThan(idle), reason: 'the ring ticks during a combo');
+    expect(running, greaterThan(idle), reason: 'the timer bar ticks during a combo');
     _gameOf(tester).pauseClock();
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 100));
     expect(_gameOf(tester).clockRunning, isFalse);
     expect(find.text('COMBO ×2 · Best ×2'), findsOneWidget, reason: 'the badge stays while paused');
-    expect(tester.binding.transientCallbackCount, idle, reason: 'the ring stopped with the clock');
+    expect(tester.binding.transientCallbackCount, idle, reason: 'the timer bar stopped with the clock');
     _gameOf(tester).resumeClock();
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 100));
     expect(_gameOf(tester).clockRunning, isTrue);
-    expect(tester.binding.transientCallbackCount, running, reason: 'the ring ticks again');
+    expect(tester.binding.transientCallbackCount, running, reason: 'the timer bar ticks again');
     await tester.pumpWidget(const SizedBox());
   });
 

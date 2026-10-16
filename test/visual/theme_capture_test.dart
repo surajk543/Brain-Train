@@ -1,6 +1,6 @@
 // Renders the existing screens in both looks (Day and Night, redesign 1.1.0)
 // at phone sizes: the lobby (home, Completed Levels, Settings), the age
-// screen and gameplay (mid-game, Level complete, Tray full).
+// screen and gameplay (mid-game, Level Complete, Tray full).
 //
 // Always checks that layout succeeds without exceptions or overflow and that
 // each screen got its look's tokens. When CAPTURE_DIR is set, also writes
@@ -128,7 +128,7 @@ void main() {
           themeMode: mode,
         );
         await settleLobby(tester);
-        expect(find.text('Level complete!'), findsOneWidget);
+        expect(find.text('Level Complete!'), findsOneWidget);
         expect(tester.takeException(), isNull);
         await captureLobby(tester, '$look-win-${phone.name}', phone.dpr);
         await tester.pumpWidget(const SizedBox());
