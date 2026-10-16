@@ -177,7 +177,7 @@ dart run tool/smoke_remote.dart         # live check: app's content client vs pr
   `android/play_games.properties`; without it Dart sees `UnavailablePlayGames`. 13+ only (Play Families policy,
   owner 2026-10-17): `PlayGamesController.start(ageGroup)` never starts Play Games for under 13 (or no answer) and hides
   the lobby buttons; the library's `PlayGamesInitProvider` is always disabled, and `MainActivity` starts the SDK
-  (`initPlayGames` on `brain_train/platform`) only when Dart asks, so nobody is signed in at launch. Release signing reads gitignored `android/key.properties`. iOS min is 14.0 (plugin).
+  (`initPlayGames` on `brain_train/platform`) only when Dart asks, so nobody is signed in at launch. Release signing reads gitignored `android/key.properties`. iOS min is 15.0 (App Store: ITMS-90068, iOS 15+ required for uploads from April 2027).
 - Ads (owner, docs/ADS.md): Revive shows an AdMob rewarded ad (`GameScreen._revive`); the revive runs only once the
   ad has closed with its reward earned (and the app is in the foreground). Closed early / failed → no revive, the card
   stays. No ad loaded (loading, no fill, errors) → Revive off with "Loading an ad…"; offline → off with "Connect to the
@@ -420,7 +420,7 @@ dart run tool/smoke_remote.dart         # live check: app's content client vs pr
 - Not yet integrated: 4 IconScout AI images (spring rolls ×2, salad, nachos) — not reachable via the IconScout API.
 - Tray mechanic is integrated (tray at the top, flights, strike-and-shatter matches, Tray full card with
   Revive / Restart), with 2 to 5 slots per level.
-- App version 1.0.0+7 (2026-10-17): first-play tutorial, Play Games for 13+ only. 1.0.0+6: real AdMob IDs. 1.0.0+5: new content host, update popup, iOS release settings. 1.0.0+4 (`feat/rewarded-ads`, merged into `feat/campaign-v2`): rewarded ads on Revive, age screen,
+- App version 1.1.0+8 (redesign, `feat/redesign-1.1`, not released yet): Day/Night/System looks, new lobby, Settings, gameplay HUD, Undo / Hint / Shuffle, Level Complete, iOS min 15.0. 1.0.0+7 (2026-10-17): first-play tutorial, Play Games for 13+ only. 1.0.0+6: real AdMob IDs. 1.0.0+5: new content host, update popup, iOS release settings. 1.0.0+4 (`feat/rewarded-ads`, merged into `feat/campaign-v2`): rewarded ads on Revive, age screen,
   Privacy choices row, built with Google's AdMob test IDs (`google_mobile_ads` 9.1.0). This bundle (66.7 MB AAB,
   19.2 MB install) is the Closed testing - Alpha release in the Play Console.
 - Play Store listing (owner-approved): texts in `art/store/listing-en-US.md`, `art/store/icon-512.png`,
@@ -498,7 +498,7 @@ dart run tool/smoke_remote.dart         # live check: app's content client vs pr
 - Open work: Play Games pieces 2–3 (piece 2 builds on `bestScore`/`bestCombo`; publishing the PGS configuration needs
   at least 5 achievements). Scoring + combo is implemented (4 s window).
 - Open work: Play Games / scoring follow-ups after the PR #2 merge: run an iOS build on a Mac with full Xcode (iOS min
-  14.0, never built yet); check the combo pill on a phone (its top overlaps the tray wells by ~5 px at 360×640).
+  15.0, never built yet); check the combo pill on a phone (its top overlaps the tray wells by ~5 px at 360×640).
 - Open work: 5–6 tests fail on this Mac (predate PR #2): RenderFlex overflow of 4.4 px at
   `lib/features/levels/level_select_screen.dart:232` (Completed Levels row) — level_select_test (2), level_loader_test (1),
   lobby_capture_test (2, per-phone "home, levels, settings"), gameplay_capture_test ("tray-full overlay 360x640 at 1.3x
