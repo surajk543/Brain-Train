@@ -490,6 +490,14 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
     );
   }
 
+  /// Lobby from the win screen: back to the first route (the lobby), closing
+  /// the game and any Levels screen under it.
+  void _openLobby() {
+    if (_leaving) return;
+    _leaving = true;
+    Navigator.of(context).popUntil((route) => route.isFirst);
+  }
+
   void _replay() {
     if (_leaving || controller.state.status != GameStatus.won) return;
     controller.restart();
@@ -691,6 +699,7 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
                               onNext: _openNext,
                               onLevelSelect: _openLevelSelect,
                               onReplay: _replay,
+                              onLobby: _openLobby,
                             ),
                           ),
                         ),

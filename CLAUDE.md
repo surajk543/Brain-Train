@@ -306,7 +306,8 @@ dart run tool/smoke_remote.dart         # live check: app's content client vs pr
   "Level Complete!" (gold Playfair), a results panel (Final Score in gold with "New best!" or the level best it missed,
   Completion Time, Best Combo with a crown, Pairs Matched, Hints / Shuffles / Undos Used, from `winSummary`), then
   Next Level (gold; the last level shows the all-complete text instead), Level Select (the Levels screen over the
-  lobby: `pushAndRemoveUntil` to the first route) and a quiet Replay; Next Level and Level Select navigate once.
+  lobby: `pushAndRemoveUntil` to the first route), then quiet Replay and Lobby side by side (Lobby: `popUntil` the first
+  route; owner, 2026-10-17); Next Level, Level Select and Lobby navigate once.
   Tray full, Restart and the ad offer are `PremiumPanel` cards under the HUD (Back stays usable).
 - First-play tutorial (owner, 2026-10-17): once per install, the first time play begins on a game screen (after the
   intro, at once with reduce motion) with the flag `tutorial.firstPlay.v1` unset (`SettingsRepository`), coach marks
