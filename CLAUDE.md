@@ -25,6 +25,8 @@ python3 tool/assets/make_foliage.py     # gameplay edge foliage -> assets/decor/
 python3 tool/assets/make_lobby_art.py   # lobby night art -> assets/lobby/
 python3 tool/assets/make_sounds.py      # sound effects -> assets/sounds/
 CAPTURE_DIR=/tmp/x flutter test test/visual/   # write screenshots of lobby/gameplay at phone sizes
+STORE_DIR=art/store flutter test test/visual/store_screenshots_test.dart   # 6 store scenes -> phone/, ios/iphone-6.9/, ios/ipad-13/
+python3 tool/store/make_store_shots.py  # framed marketing shots (headline, gold rim) -> art/store/styled/<target>/
 dart run tool/smoke_remote.dart         # live check: app's content client vs production R2 (+ first/middle/last level)
 ```
 
@@ -293,6 +295,9 @@ dart run tool/smoke_remote.dart         # live check: app's content client vs pr
 - Play Store listing (owner-approved): texts in `art/store/listing-en-US.md`, `art/store/icon-512.png`,
   `art/store/feature-graphic.png` (1024x500), 6 phone screenshots in `art/store/phone/` (1080x1920, from
   `test/visual/` captures, taken before ads). AI asset declaration: "Don't label assets" (owner).
+  Store screenshots (2026-10-17, `test/visual/store_screenshots_test.dart`, content .17.1): raw `art/store/phone/`,
+  `art/store/ios/iphone-6.9/` (1320x2868), `art/store/ios/ipad-13/` (2064x2752); framed versions with captions in
+  `art/store/styled/{play-phone,iphone-6.9,ipad-13}/` (`tool/store/make_store_shots.py`).
 - Studio website sungamestudio.com (static, nginx on game-server-01): Brain Train page `/brain-train`, privacy policy
   `/brain-train/privacy/` (source `website/brain-train/privacy/index.html`, same text as the deployed page); the
   premium night redesign was deployed on 2026-10-16 (source repo `~/Project/sungamestudio-site` on the Linux machine).
