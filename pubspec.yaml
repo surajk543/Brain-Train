@@ -83,6 +83,9 @@ flutter:
     - assets/lobby/
     # Level complete trophy (loops while the Level complete card is open).
     - assets/lottie/trophy_cup_rays.json
+    # The bundled fonts' licenses (SIL OFL 1.1), for the license registry.
+    - assets/fonts/playfair_display/OFL.txt
+    - assets/fonts/manrope/OFL.txt
     # Starter pack only (written by `dart run tool/content.dart build`): the
     # manifest and registry (metadata of every level), levels 1-5 and only
     # the art they use. Everything else is downloaded from R2 on demand.
@@ -91,6 +94,20 @@ flutter:
     - content/starter/levels/
     - content/starter/symbols/v1/
     - content/starter/animated-symbols/
+
+  # Redesign 1.1.0 fonts (lib/app/typography.dart): the official variable
+  # fonts from github.com/google/fonts (ofl/playfairdisplay, ofl/manrope),
+  # unmodified, SIL OFL 1.1 (OFL.txt next to each). Flutter sets the wght
+  # axis from fontWeight, so one file covers every weight.
+  fonts:
+    - family: Playfair Display
+      fonts:
+        - asset: assets/fonts/playfair_display/PlayfairDisplay-VariableFont_wght.ttf
+        - asset: assets/fonts/playfair_display/PlayfairDisplay-Italic-VariableFont_wght.ttf
+          style: italic
+    - family: Manrope
+      fonts:
+        - asset: assets/fonts/manrope/Manrope-VariableFont_wght.ttf
 
   # To add assets to your application, add an assets section, like this:
   # assets:
