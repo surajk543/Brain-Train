@@ -37,8 +37,10 @@
             android:name="flutterEmbedding"
             android:value="2" />
         <!-- Google Play Games Services (docs/PLAY_GAMES.md). The ID comes from
-             android/play_games.properties; without it the library's init
-             provider is switched off and the app never calls Play Games. -->
+             android/play_games.properties. The library's init provider is
+             always off: MainActivity starts the SDK ("initPlayGames") only
+             when the lobby asks, for 13+ players, so a player under 13 is
+             never signed in (Play Families policy). -->
         <meta-data
             android:name="com.google.android.gms.games.APP_ID"
             android:value="@string/game_services_project_id" />
@@ -46,7 +48,7 @@
             android:name="com.google.android.gms.games.provider.PlayGamesInitProvider"
             android:authorities="${applicationId}.playgamesinitprovider"
             android:exported="false"
-            android:enabled="${playGamesEnabled}" />
+            android:enabled="false" />
         <!-- AdMob (docs/ADS.md): the app ID from android/admob.properties
              (Google's test app ID without it). The SDK starts only after the
              lobby's first frame, after the age screen and consent; app

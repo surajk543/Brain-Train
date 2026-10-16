@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/widgets.dart';
 
+import '../data/age_group.dart';
 import '../platform/play_games.dart';
 
 /// Play Games for the lobby: the sign-in status, the Achievements and
@@ -20,14 +21,16 @@ class PlayGamesController extends ChangeNotifier with WidgetsBindingObserver {
   Timer? _noticeTimer;
   String? _notice;
   bool _started = false;
+  bool _blocked = false;
   bool _observing = false;
   bool _busy = false;
   bool _disposed = false;
 
   PlayGamesStatus get status => playGames.current;
 
-  /// False without Play Games (iOS, no app ID): the lobby shows no buttons.
-  bool get available => status is! PlayGamesUnavailable;
+  /// False without Play Games (iOS, no app ID) or for a player under 13: the
+  /// lobby shows no buttons.
+  bool get available => !_blocked && status is! PlayGamesUnavailable;
 
   /// True while a sign-in or a screen is opening; taps are ignored meanwhile.
   bool get busy => _busy;
@@ -35,9 +38,16 @@ class PlayGamesController extends ChangeNotifier with WidgetsBindingObserver {
   /// A short failure message for the lobby footer, or null.
   String? get notice => _notice;
 
-  /// Runs the silent sign-in check. Safe to call more than once.
-  void start() {
+  /// Runs the silent sign-in check, for 13+ players only: under 13 (or not
+  /// answered yet) Play Games is never started, so it never signs in, and the
+  /// buttons stay hidden (Play Families policy). Safe to call more than once.
+  void start(AgeGroup? ageGroup) {
     if (_started || _disposed || !available) return;
+    if (ageGroup != AgeGroup.thirteenPlus) {
+      _blocked = true;
+      notifyListeners();
+      return;
+    }
     _started = true;
     _statuses = playGames.status.listen((_) => notifyListeners());
     playGames.refresh();
@@ -51,7 +61,7 @@ class PlayGamesController extends ChangeNotifier with WidgetsBindingObserver {
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.resumed && !_disposed) playGames.refresh();
+    if (state == AppLifecycleState.resumed && _started && !_disposed) playGames.refresh();
   }
 
   Future<void> openAchievements() => _open(playGames.showAchievements);

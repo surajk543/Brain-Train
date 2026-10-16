@@ -9,6 +9,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../platform/fake_play_games.dart';
 import 'lobby_support.dart';
+import 'package:brain_train/data/age_group.dart';
 
 const _achievements = ValueKey('lobby-achievements');
 const _leaderboards = ValueKey('lobby-leaderboards');
@@ -16,7 +17,7 @@ const _leaderboards = ValueKey('lobby-leaderboards');
 Future<AppServices> _services(WidgetTester tester, PlayGames playGames) async {
   late AppServices services;
   await tester.runAsync(() async {
-    services = await testServices(playGames: PlayGamesController(playGames));
+    services = await testServices(playGames: PlayGamesController(playGames), ageGroup: AgeGroup.thirteenPlus);
   });
   return services;
 }

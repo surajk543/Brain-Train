@@ -28,6 +28,7 @@ import 'package:http/testing.dart';
 
 import '../helpers.dart';
 import 'package:brain_train/app/tablet_scale.dart';
+import 'package:brain_train/data/age_group.dart';
 
 /// Services on the bundled content with the network unreachable (or
 /// answered by [client]).
@@ -36,6 +37,8 @@ Future<AppServices> testServices({
   RewardedAdsController? ads,
   AppUpdateController? updates,
   http.Client? client,
+  /// The answered age group; null leaves the age screen unanswered.
+  AgeGroup? ageGroup,
 }) async {
   final config = ContentConfig(baseUrl: Uri.parse('https://content.test/'), allowedHosts: const {'content.test'});
   final offline = MockClient((r) async => throw http.ClientException('offline', r.url));
@@ -51,10 +54,12 @@ Future<AppServices> testServices({
     ),
   );
   await content.start();
+  final settings = await SettingsRepository.open();
+  if (ageGroup != null) await settings.setAgeGroup(ageGroup);
   return AppServices(
     content: content,
     progress: await ProgressRepository.open(),
-    settings: await SettingsRepository.open(),
+    settings: settings,
     symbolArt: SymbolArtCache(),
     playGames: playGames,
     ads: ads,
