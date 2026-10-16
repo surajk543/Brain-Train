@@ -223,7 +223,8 @@
       "sourceFile": "knife-emoji.json",
       "outputFile": "knife-emoji.json",
       "sourceUrl": "https://iconscout.com/lottie-animation-pack/emoji-animation-pack_104656",
-      "status": "integrated"
+      "status": "rejected",
+      "rejected": "Not suitable for a 6+ audience (Families policy, IARC rating): weapon. Removed 2026-10-16 (owner)."
     },
     {
       "code": "VAL_LOVE_ELIXIR",
@@ -812,7 +813,8 @@
       "sourceFile": "cute-monster-poop.json",
       "outputFile": "cute-monster-poop.json",
       "sourceUrl": "https://iconscout.com/lottie-animation-pack/cute-monster-animation-pack_141399",
-      "status": "integrated"
+      "status": "rejected",
+      "rejected": "Not suitable for a 6+ audience (Families policy, IARC rating): crude humour. Removed 2026-10-16 (owner)."
     },
     {
       "code": "SHAPE_SQUARE_CIRCLE",

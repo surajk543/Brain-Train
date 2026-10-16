@@ -1453,7 +1453,8 @@
       "expectedSourceFile": "cinema-no-smoking",
       "outputFile": "cinema-no-smoking.webp",
       "sourceUrl": "https://iconscout.com/3d-icon/no-smoking-3d-icon_6323922",
-      "status": "integrated"
+      "status": "rejected",
+      "rejected": "Not suitable for a 6+ audience (Families policy, IARC rating): tobacco reference. Removed 2026-10-16 (owner)."
     },
     {
       "code": "CINEMA_POPCORN",
@@ -1645,7 +1646,8 @@
       "expectedSourceFile": "trip-cocktail",
       "outputFile": "trip-cocktail.webp",
       "sourceUrl": "https://iconscout.com/3d-icon/cocktail-3d-icon_14044572",
-      "status": "integrated"
+      "status": "rejected",
+      "rejected": "Not suitable for a 6+ audience (Families policy, IARC rating): alcohol reference. Removed 2026-10-16 (owner)."
     },
     {
       "code": "TRIP_COCONUT_DRINK",

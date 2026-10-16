@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "registryVersion": "brain-train-symbols-e9826579",
+  "registryVersion": "brain-train-symbols-70aa0849",
   "symbols": {
     "COSMIC_CHESTNUT": {
       "type": "image",
@@ -1019,14 +1019,6 @@
       "sha256": "d407cabab744c63c2118e04a17c89f727e87e26e50536ec39fb8cd3c7fbc8b72",
       "source": "https://iconscout.com/3d-icon/megaphone-3d-icon_6323919"
     },
-    "CINEMA_NO_SMOKING": {
-      "type": "image",
-      "assetPath": "symbols/v1/cinema-no-smoking.webp",
-      "matchGroup": "CINEMA_NO_SMOKING",
-      "label": "No Smoking",
-      "sha256": "b6a7f589dffee5f67fab473b3eb18173740337625fb574fc835df5a887e8da43",
-      "source": "https://iconscout.com/3d-icon/no-smoking-3d-icon_6323922"
-    },
     "CINEMA_POPCORN": {
       "type": "image",
       "assetPath": "symbols/v1/cinema-popcorn.webp",
@@ -1162,14 +1154,6 @@
       "label": "Cash",
       "sha256": "b3b40c05c956842d7ba2a14018ec2f367e660ba2c91ded1b6fb3bf3550eab4dc",
       "source": "https://iconscout.com/3d-icon/cash-3d-icon_14044576"
-    },
-    "TRIP_COCKTAIL": {
-      "type": "image",
-      "assetPath": "symbols/v1/trip-cocktail.webp",
-      "matchGroup": "TRIP_COCKTAIL",
-      "label": "Cocktail",
-      "sha256": "8c2c1f3c95915319a5ab6cee6e890a67e66831cf82c7b80ea4b691449aefcc48",
-      "source": "https://iconscout.com/3d-icon/cocktail-3d-icon_14044572"
     },
     "TRIP_COCONUT_DRINK": {
       "type": "image",
@@ -1780,14 +1764,6 @@
       "sha256": "7590c3eb227acc7ee4c28f76aa803203e9e41f6355094ebe707da791f9d7b58a",
       "source": "https://iconscout.com/lottie-animation-pack/valentines-day-animation-pack_106682"
     },
-    "EMOJI_KNIFE": {
-      "type": "lottie",
-      "assetPath": "animated-symbols/knife-emoji.json",
-      "matchGroup": "EMOJI_KNIFE",
-      "label": "Knife",
-      "sha256": "4a879571853054fd9d3ca8f556a7f0b7011250b82cefbc157750246a8dacb70a",
-      "source": "https://iconscout.com/lottie-animation-pack/emoji-animation-pack_104656"
-    },
     "VAL_LOVE_ELIXIR": {
       "type": "lottie",
       "assetPath": "animated-symbols/love-elixir.json",
@@ -2211,14 +2187,6 @@
       "label": "Small circles",
       "sha256": "58ca9b5ed11b6940c315d225927a7dff6f52dc4c5bcc00a181b7e5459f53f621",
       "source": "https://iconscout.com/lottie-animation-pack/shapes-loader-animation-pack_110835"
-    },
-    "MONSTER_POOP": {
-      "type": "lottie",
-      "assetPath": "animated-symbols/cute-monster-poop.json",
-      "matchGroup": "MONSTER_POOP",
-      "label": "Poop",
-      "sha256": "2cbe05236e23ca27d75b512a139e49b616c3007245222febf8ee238adf2a8e5c",
-      "source": "https://iconscout.com/lottie-animation-pack/cute-monster-animation-pack_141399"
     },
     "SHAPE_SQUARE_CIRCLE": {
       "type": "lottie",
