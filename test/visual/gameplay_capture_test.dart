@@ -544,12 +544,36 @@ void main() {
     );
     expect(find.text('3/${pairsOf(meadow)}'), findsOneWidget);
     expect(find.text('Restart'), findsNothing);
-    expect(find.bySemanticsLabel('Restart level'), findsNothing);
+    // An icon only (no text label) opens the confirm card; no card at rest.
+    expect(find.byTooltip('Restart'), findsOneWidget);
     expect(find.text('Restart level?'), findsNothing);
     _expectBottomHud(tester, _large);
     expect(tester.takeException(), isNull);
     await _leave(tester);
   });
+
+  for (final phone in [_large, _small]) {
+    testWidgets('restart confirm card ${phone.name}', (tester) async {
+      await start(tester);
+      await _pumpGame(
+        tester,
+        services: services,
+        entry: meadow,
+        phone: phone,
+        resume: _progress(snapshot, meadow, pairs: 3),
+      );
+      await tester.tap(find.byTooltip('Restart'));
+      await tester.pump();
+      await _settle(tester);
+      expect(find.text('Restart this level?'), findsOneWidget);
+      expect(find.text('Your moves and time start over.'), findsOneWidget);
+      expect(find.text('Keep playing'), findsOneWidget);
+      _expectBottomHud(tester, phone);
+      expect(tester.takeException(), isNull);
+      await _capture(tester, 'gameplay_night_${phone.name}_restart_confirm', phone.dpr);
+      await _leave(tester);
+    });
+  }
 
   testWidgets('win overlay', (tester) async {
     await start(tester);

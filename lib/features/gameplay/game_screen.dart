@@ -64,6 +64,9 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
 
   /// Whether the result card is showing; only the overlay listens.
   final ValueNotifier<bool> _resultShown = ValueNotifier(false);
+
+  /// Whether the "Restart this level?" card is open (the clock is paused).
+  final ValueNotifier<bool> _confirmingRestart = ValueNotifier(false);
   GameController? _controller;
   late final TrayController _tray;
   late final TileFlightController _flights;
@@ -205,10 +208,27 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed) {
-      controller.resumeClock();
+      // The clock stays stopped behind the open restart card.
+      if (!_confirmingRestart.value) controller.resumeClock();
     } else {
       controller.pauseClock();
     }
+  }
+
+  void _askRestart() {
+    controller.pauseClock();
+    _confirmingRestart.value = true;
+  }
+
+  void _keepPlaying() {
+    if (!_confirmingRestart.value) return;
+    _confirmingRestart.value = false;
+    controller.resumeClock();
+  }
+
+  void _confirmRestart() {
+    _confirmingRestart.value = false;
+    controller.restart();
   }
 
   LevelManifestEntry? get _nextEntry {
@@ -244,6 +264,7 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
     }
     _intro.dispose();
     _resultShown.dispose();
+    _confirmingRestart.dispose();
     _symbolClock.dispose();
     super.dispose();
   }
@@ -340,14 +361,47 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
                                   },
                           ),
                         ),
+                        // "Restart this level?" over the board; the HUD stays
+                        // usable (its Restart button is off meanwhile).
+                        Positioned(
+                          left: 0,
+                          right: 0,
+                          bottom: 0,
+                          top: -topInset,
+                          child: ValueListenableBuilder<bool>(
+                            valueListenable: _confirmingRestart,
+                            builder: (context, confirming, _) => !confirming
+                                ? const SizedBox.shrink()
+                                : _Overlay(
+                                    topInset: topInset,
+                                    child: _RestartConfirmCard(onRestart: _confirmRestart, onKeepPlaying: _keepPlaying),
+                                  ),
+                          ),
+                        ),
                       ],
                     ),
                   ),
                   Padding(
                     padding: EdgeInsets.fromLTRB(12, 4, 12, 10 + MediaQuery.paddingOf(context).bottom),
-                    child: _Hud(entry: widget.entry, controller: controller),
+                    child: _Hud(
+                      entry: widget.entry,
+                      controller: controller,
+                      confirmingRestart: _confirmingRestart,
+                      onRestart: _askRestart,
+                    ),
                   ),
                 ],
+              ),
+            ),
+            // Android back closes the restart card instead of leaving the game.
+            ValueListenableBuilder<bool>(
+              valueListenable: _confirmingRestart,
+              builder: (context, confirming, _) => PopScope(
+                canPop: !confirming,
+                onPopInvokedWithResult: (didPop, _) {
+                  if (!didPop) _keepPlaying();
+                },
+                child: const SizedBox.shrink(),
               ),
             ),
             // The board intro: tiles fly in from every side, mix and settle.
@@ -375,10 +429,17 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
 /// Level name and live statistics. Only the statistics rebuild on moves,
 /// and only the clock rebuilds every second.
 class _Hud extends StatelessWidget {
-  const _Hud({required this.entry, required this.controller});
+  const _Hud({
+    required this.entry,
+    required this.controller,
+    required this.confirmingRestart,
+    required this.onRestart,
+  });
 
   final LevelManifestEntry entry;
   final GameController controller;
+  final ValueNotifier<bool> confirmingRestart;
+  final VoidCallback onRestart;
 
   @override
   Widget build(BuildContext context) => PremiumHudFrame(
@@ -419,6 +480,21 @@ class _Hud extends StatelessWidget {
                     RepaintBoundary(child: _ClockStat(controller: controller)),
                   ],
                 ),
+              ),
+            ),
+            const SizedBox(width: 8),
+            // Only while playing: not during the intro, a result card or the
+            // restart card itself.
+            ListenableBuilder(
+              listenable: Listenable.merge([controller, confirmingRestart]),
+              builder: (context, _) => PremiumRoundIconButton(
+                icon: Icons.restart_alt_rounded,
+                label: 'Restart level',
+                tooltip: 'Restart',
+                iconSize: 28,
+                onPressed: controller.state.status == GameStatus.playing && !controller.introPlaying && !confirmingRestart.value
+                    ? onRestart
+                    : null,
               ),
             ),
           ],
@@ -672,6 +748,44 @@ class _TrayFullCard extends StatelessWidget {
       PremiumButton(label: 'Revive', primary: true, expand: true, onPressed: onRevive),
       const SizedBox(height: 10),
       PremiumButton(label: 'Restart', expand: true, onPressed: onRestart),
+    ],
+  );
+}
+
+/// Asks before starting the level over: moves, tray and time are lost.
+class _RestartConfirmCard extends StatelessWidget {
+  const _RestartConfirmCard({required this.onRestart, required this.onKeepPlaying});
+
+  final VoidCallback onRestart;
+  final VoidCallback onKeepPlaying;
+
+  @override
+  Widget build(BuildContext context) => Column(
+    mainAxisSize: MainAxisSize.min,
+    children: [
+      const PremiumEmblem(icon: Icons.restart_alt_rounded),
+      const SizedBox(height: 12),
+      Text(
+        'Restart this level?',
+        textAlign: TextAlign.center,
+        style: displayText(28, weight: FontWeight.w600),
+      ),
+      const SizedBox(height: 10),
+      Text(
+        'Your moves and time start over.',
+        textAlign: TextAlign.center,
+        style: displayText(
+          16,
+          color: BrainTrainColors.ivory.withValues(alpha: 0.85),
+          weight: FontWeight.w400,
+        ).copyWith(height: 1.35),
+      ),
+      const SizedBox(height: 14),
+      const PremiumDivider(horizontal: true),
+      const SizedBox(height: 16),
+      PremiumButton(label: 'Restart', primary: true, expand: true, onPressed: onRestart),
+      const SizedBox(height: 4),
+      PremiumButton(label: 'Keep playing', quiet: true, expand: true, onPressed: onKeepPlaying),
     ],
   );
 }
