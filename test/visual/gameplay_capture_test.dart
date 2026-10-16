@@ -425,7 +425,7 @@ void main() {
       await tester.pump(const Duration(milliseconds: 50));
     }
     await tester.pump(const Duration(milliseconds: 250));
-    expect(find.text('COMBO ×3'), findsOneWidget);
+    expect(find.text('COMBO ×3 · Best ×3'), findsOneWidget);
     expect(tester.takeException(), isNull);
     await _capture(tester, 'gameplay_night_411x914_combo_popup', _large.dpr);
     for (var i = 0; i < 40; i++) {
@@ -433,7 +433,7 @@ void main() {
       await tester.pump(const Duration(milliseconds: 100));
     }
     expect(popups.popupCount, 0);
-    expect(find.text('COMBO ×3'), findsOneWidget, reason: 'the fake clock keeps the window open');
+    expect(find.text('COMBO ×3 · Best ×3'), findsOneWidget, reason: 'the fake clock keeps the window open');
     await _capture(tester, 'gameplay_night_411x914_combo', _large.dpr);
     await _leave(tester);
   });
@@ -461,8 +461,9 @@ void main() {
       await tester.pump(const Duration(milliseconds: 100));
     }
     expect(game.activeCombo, 2);
-    expect(find.text('COMBO ×2'), findsOneWidget);
-    expect(find.text('Best ×2'), findsOneWidget);
+    // During a combo, Best is inline in the pill (no separate chip).
+    expect(find.text('COMBO ×2 · Best ×2'), findsOneWidget);
+    expect(find.text('Best ×2'), findsNothing);
     expect(tester.takeException(), isNull);
     await _capture(tester, 'gameplay_night_360x640_hard_combo', _small.dpr);
     await _leave(tester);
