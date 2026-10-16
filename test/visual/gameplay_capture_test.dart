@@ -438,6 +438,36 @@ void main() {
     await _leave(tester);
   });
 
+  testWidgets('a x2 combo on a hard board (5 wells) at 360x640: Best shows above the tiles', (tester) async {
+    await start(tester);
+    final clock = FakeStopwatch();
+    final entry = snapshot.playableEntries.firstWhere((e) => e.difficulty == 'hard');
+    final level = snapshot.levels[entry.levelId]!;
+    await _pumpGame(tester, services: services, entry: entry, phone: _small, stopwatch: clock);
+    final game = _gameOf(tester);
+    final solution = MahjongSolver(
+      geometry: game.engine.geometry,
+      rules: game.engine.rules,
+    ).solve(TileMask.all(level.tiles.length)).solution;
+    for (final (a, b) in solution.take(2)) {
+      game
+        ..tapTile(level.tiles[a].tileId)
+        ..tapTile(level.tiles[b].tileId);
+      clock.advance(const Duration(milliseconds: 600));
+      await tester.pump(const Duration(milliseconds: 100));
+    }
+    for (var i = 0; i < 60; i++) {
+      await tester.runAsync(() => Future<void>.delayed(const Duration(milliseconds: 20)));
+      await tester.pump(const Duration(milliseconds: 100));
+    }
+    expect(game.activeCombo, 2);
+    expect(find.text('COMBO ×2'), findsOneWidget);
+    expect(find.text('Best ×2'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+    await _capture(tester, 'gameplay_night_360x640_hard_combo', _small.dpr);
+    await _leave(tester);
+  });
+
   testWidgets('a tapped tile flies from the board into the tray', (tester) async {
     await start(tester);
     final saved = _progress(snapshot, meadow, pairs: 2);

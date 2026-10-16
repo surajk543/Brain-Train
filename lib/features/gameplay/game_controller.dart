@@ -376,11 +376,13 @@ class GameController extends ChangeNotifier {
   void pauseClock() {
     _stopwatch.stop();
     _scheduleComboEnd();
+    if (!_disposed) notifyListeners();
   }
 
   void resumeClock() {
     if (state.status == GameStatus.playing && !_introPlaying) _stopwatch.start();
     _scheduleComboEnd();
+    if (!_disposed) notifyListeners();
   }
 
   /// Every accepted tap: one subtle tap sound (a blocked tap plays only

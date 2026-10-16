@@ -64,6 +64,9 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
   final GlobalKey<BoardViewState> _boardKey = GlobalKey();
   final GlobalKey<TrayViewState> _trayKey = GlobalKey();
 
+  /// Anchors the combo badge to the tray's bottom edge.
+  final LayerLink _trayLink = LayerLink();
+
   /// Shared by the tray and the flights, so a tile lands on the frame the
   /// tray shows.
   final SymbolAnimationClock _symbolClock = SymbolAnimationClock();
@@ -308,32 +311,19 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
                             children: [
                               Padding(
                                 padding: const EdgeInsets.fromLTRB(12, 6, 12, 0),
-                                child: Stack(
-                                  clipBehavior: Clip.none,
-                                  children: [
-                                    TrayView(
-                                      key: _trayKey,
-                                      controller: _tray,
-                                      level: level,
-                                      registry: widget.snapshot.registry,
-                                      artwork: widget.snapshot.artwork,
-                                      symbolArt: services.symbolArt,
-                                      reduceMotion: reduceMotion,
-                                      maxFaceWidth: _trayFaceWidth(MediaQuery.sizeOf(context)),
-                                      symbolClock: _symbolClock,
-                                    ),
-                                    // Floats on the tray's bottom edge: no layout
-                                    // change, so the board keeps its size (the
-                                    // 31-px face guarantee).
-                                    Positioned(
-                                      left: 0,
-                                      right: 0,
-                                      bottom: -16,
-                                      child: IgnorePointer(
-                                        child: Center(child: ComboBadge(controller: controller, reduceMotion: reduceMotion)),
-                                      ),
-                                    ),
-                                  ],
+                                child: CompositedTransformTarget(
+                                  link: _trayLink,
+                                  child: TrayView(
+                                    key: _trayKey,
+                                    controller: _tray,
+                                    level: level,
+                                    registry: widget.snapshot.registry,
+                                    artwork: widget.snapshot.artwork,
+                                    symbolArt: services.symbolArt,
+                                    reduceMotion: reduceMotion,
+                                    maxFaceWidth: _trayFaceWidth(MediaQuery.sizeOf(context)),
+                                    symbolClock: _symbolClock,
+                                  ),
                                 ),
                               ),
                               Expanded(
@@ -426,6 +416,29 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
                   if (!didPop) _keepPlaying();
                 },
                 child: const SizedBox.shrink(),
+              ),
+            ),
+            // The combo badge straddles the tray's bottom edge, above the board
+            // (a later sibling would hide it) and below the flights, shatters and
+            // popups. It takes no space (the board keeps its size: the 31-px face
+            // guarantee) and is hidden behind a result or restart card.
+            Positioned(
+              left: 0,
+              top: 0,
+              child: ListenableBuilder(
+                listenable: Listenable.merge([_resultShown, _confirmingRestart]),
+                builder: (context, _) => _resultShown.value || _confirmingRestart.value
+                    ? const SizedBox.shrink()
+                    : CompositedTransformFollower(
+                        link: _trayLink,
+                        showWhenUnlinked: false,
+                        targetAnchor: Alignment.bottomCenter,
+                        followerAnchor: Alignment.bottomCenter,
+                        offset: const Offset(0, 16),
+                        child: IgnorePointer(
+                          child: ComboBadge(controller: controller, reduceMotion: reduceMotion),
+                        ),
+                      ),
               ),
             ),
             // The board intro: tiles fly in from every side, mix and settle.

@@ -1,5 +1,6 @@
 import 'package:brain_train/app/app_services.dart';
 import 'package:brain_train/app/theme.dart';
+import 'package:brain_train/data/progress_repository.dart';
 import 'package:brain_train/features/gameplay/game_controller.dart';
 import 'package:brain_train/features/gameplay/game_screen.dart';
 import 'package:brain_train/features/gameplay/widgets/board_view.dart';
@@ -38,6 +39,7 @@ Future<List<(String, String)>> _pumpGame(
   Phone phone = largePhone,
   bool reduceMotion = false,
   double textScale = 1,
+  Map<String, Object?>? savedScoring,
 }) async {
   tester.view
     ..physicalSize = Size(phone.width * phone.dpr, phone.height * phone.dpr)
@@ -71,7 +73,20 @@ Future<List<(String, String)>> _pumpGame(
       services: services,
       child: MaterialApp(
         theme: buildBrainTrainTheme(Brightness.dark),
-        home: GameScreen(snapshot: snapshot, entry: entry, stopwatch: clock),
+        home: GameScreen(
+          snapshot: snapshot,
+          entry: entry,
+          stopwatch: clock,
+          resume: savedScoring == null
+              ? null
+              : SavedGame(
+                  levelId: level.levelId,
+                  levelUrl: entry.ref.url,
+                  history: [for (final (a, b) in solution.take(2)) ...[level.tiles[a].tileId, level.tiles[b].tileId]],
+                  elapsedMs: 17000,
+                  scoring: savedScoring,
+                ),
+        ),
       ),
     ),
   );
@@ -229,6 +244,51 @@ void main() {
     _match(tester, pairs[1]);
     await tester.pump();
     expect(find.text('COMBO ×2'), findsOneWidget, reason: 'the badge still shows, without effects');
+    await tester.pumpWidget(const SizedBox());
+  });
+
+  testWidgets('the ring stops while the clock is paused and runs again after resume', (tester) async {
+    await start(tester);
+    final pairs = await _pumpGame(tester, services, clock);
+    await _watchPopups(tester, frames: 1);
+    final idle = tester.binding.transientCallbackCount;
+    _match(tester, pairs[0]);
+    clock.advance(const Duration(milliseconds: 500));
+    _match(tester, pairs[1]);
+    await _watchPopups(tester, frames: 60);
+    expect(find.text('COMBO ×2'), findsOneWidget);
+    expect(_popupsOf(tester).popupCount, 0);
+    final running = tester.binding.transientCallbackCount;
+    expect(running, greaterThan(idle), reason: 'the ring ticks during a combo');
+    _gameOf(tester).pauseClock();
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 100));
+    expect(_gameOf(tester).clockRunning, isFalse);
+    expect(find.text('COMBO ×2'), findsOneWidget, reason: 'the badge stays while paused');
+    expect(tester.binding.transientCallbackCount, idle, reason: 'the ring stopped with the clock');
+    _gameOf(tester).resumeClock();
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 100));
+    expect(_gameOf(tester).clockRunning, isTrue);
+    expect(tester.binding.transientCallbackCount, running, reason: 'the ring ticks again');
+    await tester.pumpWidget(const SizedBox());
+  });
+
+  testWidgets('a 5-digit score fits at 360x640 and 1.3x text', (tester) async {
+    await start(tester);
+    await _pumpGame(
+      tester,
+      services,
+      clock,
+      phone: smallPhone,
+      textScale: 1.3,
+      savedScoring: const {'score': 12450, 'combo': 0, 'bestCombo': 3, 'pairs': 2, 'lastMatchAtMs': null},
+    );
+    await tester.pump(const Duration(milliseconds: 600));
+    expect(find.text('12,450'), findsOneWidget);
+    expect(find.text('SCORE'), findsOneWidget);
+    expect(find.byTooltip('Restart'), findsOneWidget);
+    expect(tester.takeException(), isNull);
     await tester.pumpWidget(const SizedBox());
   });
 

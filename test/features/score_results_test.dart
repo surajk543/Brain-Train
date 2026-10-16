@@ -127,7 +127,7 @@ void main() {
     final total = controller.state.totalPairs;
     expect(controller.score, greaterThan(0));
     expect(find.textContaining('Score'), findsOneWidget);
-    expect(find.text(formatScore(controller.score)), findsOneWidget);
+    expect(find.text(formatScore(controller.score)), findsNWidgets(2), reason: 'the card and the HUD both show the score');
     expect(find.text('Best combo ×${controller.scoring.bestCombo}  ·  Pairs $total/$total'), findsOneWidget);
     expect(find.textContaining(RegExp('^\\d+:\\d\\d  ·  ${controller.state.moveCount} moves\$')), findsOneWidget);
     final record = controller.winRecord!;

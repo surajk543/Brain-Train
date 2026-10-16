@@ -32,7 +32,7 @@ class ComboBadge extends StatefulWidget {
 class _ComboBadgeState extends State<ComboBadge> with TickerProviderStateMixin {
   /// The ring's sweep, 1 (full window) to 0.
   final ValueNotifier<double> _ring = ValueNotifier(1);
-  late final Ticker _ringTicker = createTicker((_) => _ring.value = _fraction());
+  late final Ticker _ringTicker = createTicker(_tick);
   late final AnimationController _sparks = AnimationController(vsync: this, duration: const Duration(milliseconds: 600));
   late final AnimationController _shimmer = AnimationController(vsync: this, duration: const Duration(milliseconds: 700));
 
@@ -61,6 +61,14 @@ class _ComboBadgeState extends State<ComboBadge> with TickerProviderStateMixin {
       _shimmer.stop();
     }
     _syncTicker();
+  }
+
+  void _tick(Duration _) {
+    if (widget.controller.activeCombo < 2 || !widget.controller.clockRunning) {
+      _ringTicker.stop();
+      return;
+    }
+    _ring.value = _fraction();
   }
 
   double _fraction() {
@@ -114,13 +122,13 @@ class _ComboBadgeState extends State<ComboBadge> with TickerProviderStateMixin {
       if (best >= 2)
         Padding(
           padding: EdgeInsets.only(top: combo >= 2 ? 3 : 0),
-          child: Text(
-            'Best ×$best',
-            style: displayText(
-              11,
-              color: BrandGold.light.withValues(alpha: 0.85),
-              weight: FontWeight.w600,
-            ).copyWith(shadows: const [Shadow(color: Color(0x99000000), blurRadius: 2)]),
+          // A dark chip, so it reads over ivory tiles as well as felt.
+          child: DecoratedBox(
+            decoration: const ShapeDecoration(color: Color(0xCC12372A), shape: StadiumBorder()),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 1),
+              child: Text('Best ×$best', style: displayText(11, color: BrandGold.light, weight: FontWeight.w600)),
+            ),
           ),
         ),
     ];
@@ -143,6 +151,7 @@ class _ComboBadgeState extends State<ComboBadge> with TickerProviderStateMixin {
           if (warm)
             Positioned.fill(left: -14, right: -14, top: -10, bottom: -10, child: const CustomPaint(painter: _GlowPainter())),
           StaticLayer(
+              overflow: const EdgeInsets.fromLTRB(6, 4, 6, 8),
             child: Container(
               height: _pillHeight,
               padding: const EdgeInsets.symmetric(horizontal: 14),
@@ -172,8 +181,8 @@ class _ComboBadgeState extends State<ComboBadge> with TickerProviderStateMixin {
             ),
           ),
           if (_sparks.isAnimating)
-            Positioned.fill(left: -16, right: -16, top: -14, bottom: -14, child: CustomPaint(painter: _SparksPainter(_sparks))),
-          if (_shimmer.isAnimating) Positioned.fill(child: CustomPaint(painter: _ShimmerPainter(_shimmer))),
+            Positioned.fill(left: -16, right: -16, top: -14, bottom: -14, child: RepaintBoundary(child: CustomPaint(painter: _SparksPainter(_sparks)))),
+          if (_shimmer.isAnimating) Positioned.fill(child: RepaintBoundary(child: CustomPaint(painter: _ShimmerPainter(_shimmer)))),
         ],
       ),
     );
