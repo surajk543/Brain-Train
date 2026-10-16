@@ -56,9 +56,11 @@ Known limits, accepted:
 - Saved games open with `RESOLUTION_POLICY_MOST_RECENTLY_MODIFIED` (no custom conflict callback). Piece 3 will
   always load → merge → save; the merge is monotonic (union of completed levels, fastest time per level), so a
   lost concurrent write is re-merged by the other device's next sync. Piece 3's spec revisits this.
-- The plugin does not call `PlayGamesSdk.initialize` itself. The plan must verify whether v2 21.0.0 needs an
-  explicit `PlayGamesSdk.initialize(context)` (in `MainActivity`/an `Application`) and add it if so — only when
-  an app ID is configured.
+- PGS v2 initialises itself through the library's `PlayGamesInitProvider`; no `PlayGamesSdk.initialize` call.
+  Builds without an app ID disable that provider (`android:enabled="${playGamesEnabled}"`).
+- The plugin reports every sign-in failure with one code; an empty message means the player dismissed the
+  dialog (no notice), a message means a real failure (notice). Sign-in timeout is 2 min (it waits for the
+  player); screen calls 10 s. iOS deployment target rises to 14.0 (plugin requirement).
 
 ## Section 1 — Components
 
