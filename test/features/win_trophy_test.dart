@@ -31,14 +31,17 @@ void main() {
     expect(tester.getSize(find.byType(WinTrophy)), const Size(210, 140));
   });
 
-  testWidgets('plays once from 0 and holds the last frame', (tester) async {
+  testWidgets('loops while shown and stops when removed', (tester) async {
     await tester.pumpWidget(_host());
     await _load(tester);
     await tester.pump(const Duration(seconds: 1));
     expect(_value(tester), inExclusiveRange(0, 1));
     await tester.pump(const Duration(milliseconds: 4100));
-    await tester.pump(const Duration(milliseconds: 50));
-    expect(_value(tester), 1);
+    expect(tester.hasRunningAnimations, isTrue);
+    await tester.pump(const Duration(seconds: 1));
+    expect(_value(tester), inExclusiveRange(0, 1));
+    expect(tester.hasRunningAnimations, isTrue);
+    await tester.pumpWidget(const MaterialApp(home: SizedBox()));
     expect(tester.hasRunningAnimations, isFalse);
   });
 
@@ -59,6 +62,6 @@ void main() {
   testWidgets('is decorative: excluded from semantics', (tester) async {
     await tester.pumpWidget(_host());
     await _load(tester);
-    expect(find.ancestor(of: find.byType(Lottie), matching: find.byType(ExcludeSemantics)), findsWidgets);
+    expect(find.descendant(of: find.byType(WinTrophy), matching: find.byType(ExcludeSemantics)), findsOneWidget);
   });
 }

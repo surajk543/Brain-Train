@@ -3,10 +3,10 @@ import 'package:lottie/lottie.dart';
 
 import 'premium_chrome.dart';
 
-/// The trophy on the "Level complete!" card: plays once, then holds its last
-/// frame. The controller stops after the single play, so nothing ticks while
-/// the card stays open. With reduce-motion the last frame shows at once; if the
-/// file cannot be loaded the static emblem takes its place.
+/// The trophy on the "Level complete!" card: loops while shown. The controller
+/// is disposed with the widget, so the loop stops when the card closes. With
+/// reduce-motion the last frame shows at once and nothing animates; if the file
+/// cannot be loaded the static emblem takes its place.
 class WinTrophy extends StatefulWidget {
   const WinTrophy({super.key, this.width = 210, @visibleForTesting this.assetName = asset});
 
@@ -33,7 +33,7 @@ class _WinTrophyState extends State<WinTrophy> with SingleTickerProviderStateMix
     if (MediaQuery.disableAnimationsOf(context)) {
       _controller.value = 1;
     } else {
-      _controller.forward(from: 0);
+      _controller.repeat();
     }
   }
 
