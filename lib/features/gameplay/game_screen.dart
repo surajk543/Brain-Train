@@ -361,8 +361,9 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
                                   },
                           ),
                         ),
-                        // "Restart this level?" over the board; the HUD stays
-                        // usable (its Restart button is off meanwhile).
+                        // "Restart this level?" over the board; the HUD's Back
+                        // closes the card (PopScope) instead of leaving, and
+                        // its Restart button is off meanwhile.
                         Positioned(
                           left: 0,
                           right: 0,

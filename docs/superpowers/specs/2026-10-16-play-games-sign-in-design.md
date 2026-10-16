@@ -117,9 +117,10 @@ Semantics labels "Achievements" / "Leaderboards".
 - `android/play_games.properties` (gitignored) with `playGamesAppId=<number>`. CI may pass the Gradle property
   `playGamesAppId` instead.
 - `android/app/build.gradle.kts`: when the ID is set, adds `resValue("string", "play_games_app_id", id)` and a
-  manifest placeholder; `AndroidManifest.xml` gets the
-  `com.google.android.gms.games.APP_ID` meta-data **only in that case** (via a manifest placeholder / an
-  overlay manifest, chosen in the plan). Without an ID nothing PGS-related is in the manifest.
+  manifest placeholder; `AndroidManifest.xml` always carries the
+  `com.google.android.gms.games.APP_ID` meta-data (pointing at the `game_services_project_id` string, which is
+  empty without an ID), and only `PlayGamesInitProvider` is switched by the build
+  (`android:enabled="${playGamesEnabled}"`). Without an ID the provider is disabled and the meta-data value is empty.
 - `MainActivity.kt`: a `MethodChannel("brain_train/platform")` answering `playGamesConfigured` (true when the
   manifest meta-data is present and non-empty). The only native code we write (~15 lines).
 - Release signing: read `android/key.properties` (gitignored: `storeFile`, `storePassword`, `keyAlias`,
@@ -173,7 +174,7 @@ progress code.
 
 ### Build checks
 
-- `flutter build apk --release` with neither properties file: builds; merged manifest has no PGS meta-data;
+- `flutter build apk --release` with neither properties file: builds; merged manifest has an empty `game_services_project_id` and `PlayGamesInitProvider` disabled;
   debug-key warning printed.
 - With both files: meta-data and `play_games_app_id` present; APK signed with the upload key
   (`apksigner verify --print-certs`).

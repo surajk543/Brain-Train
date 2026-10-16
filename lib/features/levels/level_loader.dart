@@ -11,6 +11,7 @@ import '../../data/progress_repository.dart';
 import '../common/lobby_background.dart';
 import '../common/lobby_chrome.dart';
 import '../gameplay/game_screen.dart';
+import '../home/home_screen.dart';
 import '../home/widgets/lobby_buttons.dart';
 import 'difficulty_style.dart';
 
@@ -25,6 +26,11 @@ const String kConnectToDownloadText = 'Connect to the internet to download this 
 /// it is the [GameScreen] itself, at once. Otherwise it downloads them first
 /// ("Downloading level…"), or, offline, says that the level needs the
 /// internet, with Try again.
+///
+/// Opened without [resume], it still resumes the highest level's saved game
+/// when [entry] is that level (e.g. "Next level" after a replay), so no path
+/// into the highest level starts over it. Completed levels have no resumable
+/// save and start fresh.
 class LevelLoaderScreen extends StatefulWidget {
   const LevelLoaderScreen({super.key, required this.entry, this.resume});
 
@@ -41,13 +47,17 @@ class _LevelLoaderScreenState extends State<LevelLoaderScreen> {
   ReadyLevel? _ready;
   _LoadState _state = _LoadState.loading;
   bool _started = false;
+  SavedGame? _resume;
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
     if (_started) return;
     _started = true;
-    final content = AppScope.of(context).content;
+    final services = AppScope.of(context);
+    final resumable = widget.resume == null ? HomeScreen.resumable(services) : null;
+    _resume = widget.resume ?? (resumable?.$1.levelId == widget.entry.levelId ? resumable?.$2 : null);
+    final content = services.content;
     final snapshot = content.snapshot;
     final level = snapshot.levels[widget.entry.levelId];
     if (level != null && snapshot.isReady(widget.entry.levelId)) {
@@ -72,7 +82,7 @@ class _LevelLoaderScreenState extends State<LevelLoaderScreen> {
   Widget build(BuildContext context) {
     final ready = _ready;
     if (ready != null) {
-      return GameScreen(snapshot: ready.snapshot, entry: ready.entry, resume: widget.resume);
+      return GameScreen(snapshot: ready.snapshot, entry: ready.entry, resume: _resume);
     }
     final lobby = LobbyTheme.of(context);
     final entry = widget.entry;
