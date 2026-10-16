@@ -716,16 +716,41 @@ class _CompletionCard extends StatelessWidget {
           style: displayText(28, weight: FontWeight.w600),
         ),
         const SizedBox(height: 10),
+        // Shrinks to fit a narrow card at large text sizes instead of overflowing.
+        FittedBox(
+          fit: BoxFit.scaleDown,
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.baseline,
+            textBaseline: TextBaseline.alphabetic,
+            children: [
+              Text('Score ', style: displayText(16, color: BrandGold.light, weight: FontWeight.w600)),
+              Text(formatScore(controller.score), style: displayText(30, color: BrandGold.warm, weight: FontWeight.w800)),
+            ],
+          ),
+        ),
+        if (controller.newBestScore)
+          Padding(
+            padding: const EdgeInsets.only(top: 4),
+            child: Text('New best!', style: displayText(14, color: BrandGold.light, weight: FontWeight.w700, spacing: 0.6)),
+          ),
+        const SizedBox(height: 8),
         Text(
-          '${controller.state.moveCount} moves  ·  ${formatDuration(controller.elapsed)}',
+          '${formatDuration(controller.elapsed)}  ·  ${controller.state.moveCount} moves',
           textAlign: TextAlign.center,
-          style: displayText(17, color: BrainTrainColors.ivory.withValues(alpha: 0.85), weight: FontWeight.w500),
+          style: displayText(16, color: BrainTrainColors.ivory.withValues(alpha: 0.85), weight: FontWeight.w500),
+        ),
+        const SizedBox(height: 4),
+        Text(
+          'Best combo ×${controller.scoring.bestCombo}  ·  Pairs ${controller.scoring.totalPairsMatched}/${controller.state.totalPairs}',
+          textAlign: TextAlign.center,
+          style: displayText(15, color: BrainTrainColors.ivory.withValues(alpha: 0.85), weight: FontWeight.w500),
         ),
         if (record != null)
           Padding(
             padding: const EdgeInsets.only(top: 6),
             child: Text(
-              'Best: ${record.bestMoves} moves · ${formatDuration(Duration(milliseconds: record.bestTimeMs))}',
+              'Best: ${record.bestScore == null ? '—' : formatScore(record.bestScore!)} · ${formatDuration(Duration(milliseconds: record.bestTimeMs))}',
               textAlign: TextAlign.center,
               style: displayText(14, color: BrandGold.base, weight: FontWeight.w500),
             ),

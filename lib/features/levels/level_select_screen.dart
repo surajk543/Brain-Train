@@ -14,6 +14,7 @@ import '../common/lobby_chrome.dart';
 import '../common/static_layer.dart';
 import '../gameplay/game_screen.dart' show formatDuration;
 import '../../game_engine/models/level_rules.dart';
+import '../../game_engine/scoring/score_format.dart';
 import '../home/home_screen.dart';
 import 'difficulty_style.dart';
 import 'level_loader.dart';
@@ -205,7 +206,7 @@ class CompletedLevelRow extends StatelessWidget {
       button: true,
       label:
           'Level ${entry.order}, ${entry.title}${difficulty == null ? '' : ', ${difficulty.label}'}, completed, '
-          'best time $time, completed $when',
+          'best time $time, best score ${record.bestScore ?? 'none'}, completed $when',
       excludeSemantics: true,
       child: StaticLayer(
         overflow: const EdgeInsets.fromLTRB(8, 6, 8, 12),
@@ -294,7 +295,11 @@ class CompletedLevelRow extends StatelessWidget {
                             ),
                           ],
                         ),
-                        const SizedBox(height: 4),
+                        Text(
+                          record.bestScore == null ? '—' : formatScore(record.bestScore!),
+                          style: displayText(13, color: lobby.panelAccent, weight: FontWeight.w600),
+                        ),
+                        const SizedBox(height: 2),
                         Text(
                           when,
                           maxLines: 1,
