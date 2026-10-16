@@ -1,3 +1,5 @@
+import 'dart:async';
+
 // The redesigned gameplay screen's controls (1.1.0): the action bar (Undo,
 // Hint, Shuffle, Restart) and its ad offers, the hint glow, the shuffled
 // board's drawing, the combo timer bar, Level Complete's figures and buttons,
@@ -88,8 +90,10 @@ void main() {
     SavedGame? resume,
     LevelManifestEntry? open,
     ThemeMode themeMode = ThemeMode.dark,
+    bool overLobby = false,
   }) async {
     final game = open ?? entry;
+    final navigator = GlobalKey<NavigatorState>();
     final snapshot = services.content.snapshot;
     tester.view
       ..physicalSize = Size(phone.width * phone.dpr, phone.height * phone.dpr)
@@ -106,11 +110,19 @@ void main() {
           theme: buildBrainTrainTheme(Brightness.light),
           darkTheme: buildBrainTrainTheme(),
           themeMode: themeMode,
+          navigatorKey: navigator,
           builder: (context, child) => TabletScale(child: child!),
-          home: GameScreen(snapshot: snapshot, entry: game, stopwatch: clock, resume: resume),
+          home: overLobby
+              ? const Scaffold(body: Text('lobby stub'))
+              : GameScreen(snapshot: snapshot, entry: game, stopwatch: clock, resume: resume),
         ),
       ),
     );
+    if (overLobby) {
+      unawaited(navigator.currentState!.push(MaterialPageRoute<void>(
+        builder: (_) => GameScreen(snapshot: snapshot, entry: game, stopwatch: clock, resume: resume),
+      )));
+    }
     await _settle(tester);
     for (var i = 0; i < 80 && _gameOf(tester).introPlaying; i++) {
       await tester.runAsync(() => Future<void>.delayed(const Duration(milliseconds: 40)));
@@ -482,6 +494,24 @@ void main() {
       await tester.tap(find.text('Level Select'), warnIfMissed: false);
       await _settle(tester, rounds: 8);
       expect(find.byType(LevelSelectScreen, skipOffstage: false), findsOneWidget);
+      await tester.pumpWidget(const SizedBox());
+    });
+
+    testWidgets('Lobby closes the game and goes back to the first route once', (tester) async {
+      await start(tester);
+      final total = services.content.snapshot.levels[entry.levelId]!.pairCount;
+      final pairs = await pumpGame(tester, overLobby: true);
+      for (final pair in pairs.take(total)) {
+        await match(tester, pair);
+      }
+      await _settle(tester, rounds: 20);
+      expect(find.text('Lobby'), findsOneWidget);
+      await tester.tap(find.text('Lobby'));
+      await tester.tap(find.text('Lobby'), warnIfMissed: false);
+      await _settle(tester, rounds: 8);
+      expect(find.byType(GameScreen, skipOffstage: false), findsNothing);
+      expect(find.byType(LevelSelectScreen, skipOffstage: false), findsNothing);
+      expect(find.text('lobby stub'), findsOneWidget);
       await tester.pumpWidget(const SizedBox());
     });
   });

@@ -222,8 +222,8 @@ class _AdNote extends StatelessWidget {
 /// The Level Complete screen (reference board): the trophy, "Level
 /// Complete!" in large gold Playfair, a dark translucent results panel with
 /// a fine gold rim (final score and best combo in gold) from the game's
-/// [GameController.winSummary], then Next Level (gold), Level Select and a
-/// quiet Replay. The last level says every level is done instead of Next
+/// [GameController.winSummary], then Next Level (gold), Level Select and
+/// quiet Replay and Lobby side by side. The last level says every level is done instead of Next
 /// Level. Each button works once (the screen guards against double taps).
 class LevelCompleteView extends StatelessWidget {
   const LevelCompleteView({
@@ -233,6 +233,7 @@ class LevelCompleteView extends StatelessWidget {
     required this.onNext,
     required this.onLevelSelect,
     required this.onReplay,
+    required this.onLobby,
     this.compact = false,
   });
 
@@ -241,6 +242,7 @@ class LevelCompleteView extends StatelessWidget {
   final VoidCallback? onNext;
   final VoidCallback? onLevelSelect;
   final VoidCallback? onReplay;
+  final VoidCallback? onLobby;
   final bool compact;
 
   @override
@@ -306,7 +308,31 @@ class LevelCompleteView extends StatelessWidget {
           onPressed: onLevelSelect,
         ),
         const SizedBox(height: 2),
-        PremiumButton(label: 'Replay', primary: false, quiet: hasNext, expand: true, onPressed: onReplay),
+        Row(
+          children: [
+            Expanded(
+              child: PremiumButton(
+                label: 'Replay',
+                primary: false,
+                quiet: hasNext,
+                expand: true,
+                icon: Icons.replay_rounded,
+                onPressed: onReplay,
+              ),
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: PremiumButton(
+                label: 'Lobby',
+                primary: false,
+                quiet: hasNext,
+                expand: true,
+                icon: Icons.home_rounded,
+                onPressed: onLobby,
+              ),
+            ),
+          ],
+        ),
       ],
     );
   }
