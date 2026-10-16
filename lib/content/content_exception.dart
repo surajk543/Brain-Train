@@ -21,12 +21,13 @@ class ContentException implements Exception {
   final String? path;
   final int? statusCode;
 
-  /// Worth retrying later (connectivity or server trouble), as opposed to
-  /// content that is wrong and will stay wrong.
+  /// Worth retrying later (connectivity or server trouble, including a rate
+  /// limit or request timeout), as opposed to content that is wrong and will
+  /// stay wrong.
   bool get isTransient =>
       kind == ContentErrorKind.network ||
       kind == ContentErrorKind.timeout ||
-      (kind == ContentErrorKind.http && (statusCode ?? 0) >= 500);
+      (kind == ContentErrorKind.http && (statusCode == 408 || statusCode == 429 || (statusCode ?? 0) >= 500));
 
   @override
   String toString() => 'ContentException(${kind.name}${path == null ? '' : ' $path'}): $message';
