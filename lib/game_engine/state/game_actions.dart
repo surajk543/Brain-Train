@@ -19,7 +19,7 @@ enum GameAction {
 }
 
 /// Uses a level starts with (and starts over with on Restart).
-const Map<GameAction, int> kStartingCharges = {GameAction.undo: 3, GameAction.hint: 3, GameAction.shuffle: 1};
+const Map<GameAction, int> kStartingCharges = {GameAction.undo: 1, GameAction.hint: 1, GameAction.shuffle: 1};
 
 /// Uses left and used of each [GameAction] in one game.
 class ActionCounts {

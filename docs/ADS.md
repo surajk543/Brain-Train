@@ -39,7 +39,7 @@ User Messaging Platform, UMP).
 
   Reward earned → the ad closes → the tray tiles fly back (after the app is in the foreground again). Ad closed
   early or failed to show → no revive, the card stays, Revive shows another ad once one is loaded.
-- **Action refills** (1.1.0; Undo / Hint / Shuffle start each level with 3 / 3 / 1 uses): at 0 uses the button's
+- **Action refills** (1.1.0; Undo / Hint / Shuffle start each level with 1 / 1 / 1 uses (owner, 2026-10-17)): at 0 uses the button's
   badge shows a play mark; a tap opens a small card "Watch an ad for +1 Hint?" ("You have no hints left in this
   level.", Watch ad / Not now; the clock stops while it is open; Back closes it). The use is granted
   (`GameController.grant`, saved with the game) only once the ad closes with its reward earned and the app is in the

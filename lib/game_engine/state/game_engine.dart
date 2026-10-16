@@ -69,7 +69,7 @@ class TapResult {
 /// places on the board and play goes on.
 ///
 /// Helper actions (owner, 2026-10-17, 1.1.0), each with uses per game
-/// ([kStartingCharges]: 3 undos, 3 hints, 1 shuffle; +1 with [grant]):
+/// ([kStartingCharges]: 1 undo, 1 hint, 1 shuffle; +1 with [grant]):
 /// [undo] takes the last tap back, [useHint] recommends a tap ([findHint]),
 /// [shuffle] rearranges the board's symbols into a position that can be won.
 /// Every action that changes the game or its uses is a marker in
