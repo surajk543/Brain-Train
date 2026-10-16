@@ -64,8 +64,36 @@ void main() {
     SharedPreferences.setMockInitialValues({});
     final progress = await ProgressRepository.open();
     await progress.saveGame(game());
-    await progress.clearSavedGame();
+    await progress.clearSavedGame(levelId: 'level-0001');
     expect(progress.savedGame(), isNull);
+  });
+
+  SavedGame gameOn(String id) =>
+      SavedGame(levelId: id, levelUrl: 'levels/$id-v1.json', history: const ['a1'], elapsedMs: 100);
+
+  test('clearing for a level removes only that level\'s save', () async {
+    SharedPreferences.setMockInitialValues({});
+    final progress = await ProgressRepository.open();
+    await progress.saveGame(gameOn('level-0002'));
+    await progress.clearSavedGame(levelId: 'level-0001');
+    expect(progress.savedGame()!.levelId, 'level-0002', reason: 'another level\'s save is untouched');
+    await progress.clearSavedGame(levelId: 'level-0002');
+    expect(progress.savedGame(), isNull);
+  });
+
+  test('a completed level is never saved: no overwrite, no new save, no notification', () async {
+    SharedPreferences.setMockInitialValues({});
+    final progress = await ProgressRepository.open();
+    await progress.recordWin('level-0001', moves: 8, timeMs: 1000);
+    await progress.saveGame(gameOn('level-0002'));
+    var notified = 0;
+    progress.addListener(() => notified++);
+    await progress.saveGame(gameOn('level-0001'));
+    expect(progress.savedGame()!.levelId, 'level-0002');
+    expect(notified, 0);
+    await progress.clearSavedGame(levelId: 'level-0002');
+    await progress.saveGame(gameOn('level-0001'));
+    expect(progress.savedGame(), isNull, reason: 'a replay does not create a save');
   });
 
   test('replays keep the fastest time and the date of that fastest win', () async {

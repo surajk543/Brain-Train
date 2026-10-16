@@ -277,7 +277,7 @@ class GameController extends ChangeNotifier {
     }
     winRecord = null;
     _emit(const BoardReset());
-    unawaited(progress.clearSavedGame());
+    unawaited(progress.clearSavedGame(levelId: level.levelId));
     _changed();
   }
 
@@ -346,7 +346,7 @@ class GameController extends ChangeNotifier {
 
   Future<void> _recordWin() async {
     winRecord = await progress.recordWin(level.levelId, moves: state.moveCount, timeMs: elapsed.inMilliseconds);
-    await progress.clearSavedGame();
+    await progress.clearSavedGame(levelId: level.levelId);
     if (!_disposed) notifyListeners();
   }
 

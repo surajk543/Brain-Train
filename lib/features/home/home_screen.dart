@@ -21,12 +21,13 @@ import 'widgets/lobby_tagline.dart';
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
-  /// A resumable saved game in the current content, if any.
+  /// A resumable saved game in the current content, if any. Only the highest
+  /// level ([nextLevel]) resumes; a save of any other level is ignored.
   static (LevelManifestEntry, SavedGame)? resumable(AppServices services) {
     final saved = services.progress.savedGame();
     if (saved == null) return null;
     final entry = services.content.snapshot.manifest.entry(saved.levelId);
-    if (entry == null || entry.ref.url != saved.levelUrl) return null;
+    if (entry == null || entry.levelId != nextLevel(services).levelId || entry.ref.url != saved.levelUrl) return null;
     // Resumable even when its file is not on the device yet: the loader gets it.
     if (services.content.snapshot.levelErrors.containsKey(entry.levelId)) return null;
     return (entry, saved);

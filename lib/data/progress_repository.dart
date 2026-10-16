@@ -125,12 +125,17 @@ class ProgressRepository extends ChangeNotifier {
     }
   }
 
+  /// Saves [game] unless its level is already completed: a replay never
+  /// overwrites the saved game of the highest level (owner).
   Future<void> saveGame(SavedGame game) async {
+    if (isCompleted(game.levelId)) return;
     await _prefs.setString(_savedGameKey, jsonEncode(game.toJson()));
     notifyListeners();
   }
 
-  Future<void> clearSavedGame() async {
+  /// Removes the saved game only if it belongs to [levelId].
+  Future<void> clearSavedGame({required String levelId}) async {
+    if (savedGame()?.levelId != levelId) return;
     await _prefs.remove(_savedGameKey);
     notifyListeners();
   }
