@@ -112,4 +112,42 @@ void main() {
     final reopened = await ProgressRepository.open();
     expect(reopened.completed()['level-0001']!.bestTimeMs, 60000);
   });
+
+  test('recordWin keeps the best score and best combo separately; old records have none', () async {
+    SharedPreferences.setMockInitialValues({});
+    final progress = await ProgressRepository.open();
+    var record = await progress.recordWin('l1', moves: 20, timeMs: 60000);
+    expect(record.bestScore, isNull);
+    expect(record.bestCombo, isNull);
+    record = await progress.recordWin('l1', moves: 22, timeMs: 70000, score: 1200, bestCombo: 3);
+    expect((record.bestScore, record.bestCombo), (1200, 3));
+    record = await progress.recordWin('l1', moves: 25, timeMs: 90000, score: 900, bestCombo: 5);
+    expect((record.bestScore, record.bestCombo), (1200, 5), reason: 'a worse score never replaces a better one');
+    expect(record.bestTimeMs, 60000);
+    final reopened = (await ProgressRepository.open()).completed()['l1']!;
+    expect((reopened.bestScore, reopened.bestCombo), (1200, 5));
+  });
+
+  test('old JSON without score fields still reads', () async {
+    SharedPreferences.setMockInitialValues({
+      'progress.completed.v1': jsonEncode({
+        'l1': {'bestMoves': 10, 'bestTimeMs': 5000, 'completedAt': '2026-10-01T10:00:00.000'},
+      }),
+    });
+    final record = (await ProgressRepository.open()).completed()['l1']!;
+    expect(record.bestScore, isNull);
+    expect(record.bestMoves, 10);
+  });
+
+  test('SavedGame keeps its scoring map; old saves have none', () async {
+    SharedPreferences.setMockInitialValues({});
+    final progress = await ProgressRepository.open();
+    await progress.saveGame(
+      SavedGame(levelId: 'l9', levelUrl: 'u', history: const ['a'], elapsedMs: 1000, scoring: const {'score': 100}),
+    );
+    expect((await ProgressRepository.open()).savedGame()!.scoring, {'score': 100});
+    final old = SavedGame.fromJson({'levelId': 'l9', 'levelUrl': 'u', 'history': ['a'], 'moveCount': 1, 'elapsedMs': 1});
+    expect(old.scoring, isNull);
+    expect(old.toJson().containsKey('scoring'), isFalse);
+  });
 }
