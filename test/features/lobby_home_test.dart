@@ -121,7 +121,11 @@ void main() {
     expect(find.byType(LobbyTagline), findsOneWidget);
     expect(find.text('Train your'), findsOneWidget);
     expect(find.text('brain'), findsOneWidget);
-    expect(find.byType(FrostedGlass), findsOneWidget, reason: 'frosted glass');
+    expect(
+      find.descendant(of: find.byType(LobbyTagline), matching: find.byType(FrostedGlass)),
+      findsOneWidget,
+      reason: 'frosted glass',
+    );
     expect(find.byType(BackdropFilter), findsNothing, reason: 'no live backdrop blur behind the ambient animation');
     expect(
       find.byType(Image).evaluate().where((e) => '${(e.widget as Image).image}'.contains('brain_train_logo')),

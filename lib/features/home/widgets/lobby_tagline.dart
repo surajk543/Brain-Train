@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../app/brand.dart';
 import '../../../app/theme.dart';
 import '../../common/frosted_glass.dart';
+import '../../common/glass_painters.dart';
 import '../../common/static_layer.dart';
 
 /// "Train your brain" on a frosted-glass panel: the forest and lantern
@@ -234,13 +235,13 @@ class _GlassPanel extends StatelessWidget {
       child: StaticLayer(
         overflow: EdgeInsets.fromLTRB(radius * 2, radius * 2, radius * 2, radius * 2.5),
         child: CustomPaint(
-          painter: _GlassShadowPainter(
+          painter: GlassShadowPainter(
             radius: radius,
             color: lobby.glassShadow,
             glow: lobby.taglineGlow,
             glowRadius: glowRadius,
           ),
-          foregroundPainter: _GlassRimPainter(radius: radius, colors: lobby.glassBorder),
+          foregroundPainter: GlassRimPainter(radius: radius, colors: lobby.glassBorder),
           child: ClipRRect(
             borderRadius: borderRadius,
             child: DecoratedBox(
@@ -274,79 +275,4 @@ class _GlassPanel extends StatelessWidget {
       ),
     );
   }
-}
-
-class _GlassShadowPainter extends CustomPainter {
-  const _GlassShadowPainter({required this.radius, required this.color, required this.glow, required this.glowRadius});
-
-  final double radius;
-  final Color color;
-
-  /// The warm light behind the panel, as seen through the frost.
-  final Color glow;
-  final double glowRadius;
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final panel = RRect.fromRectAndRadius(Offset.zero & size, Radius.circular(radius));
-    // Only outside the panel, so the shadow never darkens the glass.
-    canvas.save();
-    canvas.clipPath(
-      Path.combine(
-        PathOperation.difference,
-        Path()..addRect((Offset.zero & size).inflate(radius * 3)),
-        Path()..addRRect(panel),
-      ),
-    );
-    canvas.drawRRect(
-      panel.shift(Offset(0, radius * 0.35)),
-      Paint()
-        ..color = color
-        ..maskFilter = MaskFilter.blur(BlurStyle.normal, radius * 0.6),
-    );
-    canvas.restore();
-    // The glow is drawn behind the panel too; the frost covers that part.
-    canvas.drawRRect(
-      panel,
-      Paint()
-        ..shader = RadialGradient(
-          colors: [
-            glow,
-            glow.withValues(alpha: glow.a * 0.35),
-            glow.withValues(alpha: 0),
-          ],
-          stops: const [0, 0.42, 1],
-        ).createShader(Rect.fromCircle(center: size.center(Offset.zero), radius: glowRadius)),
-    );
-  }
-
-  @override
-  bool shouldRepaint(_GlassShadowPainter old) =>
-      old.radius != radius || old.color != color || old.glow != glow || old.glowRadius != glowRadius;
-}
-
-class _GlassRimPainter extends CustomPainter {
-  const _GlassRimPainter({required this.radius, required this.colors});
-
-  final double radius;
-  final List<Color> colors;
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final rect = Offset.zero & size;
-    canvas.drawRRect(
-      RRect.fromRectAndRadius(rect.deflate(0.6), Radius.circular(radius - 0.6)),
-      Paint()
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 1.2
-        ..shader = LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: colors,
-        ).createShader(rect),
-    );
-  }
-
-  @override
-  bool shouldRepaint(_GlassRimPainter old) => old.radius != radius || old.colors != colors;
 }
