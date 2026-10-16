@@ -1,6 +1,6 @@
 # Google Play Games Services — piece 1: sign-in and setup
 
-Date: 2026-10-16 · Branch: `feat/play-games` · Status: design approved, awaiting spec review
+Date: 2026-10-16 · Branch: `feat/play-games` · Status: spec approved by the owner (2026-10-16)
 
 ## Goal
 
@@ -10,7 +10,8 @@ The work is split into three pieces, each with its own spec → plan → impleme
 1. **Sign-in and setup (this spec).** Plugin, Android build config, release signing, silent sign-in, lobby icons
    that open Google's Achievements / Leaderboards screens, and the `PlayGames` interface pieces 2 and 3 build on.
 2. Achievements and leaderboards: unlocks and scores from wins (hooked after `ProgressRepository.recordWin`).
-3. Cloud save: Saved Games snapshot of progress, load → merge → save.
+3. Cloud save: Saved Games snapshot of progress, load → merge → save. Also carries the owner's
+   **two-phones rule** (below).
 
 ### What the owner decided
 
@@ -20,6 +21,18 @@ The work is split into three pieces, each with its own spec → plan → impleme
 - **Settings does not change** (still only Sound, Vibration, app version).
 - The app is **not in Play Console yet**: the console steps are part of this work (checklist below).
 - Wrapper: the `games_services` Flutter package behind our own interface (not a hand-written Kotlin bridge).
+- **Two phones, one account (owner, 2026-10-16): progress must never clash.** The owner's aim is that two phones
+  signed into the same Google account never overwrite each other's progress — not to stop account sharing. So
+  this is handled in piece 3 with no server and no lock:
+  - The snapshot records which device saved last and when. On launch, on resume and before a game starts, a
+    signed-in phone pulls the snapshot first; if another device played since this phone's last sync, it merges
+    that progress before play and shows "Continued from your other device".
+  - Merge never loses a win: union of completed levels, fastest time per level (with that time's date).
+  - The in-progress game stays per phone. If the other phone has since won the level this phone was in the middle
+    of, the local save of it is dropped and Continue moves on to the next level.
+  - Not a hard "one phone at a time" lock: Play Games cannot see another device's session, and a lock would need a
+    Worker-side session service plus Google auth codes, and would break offline play. Rejected by the owner in
+    favour of the merge.
 
 ### Success criteria (piece 1)
 
@@ -140,7 +153,8 @@ progress code.
 
 - Piece 2: after `recordWin` succeeds, a `PlayGamesSync` turns the win into unlocks/scores, queued on the device
   while signed out or offline and flushed on sign-in.
-- Piece 3: snapshot load → merge → save on sign-in and after wins.
+- Piece 3: snapshot load → merge → save on sign-in, on launch/resume, before a game starts and after wins
+  (the two-phones rule above).
 
 ## Section 3 — Testing and checklist
 
