@@ -199,7 +199,7 @@ void main() {
     expect((copy.score, copy.currentCombo, copy.bestCombo, copy.totalPairsMatched), (325, 2, 2, 2));
     expect(copy.lastSuccessfulMatchTime, s(11));
     expect(copy.isComboActive(s(13.5)), isTrue);
-    final next = copy.onMatch(s(12));
+    final next = copy.onMatch(s(11.5)); // gap 0.5 s
     expect((next.combo, next.speedBonus), (3, 50));
   });
 
@@ -1102,7 +1102,7 @@ git commit -m "$(printf 'Game: score matches and blocked taps; save, restore and
 ### Task 4: HUD score, combo badge and score popups
 
 **Files:**
-- Create: `lib/features/gameplay/widgets/score_format.dart`
+- Create: `lib/game_engine/scoring/score_format.dart`
 - Create: `lib/features/gameplay/widgets/combo_badge.dart`
 - Create: `lib/features/gameplay/widgets/score_popups.dart`
 - Modify: `lib/features/gameplay/game_screen.dart` (`_Hud` stats; tray wrapped in a `Stack` with the badge; popup overlay in the top-level `Stack`)
@@ -1169,7 +1169,7 @@ Time in widget tests: the screen's `GameController` uses a real `Stopwatch`, whi
 
 - [ ] **Step 3: `formatScore`**
 
-Create `lib/features/gameplay/widgets/score_format.dart`:
+Create `lib/game_engine/scoring/score_format.dart`:
 
 ```dart
 /// 12450 → "12,450".
@@ -1266,7 +1266,7 @@ Run: `CAPTURE_DIR=/private/tmp/claude-501/-Users-suraj-kum-Code-Brain-Train/7565
 `~/flutter/bin/flutter analyze` clean; full suite only the 6 known failures.
 
 ```bash
-git add lib/features/gameplay/widgets/score_format.dart lib/features/gameplay/widgets/combo_badge.dart lib/features/gameplay/widgets/score_popups.dart lib/features/gameplay/game_screen.dart test/features/score_hud_test.dart test/visual/gameplay_capture_test.dart
+git add lib/game_engine/scoring/score_format.dart lib/features/gameplay/widgets/combo_badge.dart lib/features/gameplay/widgets/score_popups.dart lib/features/gameplay/game_screen.dart test/features/score_hud_test.dart test/visual/gameplay_capture_test.dart
 git commit -m "$(printf 'Game: SCORE in the HUD, combo badge and score popups\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>')"
 ```
 
@@ -1280,7 +1280,7 @@ git commit -m "$(printf 'Game: SCORE in the HUD, combo badge and score popups\n\
 - Test: `test/features/score_results_test.dart`
 
 **Interfaces:**
-- Consumes: Task 3 `GameController.score`, `scoring.bestCombo`, `scoring.totalPairsMatched`, `newBestScore`, `winRecord` (`LevelRecord` with `bestScore`); Task 2 `LevelRecord.bestScore`; Task 4 `formatScore` (from `widgets/score_format.dart`).
+- Consumes: Task 3 `GameController.score`, `scoring.bestCombo`, `scoring.totalPairsMatched`, `newBestScore`, `winRecord` (`LevelRecord` with `bestScore`); Task 2 `LevelRecord.bestScore`; Task 1 `formatScore` (from `lib/game_engine/scoring/score_format.dart`).
 - Produces: nothing new.
 
 Runs after Task 4 if both touch `game_screen.dart` in one checkout; it only edits `_CompletionCard` (Task 4 never touches it), so it may run in parallel in its own worktree and be merged.
@@ -1334,7 +1334,7 @@ Runs after Task 4 if both touch `game_screen.dart` in one checkout; it only edit
           ),
 ```
 
-(import `widgets/score_format.dart`). Note: `totalPairsMatched` after a resumed legacy save equals the board's matched pairs, so `Pairs n/n` is right on a win.
+(import `../../game_engine/scoring/score_format.dart`). Note: `totalPairsMatched` after a resumed legacy save equals the board's matched pairs, so `Pairs n/n` is right on a win.
 
 - [ ] **Step 4: Completed Levels row** — in the completed row's right-hand `Column` (`level_select_screen.dart`, the one with the timer icon and `time`), after the time `Row` add:
 
@@ -1346,7 +1346,7 @@ Runs after Task 4 if both touch `game_screen.dart` in one checkout; it only edit
                         ),
 ```
 
-before the existing `SizedBox(height: 4)` + `when` text, and extend the row's semantics label with `, best score ${record.bestScore ?? 'none'}`. Import `../gameplay/widgets/score_format.dart`.
+before the existing `SizedBox(height: 4)` + `when` text, and extend the row's semantics label with `, best score ${record.bestScore ?? 'none'}`. Import `../../game_engine/scoring/score_format.dart`.
 
 - [ ] **Step 5: Run tests** — `~/flutter/bin/flutter test test/features/score_results_test.dart test/features/level_select_test.dart` (level_select_test has 2 known pre-existing failures — they must be the same two, unchanged).
 
