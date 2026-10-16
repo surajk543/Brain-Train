@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math' as math;
 
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/widgets.dart';
@@ -89,8 +90,12 @@ class BoardViewState extends State<BoardView> with SingleTickerProviderStateMixi
   Size _artFace = Size.zero;
   TileArt? _tileArt;
 
-  /// Indices of tiles whose symbol art is animated (for the current art).
+  /// Indices of tiles whose symbol art is animated (for the current art and
+  /// the symbols the board shows now, see [_animatedSerial]).
   List<int> _animatedTiles = const [];
+
+  /// The [GameController.symbolsSerial] [_animatedTiles] was worked out for.
+  int _animatedSerial = -1;
   bool _effectsRunning = false;
   bool _foreground = true;
   bool _platformNoMotion = false;
@@ -166,6 +171,8 @@ class BoardViewState extends State<BoardView> with SingleTickerProviderStateMixi
         ..motion = !_noMotion
         ..tick();
     }
+    final art = _art;
+    if (art != null && _animatedSerial != widget.controller.symbolsSerial) _findAnimated(art);
     final engine = widget.controller.engine;
     final run = _foreground && !_noMotion && _animatedTiles.any(engine.isRemaining);
     if (run == _symbolClock.isRunning) return;
@@ -188,8 +195,29 @@ class BoardViewState extends State<BoardView> with SingleTickerProviderStateMixi
         // Tiles leave at once; returning ones (revive, undo) are hidden and
         // revealed by the flight director ([hideTiles], [revealTile]).
         return;
-      case TileHinted() || BoardShuffled():
-        // No board effect of their own here.
+      case BoardShuffled(:final changes):
+        // The board already draws the new symbols ([GameController.boardLevel]);
+        // the changed tiles turn over, in a wave from left to right.
+        final projection = _projection;
+        final engine = widget.controller.engine;
+        final delays = <String, double>{};
+        if (projection != null && changes.isNotEmpty) {
+          final centers = {
+            for (final id in changes.keys)
+              if (engine.indexOf(id) case final index?) id: projection.faceRect(index).centerX,
+          };
+          if (centers.isNotEmpty) {
+            final left = centers.values.reduce(math.min), right = centers.values.reduce(math.max);
+            final span = math.max(1.0, right - left);
+            for (final MapEntry(key: id, value: x) in centers.entries) {
+              delays[id] = (x - left) / span;
+            }
+          }
+        }
+        _effects.flip({for (final MapEntry(key: id, value: (from, _)) in changes.entries) id: from}, delays: delays);
+        if (!_effects.isAnimating) return;
+      case TileHinted():
+        // Drawn by the hint overlay above the board.
         return;
     }
     _effectsRunning = true;
@@ -233,16 +261,24 @@ class BoardViewState extends State<BoardView> with SingleTickerProviderStateMixi
       _art = art;
       _artFace = face;
       _tileArt = null;
-      _animatedTiles = [
-        for (var i = 0; i < level.tiles.length; i++)
-          if (art.symbols[level.tiles[i].symbolCode]?.isAnimated ?? false) i,
-      ];
+      _findAnimated(art);
     });
     _syncSymbols();
     if (previous != null) {
       SchedulerBinding.instance.addPostFrameCallback((_) => previous.dispose());
     }
     widget.onArtReady?.call();
+  }
+
+  /// The tiles whose symbol, as the board shows it now (after any shuffle),
+  /// is animated in [art].
+  void _findAnimated(BoardArt art) {
+    final level = widget.controller.boardLevel;
+    _animatedSerial = widget.controller.symbolsSerial;
+    _animatedTiles = [
+      for (var i = 0; i < level.tiles.length; i++)
+        if (art.symbols[level.tiles[i].symbolCode]?.isAnimated ?? false) i,
+    ];
   }
 
   /// True once the tile art has loaded.
@@ -257,7 +293,8 @@ class BoardViewState extends State<BoardView> with SingleTickerProviderStateMixi
     if (art == null || projection == null) return null;
     final engine = widget.controller.engine;
     final maxLayer = engine.geometry.bounds.maxLayer;
-    final level = widget.controller.level;
+    // A resumed game may have been shuffled: its tiles show those symbols.
+    final level = widget.controller.boardLevel;
     return BoardSpriteAtlas.build(
       level: level,
       art: art,
@@ -318,8 +355,15 @@ class BoardViewState extends State<BoardView> with SingleTickerProviderStateMixi
 
   void _onTapUp(TapUpDetails details) {
     final projection = _projection;
-    // While tiles fly back to the board, or the intro plays, wait.
-    if (projection == null || _art == null || _effects.hasHidden || widget.controller.introPlaying) return;
+    // While tiles fly back to the board, a shuffle turns tiles over, or the
+    // intro plays, wait.
+    if (projection == null ||
+        _art == null ||
+        _effects.hasHidden ||
+        _effects.isFlipping ||
+        widget.controller.introPlaying) {
+      return;
+    }
     final engine = widget.controller.engine;
     final index = TileHitTester(
       projection,
@@ -348,7 +392,8 @@ class BoardViewState extends State<BoardView> with SingleTickerProviderStateMixi
                 child: CustomPaint(
                   size: constraints.biggest,
                   painter: BoardPainter(
-                    level: controller.level,
+                    // The symbols as they are now (a shuffle moves them).
+                    level: controller.boardLevel,
                     projection: projection,
                     art: art,
                     style: _style,

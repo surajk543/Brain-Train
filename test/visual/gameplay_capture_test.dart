@@ -1,4 +1,5 @@
-// Renders the real gameplay screen at phone sizes (the app is night-only).
+// Renders the real gameplay screen at phone sizes (Night; both looks and the
+// redesigned cards: gameplay_redesign_capture_test.dart).
 //
 // Always checks that layout succeeds without exceptions or overflow. When
 // CAPTURE_DIR is set, also writes PNG screenshots there for visual review:
@@ -28,6 +29,8 @@ import 'package:brain_train/features/gameplay/game_screen.dart';
 import 'package:brain_train/features/gameplay/widgets/board_intro.dart';
 import 'package:brain_train/features/gameplay/widgets/board_view.dart';
 import 'package:brain_train/features/gameplay/widgets/first_play_tutorial.dart';
+import 'package:brain_train/features/gameplay/widgets/action_bar.dart';
+import 'package:brain_train/features/gameplay/widgets/game_hud.dart';
 import 'package:brain_train/features/gameplay/widgets/premium_chrome.dart';
 import 'package:brain_train/features/gameplay/widgets/tile_flight_overlay.dart';
 import 'package:brain_train/features/gameplay/widgets/score_popups.dart';
@@ -260,21 +263,23 @@ Future<void> _writeSheet(WidgetTester tester, String name, List<List<ui.Image>> 
   }
 }
 
-/// Top to bottom: the tray just under the status bar, the board, and the
-/// HUD in the bottom part of the screen, inside the bottom safe area.
-void _expectBottomHud(WidgetTester tester, _Phone phone) {
-  final hud = tester.getRect(find.byType(PremiumHudFrame));
+/// Top to bottom (redesign 1.1.0): the HUD just under the status bar, the
+/// tray, the board and the action bar inside the bottom safe area.
+void _expectLayout(WidgetTester tester, _Phone phone) {
+  final hud = tester.getRect(find.byType(GameHud));
   final board = tester.getRect(find.byType(BoardView));
   final tray = tester.getRect(find.byType(TrayView));
-  expect(hud.top, greaterThan(phone.height * 0.7), reason: 'HUD in the bottom part');
-  expect(hud.bottom, lessThanOrEqualTo(phone.height - phone.bottom), reason: 'HUD inside the bottom safe area');
-  expect(tray.top, greaterThanOrEqualTo(phone.top), reason: 'tray below the status bar');
-  expect(tray.top, lessThan(phone.top + 12), reason: 'tray at the top');
+  final bar = tester.getRect(find.byType(GameActionBar));
+  expect(hud.top, greaterThanOrEqualTo(phone.top), reason: 'HUD below the status bar');
+  expect(hud.top, lessThan(phone.top + 12), reason: 'HUD at the top');
+  expect(tray.top, greaterThan(hud.bottom), reason: 'tray under the HUD (and the combo timer)');
   expect(tray.height, lessThan(phone.height * 0.15), reason: 'tray leaves the board its room');
   expect(board.top, greaterThanOrEqualTo(tray.bottom), reason: 'board below the tray');
   expect(board.height, greaterThan(phone.height * 0.5), reason: 'board keeps most of the screen');
-  expect(board.bottom, lessThanOrEqualTo(hud.top), reason: 'board ends above the HUD');
-  expect(tester.getCenter(find.byTooltip('Back')).dy, greaterThan(hud.top));
+  expect(bar.top, greaterThanOrEqualTo(board.bottom), reason: 'action bar below the board');
+  expect(bar.bottom, lessThanOrEqualTo(phone.height - phone.bottom), reason: 'action bar inside the bottom safe area');
+  expect(bar.top, greaterThan(phone.height * 0.8), reason: 'action bar at the bottom');
+  expect(tester.getCenter(find.byTooltip('Back')).dy, lessThan(hud.bottom));
 }
 
 /// The tile [tileId] is drawn in the tray.
@@ -325,9 +330,11 @@ void main() {
       expect(find.byTooltip('Back'), findsOneWidget);
       expect(find.byType(FlowingLeaves), findsOneWidget);
       expect(find.byType(BackdropFilter), findsNothing, reason: 'the tray is frosted from the static backdrop');
-      _expectBottomHud(tester, phone);
-      expect(find.text('Hint'), findsNothing);
-      expect(find.text('Undo'), findsNothing);
+      _expectLayout(tester, phone);
+      // The action bar (owner, 1.1.0).
+      expect(find.text('Hint'), findsOneWidget);
+      expect(find.text('Undo'), findsOneWidget);
+      expect(find.text('Shuffle'), findsOneWidget);
       await _capture(tester, 'gameplay_night_${phone.name}', phone.dpr);
       await _leave(tester);
     });
@@ -511,7 +518,7 @@ void main() {
       for (final id in engine.state.tray) {
         expect(_inTray(id), findsOneWidget);
       }
-      _expectBottomHud(tester, phone);
+      _expectLayout(tester, phone);
       await _capture(tester, 'gameplay_night_${phone.name}_tray3', phone.dpr);
       await _leave(tester);
     });
@@ -535,12 +542,12 @@ void main() {
     );
     expect(tester.takeException(), isNull);
     expect(find.text('12/${pairsOf(meadow)}'), findsOneWidget);
-    _expectBottomHud(tester, _small);
+    _expectLayout(tester, _small);
     await _capture(tester, 'gameplay_night_360x640_text130', _small.dpr);
     await _leave(tester);
   });
 
-  testWidgets('no Restart pill; the HUD is a bottom bar below the board', (tester) async {
+  testWidgets('no Restart pill; the HUD is on top, Restart an icon in the action bar', (tester) async {
     await start(tester);
     await _pumpGame(
       tester,
@@ -554,7 +561,7 @@ void main() {
     // An icon only (no text label) opens the confirm card; no card at rest.
     expect(find.byTooltip('Restart'), findsOneWidget);
     expect(find.text('Restart level?'), findsNothing);
-    _expectBottomHud(tester, _large);
+    _expectLayout(tester, _large);
     expect(tester.takeException(), isNull);
     await _leave(tester);
   });
@@ -575,7 +582,7 @@ void main() {
       expect(find.text('Restart this level?'), findsOneWidget);
       expect(find.text('Your score and time start over.'), findsOneWidget);
       expect(find.text('Keep playing'), findsOneWidget);
-      _expectBottomHud(tester, phone);
+      _expectLayout(tester, phone);
       expect(tester.takeException(), isNull);
       await _capture(tester, 'gameplay_night_${phone.name}_restart_confirm', phone.dpr);
       await _leave(tester);
@@ -591,13 +598,13 @@ void main() {
       phone: _large,
       resume: solvedSave(snapshot, meadow, elapsedMs: 83000),
     );
-    expect(find.text('Level complete!'), findsOneWidget);
-    expect(find.text('Next level'), findsOneWidget);
+    expect(find.text('Level Complete!'), findsOneWidget);
+    expect(find.text('Next Level'), findsOneWidget);
     expect(find.text('Replay'), findsOneWidget);
-    expect(find.text('Completed Levels'), findsOneWidget);
-    // The result card sits over the board and leaves the HUD uncovered.
-    _expectBottomHud(tester, _large);
-    expect(tester.getRect(find.text('Completed Levels')).bottom, lessThan(tester.getRect(find.byType(PremiumHudFrame)).top));
+    expect(find.text('Level Select'), findsOneWidget);
+    // Level Complete covers the whole screen; its buttons stay inside it.
+    _expectLayout(tester, _large);
+    expect(tester.getRect(find.text('Replay')).bottom, lessThan(_large.height - _large.bottom));
     expect(tester.takeException(), isNull);
     await _capture(tester, 'gameplay_night_411x914_win', _large.dpr);
     await _leave(tester);
@@ -620,10 +627,10 @@ void main() {
       // Exactly two choices; Back stays in the HUD.
       expect(find.text('Revive'), findsOneWidget);
       expect(find.text('Restart'), findsOneWidget);
-      expect(find.text('Completed Levels'), findsNothing);
+      expect(find.text('Level Select'), findsNothing);
       expect(find.byTooltip('Back'), findsOneWidget);
-      _expectBottomHud(tester, phone);
-      expect(tester.getRect(find.text('Restart')).bottom, lessThan(tester.getRect(find.byType(PremiumHudFrame)).top));
+      _expectLayout(tester, phone);
+      expect(tester.getRect(find.text('Restart')).top, greaterThan(tester.getRect(find.byType(GameHud)).bottom));
       expect(tester.takeException(), isNull);
       await _capture(tester, 'gameplay_night_${phone.name}_tray_full', phone.dpr);
       // Restart: empty tray, card gone.
@@ -653,8 +660,8 @@ void main() {
       expect(find.text('Revive'), findsOneWidget);
       if (note != null) expect(find.text(note), findsOneWidget);
       expect(find.byIcon(Icons.ondemand_video_rounded), findsOneWidget);
-      _expectBottomHud(tester, _small);
-      expect(tester.getRect(find.text('Restart')).bottom, lessThan(tester.getRect(find.byType(PremiumHudFrame)).top));
+      _expectLayout(tester, _small);
+      expect(tester.getRect(find.text('Restart')).top, greaterThan(tester.getRect(find.byType(GameHud)).bottom));
       expect(tester.takeException(), isNull);
       await _capture(tester, 'gameplay_night_360x640_tray_full_ad_${status.name}', _small.dpr);
       await _leave(tester);
@@ -718,7 +725,7 @@ void main() {
         final capacity = level.rules.trayCapacity;
         expect(capacity, inInclusiveRange(2, 5));
         expect(find.bySemanticsLabel('Tray, 0 of $capacity tiles'), findsOneWidget);
-        _expectBottomHud(tester, phone);
+        _expectLayout(tester, phone);
         // Tiles stay big enough to tap.
         final board = tester.getRect(find.byType(BoardView));
         final projection = boardProjectionFor(
@@ -747,7 +754,7 @@ void main() {
       final tray = tester.getRect(find.byType(TrayView));
       expect(tray.left, greaterThanOrEqualTo(0));
       expect(tray.right, lessThanOrEqualTo(phone.width));
-      _expectBottomHud(tester, phone);
+      _expectLayout(tester, phone);
       expect(tester.takeException(), isNull);
       await _capture(tester, 'tray5_${phone.name}_empty', phone.dpr);
       await _leave(tester);
@@ -762,7 +769,7 @@ void main() {
         expect(wells[i].left, greaterThan(wells[i - 1].right - 0.5), reason: 'slots do not overlap');
       }
       expect(wells.first.left, greaterThanOrEqualTo(0));
-      _expectBottomHud(tester, phone);
+      _expectLayout(tester, phone);
       expect(tester.takeException(), isNull);
       await _capture(tester, 'tray5_${phone.name}_four', phone.dpr);
 
@@ -772,7 +779,7 @@ void main() {
       expect(find.text('Tray full'), findsOneWidget);
       expect(find.text('Revive'), findsOneWidget);
       expect(find.bySemanticsLabel('Tray full'), findsWidgets);
-      _expectBottomHud(tester, phone);
+      _expectLayout(tester, phone);
       expect(tester.takeException(), isNull);
       await _capture(tester, 'tray5_${phone.name}_full', phone.dpr);
 

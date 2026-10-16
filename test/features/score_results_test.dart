@@ -91,7 +91,7 @@ Future<GameController> _winLevel(
     await tester.pump(const Duration(milliseconds: 100));
   }
   expect(controller.state.status, GameStatus.won);
-  expect(find.text('Level complete!'), findsOneWidget);
+  expect(find.text('Level Complete!'), findsOneWidget);
   return controller;
 }
 
@@ -135,24 +135,30 @@ void main() {
     return services;
   }
 
-  testWidgets('the win card shows score, best combo, pairs, time, moves and the best line', (tester) async {
+  testWidgets('Level Complete shows the final score, time, best combo, pairs and the helpers used', (tester) async {
     final services = await start(tester);
     final entry = services.content.snapshot.playableEntries.first;
     final controller = await _winLevel(tester, services, entry);
 
     final total = controller.state.totalPairs;
+    final summary = controller.winSummary!;
     expect(controller.score, greaterThan(0));
-    expect(find.textContaining('Score'), findsOneWidget);
+    expect(find.text('Final Score'), findsOneWidget);
     expect(find.text(formatScore(controller.score)), findsNWidgets(2), reason: 'the card and the HUD both show the score');
-    expect(find.text('Best combo ×${controller.scoring.bestCombo}  ·  Pairs $total/$total'), findsOneWidget);
-    expect(find.textContaining(RegExp('^\\d+:\\d\\d  ·  ${controller.state.moveCount} moves\$')), findsOneWidget);
+    expect(find.bySemanticsLabel('Best Combo ×${controller.scoring.bestCombo}'), findsOneWidget);
+    expect(find.bySemanticsLabel('Pairs Matched $total / $total'), findsOneWidget);
+    expect(find.bySemanticsLabel(RegExp(r'^Completion Time \d+:\d\d$')), findsOneWidget);
+    for (final row in ['Hints Used 0', 'Shuffles Used 0', 'Undos Used 0']) {
+      expect(find.bySemanticsLabel(row), findsOneWidget, reason: row);
+    }
     final record = controller.winRecord!;
     expect(record.bestScore, controller.score);
-    expect(find.textContaining('Best: ${formatScore(record.bestScore!)} · '), findsOneWidget);
+    expect(summary.record, record);
     expect(find.text('New best!'), findsNothing, reason: 'first win of the level');
-    for (final hidden in ['Undo', 'Hint', 'Shuffle']) {
-      expect(find.text(hidden), findsNothing);
-    }
+    expect(find.textContaining(RegExp(r'^Best \d')), findsNothing, reason: 'this score is the best');
+    expect(find.text('Next Level'), findsOneWidget);
+    expect(find.text('Level Select'), findsOneWidget);
+    expect(find.text('Replay'), findsOneWidget);
     expect(find.byType(Opacity), findsNothing);
     expect(find.byType(BackdropFilter), findsNothing);
     expect(tester.takeException(), isNull);
@@ -167,7 +173,7 @@ void main() {
     final controller = await _winLevel(tester, services, entry);
     expect(controller.newBestScore, isTrue);
     expect(find.text('New best!'), findsOneWidget);
-    expect(find.textContaining('Best: ${formatScore(controller.score)} · '), findsOneWidget);
+    expect(find.textContaining(RegExp(r'^Best \d')), findsNothing, reason: 'New best! says it');
     expect(tester.takeException(), isNull);
     await _leave(tester);
   });
@@ -184,7 +190,7 @@ void main() {
     final gate = slow.gate = Completer<void>();
     final controller = await _winLevel(tester, services, entry);
     expect(find.text('New best!'), findsNothing, reason: 'the record is still being written');
-    expect(find.textContaining('Best: '), findsNothing);
+    expect(find.textContaining(RegExp(r'^Best \d')), findsNothing);
     gate.complete();
     for (var i = 0; i < 10; i++) {
       await tester.runAsync(() => Future<void>.delayed(const Duration(milliseconds: 20)));
@@ -192,7 +198,6 @@ void main() {
     }
     expect(controller.newBestScore, isTrue);
     expect(find.text('New best!'), findsOneWidget);
-    expect(find.textContaining('Best: ${formatScore(controller.score)} · '), findsOneWidget);
     await _leave(tester);
   });
 
@@ -203,7 +208,7 @@ void main() {
     final controller = await _winLevel(tester, services, entry);
     expect(controller.newBestScore, isFalse);
     expect(find.text('New best!'), findsNothing);
-    expect(find.textContaining('Best: ${formatScore(99999999)} · '), findsOneWidget);
+    expect(find.text('Best ${formatScore(99999999)}'), findsOneWidget, reason: 'the level best this game did not reach');
     expect(tester.takeException(), isNull);
     await _leave(tester);
   });

@@ -259,8 +259,9 @@ class TrayLayout {
     required int capacity,
     required TileStyle style,
     required double maxFaceWidth,
+    double padV = defaultPadV,
   }) {
-    const padH = 14.0, padV = 9.0, gap = 9.0, inset = 4.0;
+    const padH = 14.0, gap = 9.0, inset = 4.0;
     final perWell = (width - 2 * padH - (capacity - 1) * gap) / capacity;
     final faceWidth = ((perWell - 2 * inset) / (1 + style.depthXFraction)).clamp(18.0, maxFaceWidth);
     final faceHeight = faceWidth / style.faceAspect;
@@ -276,6 +277,14 @@ class TrayLayout {
     }
     return TrayLayout._(Size(width, panel.height), panel, wells, faces);
   }
+
+  /// Panel padding above and below the wells, unless a screen asks for less.
+  static const double defaultPadV = 9;
+
+  /// The tray's height for a face [faceWidth] wide (wells plus [padV] above
+  /// and below), so screens can plan their layout.
+  static double heightFor(double faceWidth, TileStyle style, {double padV = defaultPadV}) =>
+      faceWidth / style.faceAspect * (1 + style.depthYFraction) + 2 * 4.0 + 2 * padV;
 
   /// The whole tray widget.
   final Size size;
@@ -316,7 +325,9 @@ class TrayView extends StatefulWidget {
     required this.symbolArt,
     this.reduceMotion = false,
     this.maxFaceWidth = 46,
+    this.padV = TrayLayout.defaultPadV,
     this.symbolClock,
+    this.symbolOf,
   });
 
   final TrayController controller;
@@ -328,6 +339,13 @@ class TrayView extends StatefulWidget {
 
   /// Largest tile face width; narrow screens get smaller tiles.
   final double maxFaceWidth;
+
+  /// Panel padding above and below the wells (short screens use less).
+  final double padV;
+
+  /// The symbol a tile shows now (e.g. `GameController.symbolCodeOf`, which
+  /// follows shuffles); null: the symbol [level] gives it.
+  final String Function(String tileId)? symbolOf;
 
   /// Clock for animated symbols, e.g. shared with tile flights so a tile
   /// keeps its frame when it lands. The tray starts and pauses it. Null: the
@@ -350,6 +368,10 @@ class TrayView extends StatefulWidget {
 class TrayViewState extends State<TrayView> with TickerProviderStateMixin {
   late final TileStyle _style = TileStyle.forTileSet(widget.level.tileSetId);
   late final Map<String, String> _symbolOf = {for (final tile in widget.level.tiles) tile.tileId: tile.symbolCode};
+
+  /// The symbol [tileId] shows: [TrayView.symbolOf] (after a shuffle a tile
+  /// may show another symbol than the level gave it), else the level's.
+  String _codeOf(String tileId) => widget.symbolOf?.call(tileId) ?? _symbolOf[tileId] ?? '';
   late final bool _ownsClock = widget.symbolClock == null;
   late final SymbolAnimationClock _clock = widget.symbolClock ?? SymbolAnimationClock();
   final SymbolFrameAtlas _atlas = SymbolFrameAtlas();
@@ -468,7 +490,7 @@ class TrayViewState extends State<TrayView> with TickerProviderStateMixin {
     if (art == null) return const {};
     return {
       for (final item in widget.controller.items)
-        if (TrayController.isShown(item)) ?art.animatedArt(_symbolOf[item.tileId] ?? ''),
+        if (TrayController.isShown(item)) ?art.animatedArt(_codeOf(item.tileId)),
     };
   }
 
@@ -514,6 +536,7 @@ class TrayViewState extends State<TrayView> with TickerProviderStateMixin {
       capacity: widget.controller.capacity,
       style: _style,
       maxFaceWidth: widget.maxFaceWidth,
+      padV: widget.padV,
     );
   }
 
@@ -563,7 +586,7 @@ class TrayViewState extends State<TrayView> with TickerProviderStateMixin {
     final canvas = Canvas(recorder)
       ..scale(pixelRatio)
       ..clipRect(Offset.zero & size);
-    art.paint(canvas, _symbolOf[tileId] ?? '', Offset.zero & face.size, atlas: _noMotion ? null : _atlas);
+    art.paint(canvas, _codeOf(tileId), Offset.zero & face.size, atlas: _noMotion ? null : _atlas);
     final picture = recorder.endRecording();
     final image = picture.toImageSync((size.width * pixelRatio).ceil(), (size.height * pixelRatio).ceil());
     picture.dispose();
@@ -626,9 +649,9 @@ class TrayViewState extends State<TrayView> with TickerProviderStateMixin {
                                     curve: Curves.easeOutCubic,
                                     child: _TrayTile(
                                       art: art,
-                                      symbolCode: _symbolOf[item.tileId] ?? '',
+                                      symbolCode: _codeOf(item.tileId),
                                       pop: item.flew,
-                                      animation: art.isAnimated(_symbolOf[item.tileId] ?? '') && !_noMotion
+                                      animation: art.isAnimated(_codeOf(item.tileId)) && !_noMotion
                                           ? (atlas: _atlas, clock: _clock)
                                           : null,
                                       reduceMotion: _noMotion,

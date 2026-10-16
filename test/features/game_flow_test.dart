@@ -210,11 +210,14 @@ void main() {
     await tester.pump(const Duration(milliseconds: 400));
     expect(find.text(first.title), findsOneWidget);
     expect(find.text('0/$pairs'), findsOneWidget);
-    // The HUD (with Back) is the only chrome while playing: no Restart pill.
+    // The HUD (with Back) on top, the action bar below the board (owner,
+    // 1.1.0): Undo, Hint, Shuffle and an icon-only Restart.
     expect(find.byTooltip('Back'), findsOneWidget);
     expect(find.text('Restart'), findsNothing);
-    expect(find.text('Hint'), findsNothing);
-    expect(find.text('Undo'), findsNothing);
+    expect(find.byTooltip('Restart'), findsOneWidget);
+    expect(find.text('Hint'), findsOneWidget);
+    expect(find.text('Undo'), findsOneWidget);
+    expect(find.text('Shuffle'), findsOneWidget);
     // Leave the game so its timers stop before the test ends.
     await tester.tap(find.byTooltip('Back'));
     await tester.pump(const Duration(milliseconds: 400));

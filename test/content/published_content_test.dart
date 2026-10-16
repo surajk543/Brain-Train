@@ -7,7 +7,9 @@ import 'package:brain_train/content/content_sources.dart';
 import 'package:brain_train/content/content_validator.dart';
 import 'package:brain_train/content/level_manifest.dart';
 import 'package:brain_train/content/remote_asset_resolver.dart';
+import 'package:brain_train/features/gameplay/game_layout.dart';
 import 'package:brain_train/features/gameplay/widgets/board_view.dart';
+import 'package:brain_train/game_engine/campaign/board_shapes.dart';
 import 'package:brain_train/game_engine/campaign/campaign_config.dart';
 import 'package:brain_train/game_engine/campaign/campaign_generator.dart';
 import 'package:brain_train/game_engine/campaign/tier_schedule.dart';
@@ -227,10 +229,20 @@ void main() {
 
   test('every board fits a 360x640 phone with playable tiles', () {
     const style = TileStyle.classicIvory;
+    // The board's room on the real gameplay screen of a 360x640 phone (24-px
+    // status bar): the full width, the height GameLayout leaves it. The
+    // campaign generator assumes 360 x kSmallBoardHeight; the screen must
+    // never give less.
+    const screen = Size(360, 640), safe = EdgeInsets.only(top: 24);
+    final board = Size(screen.width, GameLayout.of(screen, safe).boardHeight(screen, safe));
+    expect(board.height, greaterThanOrEqualTo(kSmallBoardHeight));
+    var smallest = double.infinity;
     for (final level in levels) {
-      final projection = boardProjectionFor(level, BoardGeometry.build(level), style, const Size(360, 433.5));
+      final projection = boardProjectionFor(level, BoardGeometry.build(level), style, board);
       expect(projection.faceWidth, greaterThanOrEqualTo(campaign.minFaceWidth - 0.01), reason: level.levelId);
+      if (projection.faceWidth < smallest) smallest = projection.faceWidth;
     }
+    printOnFailure('smallest face ${smallest.toStringAsFixed(2)} px on a ${board.width}x${board.height} board');
   });
 
   test('unique nature titles, a backdrop each, neighbours with different symbol sets', () {
