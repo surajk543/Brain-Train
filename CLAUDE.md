@@ -310,6 +310,9 @@ dart run tool/smoke_remote.dart         # live check: app's content client vs pr
 - Run on a Mac (iPhone simulator) or any machine with no secrets: `flutter pub get && flutter run`. Debug builds read
   content from the public host, use Google's test AdMob IDs, skip Play Games (Android only) and use debug signing;
   `.env` and the `android/*.properties` files are only for publishing and release builds.
+- CI: `.github/workflows/ios-build.yml` builds the iOS simulator app (`flutter build ios --simulator --debug`) on a
+  macOS runner when `ios/**`, `pubspec.*` or the workflow change, or by hand (Actions > Run workflow). macOS runners
+  use the private repo's free Actions minutes faster, so it does not run on every PR.
 - Content tree: `content/brain-train/` is not in git. Before `tool/content.dart build|validate` or `tool/publish.dart`
   on a new machine, mirror the live tree: `dart run tool/fetch_content.dart` (public prefix, no keys, sha256-checked).
 - Secrets: copy `.env` by a secure channel (password manager), never git/chat/email, likewise `android/key.properties`,
