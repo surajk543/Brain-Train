@@ -406,7 +406,7 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
     // Result overlays also dim the status bar area above the tray.
     final topInset = MediaQuery.paddingOf(context).top;
     return Scaffold(
-      backgroundColor: kFeltEdge,
+      backgroundColor: BrainTrainPalette.of(context).feltEdge,
       body: EmeraldBackdrop(
         accent: levelAccent(level.backdrop),
         child: Stack(

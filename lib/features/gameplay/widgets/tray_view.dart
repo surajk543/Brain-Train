@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 
 import '../../../app/brand.dart';
+import '../../../app/theme.dart';
 import '../../../content/content_sources.dart';
 import '../../../game_engine/models/level_definition.dart';
 import '../../../game_engine/models/symbol_registry.dart';
@@ -639,6 +640,7 @@ class _TrayPanel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final palette = BrainTrainPalette.of(context);
     final radius = BorderRadius.circular(layout.panelRadius);
     return DecoratedBox(
       decoration: BoxDecoration(
@@ -651,14 +653,14 @@ class _TrayPanel extends StatelessWidget {
       child: FrostedGlass(
         borderRadius: radius,
         child: CustomPaint(
-          foregroundPainter: _TrayPanelPainter(layout),
+          foregroundPainter: _TrayPanelPainter(layout, palette),
           child: DecoratedBox(
             decoration: BoxDecoration(
               borderRadius: radius,
-              gradient: const LinearGradient(
+              gradient: LinearGradient(
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
-                colors: [Color(0xD11A5638), Color(0xE00A3322)],
+                colors: palette.panelFill,
               ),
             ),
             child: const SizedBox.expand(),
@@ -671,9 +673,12 @@ class _TrayPanel extends StatelessWidget {
 
 /// Gold border, top sheen and recessed wells; panel-local coordinates.
 class _TrayPanelPainter extends CustomPainter {
-  _TrayPanelPainter(this.layout);
+  _TrayPanelPainter(this.layout, this.palette);
 
   final TrayLayout layout;
+
+  /// Panel sheen, gold rim and highlight of the current look.
+  final BrainTrainPalette palette;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -685,7 +690,7 @@ class _TrayPanelPainter extends CustomPainter {
         ..shader = LinearGradient(
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
-          colors: [Colors.white.withValues(alpha: 0.07), Colors.white.withValues(alpha: 0)],
+          colors: [palette.panelSheen, palette.panelSheen.withValues(alpha: 0)],
           stops: const [0, 0.5],
         ).createShader(bounds),
     );
@@ -724,11 +729,11 @@ class _TrayPanelPainter extends CustomPainter {
         Paint()
           ..style = PaintingStyle.stroke
           ..strokeWidth = 1.3
-          ..shader = const LinearGradient(
+          ..shader = LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
-            colors: [BrandGold.light, BrandGold.base, BrandGold.deep, BrandGold.base, BrandGold.light],
-            stops: [0, 0.3, 0.55, 0.8, 1],
+            colors: palette.panelRim,
+            stops: palette.panelRim.length == 5 ? const [0, 0.3, 0.55, 0.8, 1] : null,
           ).createShader(bounds),
       )
       ..drawRRect(
@@ -739,14 +744,14 @@ class _TrayPanelPainter extends CustomPainter {
           ..shader = LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
-            colors: [Colors.white.withValues(alpha: 0.26), Colors.white.withValues(alpha: 0)],
+            colors: [palette.panelHighlight, palette.panelHighlight.withValues(alpha: 0)],
             stops: const [0, 0.35],
           ).createShader(bounds),
       );
   }
 
   @override
-  bool shouldRepaint(_TrayPanelPainter old) => old.layout != layout;
+  bool shouldRepaint(_TrayPanelPainter old) => old.layout != layout || old.palette != palette;
 }
 
 /// Red rim around a full tray: pulses while the shake runs, then stays

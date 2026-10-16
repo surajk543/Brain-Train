@@ -1,6 +1,5 @@
 import 'package:brain_train/app/app.dart';
 import 'package:brain_train/app/app_services.dart';
-import 'package:brain_train/app/theme.dart';
 import 'package:brain_train/content/content_snapshot.dart';
 import 'package:brain_train/data/age_group.dart';
 import 'package:brain_train/data/progress_repository.dart';
@@ -9,7 +8,6 @@ import 'package:brain_train/features/gameplay/game_controller.dart';
 import 'package:brain_train/game_engine/geometry/tile_mask.dart';
 import 'package:brain_train/game_engine/state/game_state.dart';
 import 'package:brain_train/game_engine/validation/solver.dart';
-import 'package:brain_train/features/home/home_screen.dart';
 import 'package:brain_train/features/home/widgets/lobby_tagline.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -166,24 +164,7 @@ void main() {
     await tester.pumpWidget(const SizedBox());
   });
 
-  testWidgets('the app always renders the night palette', (tester) async {
-    late AppServices services;
-    await tester.runAsync(() async => services = await testServices());
-    await tester.pumpWidget(BrainTrainApp(servicesFactory: () async => services, showIntro: false));
-    await tester.runAsync(() => Future<void>.delayed(const Duration(milliseconds: 200)));
-    await tester.pump();
-    for (final brightness in [Brightness.light, Brightness.dark]) {
-      tester.platformDispatcher.platformBrightnessTestValue = brightness;
-      await tester.pump(const Duration(milliseconds: 400));
-      final context = tester.element(find.byType(HomeScreen));
-      expect(Theme.of(context).brightness, Brightness.dark, reason: '$brightness');
-      expect(BrainTrainPalette.of(context).isNight, isTrue, reason: '$brightness');
-      expect(LobbyTheme.of(context), same(LobbyTheme.night), reason: '$brightness');
-    }
-    tester.platformDispatcher.clearPlatformBrightnessTestValue();
-    expect(buildBrainTrainTheme(Brightness.light).brightness, Brightness.dark);
-    await tester.pumpWidget(const SizedBox());
-  });
+  // Day / Night / System and the theme tokens: test/app/appearance_test.dart.
 
   testWidgets('launch: intro (unplayable here) falls through to the logo, then home', (tester) async {
     late AppServices services;

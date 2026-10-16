@@ -8,7 +8,8 @@ import '../../common/flowing_leaves.dart';
 import '../../common/frosted_glass.dart';
 import '../../common/static_layer.dart';
 
-/// Darkest felt tone, at the screen edges (also the Scaffold colour).
+/// Night's darkest felt tone, at the screen edges. Screens use the current
+/// look's `BrainTrainPalette.feltEdge` (Day or Night).
 const Color kFeltEdge = Color(0xFF062618);
 
 /// Gameplay background: deep emerald felt, warm ambient light tinted by the
@@ -43,6 +44,8 @@ class _EmeraldBackdropState extends State<EmeraldBackdrop> {
 
   @override
   Widget build(BuildContext context) {
+    final palette = BrainTrainPalette.of(context);
+    final foliage = palette.feltFoliage;
     final size = MediaQuery.sizeOf(context);
     final dpr = MediaQuery.devicePixelRatioOf(context);
     // Decoration scales with the shorter side so tablets and landscape do
@@ -50,7 +53,7 @@ class _EmeraldBackdropState extends State<EmeraldBackdrop> {
     final unit = math.min(size.width, size.height * 0.5);
     // Offsets are in units of [unit], except [topOfHeight] (screen height).
     Widget decor(
-      String name,
+      String asset,
       double widthFraction, {
       double? left,
       double? right,
@@ -67,7 +70,7 @@ class _EmeraldBackdropState extends State<EmeraldBackdrop> {
         width: width,
         child: IgnorePointer(
           child: Image.asset(
-            'assets/decor/$name.webp',
+            asset,
             cacheWidth: (width * dpr).round(),
             fit: BoxFit.contain,
             filterQuality: FilterQuality.medium,
@@ -85,11 +88,11 @@ class _EmeraldBackdropState extends State<EmeraldBackdrop> {
           child: Stack(
             fit: StackFit.expand,
             children: [
-              CustomPaint(painter: _FeltPainter(accent: widget.accent)),
-              decor('foliage_right', 0.3, right: -0.06, topOfHeight: 0.19),
-              decor('foliage_top_left', 0.7, left: -0.08, top: -0.07),
-              decor('foliage_bottom_left', 0.7, left: -0.1, bottom: -0.08),
-              decor('foliage_bottom_right', 0.72, right: -0.1, bottom: -0.09),
+              CustomPaint(painter: _FeltPainter(accent: widget.accent, palette: palette)),
+              decor(foliage.right, 0.3, right: -0.06, topOfHeight: 0.19),
+              decor(foliage.topLeft, 0.7, left: -0.08, top: -0.07),
+              decor(foliage.bottomLeft, 0.7, left: -0.1, bottom: -0.08),
+              decor(foliage.bottomRight, 0.72, right: -0.1, bottom: -0.09),
             ],
           ),
         ),
@@ -101,23 +104,23 @@ class _EmeraldBackdropState extends State<EmeraldBackdrop> {
 }
 
 class _FeltPainter extends CustomPainter {
-  _FeltPainter({required this.accent});
+  _FeltPainter({required this.accent, required this.palette});
 
   final Color accent;
+
+  /// Felt colours, light and vignette of the current look.
+  final BrainTrainPalette palette;
 
   @override
   void paint(Canvas canvas, Size size) {
     final rect = Offset.zero & size;
-    const center = Color(0xFF1B6B45);
-    const mid = Color(0xFF0E4A2F);
-    const edge = kFeltEdge;
     canvas.drawRect(
       rect,
       Paint()
         ..shader = RadialGradient(
           center: const Alignment(0, -0.05),
           radius: 0.9,
-          colors: const [center, mid, edge],
+          colors: [palette.feltCenter, palette.feltMid, palette.feltEdge],
           stops: const [0, 0.6, 1],
         ).createShader(Rect.fromCenter(center: rect.center, width: size.shortestSide * 1.6, height: size.longestSide))
         ..isAntiAlias = false,
@@ -125,12 +128,13 @@ class _FeltPainter extends CustomPainter {
     // Velvet texture: fine diagonal nap, drawn once (static layer).
     final nap = Paint()
       ..strokeWidth = 1
-      ..color = Colors.white.withValues(alpha: 0.018);
+      ..color = Colors.white.withValues(alpha: palette.feltNap);
     for (var x = -size.height; x < size.width; x += 5) {
       canvas.drawLine(Offset(x, size.height), Offset(x + size.height, 0), nap);
     }
     // Warm cinematic light from the top-right, tinted by the level palette.
-    final light = Color.lerp(const Color(0xFFFFD98A), accent, 0.25)!;
+    final light = Color.lerp(palette.feltGlow, accent, 0.25)!;
+    final strength = palette.feltGlowStrength;
     final glow = Rect.fromCircle(
       center: Offset(size.width * 0.92, size.height * 0.02),
       radius: size.longestSide * 0.62,
@@ -140,7 +144,11 @@ class _FeltPainter extends CustomPainter {
       Paint()
         ..blendMode = BlendMode.screen
         ..shader = RadialGradient(
-          colors: [light.withValues(alpha: 0.4), light.withValues(alpha: 0.11), light.withValues(alpha: 0)],
+          colors: [
+            light.withValues(alpha: strength),
+            light.withValues(alpha: strength * 0.275),
+            light.withValues(alpha: 0),
+          ],
           stops: const [0, 0.45, 1],
         ).createShader(glow),
     );
@@ -150,14 +158,14 @@ class _FeltPainter extends CustomPainter {
       Paint()
         ..shader = RadialGradient(
           radius: 0.85,
-          colors: [Colors.transparent, Colors.black.withValues(alpha: 0.34)],
+          colors: [Colors.transparent, Colors.black.withValues(alpha: palette.feltVignette)],
           stops: const [0.55, 1],
         ).createShader(Rect.fromCenter(center: rect.center, width: size.width * 1.15, height: size.height * 1.05)),
     );
   }
 
   @override
-  bool shouldRepaint(_FeltPainter old) => old.accent != accent;
+  bool shouldRepaint(_FeltPainter old) => old.accent != accent || old.palette != palette;
 }
 
 /// Dark translucent green panel with a fine gold border and top highlight,
@@ -187,27 +195,22 @@ class PremiumPanel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final palette = BrainTrainPalette.of(context);
     final borderRadius = BorderRadius.circular(radius);
     return DecoratedBox(
-      decoration: BoxDecoration(
-        borderRadius: borderRadius,
-        boxShadow: const [
-          BoxShadow(color: Color(0x59000000), blurRadius: 24, offset: Offset(0, 10)),
-          BoxShadow(color: Color(0x33000000), blurRadius: 4, offset: Offset(0, 2)),
-        ],
-      ),
+      decoration: BoxDecoration(borderRadius: borderRadius, boxShadow: palette.panelShadows),
       child: FrostedGlass(
         borderRadius: borderRadius,
         tint: frostTint,
         child: CustomPaint(
-          foregroundPainter: _GoldBorderPainter(radius),
+          foregroundPainter: _GoldBorderPainter(radius, palette),
           child: DecoratedBox(
             decoration: BoxDecoration(
               borderRadius: borderRadius,
-              gradient: const LinearGradient(
+              gradient: LinearGradient(
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
-                colors: [Color(0xD11A5638), Color(0xE00A3322)],
+                colors: palette.panelFill,
               ),
             ),
             child: Padding(padding: padding, child: child),
@@ -219,9 +222,12 @@ class PremiumPanel extends StatelessWidget {
 }
 
 class _GoldBorderPainter extends CustomPainter {
-  _GoldBorderPainter(this.radius);
+  _GoldBorderPainter(this.radius, this.palette);
 
   final double radius;
+
+  /// Rim gold, sheen and highlight of the current look.
+  final BrainTrainPalette palette;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -235,7 +241,7 @@ class _GoldBorderPainter extends CustomPainter {
           ..shader = LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
-            colors: [Colors.white.withValues(alpha: 0.07), Colors.white.withValues(alpha: 0)],
+            colors: [palette.panelSheen, palette.panelSheen.withValues(alpha: 0)],
             stops: const [0, 0.5],
           ).createShader(bounds),
       )
@@ -244,11 +250,11 @@ class _GoldBorderPainter extends CustomPainter {
         Paint()
           ..style = PaintingStyle.stroke
           ..strokeWidth = 1.3
-          ..shader = const LinearGradient(
+          ..shader = LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
-            colors: [BrandGold.light, BrandGold.base, BrandGold.deep, BrandGold.base, BrandGold.light],
-            stops: [0, 0.3, 0.55, 0.8, 1],
+            colors: palette.panelRim,
+            stops: _rimStops(palette.panelRim.length),
           ).createShader(bounds),
       )
       // Fine inner highlight along the top edge.
@@ -260,14 +266,18 @@ class _GoldBorderPainter extends CustomPainter {
           ..shader = LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
-            colors: [Colors.white.withValues(alpha: 0.26), Colors.white.withValues(alpha: 0)],
+            colors: [palette.panelHighlight, palette.panelHighlight.withValues(alpha: 0)],
             stops: const [0, 0.35],
           ).createShader(bounds),
       );
   }
 
+  /// The rim's gold bands: light, base, deep, base, light at the stops the
+  /// rim was designed with; other lengths spread evenly.
+  static List<double>? _rimStops(int length) => length == 5 ? const [0, 0.3, 0.55, 0.8, 1] : null;
+
   @override
-  bool shouldRepaint(_GoldBorderPainter old) => old.radius != radius;
+  bool shouldRepaint(_GoldBorderPainter old) => old.radius != radius || old.palette != palette;
 }
 
 /// The HUD's panel with small gold sprigs touching its corners.
@@ -425,8 +435,9 @@ class PremiumRoundIconButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final enabled = onPressed != null;
+    final text = BrainTrainPalette.of(context).text;
     // A dimmer colour rather than an Opacity layer.
-    final ink = BrainTrainColors.ivory.withValues(alpha: enabled ? 1 : 0.35);
+    final ink = text.withValues(alpha: enabled ? 1 : 0.35);
     return Semantics(
       button: true,
       enabled: enabled,
@@ -448,7 +459,7 @@ class PremiumRoundIconButton extends StatelessWidget {
               height: 48,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                border: Border.all(color: BrainTrainColors.ivory.withValues(alpha: enabled ? 0.7 : 0.25), width: 1.3),
+                border: Border.all(color: text.withValues(alpha: enabled ? 0.7 : 0.25), width: 1.3),
                 gradient: RadialGradient(
                   colors: [Colors.white.withValues(alpha: 0.1), Colors.white.withValues(alpha: 0.02)],
                 ),
@@ -501,9 +512,13 @@ class PremiumButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final enabled = onPressed != null;
+    final palette = BrainTrainPalette.of(context);
     final radius = BorderRadius.circular(26);
-    final ink = primary ? BrainTrainColors.ink : (quiet ? BrandGold.light : BrainTrainColors.ivory);
+    final ink = primary
+        ? palette.primaryButtonText
+        : (quiet ? palette.quietButtonText : palette.secondaryButtonText);
     final textColor = enabled ? ink : ink.withValues(alpha: primary ? 0.55 : 0.45);
+    final border = palette.secondaryButtonBorder;
     final decoration = primary
         ? BoxDecoration(
             borderRadius: radius,
@@ -511,19 +526,24 @@ class PremiumButton extends StatelessWidget {
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
               colors: [
-                for (final color in const [BrandGold.light, BrandGold.warm, BrandGold.base])
-                  enabled ? color : color.withValues(alpha: 0.38),
+                for (final color in palette.primaryButtonFill)
+                  enabled ? color : color.withValues(alpha: color.a * 0.38),
               ],
             ),
-            border: Border.all(color: const Color(0xFFFFF1C4).withValues(alpha: enabled ? 1 : 0.4), width: 0.8),
-            boxShadow: enabled ? const [BoxShadow(color: Color(0x55000000), blurRadius: 10, offset: Offset(0, 4))] : null,
+            border: Border.all(
+              color: palette.primaryButtonEdge.withValues(alpha: palette.primaryButtonEdge.a * (enabled ? 1 : 0.4)),
+              width: 0.8,
+            ),
+            boxShadow: enabled
+                ? [BoxShadow(color: palette.primaryButtonShadow, blurRadius: 10, offset: const Offset(0, 4))]
+                : null,
           )
         : quiet
         ? BoxDecoration(borderRadius: radius)
         : BoxDecoration(
             borderRadius: radius,
-            color: Colors.white.withValues(alpha: 0.04),
-            border: Border.all(color: BrandGold.base.withValues(alpha: enabled ? 0.85 : 0.35), width: 1.1),
+            color: palette.secondaryButtonFill,
+            border: Border.all(color: border.withValues(alpha: border.a * (enabled ? 0.85 : 0.35)), width: 1.1),
           );
     final fontSize = quiet ? 17.0 : 19.0;
     final text = Text(
@@ -546,7 +566,7 @@ class PremiumButton extends StatelessWidget {
             clipBehavior: Clip.antiAlias,
             child: InkWell(
               onTap: onPressed,
-              splashColor: (primary ? BrainTrainColors.ink : BrandGold.base).withValues(alpha: 0.16),
+              splashColor: (primary ? palette.primaryButtonText : border).withValues(alpha: 0.16),
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
                 child: Center(
@@ -605,29 +625,27 @@ class PremiumStat extends StatelessWidget {
   final String value;
 
   @override
-  Widget build(BuildContext context) => Semantics(
-    label: '$label $value',
-    excludeSemantics: true,
-    child: Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 8),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text(
-            label.toUpperCase(),
-            style: displayText(
-              10.5,
-              color: BrainTrainColors.ivory.withValues(alpha: 0.78),
-              weight: FontWeight.w500,
-              spacing: 1.5,
+  Widget build(BuildContext context) {
+    final palette = BrainTrainPalette.of(context);
+    return Semantics(
+      label: '$label $value',
+      excludeSemantics: true,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 8),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              label.toUpperCase(),
+              style: displayText(10.5, color: palette.hudLabel, weight: FontWeight.w500, spacing: 1.5),
             ),
-          ),
-          const SizedBox(height: 5),
-          Text(value, style: displayText(22, weight: FontWeight.w500)),
-        ],
+            const SizedBox(height: 5),
+            Text(value, style: displayText(22, color: palette.hudValue, weight: FontWeight.w500)),
+          ],
+        ),
       ),
-    ),
-  );
+    );
+  }
 }
 
 /// Thin gold divider: vertical between HUD statistics, or [horizontal].
@@ -637,19 +655,18 @@ class PremiumDivider extends StatelessWidget {
   final bool horizontal;
 
   @override
-  Widget build(BuildContext context) => Container(
-    width: horizontal ? double.infinity : 1,
-    height: horizontal ? 1 : 38,
-    decoration: BoxDecoration(
-      gradient: LinearGradient(
-        begin: horizontal ? Alignment.centerLeft : Alignment.topCenter,
-        end: horizontal ? Alignment.centerRight : Alignment.bottomCenter,
-        colors: [
-          BrandGold.base.withValues(alpha: 0),
-          BrandGold.base.withValues(alpha: 0.75),
-          BrandGold.base.withValues(alpha: 0),
-        ],
+  Widget build(BuildContext context) {
+    final gold = BrainTrainPalette.of(context).hudSeparator;
+    return Container(
+      width: horizontal ? double.infinity : 1,
+      height: horizontal ? 1 : 38,
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: horizontal ? Alignment.centerLeft : Alignment.topCenter,
+          end: horizontal ? Alignment.centerRight : Alignment.bottomCenter,
+          colors: [gold.withValues(alpha: 0), gold.withValues(alpha: gold.a * 0.75), gold.withValues(alpha: 0)],
+        ),
       ),
-    ),
-  );
+    );
+  }
 }

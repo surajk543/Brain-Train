@@ -17,7 +17,7 @@ enum LobbySceneVariant {
   subScreen,
 }
 
-/// The night garden behind the home, Levels and Settings screens, as
+/// The garden (Day or Night) behind the home, Levels and Settings screens, as
 /// described by [LobbyTheme]: bundled art layers, Flutter-drawn lighting
 /// (lantern glow, calm centre, vignette), drifting leaves and, on home,
 /// fireflies. All of it stays behind the child and never takes taps.
@@ -129,6 +129,7 @@ class _Scene extends StatelessWidget {
             ),
           CustomPaint(
             painter: _LightingPainter(
+              wash: lobby.sceneWash,
               lights: lobby.lights,
               decorGlows: [
                 for (final (decor, rect) in placed)
@@ -160,10 +161,12 @@ class _Scene extends StatelessWidget {
   }
 }
 
-/// Lighting above the art: lantern and ambient glows (screen blend), a calm
-/// vignette behind the content, and darker edges.
+/// Lighting above the art: Day's daylight wash (screen blend), lantern and
+/// ambient glows (screen blend), a calm vignette behind the content, and
+/// darker edges.
 class _LightingPainter extends CustomPainter {
   _LightingPainter({
+    this.wash,
     required this.lights,
     required this.decorGlows,
     required this.scrim,
@@ -171,6 +174,8 @@ class _LightingPainter extends CustomPainter {
     this.shade,
   });
 
+  /// Lifts the whole scene (Day); null draws nothing.
+  final Color? wash;
   final List<LobbyGlow> lights;
   final List<(LobbyGlow, Rect)> decorGlows;
   final Color? scrim;
@@ -204,6 +209,15 @@ class _LightingPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final rect = Offset.zero & size;
+    final wash = this.wash;
+    if (wash != null) {
+      canvas.drawRect(
+        rect,
+        Paint()
+          ..blendMode = BlendMode.screen
+          ..color = wash,
+      );
+    }
     final shade = this.shade;
     if (shade != null) {
       canvas.drawRect(
@@ -254,6 +268,7 @@ class _LightingPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(_LightingPainter old) =>
+      old.wash != wash ||
       old.lights != lights ||
       old.scrim != scrim ||
       old.vignette != vignette ||

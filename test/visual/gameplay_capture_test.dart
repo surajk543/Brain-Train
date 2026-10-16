@@ -97,11 +97,17 @@ Future<AppServices> _services({bool full = false, RewardedAds? ads, bool tutoria
   );
 }
 
-/// Real glyphs instead of test boxes, when the system fonts exist.
+/// Real glyphs instead of test boxes: the bundled fonts, and system fonts
+/// for the platform fallbacks when they exist.
 Future<void> _loadFonts() async {
   final flutterRoot =
       Platform.environment['FLUTTER_ROOT'] ?? '${Platform.environment['HOME']}/snap/flutter/common/flutter';
   final families = {
+    'Playfair Display': [
+      'assets/fonts/playfair_display/PlayfairDisplay-VariableFont_wght.ttf',
+      'assets/fonts/playfair_display/PlayfairDisplay-Italic-VariableFont_wght.ttf',
+    ],
+    'Manrope': ['assets/fonts/manrope/Manrope-VariableFont_wght.ttf'],
     'serif': [
       '/usr/share/fonts/truetype/noto/NotoSerif-Regular.ttf',
       '/usr/share/fonts/truetype/noto/NotoSerif-Bold.ttf',
