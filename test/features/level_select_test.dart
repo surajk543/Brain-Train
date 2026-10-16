@@ -122,7 +122,7 @@ void main() {
     expect(find.text('Completed Levels'), findsOneWidget);
 
     // Completed levels from level 1, each flattened, never behind an opacity layer.
-    expect(find.bySemanticsLabel(RegExp(r'^Level 1, .*, completed, best time 0:30, completed ')), findsOneWidget);
+    expect(find.bySemanticsLabel(RegExp(r'^Level 1, .*, completed, best time 0:30, best score none, completed ')), findsOneWidget);
     final built = find.byType(CompletedLevelRow).evaluate().length;
     expect(built, greaterThan(4));
     expect(built, lessThan(30));
@@ -149,7 +149,7 @@ void main() {
       scrollable: find.descendant(of: find.byType(ListView), matching: find.byType(Scrollable)),
     );
     await tester.pump(const Duration(milliseconds: 100));
-    expect(find.bySemanticsLabel(RegExp(r'^Level 56, .*, completed, best time 0:30, completed ')), findsOneWidget);
+    expect(find.bySemanticsLabel(RegExp(r'^Level 56, .*, completed, best time 0:30, best score none, completed ')), findsOneWidget);
     expect(find.bySemanticsLabel(RegExp(r'^Level 57, ')), findsNothing);
     expect(find.bySemanticsLabel(RegExp(r'^Level 58, ')), findsNothing);
     expect(find.byIcon(Icons.lock_rounded), findsNothing);

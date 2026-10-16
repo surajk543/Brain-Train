@@ -22,8 +22,11 @@ import '../content/level_manifest.dart';
 import '../content/remote_asset_resolver.dart';
 import '../data/progress_repository.dart';
 import '../data/settings_repository.dart';
+import '../platform/games_services_play_games.dart';
+import '../platform/play_games.dart';
 import '../rendering/symbol_art.dart';
 import 'background_music.dart';
+import 'play_games_controller.dart';
 import 'sound_effects.dart';
 
 /// Observable wrapper around [ContentCoordinator] for the widget tree, and
@@ -168,7 +171,8 @@ class AppServices {
     required this.symbolArt,
     this.sounds,
     this.music,
-  }) {
+    PlayGamesController? playGames,
+  }) : playGames = playGames ?? PlayGamesController(const UnavailablePlayGames()) {
     // The level window follows this player's progress.
     content.attachProgress(progress);
   }
@@ -183,6 +187,9 @@ class AppServices {
 
   /// Looping ambient music, started after the studio intro. Null in tests.
   final BackgroundMusic? music;
+
+  /// Google Play Games (Android builds with an app ID); unavailable elsewhere.
+  final PlayGamesController playGames;
 
   static Future<AppServices> create({ContentConfig? config}) async {
     final contentConfig = config ?? ContentConfig.production;
@@ -211,6 +218,8 @@ class AppServices {
       symbolArt: SymbolArtCache(),
       sounds: sounds,
       music: BackgroundMusic(settings),
+      // A local check only; sign-in starts from the lobby.
+      playGames: PlayGamesController(await createPlayGames()),
     );
   }
 

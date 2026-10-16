@@ -13,6 +13,7 @@ import '../levels/level_select_screen.dart';
 import '../settings/settings_screen.dart';
 import 'widgets/lobby_buttons.dart';
 import 'widgets/lobby_footer.dart';
+import 'widgets/lobby_play_games.dart';
 import 'widgets/lobby_tagline.dart';
 
 /// The lobby: "Train your brain" on frosted glass, Play/Continue, Levels
@@ -20,12 +21,13 @@ import 'widgets/lobby_tagline.dart';
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
-  /// A resumable saved game in the current content, if any.
+  /// A resumable saved game in the current content, if any. Only the highest
+  /// level ([nextLevel]) resumes; a save of any other level is ignored.
   static (LevelManifestEntry, SavedGame)? resumable(AppServices services) {
     final saved = services.progress.savedGame();
     if (saved == null) return null;
     final entry = services.content.snapshot.manifest.entry(saved.levelId);
-    if (entry == null || entry.ref.url != saved.levelUrl) return null;
+    if (entry == null || entry.levelId != nextLevel(services).levelId || entry.ref.url != saved.levelUrl) return null;
     // Resumable even when its file is not on the device yet: the loader gets it.
     if (services.content.snapshot.levelErrors.containsKey(entry.levelId)) return null;
     return (entry, saved);
@@ -63,6 +65,9 @@ class _HomeScreenState extends State<HomeScreen> {
   /// open a screen twice.
   bool _navigating = false;
 
+  /// Play Games start is scheduled once, after the first frame.
+  bool _playGamesScheduled = false;
+
   Future<void> _open(WidgetBuilder builder) async {
     if (_navigating) return;
     _navigating = true;
@@ -83,6 +88,16 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_playGamesScheduled) return;
+    _playGamesScheduled = true;
+    final playGames = AppScope.of(context).playGames;
+    // After the first frame: the lobby never waits for Play Games.
+    WidgetsBinding.instance.addPostFrameCallback((_) => playGames.start());
+  }
+
+  @override
   Widget build(BuildContext context) {
     final services = AppScope.of(context);
     final lobby = LobbyTheme.of(context);
@@ -93,7 +108,7 @@ class _HomeScreenState extends State<HomeScreen> {
           minimum: EdgeInsets.only(top: MediaQuery.viewPaddingOf(context).top),
           child: LayoutBuilder(
             builder: (context, constraints) => ListenableBuilder(
-              listenable: Listenable.merge([services.content, services.progress]),
+              listenable: Listenable.merge([services.content, services.progress, services.playGames]),
               builder: (context, _) => _layout(context, services, constraints.biggest),
             ),
           ),
@@ -128,6 +143,10 @@ class _HomeScreenState extends State<HomeScreen> {
             padding: EdgeInsets.fromLTRB(side, topGap, side, math.max(10, h * 0.018)),
             child: Column(
               children: [
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: LobbyPlayGamesButtons(controller: services.playGames),
+                ),
                 const Spacer(flex: 2),
                 LobbyTagline(width: taglineWidth, fontSize: taglineSize),
                 SizedBox(height: h * 0.065),
@@ -171,7 +190,10 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                 ),
                 const Spacer(flex: 3),
-                LobbyContentFooter(snapshot: services.content.snapshot, status: services.content.status),
+                if (services.playGames.notice case final notice?)
+                  LobbyNoticeText(notice)
+                else
+                  LobbyContentFooter(snapshot: services.content.snapshot, status: services.content.status),
               ],
             ),
           ),

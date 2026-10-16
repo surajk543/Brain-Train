@@ -69,6 +69,30 @@ void main() {
       expect(HomeScreen.resumable(services)!.$1.levelId, entries[1].levelId);
     });
 
+    test('a legacy save on a completed level is not offered', () async {
+      final entries = (await testServices()).content.snapshot.playableEntries;
+      const record = '{"bestMoves":8,"bestTimeMs":1,"completedAt":"2026-10-01T10:00:00.000"}';
+      SharedPreferences.setMockInitialValues({
+        'progress.current.v2':
+            '{"levelId":"${entries[0].levelId}","levelUrl":"${entries[0].ref.url}","history":[],"moveCount":0,"elapsedMs":0}',
+        'progress.completed.v1': '{"${entries[0].levelId}":$record,"${entries[1].levelId}":$record}',
+      });
+      final services = await testServices();
+      expect(services.progress.savedGame()!.levelId, entries[0].levelId);
+      expect(HomeScreen.resumable(services), isNull);
+      expect(HomeScreen.playLabel(services), 'Play · Level 3');
+    });
+
+    test('a replay of level 1 leaves "Continue · Level 2" alone', () async {
+      final services = await testServices();
+      final entries = services.content.snapshot.playableEntries;
+      await services.progress.recordWin(entries[0].levelId, moves: 8, timeMs: 1);
+      await services.progress.saveGame(_savedOn(services, 1));
+      await services.progress.saveGame(_savedOn(services, 0));
+      expect(HomeScreen.playLabel(services), 'Continue · Level 2');
+      expect(services.progress.savedGame()!.levelId, entries[1].levelId);
+    });
+
     test('a save from another level revision is not offered', () async {
       final services = await testServices();
       await services.progress.saveGame(_savedOn(services, 2, url: 'levels/level-0003-v0.json'));
@@ -121,7 +145,11 @@ void main() {
     expect(find.byType(LobbyTagline), findsOneWidget);
     expect(find.text('Train your'), findsOneWidget);
     expect(find.text('brain'), findsOneWidget);
-    expect(find.byType(FrostedGlass), findsOneWidget, reason: 'frosted glass');
+    expect(
+      find.descendant(of: find.byType(LobbyTagline), matching: find.byType(FrostedGlass)),
+      findsOneWidget,
+      reason: 'frosted glass',
+    );
     expect(find.byType(BackdropFilter), findsNothing, reason: 'no live backdrop blur behind the ambient animation');
     expect(
       find.byType(Image).evaluate().where((e) => '${(e.widget as Image).image}'.contains('brain_train_logo')),
@@ -177,6 +205,32 @@ void main() {
     tester.state<NavigatorState>(find.byType(Navigator)).pop();
     await settleLobby(tester);
     expect(find.byType(GameScreen), findsNothing);
+    await _leave(tester);
+  });
+
+  testWidgets('Play opens the highest level and ignores a legacy replay save', (tester) async {
+    final services = await _start(tester, (services) async {
+      final entries = services.content.snapshot.playableEntries;
+      await services.progress.recordWin(entries[0].levelId, moves: 8, timeMs: 1);
+      await services.progress.recordWin(entries[1].levelId, moves: 8, timeMs: 1);
+      // A save of a completed level, as older builds wrote it.
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString(
+        'progress.current.v2',
+        '{"levelId":"${entries[0].levelId}","levelUrl":"${entries[0].ref.url}",'
+        '"history":[],"moveCount":0,"elapsedMs":0}',
+      );
+    });
+    await pumpLobby(tester, services: services, home: const HomeScreen());
+    final play = find.text('Play · Level 3');
+    expect(play, findsOneWidget);
+    await tester.tap(play);
+    await settleLobby(tester);
+    final game = tester.widget<GameScreen>(find.byType(GameScreen));
+    expect(game.entry.order, 3);
+    expect(game.resume, isNull);
+    tester.state<NavigatorState>(find.byType(Navigator)).pop();
+    await settleLobby(tester);
     await _leave(tester);
   });
 

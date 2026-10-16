@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 
 import '../../../app/brand.dart';
 import '../../../app/theme.dart';
+import '../../common/frosted_glass.dart';
+import '../../common/glass_painters.dart';
 import '../../common/static_layer.dart';
 
 /// Leaves tucked behind a lobby button's end.
@@ -30,35 +32,152 @@ class _EndLeaf extends StatelessWidget {
   }
 }
 
-/// Shared pill: decorations, ink, semantics and a minimum height that grows
-/// with the text scale.
+/// The one glass structure behind every lobby button, in the tagline panel's
+/// recipe: [FrostedGlass] (outside) -> one [StaticLayer] with shadow, glow and
+/// rim -> tint -> top highlight -> ink and [child].
+///
+/// Everything but the frost is static, so the blurred shadows are rendered
+/// once (and again only while the ink animates). [radius] larger than half the
+/// short side makes a stadium or a circle.
+class _LobbyGlass extends StatelessWidget {
+  const _LobbyGlass({
+    required this.radius,
+    required this.fill,
+    required this.rim,
+    required this.rimWidth,
+    required this.shadow,
+    required this.shadowBlur,
+    required this.shadowDrop,
+    required this.highlight,
+    required this.highlightHeight,
+    required this.overflow,
+    required this.splash,
+    required this.onPressed,
+    required this.child,
+    this.glow,
+    this.glowBlur = 0,
+  });
+
+  final double radius;
+  final List<Color> fill;
+  final List<Color> rim;
+  final double rimWidth;
+  final Color shadow;
+  /// Shadow blur is a mask-filter sigma (not a BoxShadow blurRadius, which is
+  /// about twice as wide); the drop is its vertical offset.
+  final double shadowBlur;
+  final double shadowDrop;
+
+  /// Warm halo around the glass (outside only).
+  final Color? glow;
+  final double glowBlur;
+  final Color highlight;
+  final double highlightHeight;
+  final EdgeInsets overflow;
+  final Color splash;
+  final VoidCallback? onPressed;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    final borderRadius = BorderRadius.circular(radius);
+    return FrostedGlass(
+      borderRadius: borderRadius,
+      child: StaticLayer(
+        overflow: overflow,
+        child: CustomPaint(
+          painter: GlassShadowPainter(
+            radius: radius,
+            color: shadow,
+            blur: shadowBlur,
+            offsetY: shadowDrop,
+            glow: glow,
+            glowBlur: glowBlur,
+          ),
+          foregroundPainter: GlassRimPainter(radius: radius, colors: rim, strokeWidth: rimWidth),
+          child: ClipRRect(
+            borderRadius: borderRadius,
+            child: DecoratedBox(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(begin: Alignment.topLeft, end: Alignment.bottomRight, colors: fill),
+              ),
+              child: Stack(
+                children: [
+                  // Light catching the top edge.
+                  Positioned(
+                    left: 0,
+                    right: 0,
+                    top: 0,
+                    height: highlightHeight,
+                    child: DecoratedBox(
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                          colors: [highlight, highlight.withValues(alpha: 0)],
+                        ),
+                      ),
+                    ),
+                  ),
+                  Material(
+                    type: MaterialType.transparency,
+                    child: InkWell(
+                      onTap: onPressed,
+                      splashColor: splash.withValues(alpha: 0.22),
+                      highlightColor: splash.withValues(alpha: 0.1),
+                      child: child,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Shared pill: glass, semantics, leaves at the ends and a minimum height
+/// that grows with the text scale.
 class _LobbyPill extends StatelessWidget {
   const _LobbyPill({
-    required this.label,
     required this.semanticLabel,
     required this.onPressed,
     required this.height,
-    required this.decoration,
+    required this.fill,
+    required this.rim,
+    required this.rimWidth,
     required this.splash,
     required this.child,
     required this.leftLeaf,
     required this.rightLeaf,
+    this.glow,
+    this.glowBlur = 0,
+    this.shadowBlur = 12,
+    this.shadowDrop = 5,
   });
 
-  final String label;
   final String semanticLabel;
   final VoidCallback? onPressed;
   final double height;
-  final Decoration decoration;
+  final List<Color> fill;
+  final List<Color> rim;
+  final double rimWidth;
   final Color splash;
   final Widget child;
   final bool leftLeaf;
   final bool rightLeaf;
+  final Color? glow;
+  final double glowBlur;
+  final double shadowBlur;
+  final double shadowDrop;
 
   @override
   Widget build(BuildContext context) {
+    final lobby = LobbyTheme.of(context);
     final leaf = height * 0.78;
-    final leafWidth = leaf / LobbyTheme.of(context).buttonLeafAspect;
+    final leafWidth = leaf / lobby.buttonLeafAspect;
     // Shadows and glow reach ~3 sigma past the pill; the leaves stick out.
     final reach = math.max(44.0, leafWidth * 0.62 + 4);
     return Semantics(
@@ -67,50 +186,49 @@ class _LobbyPill extends StatelessWidget {
       label: semanticLabel,
       onTap: onPressed,
       excludeSemantics: true,
-      // Rendered once (and again only while its ink animates), not on every
-      // frame of the leaves and fireflies behind it.
-      child: StaticLayer(
-        overflow: EdgeInsets.symmetric(horizontal: reach, vertical: 44),
-        child: Stack(
-          clipBehavior: Clip.none,
-          alignment: Alignment.center,
-          children: [
-            if (leftLeaf)
-              Positioned(
-                left: -leafWidth * 0.62,
-                child: _EndLeaf(height: leaf, flip: false),
-              ),
-            if (rightLeaf)
-              Positioned(
-                right: -leafWidth * 0.62,
-                child: _EndLeaf(height: leaf, flip: true),
-              ),
-            DecoratedBox(
-              decoration: decoration,
-              child: Material(
-                type: MaterialType.transparency,
-                shape: const StadiumBorder(),
-                clipBehavior: Clip.antiAlias,
-                child: InkWell(
-                  onTap: onPressed,
-                  splashColor: splash.withValues(alpha: 0.22),
-                  highlightColor: splash.withValues(alpha: 0.1),
-                  child: ConstrainedBox(
-                    constraints: BoxConstraints(minHeight: height, minWidth: double.infinity),
-                    child: child,
-                  ),
-                ),
-              ),
+      child: Stack(
+        clipBehavior: Clip.none,
+        alignment: Alignment.center,
+        children: [
+          if (leftLeaf)
+            Positioned(
+              left: -leafWidth * 0.62,
+              child: _EndLeaf(height: leaf, flip: false),
             ),
-          ],
-        ),
+          if (rightLeaf)
+            Positioned(
+              right: -leafWidth * 0.62,
+              child: _EndLeaf(height: leaf, flip: true),
+            ),
+          _LobbyGlass(
+            radius: 1000,
+            fill: fill,
+            rim: rim,
+            rimWidth: rimWidth,
+            shadow: lobby.glassShadow,
+            shadowBlur: shadowBlur,
+            shadowDrop: shadowDrop,
+            glow: glow,
+            glowBlur: glowBlur,
+            highlight: lobby.glassHighlight,
+            highlightHeight: height * 0.5,
+            overflow: EdgeInsets.symmetric(horizontal: reach, vertical: 44),
+            splash: splash,
+            onPressed: onPressed,
+            child: ConstrainedBox(
+              constraints: BoxConstraints(minHeight: height, minWidth: double.infinity),
+              child: child,
+            ),
+          ),
+        ],
       ),
     );
   }
 }
 
-/// The main call to action ("Continue · Level 2"): warm gold pill, dark
-/// green serif label, chevron, leaves at both ends.
+/// The main call to action ("Continue · Level 2"): gold-tinted frosted glass
+/// with a bright gold rim and glow, light-gold serif label, chevron, leaves at
+/// both ends.
 class LobbyPrimaryButton extends StatelessWidget {
   const LobbyPrimaryButton({
     super.key,
@@ -130,41 +248,22 @@ class LobbyPrimaryButton extends StatelessWidget {
     final lobby = LobbyTheme.of(context);
     final fontSize = (height * 0.34).clamp(17.0, 23.0);
     return _LobbyPill(
-      label: label,
       semanticLabel: semanticLabel ?? label,
       onPressed: onPressed,
       height: height,
       leftLeaf: true,
       rightLeaf: true,
       splash: Colors.white,
-      decoration: ShapeDecoration(
-        shape: StadiumBorder(side: BorderSide(color: lobby.primaryEdge, width: 1.4)),
-        gradient: LinearGradient(begin: Alignment.topCenter, end: Alignment.bottomCenter, colors: lobby.primaryFill),
-        shadows: [
-          BoxShadow(color: lobby.primaryGlow, blurRadius: 22, spreadRadius: 1),
-          BoxShadow(color: lobby.primaryShadow, blurRadius: 14, offset: const Offset(0, 6)),
-        ],
-      ),
+      fill: lobby.primaryGlassFill,
+      rim: lobby.primaryGlassRim,
+      rimWidth: 1.6,
+      glow: lobby.primaryGlassGlow,
+      glowBlur: 14,
+      shadowBlur: 14,
+      shadowDrop: 6,
       child: Stack(
         alignment: Alignment.center,
         children: [
-          // Glossy highlight across the top half.
-          Positioned(
-            left: height * 0.4,
-            right: height * 0.4,
-            top: 2,
-            height: height * 0.42,
-            child: DecoratedBox(
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(height),
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [Colors.white.withValues(alpha: 0.45), Colors.white.withValues(alpha: 0)],
-                ),
-              ),
-            ),
-          ),
           // Label centred on the pill, on one line (scaled down if needed).
           Padding(
             padding: EdgeInsets.symmetric(horizontal: height * 0.3 + fontSize * 1.4, vertical: 8),
@@ -174,8 +273,8 @@ class LobbyPrimaryButton extends StatelessWidget {
                 label,
                 maxLines: 1,
                 softWrap: false,
-                style: displayText(fontSize, color: lobby.primaryText, weight: FontWeight.w700, spacing: 0.3).copyWith(
-                  shadows: [Shadow(color: Colors.white.withValues(alpha: 0.45), offset: const Offset(0, 1))],
+                style: displayText(fontSize, color: lobby.primaryGlassText, weight: FontWeight.w700, spacing: 0.3).copyWith(
+                  shadows: [Shadow(color: Colors.white.withValues(alpha: 0.5), offset: const Offset(0, 1))],
                 ),
               ),
             ),
@@ -185,7 +284,7 @@ class LobbyPrimaryButton extends StatelessWidget {
             top: 0,
             bottom: 0,
             child: Center(
-              child: Icon(Icons.chevron_right_rounded, size: fontSize * 1.3, color: lobby.primaryText),
+              child: Icon(Icons.chevron_right_rounded, size: fontSize * 1.3, color: lobby.primaryGlassText),
             ),
           ),
         ],
@@ -194,9 +293,8 @@ class LobbyPrimaryButton extends StatelessWidget {
   }
 }
 
-/// Secondary lobby action (Levels, Settings): deep translucent green pill,
-/// thin gold border, gold icon, ivory serif label, chevron, leaf at the
-/// left end.
+/// Secondary lobby action (Levels, Settings): clear frosted glass, fine gold
+/// rim, gold icon, ivory serif label, chevron, leaf at the left end.
 class LobbySecondaryButton extends StatelessWidget {
   const LobbySecondaryButton({
     super.key,
@@ -218,18 +316,15 @@ class LobbySecondaryButton extends StatelessWidget {
     final lobby = LobbyTheme.of(context);
     final fontSize = (height * 0.34).clamp(16.0, 21.0);
     return _LobbyPill(
-      label: label,
       semanticLabel: semanticLabel ?? label,
       onPressed: onPressed,
       height: height,
       leftLeaf: true,
       rightLeaf: false,
       splash: lobby.secondaryIcon,
-      decoration: ShapeDecoration(
-        shape: StadiumBorder(side: BorderSide(color: lobby.secondaryBorder, width: 1.2)),
-        gradient: LinearGradient(begin: Alignment.topCenter, end: Alignment.bottomCenter, colors: lobby.secondaryFill),
-        shadows: [BoxShadow(color: lobby.secondaryShadow, blurRadius: 12, offset: const Offset(0, 5))],
-      ),
+      fill: lobby.secondaryGlassFill,
+      rim: lobby.secondaryGlassRim,
+      rimWidth: 1.2,
       child: Padding(
         padding: EdgeInsets.symmetric(horizontal: height * 0.5, vertical: 6),
         child: Row(
@@ -241,11 +336,60 @@ class LobbySecondaryButton extends StatelessWidget {
                 textAlign: TextAlign.center,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style: displayText(fontSize, color: lobby.secondaryText, weight: FontWeight.w600, spacing: 0.4),
+                style: displayText(fontSize, color: lobby.secondaryText, weight: FontWeight.w600, spacing: 0.4).copyWith(
+                  shadows: [Shadow(color: lobby.textShadow, blurRadius: 4, offset: const Offset(0, 1.5))],
+                ),
               ),
             ),
             Icon(Icons.chevron_right_rounded, size: fontSize * 1.3, color: lobby.secondaryIcon),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Small round lobby action (Achievements, Leaderboards): the secondary
+/// button's clear glass and fine gold rim as a circle with a gold icon.
+class LobbyRoundButton extends StatelessWidget {
+  const LobbyRoundButton({
+    super.key,
+    required this.icon,
+    required this.semanticLabel,
+    required this.onPressed,
+    this.size = 48,
+  });
+
+  final IconData icon;
+  final String semanticLabel;
+  final VoidCallback? onPressed;
+  final double size;
+
+  @override
+  Widget build(BuildContext context) {
+    final lobby = LobbyTheme.of(context);
+    return Semantics(
+      button: true,
+      enabled: onPressed != null,
+      label: semanticLabel,
+      onTap: onPressed,
+      excludeSemantics: true,
+      child: _LobbyGlass(
+        radius: size / 2,
+        fill: lobby.secondaryGlassFill,
+        rim: lobby.secondaryGlassRim,
+        rimWidth: 1.2,
+        shadow: lobby.glassShadow,
+        shadowBlur: 10,
+        shadowDrop: 4,
+        highlight: lobby.glassHighlight,
+        highlightHeight: size * 0.5,
+        overflow: const EdgeInsets.all(32),
+        splash: lobby.secondaryIcon,
+        onPressed: onPressed,
+        child: SizedBox.square(
+          dimension: size,
+          child: Icon(icon, size: size * 0.5, color: lobby.secondaryIcon),
         ),
       ),
     );

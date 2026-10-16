@@ -10,7 +10,8 @@ the art they use on demand (the next 5 levels are kept on the phone) and bundles
 flutter pub get
 flutter analyze                         # must be clean
 flutter test                            # unit + widget tests, no network
-flutter run -d emulator-5554            # AVDs: Pixel_6_API_34, Pixel7_Play_API36
+flutter run -d emulator-5554            # AVDs (this Mac): Pixel_9 (Play Store), TP_API36/TP_Small/TP_Tall
+flutter build appbundle                 # Play upload; needs android/key.properties (+ play_games.properties for Play Games)
 dart run tool/content.dart build        # content-src/ -> content/brain-train/ (campaign: generate + solve + simulate + hash)
 dart run tool/content.dart validate     # check content/brain-train/ like the app, plus solver
 dart run tool/content.dart stats        # simulated tray-player win rates per tier of the built tree
@@ -29,7 +30,7 @@ dart run tool/smoke_remote.dart         # live check: app's content client vs pr
 - `lib/game_engine/` — pure Dart, no Flutter imports (tools import it). Models, geometry
   (`BoardGeometry`, `TileAvailabilityCalculator`, `BoardProjection`, `TileHitTester`), rules
   (`MatchRules`), `GameEngine`, `MahjongSolver`, `LevelValidator`, `LevelGenerator` (hand layouts),
-  `TraySimulator` (simulated tray player). `campaign/`: `CampaignConfig` (tiers from the catalog),
+  `TraySimulator` (simulated tray player). `scoring/`: `ScoringRules`, `ScoreKeeper`, `formatScore` (pure Dart). `campaign/`: `CampaignConfig` (tiers from the catalog),
   `scheduleTiers`, `board_shapes.dart` (22 symmetric shape families + stacking programs),
   `CampaignGenerator`, `LevelDecor` (titles, backdrops), `SeededRandom`/`stableHash` (pinned PRNG).
 - `lib/content/` — pure Dart except `file_content_store.dart` (dart:io). Manifest, registry and
@@ -39,15 +40,19 @@ dart run tool/smoke_remote.dart         # live check: app's content client vs pr
 - `lib/rendering/` — tile body rasterizer, symbol art cache, board painter, effects.
 - `lib/features/` — screens. `levels/` Completed Levels (`LevelSelectScreen`), `LevelLoaderScreen`
   (`level_loader.dart`: every game opens through it — the game at once when the level is on the device, else
-  "Downloading level…", or offline "Connect to the internet to download this level"), `DifficultyStyle`; `home/` lobby (hero tiles, title, buttons, footer widgets);
+  "Downloading level…", or offline "Connect to the internet to download this level"), `DifficultyStyle`; `home/` lobby (hero tiles, title, footer widgets; `widgets/lobby_buttons.dart` glass buttons via `_LobbyGlass`;
+  `widgets/lobby_play_games.dart` round Play Games buttons);
   `gameplay/` (`game_controller.dart` glues engine + UI; `widgets/premium_chrome.dart` HUD, felt
   backdrop, dialogs; `widgets/tray_view.dart` tray + `TrayController`; `widgets/tile_flight_overlay.dart`
   board↔tray flights + `TrayFlightDirector`; `widgets/tile_shatter.dart` match strike + shards;
-  `widgets/tile_art.dart` single-tile art; `widgets/board_intro.dart` level-start intro); `common/` shared lobby chrome, `PremiumMahjongTile`,
+  `widgets/tile_art.dart` single-tile art; `widgets/board_intro.dart` level-start intro; `widgets/win_trophy.dart` trophy Lottie
+  on the win card; `widgets/combo_badge.dart`, `widgets/score_popups.dart`); `common/` shared lobby chrome, `glass_painters.dart` (`GlassRimPainter`/`GlassShadowPainter`), `PremiumMahjongTile`,
   lobby background + fireflies; `intro/` studio video + logo screen.
 - `lib/app/` — `AppServices` (wiring), `AppScope` (above `MaterialApp`), `theme.dart`
   (`BrainTrainPalette.night`, `LobbyTheme.night`), `brand.dart` (serif display font, gold),
-  `sound_effects.dart`.
+  `sound_effects.dart`, `play_games_controller.dart` (lobby Play Games state).
+- `lib/platform/` — `play_games.dart` (`PlayGames` interface, statuses, `UnavailablePlayGames`, pure Dart);
+  `games_services_play_games.dart` (the only file importing `games_services`; `createPlayGames()`).
 - `content-src/` — authoring: `catalog.json` (`campaign`: seed, tiers, counts, bands). `layouts/*.layout.json`
   are the old hand layouts (not in the catalog; the tool still accepts catalog `levels` entries).
 - `content/brain-train/` — generated, published tree (not in git; local output of `tool/content.dart build`,
@@ -77,7 +82,9 @@ dart run tool/smoke_remote.dart         # live check: app's content client vs pr
   pair-solvable). A tapped free tile leaves the board for the tray; if it matches a tray tile both clear;
   `capacity` tiles without a match lose (`GameStatus.trayFull`) and show a Revive / Restart card. Revive
   (`GameEngine.revive`, unlimited, not a move) puts all the tray tiles back in their board places. Saves store the tap sequence plus `GameEngine.reviveMarker` entries
-  (`progress.current.v2`); a tray-full game is saved so it can be revived later. Solver/generator still prove
+  (`progress.current.v2`); a tray-full game is saved so it can be revived later. Only the first level not won is saved:
+  `saveGame` skips already-won levels (replays), `clearSavedGame(levelId:)` clears only that level's save, so a replay
+  never wipes the highest level's game (an unfinished replay is dropped). Solver/generator still prove
   pair-removal orders, which are valid tray orders (tap a, then b). Screen: tray at the top, board, HUD at the
   bottom. The board drops a tile at the tap; `TileFlightOverlay` draws it until it lands (ticks only during
   flights); revived tiles fly back one by one, slowly (owner: 700 ms each, 300 ms apart, lower tiles first) and
@@ -119,6 +126,16 @@ dart run tool/smoke_remote.dart         # live check: app's content client vs pr
   update too (from its older cached file, `CachedLevel` index, until the new file is cached). Other levels download
   on demand when opened. A newer manifest becomes active only once its registry and its window are cached; never a
   downgrade. Startup never waits for the network (`loadInitial` + `warmUp` read only cache and bundle).
+- Play Games (Android only, docs/PLAY_GAMES.md): optional and never on the startup path (a local channel check in
+  `AppServices.create`; sign-in starts after the lobby's first frame). Only `games_services_play_games.dart`
+  imports the plugin; every call is caught and timed out. The app ID comes from gitignored
+  `android/play_games.properties`; without it `PlayGamesInitProvider` is disabled and Dart sees
+  `UnavailablePlayGames`. Release signing reads gitignored `android/key.properties`. iOS min is 14.0 (plugin).
+- Scoring (owner): a match scores `100 x min(combo, 5)` + speed bonus (+50 gap < 1 s, +25 < 2 s, +10 for 2-4 s);
+  combo window 4 s on the game clock (pauses with it), every match restarts it from that match, a gap > 4 s starts over
+  at x1; only `TapOutcome.matched` scores; a blocked-tile tap costs 1 (never below 0) and ends the combo; Revive ends
+  the combo; Restart resets. State is `SavedGame.scoring`; `LevelRecord.bestScore/bestCombo` only go up. The combo badge
+  floats on the tray's bottom edge: never add layout space between tray and board (31-px faces).
 - The app never holds R2 keys or `ASSET_TOKEN_SECRET`. `.env` is gitignored and used only by tools.
 - R2 bucket `braintrain` is private. Worker `braintrain-assets` serves `brain-train/*` publicly (GET/HEAD);
   all other keys need an HMAC token (`aud: "bt-assets"`, max 10 min).
@@ -132,7 +149,17 @@ dart run tool/smoke_remote.dart         # live check: app's content client vs pr
 - Background music `assets/music/water_flowing.mp3` loops at volume 0.6 (`lib/app/background_music.dart`),
   starts after the studio intro, pauses in background, and follows the Sound switch (no separate music toggle).
 - Sounds: `assets/sounds/tap.wav` (one tap cut from the owner's Tap.mp3) on every playable tap; `assets/sounds/strike.wav` (one hit cut from the owner's strike.mp3, 0.95 s) is `Sfx.match`, played when a matched pair strikes in the tray; the last pair's strike is followed by `Sfx.win` 450 ms later.
-- No Undo and no Hint in the game; Restart is the only action (the engine has no undo).
+- No Undo and no Hint in the game; Restart is the only action (the engine has no undo). Reachable from the round HUD
+  icon (`PremiumRoundIconButton`, right end; only while playing, not during the intro or result cards) with a confirm
+  card "Restart this level?" / "Your score and time start over." (Restart / Keep playing; clock paused, Android back
+  closes it), from the Tray full card and from the win card (Replay).
+- HUD shows SCORE where Moves was (owner); the win card and Completed Levels show score, best score and best combo.
+- Win card ("Level complete!"): `assets/lottie/trophy_cup_rays.json` (LottieFiles, owner's premium licence) via `WinTrophy`, looping while the card is open
+  (owner), last frame with reduce motion, `PremiumEmblem` fallback if it fails to load.
+- Google Play Games (owner, 2026-10-16): Android only; silent sign-in; two round lobby buttons top-right
+  (Achievements, Leaderboards) open Google's screens, signing in first when needed; no Settings entry.
+  Pieces: 1 sign-in (done), 2 achievements + leaderboards, 3 cloud save. Two phones on one account must never
+  clash: piece 3 merges (union of wins, fastest time) before play; no hard one-device lock.
 - Every launch: navy native screen (no icon) → `assets/video/sun_game_studio_intro.mp4`
   (Sun Game Studio) → Brain Train logo on white (`assets/branding/brain_train_logo.jpg`, at least
   2.2 s and until content is loaded) → lobby. Sequence lives in `lib/app/app.dart`.
@@ -140,7 +167,10 @@ dart run tool/smoke_remote.dart         # live check: app's content client vs pr
   Android 8+. Regenerate with `python3 tool/assets/make_app_icon.py`.
 - No "Mahjong Solitaire" subtitle on the lobby.
 - Look: emerald felt + botanical foliage, dark-green panels with fine gold borders, serif display
-  type (`brand.dart`), warm ivory tiles with olive-green underside. Level `backdrop.colors` only tints
+  type (`brand.dart`), warm ivory tiles with olive-green underside. Lobby buttons are frosted glass with fine gold
+  rims (`FrostedGlass` + `StaticLayer`): Play/Continue warm gold with dark green label and soft gold glow
+  (`LobbyTheme.primaryGlass*`), Completed Levels / Settings / round Play Games buttons clear (`secondaryGlass*`);
+  `primaryFill/Edge/Text` stay for the Completed Levels panel button. Level `backdrop.colors` only tints
   the gameplay ambient light. Tune tiles in `TileStyle`, never the art.
 - Every tile everywhere (board, lobby hero) uses `MahjongTileRenderer`; no second tile renderer.
 
@@ -164,9 +194,10 @@ dart run tool/smoke_remote.dart         # live check: app's content client vs pr
   ~3.4 MB). A fresh install downloads only the manifest at first launch (its window is the starter pack); each win
   then fetches about one level file and its new symbols. With no starter pack, the window 1–5 is 5 level files +
   47 symbol files (~1.8 MB).
-- Lobby menu: Play/Continue, "Completed Levels", Settings. No "N levels ready" footer (owner); the footer only
+- Lobby menu: Play/Continue (always the first level not won; "Continue" only for a saved game of that level),
+  "Completed Levels", Settings. No "N levels ready" footer (owner); the footer only
   shows a content notice (offline / update skipped / new content installed).
-- "Completed Levels" screen (`level_select_screen.dart`, owner): a panel with the next level to play (title, tier,
+- "Completed Levels" screen (`level_select_screen.dart`, owner): a panel with the next level to play (first not won; title, tier,
   size, tray; Play/Continue) and below it ONLY the completed levels, in order, as a lazy list to replay from
   (one row each: number, title, tier badge, tiles, best time, date-time of that best win). Replays keep the
   fastest time and its date (`ProgressRepository.recordWin`).
@@ -192,12 +223,16 @@ dart run tool/smoke_remote.dart         # live check: app's content client vs pr
 
 - Code: branch `feat/brain-train-game` (PR #1, repo private).
   `git clone https://github.com/surajk543/Brain-Train.git && cd Brain-Train && git switch feat/brain-train-game && flutter pub get`.
-  Flutter 3.44.7 / Dart 3.12.2. Android SDK + AVD `Pixel_6_API_34`
-  (`emulator -avd Pixel_6_API_34 -gpu host -no-snapshot-load`). Python 3 + Pillow for `tool/assets/*.py`, ffmpeg for audio.
-- `flutter analyze` and `flutter test` work on a fresh clone (tests use fixtures and `content/starter/`).
+  Flutter 3.44.7 / Dart 3.12.2. Android SDK + AVD (`Pixel_6_API_34` on the old machine;
+  `emulator -avd Pixel_6_API_34 -gpu host -no-snapshot-load`). This Mac: Flutter `~/flutter`, SDK
+  `/opt/homebrew/share/android-commandlinetools`, AVD `Pixel_9` = Play Store image (use for Play Games), `TP_*` AVDs
+  have no Play Store, `Pixel_6_API_34` does not exist. Python 3 + Pillow for `tool/assets/*.py`, ffmpeg for audio.
+- `flutter analyze` and `flutter test` work on a fresh clone (tests use fixtures and `content/starter/`); on this Mac 6
+  tests currently fail (see Open work).
 - Content tree: `content/brain-train/` is not in git. Before `tool/content.dart build|validate` or `tool/publish.dart`
   on a new machine, mirror the live tree: `dart run tool/fetch_content.dart` (public prefix, no keys, sha256-checked).
-- Secrets: copy `.env` by a secure channel (password manager), never git/chat/email. Keys: `R2_ACCOUNT_ID`,
+- Secrets: copy `.env` by a secure channel (password manager), never git/chat/email, likewise `android/key.properties`,
+  `android/play_games.properties` and the upload keystore. Keys: `R2_ACCOUNT_ID`,
   `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_BUCKET_NAME`, `ASSET_TOKEN_SECRET`. Only publishing needs it.
 - Licensed originals `art/source/` are not in git; needed only to re-process art. Re-download through the IconScout
   MCP (`claude mcp add --transport http iconscout https://mcp.iconscout.com/mcp`) from `art/asset_sources.json` /
@@ -205,5 +240,11 @@ dart run tool/smoke_remote.dart         # live check: app's content client vs pr
 - Open work: 100 static entries `awaiting download` in `art/asset_sources.json` (then prepare_symbols, build, bump
   contentVersion, publish); a frame-time slowdown after hours of play on the emulator (Impeller GLES; watch
   `adb logcat | grep app_time_stats`, app restart resets it) is not explained yet.
+- Open work: Play Console setup (docs/PLAY_GAMES.md) and Play Games pieces 2–3 (piece 2 builds on
+  `bestScore`/`bestCombo`). Scoring + combo is implemented (4 s window).
+- Open work: 6 tests fail on this Mac (predate `feat/play-games`): RenderFlex overflow of 4.4 px at
+  `lib/features/levels/level_select_screen.dart:232` (Completed Levels row) — level_select_test (2), level_loader_test (1),
+  lobby_capture_test (2, per-phone "home, levels, settings"), gameplay_capture_test ("tray-full overlay 360x640 at 1.3x
+  text"). Owner to decide.
 
 Keep this file current when commands, layout, or these rules change.

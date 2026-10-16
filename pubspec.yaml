@@ -43,6 +43,8 @@ dependencies:
   package_info_plus: ^10.2.2
   lottie: ^3.6.1
   vibration: ^3.2.1
+  # Google Play Games Services (Android only; see docs/PLAY_GAMES.md).
+  games_services: ^5.3.0
 
 dev_dependencies:
   flutter_test:
@@ -76,6 +78,8 @@ flutter:
     - assets/music/
     - assets/decor/
     - assets/lobby/
+    # Level complete trophy (loops while the Level complete card is open).
+    - assets/lottie/trophy_cup_rays.json
     # Starter pack only (written by `dart run tool/content.dart build`): the
     # manifest and registry (metadata of every level), levels 1-5 and only
     # the art they use. Everything else is downloaded from R2 on demand.

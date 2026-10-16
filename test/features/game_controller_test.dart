@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:brain_train/app/sound_effects.dart';
 import 'package:brain_train/content/level_manifest.dart';
 import 'package:brain_train/data/progress_repository.dart';
@@ -251,6 +253,27 @@ void main() {
     expect(progress.completed()['test-level']!.bestMoves, 4);
     expect(progress.savedGame(), isNull);
     expect(controller.winRecord, isNotNull);
+    controller.dispose();
+  });
+
+  test('a replay never touches the highest level\'s save, through taps, restart and a win', () async {
+    await progress.recordWin('test-level', moves: 4, timeMs: 1000);
+    final other = SavedGame(
+      levelId: 'level-0009',
+      levelUrl: 'levels/level-0009-v1.json',
+      history: const ['p1', 'p2'],
+      elapsedMs: 7000,
+    );
+    await progress.saveGame(other);
+    final before = jsonEncode(progress.savedGame()!.toJson());
+    final small = level([('a1', 'A', 0, 0, 0), ('a2', 'A', 4, 0, 0), ('b1', 'B', 8, 0, 0), ('b2', 'B', 12, 0, 0)]);
+    final controller = controllerFor(on: small);
+    await tap(controller, ['a1', 'b1']);
+    controller.restart();
+    await tap(controller, ['a1', 'b1', 'a2', 'b2']);
+    expect(controller.state.status, GameStatus.won);
+    await Future<void>.delayed(const Duration(milliseconds: 10));
+    expect(jsonEncode(progress.savedGame()!.toJson()), before);
     controller.dispose();
   });
 

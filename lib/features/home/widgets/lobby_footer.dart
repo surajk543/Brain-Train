@@ -30,6 +30,18 @@ class LobbyContentFooter extends StatelessWidget {
   Widget build(BuildContext context) {
     final text = label(snapshot, status);
     if (text == null) return const SizedBox.shrink();
+    return LobbyNoticeText(text);
+  }
+}
+
+/// One line in the lobby footer's style (content notices, Play Games).
+class LobbyNoticeText extends StatelessWidget {
+  const LobbyNoticeText(this.text, {super.key});
+
+  final String text;
+
+  @override
+  Widget build(BuildContext context) {
     final lobby = LobbyTheme.of(context);
     return Semantics(
       liveRegion: true,

@@ -10,16 +10,20 @@ import '../../content/content_snapshot.dart';
 import '../../content/level_manifest.dart';
 import '../../data/progress_repository.dart';
 import '../../game_engine/models/level_definition.dart';
+import '../../game_engine/scoring/score_format.dart';
 import '../../game_engine/state/game_state.dart';
 import '../../rendering/symbol_art.dart';
 import '../levels/level_loader.dart';
 import 'game_controller.dart';
 import 'widgets/board_intro.dart';
 import 'widgets/board_view.dart';
+import 'widgets/combo_badge.dart';
 import 'widgets/premium_chrome.dart';
+import 'widgets/score_popups.dart';
 import 'widgets/tile_flight_overlay.dart';
 import 'widgets/tile_shatter.dart';
 import 'widgets/tray_view.dart';
+import 'widgets/win_trophy.dart';
 
 String formatDuration(Duration d) {
   final minutes = d.inMinutes;
@@ -42,12 +46,15 @@ Color levelAccent(LevelBackdrop? backdrop) {
 /// result card (win or full tray) appears once the tray has finished its
 /// last effect.
 class GameScreen extends StatefulWidget {
-  const GameScreen({super.key, required this.snapshot, required this.entry, this.resume});
+  const GameScreen({super.key, required this.snapshot, required this.entry, this.resume, @visibleForTesting this.stopwatch});
 
   /// Held for the whole game, so content updates cannot change this board.
   final ContentSnapshot snapshot;
   final LevelManifestEntry entry;
   final SavedGame? resume;
+
+  /// Replaces the game clock's stopwatch (tests drive time by hand).
+  final Stopwatch? stopwatch;
 
   @override
   State<GameScreen> createState() => _GameScreenState();
@@ -57,12 +64,18 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
   final GlobalKey<BoardViewState> _boardKey = GlobalKey();
   final GlobalKey<TrayViewState> _trayKey = GlobalKey();
 
+  /// Anchors the combo badge to the tray's bottom edge.
+  final LayerLink _trayLink = LayerLink();
+
   /// Shared by the tray and the flights, so a tile lands on the frame the
   /// tray shows.
   final SymbolAnimationClock _symbolClock = SymbolAnimationClock();
 
   /// Whether the result card is showing; only the overlay listens.
   final ValueNotifier<bool> _resultShown = ValueNotifier(false);
+
+  /// Whether the "Restart this level?" card is open (the clock is paused).
+  final ValueNotifier<bool> _confirmingRestart = ValueNotifier(false);
   GameController? _controller;
   late final TrayController _tray;
   late final TileFlightController _flights;
@@ -95,6 +108,7 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
         settings: services.settings,
         sounds: services.sounds,
         resume: widget.resume,
+        stopwatch: widget.stopwatch,
         // Lose feedback lands with the tile; match and win at the strike.
         arrivalFeedbackDelay: _flightTime(reduceMotion),
         matchFeedbackOnImpact: true,
@@ -204,10 +218,27 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed) {
-      controller.resumeClock();
+      // The clock stays stopped behind the open restart card.
+      if (!_confirmingRestart.value) controller.resumeClock();
     } else {
       controller.pauseClock();
     }
+  }
+
+  void _askRestart() {
+    controller.pauseClock();
+    _confirmingRestart.value = true;
+  }
+
+  void _keepPlaying() {
+    if (!_confirmingRestart.value) return;
+    _confirmingRestart.value = false;
+    controller.resumeClock();
+  }
+
+  void _confirmRestart() {
+    _confirmingRestart.value = false;
+    controller.restart();
   }
 
   LevelManifestEntry? get _nextEntry {
@@ -243,6 +274,7 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
     }
     _intro.dispose();
     _resultShown.dispose();
+    _confirmingRestart.dispose();
     _symbolClock.dispose();
     super.dispose();
   }
@@ -279,16 +311,19 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
                             children: [
                               Padding(
                                 padding: const EdgeInsets.fromLTRB(12, 6, 12, 0),
-                                child: TrayView(
-                                  key: _trayKey,
-                                  controller: _tray,
-                                  level: level,
-                                  registry: widget.snapshot.registry,
-                                  artwork: widget.snapshot.artwork,
-                                  symbolArt: services.symbolArt,
-                                  reduceMotion: reduceMotion,
-                                  maxFaceWidth: _trayFaceWidth(MediaQuery.sizeOf(context)),
-                                  symbolClock: _symbolClock,
+                                child: CompositedTransformTarget(
+                                  link: _trayLink,
+                                  child: TrayView(
+                                    key: _trayKey,
+                                    controller: _tray,
+                                    level: level,
+                                    registry: widget.snapshot.registry,
+                                    artwork: widget.snapshot.artwork,
+                                    symbolArt: services.symbolArt,
+                                    reduceMotion: reduceMotion,
+                                    maxFaceWidth: _trayFaceWidth(MediaQuery.sizeOf(context)),
+                                    symbolClock: _symbolClock,
+                                  ),
                                 ),
                               ),
                               Expanded(
@@ -323,12 +358,16 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
                                 : switch (controller.state.status) {
                                     GameStatus.won => _Overlay(
                                       topInset: topInset,
-                                      child: _CompletionCard(
-                                        controller: controller,
-                                        hasNext: _nextEntry != null,
-                                        onNext: _openNext,
-                                        onReplay: controller.restart,
-                                        onLevels: () => Navigator.of(context).pop(),
+                                      // Rebuilds when the async win record lands.
+                                      child: ListenableBuilder(
+                                        listenable: controller,
+                                        builder: (context, _) => _CompletionCard(
+                                          controller: controller,
+                                          hasNext: _nextEntry != null,
+                                          onNext: _openNext,
+                                          onReplay: controller.restart,
+                                          onLevels: () => Navigator.of(context).pop(),
+                                        ),
                                       ),
                                     ),
                                     GameStatus.trayFull => _Overlay(
@@ -339,14 +378,70 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
                                   },
                           ),
                         ),
+                        // "Restart this level?" over the board; the HUD's Back
+                        // closes the card (PopScope) instead of leaving, and
+                        // its Restart button is off meanwhile.
+                        Positioned(
+                          left: 0,
+                          right: 0,
+                          bottom: 0,
+                          top: -topInset,
+                          child: ValueListenableBuilder<bool>(
+                            valueListenable: _confirmingRestart,
+                            builder: (context, confirming, _) => !confirming
+                                ? const SizedBox.shrink()
+                                : _Overlay(
+                                    topInset: topInset,
+                                    child: _RestartConfirmCard(onRestart: _confirmRestart, onKeepPlaying: _keepPlaying),
+                                  ),
+                          ),
+                        ),
                       ],
                     ),
                   ),
                   Padding(
                     padding: EdgeInsets.fromLTRB(12, 4, 12, 10 + MediaQuery.paddingOf(context).bottom),
-                    child: _Hud(entry: widget.entry, controller: controller),
+                    child: _Hud(
+                      entry: widget.entry,
+                      controller: controller,
+                      confirmingRestart: _confirmingRestart,
+                      onRestart: _askRestart,
+                    ),
                   ),
                 ],
+              ),
+            ),
+            // Android back closes the restart card instead of leaving the game.
+            ValueListenableBuilder<bool>(
+              valueListenable: _confirmingRestart,
+              builder: (context, confirming, _) => PopScope(
+                canPop: !confirming,
+                onPopInvokedWithResult: (didPop, _) {
+                  if (!didPop) _keepPlaying();
+                },
+                child: const SizedBox.shrink(),
+              ),
+            ),
+            // The combo badge is centred on the tray frame's bottom border, above the board
+            // (a later sibling would hide it) and below the flights, shatters and
+            // popups. It takes no space (the board keeps its size: the 31-px face
+            // guarantee) and is hidden behind a result or restart card.
+            Positioned(
+              left: 0,
+              top: 0,
+              child: ListenableBuilder(
+                listenable: Listenable.merge([_resultShown, _confirmingRestart]),
+                builder: (context, _) => _resultShown.value || _confirmingRestart.value
+                    ? const SizedBox.shrink()
+                    : CompositedTransformFollower(
+                        link: _trayLink,
+                        showWhenUnlinked: false,
+                        targetAnchor: Alignment.bottomCenter,
+                        followerAnchor: Alignment.center,
+                        child: IgnorePointer(
+                          child: ComboBadge(controller: controller, reduceMotion: reduceMotion),
+                        ),
+                      ),
               ),
             ),
             // The board intro: tiles fly in from every side, mix and settle.
@@ -364,6 +459,17 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
             // Matched pairs striking and shattering; shards may fall over
             // the board. Ticks only while a shatter runs.
             Positioned.fill(child: TileShatterOverlay(controller: _shatters)),
+            // Score feedback; ticks only while a popup is alive.
+            Positioned.fill(
+              child: IgnorePointer(
+                child: ScorePopupOverlay(
+                  controller: controller,
+                  traySlotRect: (slot) => _trayKey.currentState?.slotRect(slot),
+                  tileRect: (id) => _boardKey.currentState?.tileFaceRect(id),
+                  reduceMotion: reduceMotion,
+                ),
+              ),
+            ),
           ],
         ),
       ),
@@ -374,10 +480,17 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
 /// Level name and live statistics. Only the statistics rebuild on moves,
 /// and only the clock rebuilds every second.
 class _Hud extends StatelessWidget {
-  const _Hud({required this.entry, required this.controller});
+  const _Hud({
+    required this.entry,
+    required this.controller,
+    required this.confirmingRestart,
+    required this.onRestart,
+  });
 
   final LevelManifestEntry entry;
   final GameController controller;
+  final ValueNotifier<bool> confirmingRestart;
+  final VoidCallback onRestart;
 
   @override
   Widget build(BuildContext context) => PremiumHudFrame(
@@ -406,7 +519,11 @@ class _Hud extends StatelessWidget {
                         return Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            PremiumStat(label: 'Moves', value: '${state.moveCount}'),
+                            TweenAnimationBuilder<int>(
+                              tween: IntTween(end: controller.score),
+                              duration: MediaQuery.disableAnimationsOf(context) ? Duration.zero : const Duration(milliseconds: 300),
+                              builder: (context, value, _) => PremiumStat(label: 'Score', value: formatScore(value)),
+                            ),
                             const PremiumDivider(),
                             PremiumStat(label: 'Pairs', value: '${state.matchedPairs}/${state.totalPairs}'),
                           ],
@@ -418,6 +535,21 @@ class _Hud extends StatelessWidget {
                     RepaintBoundary(child: _ClockStat(controller: controller)),
                   ],
                 ),
+              ),
+            ),
+            const SizedBox(width: 8),
+            // Only while playing: not during the intro, a result card or the
+            // restart card itself.
+            ListenableBuilder(
+              listenable: Listenable.merge([controller, confirmingRestart]),
+              builder: (context, _) => PremiumRoundIconButton(
+                icon: Icons.restart_alt_rounded,
+                label: 'Restart level',
+                tooltip: 'Restart',
+                iconSize: 28,
+                onPressed: controller.state.status == GameStatus.playing && !controller.introPlaying && !confirmingRestart.value
+                    ? onRestart
+                    : null,
               ),
             ),
           ],
@@ -592,7 +724,7 @@ class _CompletionCard extends StatelessWidget {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        const PremiumEmblem(icon: Icons.emoji_events_rounded),
+        const WinTrophy(),
         const SizedBox(height: 12),
         Text(
           'Level complete!',
@@ -600,16 +732,41 @@ class _CompletionCard extends StatelessWidget {
           style: displayText(28, weight: FontWeight.w600),
         ),
         const SizedBox(height: 10),
+        // Shrinks to fit a narrow card at large text sizes instead of overflowing.
+        FittedBox(
+          fit: BoxFit.scaleDown,
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.baseline,
+            textBaseline: TextBaseline.alphabetic,
+            children: [
+              Text('Score ', style: displayText(16, color: BrandGold.light, weight: FontWeight.w600)),
+              Text(formatScore(controller.score), style: displayText(30, color: BrandGold.warm, weight: FontWeight.w800)),
+            ],
+          ),
+        ),
+        if (controller.newBestScore)
+          Padding(
+            padding: const EdgeInsets.only(top: 4),
+            child: Text('New best!', style: displayText(14, color: BrandGold.light, weight: FontWeight.w700, spacing: 0.6)),
+          ),
+        const SizedBox(height: 8),
         Text(
-          '${controller.state.moveCount} moves  ·  ${formatDuration(controller.elapsed)}',
+          '${formatDuration(controller.elapsed)}  ·  ${controller.state.moveCount} moves',
           textAlign: TextAlign.center,
-          style: displayText(17, color: BrainTrainColors.ivory.withValues(alpha: 0.85), weight: FontWeight.w500),
+          style: displayText(16, color: BrainTrainColors.ivory.withValues(alpha: 0.85), weight: FontWeight.w500),
+        ),
+        const SizedBox(height: 4),
+        Text(
+          'Best combo ×${controller.scoring.bestCombo}  ·  Pairs ${controller.state.matchedPairs}/${controller.state.totalPairs}',
+          textAlign: TextAlign.center,
+          style: displayText(15, color: BrainTrainColors.ivory.withValues(alpha: 0.85), weight: FontWeight.w500),
         ),
         if (record != null)
           Padding(
             padding: const EdgeInsets.only(top: 6),
             child: Text(
-              'Best: ${record.bestMoves} moves · ${formatDuration(Duration(milliseconds: record.bestTimeMs))}',
+              'Best: ${record.bestScore == null ? '—' : formatScore(record.bestScore!)} · ${formatDuration(Duration(milliseconds: record.bestTimeMs))}',
               textAlign: TextAlign.center,
               style: displayText(14, color: BrandGold.base, weight: FontWeight.w500),
             ),
@@ -671,6 +828,44 @@ class _TrayFullCard extends StatelessWidget {
       PremiumButton(label: 'Revive', primary: true, expand: true, onPressed: onRevive),
       const SizedBox(height: 10),
       PremiumButton(label: 'Restart', expand: true, onPressed: onRestart),
+    ],
+  );
+}
+
+/// Asks before starting the level over: moves, tray and time are lost.
+class _RestartConfirmCard extends StatelessWidget {
+  const _RestartConfirmCard({required this.onRestart, required this.onKeepPlaying});
+
+  final VoidCallback onRestart;
+  final VoidCallback onKeepPlaying;
+
+  @override
+  Widget build(BuildContext context) => Column(
+    mainAxisSize: MainAxisSize.min,
+    children: [
+      const PremiumEmblem(icon: Icons.restart_alt_rounded),
+      const SizedBox(height: 12),
+      Text(
+        'Restart this level?',
+        textAlign: TextAlign.center,
+        style: displayText(28, weight: FontWeight.w600),
+      ),
+      const SizedBox(height: 10),
+      Text(
+        'Your score and time start over.',
+        textAlign: TextAlign.center,
+        style: displayText(
+          16,
+          color: BrainTrainColors.ivory.withValues(alpha: 0.85),
+          weight: FontWeight.w400,
+        ).copyWith(height: 1.35),
+      ),
+      const SizedBox(height: 14),
+      const PremiumDivider(horizontal: true),
+      const SizedBox(height: 16),
+      PremiumButton(label: 'Restart', primary: true, expand: true, onPressed: onRestart),
+      const SizedBox(height: 4),
+      PremiumButton(label: 'Keep playing', quiet: true, expand: true, onPressed: onKeepPlaying),
     ],
   );
 }

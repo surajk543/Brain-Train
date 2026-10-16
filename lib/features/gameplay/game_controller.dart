@@ -12,6 +12,8 @@ import '../../game_engine/geometry/board_geometry.dart';
 import '../../game_engine/models/level_definition.dart';
 import '../../game_engine/models/symbol_registry.dart';
 import '../../game_engine/rules/match_rules.dart';
+import '../../game_engine/scoring/score_keeper.dart';
+import '../../game_engine/scoring/scoring_rules.dart';
 import '../../game_engine/state/game_engine.dart';
 import '../../game_engine/state/game_state.dart';
 
@@ -79,6 +81,28 @@ class BoardReset extends BoardEvent {
   const BoardReset();
 }
 
+/// Score feedback for the screen (popups). The score itself is already
+/// updated when these arrive.
+sealed class ScoreEvent {
+  const ScoreEvent();
+}
+
+/// A matched pair scored [score]; it struck in tray slot [traySlot].
+class ScoreAwarded extends ScoreEvent {
+  const ScoreAwarded(this.score, this.traySlot);
+
+  final MatchScore score;
+  final int traySlot;
+}
+
+/// A blocked-tile tap on [tileId] cost [points] (never 0).
+class ScorePenalty extends ScoreEvent {
+  const ScorePenalty(this.tileId, this.points);
+
+  final String tileId;
+  final int points;
+}
+
 /// Glue between the rules engine and the UI: input, timer, autosave, wins,
 /// sounds and haptics.
 class GameController extends ChangeNotifier {
@@ -95,7 +119,11 @@ class GameController extends ChangeNotifier {
     this.matchFeedbackOnImpact = false,
     this.winSoundDelay = Duration.zero,
     this.playIntro = false,
-  }) : trayCapacity = trayCapacity ?? level.rules.trayCapacity {
+    Stopwatch? stopwatch,
+    ScoringRules scoringRules = const ScoringRules(),
+  }) : trayCapacity = trayCapacity ?? level.rules.trayCapacity,
+       _stopwatch = stopwatch ?? Stopwatch(),
+       scoring = ScoreKeeper(rules: scoringRules) {
     final rules = MatchRules(level: level, registry: registry);
     engine = GameEngine(level: level, rules: rules, geometry: BoardGeometry.build(level), trayCapacity: this.trayCapacity);
     if (resume != null && resume.levelId == level.levelId && resume.levelUrl == entry.ref.url) {
@@ -103,6 +131,7 @@ class GameController extends ChangeNotifier {
       // cleared when a game ends, so a resumed game is normally in play.)
       if (engine.replay(resume.history)) {
         _baseElapsed = Duration(milliseconds: resume.elapsedMs);
+        _restoreScoring(resume.scoring);
       } else {
         engine.restart();
       }
@@ -112,6 +141,28 @@ class GameController extends ChangeNotifier {
     } else if (engine.state.status == GameStatus.playing) {
       _stopwatch.start();
     }
+    // A resumed active combo needs its expiry timer too (no intro to start it).
+    _scheduleComboEnd();
+  }
+
+  /// The saved score, or (no or unreadable data) base points per matched
+  /// pair.
+  void _restoreScoring(Map<String, Object?>? json) {
+    if (json != null) {
+      try {
+        final saved = ScoreKeeper.fromJson(json, rules: scoring.rules);
+        if (saved.totalPairsMatched == state.matchedPairs) {
+          scoring
+            ..reset()
+            ..restoreFrom(saved);
+          return;
+        }
+        debugPrint('Saved score disagrees with the board, rebuilt from the board');
+      } on FormatException catch (error) {
+        debugPrint('Saved score unreadable, rebuilt from the board ($error)');
+      }
+    }
+    scoring.restoreLegacy(state.matchedPairs);
   }
 
   final LevelManifestEntry entry;
@@ -146,11 +197,22 @@ class GameController extends ChangeNotifier {
   final SoundEffects? sounds;
   late final GameEngine engine;
 
-  final Stopwatch _stopwatch = Stopwatch();
+  final Stopwatch _stopwatch;
   Duration _baseElapsed = Duration.zero;
   final StreamController<BoardEvent> _events = StreamController.broadcast();
   final Set<Timer> _pendingFeedback = {};
   int _pendingImpacts = 0;
+
+  /// The game's score and combo.
+  final ScoreKeeper scoring;
+  final StreamController<ScoreEvent> _scoreEvents = StreamController.broadcast();
+
+  /// Awards waiting for their pair's strike ([pairImpact]), oldest first.
+  final List<ScoreAwarded> _pendingAwards = [];
+  Timer? _comboTimer;
+
+  /// True when the last win beat this level's previous best score.
+  bool newBestScore = false;
   bool _introPlaying = false;
   int _introSerial = 0;
   int _stateVersion = 0;
@@ -160,6 +222,16 @@ class GameController extends ChangeNotifier {
   LevelRecord? winRecord;
 
   Stream<BoardEvent> get events => _events.stream;
+  Stream<ScoreEvent> get scoreEvents => _scoreEvents.stream;
+  int get score => scoring.score;
+
+  /// The running combo (0 once its window has passed).
+  int get activeCombo => scoring.isComboActive(elapsed) ? scoring.currentCombo : 0;
+
+  /// Time left in the combo window, or null when no combo runs.
+  Duration? get comboTimeLeft => activeCombo == 0 ? null : scoring.comboExpiresAt! - elapsed;
+
+  bool get clockRunning => _stopwatch.isRunning;
   GameState get state => engine.state;
   int get stateVersion => _stateVersion;
   Duration get elapsed => _baseElapsed + _stopwatch.elapsed;
@@ -178,6 +250,7 @@ class GameController extends ChangeNotifier {
     if (!_introPlaying) return;
     _introPlaying = false;
     if (state.status == GameStatus.playing) _stopwatch.start();
+    _scheduleComboEnd();
     _changed();
   }
 
@@ -195,6 +268,13 @@ class GameController extends ChangeNotifier {
         _vibrate(const Duration(milliseconds: 120));
         sounds?.play(Sfx.invalid);
         _emit(TileRejected(tileId));
+        final taken = scoring.onBlockedTap();
+        _scheduleComboEnd();
+        if (taken > 0) {
+          _emitScore(ScorePenalty(tileId, taken));
+          if (state.status == GameStatus.playing) _save();
+        }
+        if (!_disposed) notifyListeners();
         return;
       case TapOutcome.toTray:
         _tapFeedback();
@@ -210,6 +290,13 @@ class GameController extends ChangeNotifier {
             partnerSlot: result.partnerSlot!,
           ),
         );
+        final award = ScoreAwarded(scoring.onMatch(elapsed), result.partnerSlot!);
+        if (matchFeedbackOnImpact) {
+          _pendingAwards.add(award);
+        } else {
+          _emitScore(award);
+        }
+        _scheduleComboEnd();
         if (matchFeedbackOnImpact) {
           _pendingImpacts++;
         } else {
@@ -233,6 +320,7 @@ class GameController extends ChangeNotifier {
   /// [matchFeedbackOnImpact]): the match sound and haptic, or the win sound
   /// for the last pair of a won game.
   void pairImpact() {
+    if (_pendingAwards.isNotEmpty) _emitScore(_pendingAwards.removeAt(0));
     if (_pendingImpacts > 0) _pendingImpacts--;
     _matchFeedback(won: state.status == GameStatus.won && _pendingImpacts == 0);
   }
@@ -250,6 +338,9 @@ class GameController extends ChangeNotifier {
     final returned = engine.revive();
     if (returned == null) return false;
     _cancelFeedback();
+    scoring.endCombo();
+    _pendingAwards.clear();
+    _scheduleComboEnd();
     _stopwatch.start();
     _emit(TrayReturned(returned));
     // One soft sound as the tiles land.
@@ -263,6 +354,10 @@ class GameController extends ChangeNotifier {
     engine.restart();
     _cancelFeedback();
     _pendingImpacts = 0;
+    scoring.reset();
+    _pendingAwards.clear();
+    newBestScore = false;
+    _scheduleComboEnd();
     _baseElapsed = Duration.zero;
     // reset() alone keeps a running watch running.
     _stopwatch
@@ -277,14 +372,20 @@ class GameController extends ChangeNotifier {
     }
     winRecord = null;
     _emit(const BoardReset());
-    unawaited(progress.clearSavedGame());
+    unawaited(progress.clearSavedGame(levelId: level.levelId));
     _changed();
   }
 
-  void pauseClock() => _stopwatch.stop();
+  void pauseClock() {
+    _stopwatch.stop();
+    _scheduleComboEnd();
+    if (!_disposed) notifyListeners();
+  }
 
   void resumeClock() {
     if (state.status == GameStatus.playing && !_introPlaying) _stopwatch.start();
+    _scheduleComboEnd();
+    if (!_disposed) notifyListeners();
   }
 
   /// Every accepted tap: one subtle tap sound (a blocked tap plays only
@@ -322,10 +423,12 @@ class GameController extends ChangeNotifier {
     switch (state.status) {
       case GameStatus.won:
         _stopwatch.stop();
+        _scheduleComboEnd();
         unawaited(_recordWin());
       case GameStatus.trayFull:
         // Saved anyway: the game can still be revived after an app restart.
         _stopwatch.stop();
+        _scheduleComboEnd();
         _save();
       case GameStatus.playing:
         _save();
@@ -340,14 +443,40 @@ class GameController extends ChangeNotifier {
         history: state.history,
         moveCount: state.moveCount,
         elapsedMs: elapsed.inMilliseconds,
+        scoring: scoring.toJson(),
       ),
     ),
   );
 
   Future<void> _recordWin() async {
-    winRecord = await progress.recordWin(level.levelId, moves: state.moveCount, timeMs: elapsed.inMilliseconds);
-    await progress.clearSavedGame();
+    final previousBest = progress.completed()[level.levelId]?.bestScore;
+    winRecord = await progress.recordWin(
+      level.levelId,
+      moves: state.moveCount,
+      timeMs: elapsed.inMilliseconds,
+      score: scoring.score,
+      bestCombo: scoring.bestCombo,
+    );
+    newBestScore = previousBest != null && scoring.score > previousBest;
+    await progress.clearSavedGame(levelId: level.levelId);
     if (!_disposed) notifyListeners();
+  }
+
+  /// One timer for the moment the running combo's window closes (so the
+  /// badge goes away); none while the clock is stopped.
+  void _scheduleComboEnd() {
+    _comboTimer?.cancel();
+    _comboTimer = null;
+    final left = comboTimeLeft;
+    if (left == null || !_stopwatch.isRunning || _disposed) return;
+    _comboTimer = Timer(left + const Duration(milliseconds: 1), () {
+      _comboTimer = null;
+      if (!_disposed) notifyListeners();
+    });
+  }
+
+  void _emitScore(ScoreEvent event) {
+    if (!_scoreEvents.isClosed) _scoreEvents.add(event);
   }
 
   void _haptic(Future<void> Function() feedback) {
@@ -388,8 +517,10 @@ class GameController extends ChangeNotifier {
   void dispose() {
     _disposed = true;
     _cancelFeedback();
+    _comboTimer?.cancel();
     _stopwatch.stop();
     unawaited(_events.close());
+    unawaited(_scoreEvents.close());
     super.dispose();
   }
 }

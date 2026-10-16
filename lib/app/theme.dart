@@ -259,6 +259,12 @@ class LobbyTheme extends ThemeExtension<LobbyTheme> {
     required this.secondaryText,
     required this.secondaryIcon,
     required this.secondaryShadow,
+    required this.primaryGlassFill,
+    required this.primaryGlassRim,
+    required this.primaryGlassText,
+    required this.primaryGlassGlow,
+    required this.secondaryGlassFill,
+    required this.secondaryGlassRim,
     required this.footerText,
     required this.panelFill,
     required this.panelBorder,
@@ -367,6 +373,12 @@ class LobbyTheme extends ThemeExtension<LobbyTheme> {
     secondaryText: Color(0xFFFFF3D8),
     secondaryIcon: Color(0xFFF4CB72),
     secondaryShadow: Color(0x80000000),
+    primaryGlassFill: [Color(0xD6FFE9A8), Color(0xBAF8D56E), Color(0xC7EBB440)],
+    primaryGlassRim: [Color(0xFFFFF4CC), Color(0xCCF4CB72), Color(0x66C08A2C), Color(0xE6F8DA8C)],
+    primaryGlassText: Color(0xFF183D2D),
+    primaryGlassGlow: Color(0x80F4CB72),
+    secondaryGlassFill: [Color(0x30E8FFF4), Color(0x149FE0C2), Color(0x330A4433)],
+    secondaryGlassRim: [Color(0xCCFFF6DC), Color(0x99F4CB72), Color(0x33FFFFFF), Color(0x99F4CB72)],
     footerText: Color(0xB3FFF3D8),
     panelFill: Color(0xD908392F),
     panelBorder: Color(0x80F4CB72),
@@ -440,6 +452,19 @@ class LobbyTheme extends ThemeExtension<LobbyTheme> {
   final Color secondaryText;
   final Color secondaryIcon;
   final Color secondaryShadow;
+
+  /// Glass lobby buttons. Play: gold-tinted frost (fill top-left to
+  /// bottom-right), bright gold rim and dark-green label.
+  final List<Color> primaryGlassFill;
+  final List<Color> primaryGlassRim;
+  final Color primaryGlassText;
+
+  /// Warm halo around the Play glass pill.
+  final Color primaryGlassGlow;
+
+  /// Levels, Settings and the round buttons: clear frost with a fine gold rim.
+  final List<Color> secondaryGlassFill;
+  final List<Color> secondaryGlassRim;
 
   final Color footerText;
 

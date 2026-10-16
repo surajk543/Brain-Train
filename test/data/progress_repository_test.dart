@@ -64,8 +64,36 @@ void main() {
     SharedPreferences.setMockInitialValues({});
     final progress = await ProgressRepository.open();
     await progress.saveGame(game());
-    await progress.clearSavedGame();
+    await progress.clearSavedGame(levelId: 'level-0001');
     expect(progress.savedGame(), isNull);
+  });
+
+  SavedGame gameOn(String id) =>
+      SavedGame(levelId: id, levelUrl: 'levels/$id-v1.json', history: const ['a1'], elapsedMs: 100);
+
+  test('clearing for a level removes only that level\'s save', () async {
+    SharedPreferences.setMockInitialValues({});
+    final progress = await ProgressRepository.open();
+    await progress.saveGame(gameOn('level-0002'));
+    await progress.clearSavedGame(levelId: 'level-0001');
+    expect(progress.savedGame()!.levelId, 'level-0002', reason: 'another level\'s save is untouched');
+    await progress.clearSavedGame(levelId: 'level-0002');
+    expect(progress.savedGame(), isNull);
+  });
+
+  test('a completed level is never saved: no overwrite, no new save, no notification', () async {
+    SharedPreferences.setMockInitialValues({});
+    final progress = await ProgressRepository.open();
+    await progress.recordWin('level-0001', moves: 8, timeMs: 1000);
+    await progress.saveGame(gameOn('level-0002'));
+    var notified = 0;
+    progress.addListener(() => notified++);
+    await progress.saveGame(gameOn('level-0001'));
+    expect(progress.savedGame()!.levelId, 'level-0002');
+    expect(notified, 0);
+    await progress.clearSavedGame(levelId: 'level-0002');
+    await progress.saveGame(gameOn('level-0001'));
+    expect(progress.savedGame(), isNull, reason: 'a replay does not create a save');
   });
 
   test('replays keep the fastest time and the date of that fastest win', () async {
@@ -83,5 +111,43 @@ void main() {
     expect(faster.completedAt.isAfter(first.completedAt), isTrue);
     final reopened = await ProgressRepository.open();
     expect(reopened.completed()['level-0001']!.bestTimeMs, 60000);
+  });
+
+  test('recordWin keeps the best score and best combo separately; old records have none', () async {
+    SharedPreferences.setMockInitialValues({});
+    final progress = await ProgressRepository.open();
+    var record = await progress.recordWin('l1', moves: 20, timeMs: 60000);
+    expect(record.bestScore, isNull);
+    expect(record.bestCombo, isNull);
+    record = await progress.recordWin('l1', moves: 22, timeMs: 70000, score: 1200, bestCombo: 3);
+    expect((record.bestScore, record.bestCombo), (1200, 3));
+    record = await progress.recordWin('l1', moves: 25, timeMs: 90000, score: 900, bestCombo: 5);
+    expect((record.bestScore, record.bestCombo), (1200, 5), reason: 'a worse score never replaces a better one');
+    expect(record.bestTimeMs, 60000);
+    final reopened = (await ProgressRepository.open()).completed()['l1']!;
+    expect((reopened.bestScore, reopened.bestCombo), (1200, 5));
+  });
+
+  test('old JSON without score fields still reads', () async {
+    SharedPreferences.setMockInitialValues({
+      'progress.completed.v1': jsonEncode({
+        'l1': {'bestMoves': 10, 'bestTimeMs': 5000, 'completedAt': '2026-10-01T10:00:00.000'},
+      }),
+    });
+    final record = (await ProgressRepository.open()).completed()['l1']!;
+    expect(record.bestScore, isNull);
+    expect(record.bestMoves, 10);
+  });
+
+  test('SavedGame keeps its scoring map; old saves have none', () async {
+    SharedPreferences.setMockInitialValues({});
+    final progress = await ProgressRepository.open();
+    await progress.saveGame(
+      SavedGame(levelId: 'l9', levelUrl: 'u', history: const ['a'], elapsedMs: 1000, scoring: const {'score': 100}),
+    );
+    expect((await ProgressRepository.open()).savedGame()!.scoring, {'score': 100});
+    final old = SavedGame.fromJson({'levelId': 'l9', 'levelUrl': 'u', 'history': ['a'], 'moveCount': 1, 'elapsedMs': 1});
+    expect(old.scoring, isNull);
+    expect(old.toJson().containsKey('scoring'), isFalse);
   });
 }

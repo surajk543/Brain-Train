@@ -29,6 +29,7 @@ import 'package:brain_train/features/gameplay/widgets/board_intro.dart';
 import 'package:brain_train/features/gameplay/widgets/board_view.dart';
 import 'package:brain_train/features/gameplay/widgets/premium_chrome.dart';
 import 'package:brain_train/features/gameplay/widgets/tile_flight_overlay.dart';
+import 'package:brain_train/features/gameplay/widgets/score_popups.dart';
 import 'package:brain_train/features/gameplay/widgets/tray_view.dart';
 import 'package:brain_train/game_engine/geometry/tile_mask.dart';
 import 'package:brain_train/game_engine/models/level_definition.dart';
@@ -47,6 +48,7 @@ import 'package:http/testing.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../helpers.dart';
+import '../helpers/fake_stopwatch.dart';
 
 final String? _captureDir = Platform.environment['CAPTURE_DIR'];
 
@@ -97,10 +99,14 @@ Future<void> _loadFonts() async {
     'serif': [
       '/usr/share/fonts/truetype/noto/NotoSerif-Regular.ttf',
       '/usr/share/fonts/truetype/noto/NotoSerif-Bold.ttf',
+      '/System/Library/Fonts/Supplemental/Georgia.ttf',
+      '/System/Library/Fonts/Supplemental/Georgia Bold.ttf',
     ],
     'Roboto': [
       '/usr/share/fonts/truetype/noto/NotoSans-Regular.ttf',
       '/usr/share/fonts/truetype/noto/NotoSans-Bold.ttf',
+      '/System/Library/Fonts/Supplemental/Arial.ttf',
+      '/System/Library/Fonts/Supplemental/Arial Bold.ttf',
     ],
     'MaterialIcons': ['$flutterRoot/bin/cache/artifacts/material_fonts/MaterialIcons-Regular.otf'],
   };
@@ -171,6 +177,7 @@ Future<void> _pumpGame(
   SavedGame? resume,
   double textScale = 1,
   _IntroWait intro = _IntroWait.finish,
+  Stopwatch? stopwatch,
 }) async {
   tester.view
     ..physicalSize = Size(phone.width * phone.dpr, phone.height * phone.dpr)
@@ -189,7 +196,7 @@ Future<void> _pumpGame(
         child: MaterialApp(
           debugShowCheckedModeBanner: false,
           theme: buildBrainTrainTheme(Brightness.dark),
-          home: GameScreen(snapshot: services.content.snapshot, entry: entry, resume: resume),
+          home: GameScreen(snapshot: services.content.snapshot, entry: entry, resume: resume, stopwatch: stopwatch),
         ),
       ),
     ),
@@ -394,6 +401,74 @@ void main() {
     });
   }
 
+  testWidgets('a x3 combo badge floats on the tray edge, with a score popup', (tester) async {
+    await start(tester);
+    final clock = FakeStopwatch();
+    await _pumpGame(tester, services: services, entry: meadow, phone: _large, stopwatch: clock);
+    final game = _gameOf(tester);
+    final level = snapshot.levels[meadow.levelId]!;
+    final solution = MahjongSolver(
+      geometry: game.engine.geometry,
+      rules: game.engine.rules,
+    ).solve(TileMask.all(level.tiles.length)).solution;
+    for (final (a, b) in solution.take(3)) {
+      game
+        ..tapTile(level.tiles[a].tileId)
+        ..tapTile(level.tiles[b].tileId);
+      clock.advance(const Duration(milliseconds: 600));
+      await tester.pump(const Duration(milliseconds: 100));
+    }
+    expect(game.activeCombo, 3);
+    final popups = tester.state<ScorePopupOverlayState>(find.byType(ScorePopupOverlay));
+    for (var i = 0; i < 80 && popups.popupCount == 0; i++) {
+      await tester.runAsync(() => Future<void>.delayed(const Duration(milliseconds: 20)));
+      await tester.pump(const Duration(milliseconds: 50));
+    }
+    await tester.pump(const Duration(milliseconds: 250));
+    expect(find.text('COMBO ×3 · Best ×3'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+    await _capture(tester, 'gameplay_night_411x914_combo_popup', _large.dpr);
+    for (var i = 0; i < 40; i++) {
+      await tester.runAsync(() => Future<void>.delayed(const Duration(milliseconds: 20)));
+      await tester.pump(const Duration(milliseconds: 100));
+    }
+    expect(popups.popupCount, 0);
+    expect(find.text('COMBO ×3 · Best ×3'), findsOneWidget, reason: 'the fake clock keeps the window open');
+    await _capture(tester, 'gameplay_night_411x914_combo', _large.dpr);
+    await _leave(tester);
+  });
+
+  testWidgets('a x2 combo on a hard board (5 wells) at 360x640: Best shows above the tiles', (tester) async {
+    await start(tester);
+    final clock = FakeStopwatch();
+    final entry = snapshot.playableEntries.firstWhere((e) => e.difficulty == 'hard');
+    final level = snapshot.levels[entry.levelId]!;
+    await _pumpGame(tester, services: services, entry: entry, phone: _small, stopwatch: clock);
+    final game = _gameOf(tester);
+    final solution = MahjongSolver(
+      geometry: game.engine.geometry,
+      rules: game.engine.rules,
+    ).solve(TileMask.all(level.tiles.length)).solution;
+    for (final (a, b) in solution.take(2)) {
+      game
+        ..tapTile(level.tiles[a].tileId)
+        ..tapTile(level.tiles[b].tileId);
+      clock.advance(const Duration(milliseconds: 600));
+      await tester.pump(const Duration(milliseconds: 100));
+    }
+    for (var i = 0; i < 60; i++) {
+      await tester.runAsync(() => Future<void>.delayed(const Duration(milliseconds: 20)));
+      await tester.pump(const Duration(milliseconds: 100));
+    }
+    expect(game.activeCombo, 2);
+    // During a combo, Best is inline in the pill (no separate chip).
+    expect(find.text('COMBO ×2 · Best ×2'), findsOneWidget);
+    expect(find.text('Best ×2'), findsNothing);
+    expect(tester.takeException(), isNull);
+    await _capture(tester, 'gameplay_night_360x640_hard_combo', _small.dpr);
+    await _leave(tester);
+  });
+
   testWidgets('a tapped tile flies from the board into the tray', (tester) async {
     await start(tester);
     final saved = _progress(snapshot, meadow, pairs: 2);
@@ -419,7 +494,7 @@ void main() {
     expect(tester.takeException(), isNull);
     expect(find.bySemanticsLabel('Tray, 1 of 4 tiles'), findsOneWidget);
     expect(find.text('2/${pairsOf(meadow)}'), findsOneWidget);
-    expect(find.text('5'), findsOneWidget, reason: 'one move per tap');
+    expect(_gameOf(tester).state.moveCount, 5, reason: 'one move per tap (the HUD shows the score now)');
     await _capture(tester, 'gameplay_night_411x914_tray1', _large.dpr);
     await _leave(tester);
   });
@@ -544,12 +619,36 @@ void main() {
     );
     expect(find.text('3/${pairsOf(meadow)}'), findsOneWidget);
     expect(find.text('Restart'), findsNothing);
-    expect(find.bySemanticsLabel('Restart level'), findsNothing);
+    // An icon only (no text label) opens the confirm card; no card at rest.
+    expect(find.byTooltip('Restart'), findsOneWidget);
     expect(find.text('Restart level?'), findsNothing);
     _expectBottomHud(tester, _large);
     expect(tester.takeException(), isNull);
     await _leave(tester);
   });
+
+  for (final phone in [_large, _small]) {
+    testWidgets('restart confirm card ${phone.name}', (tester) async {
+      await start(tester);
+      await _pumpGame(
+        tester,
+        services: services,
+        entry: meadow,
+        phone: phone,
+        resume: _progress(snapshot, meadow, pairs: 3),
+      );
+      await tester.tap(find.byTooltip('Restart'));
+      await tester.pump();
+      await _settle(tester);
+      expect(find.text('Restart this level?'), findsOneWidget);
+      expect(find.text('Your score and time start over.'), findsOneWidget);
+      expect(find.text('Keep playing'), findsOneWidget);
+      _expectBottomHud(tester, phone);
+      expect(tester.takeException(), isNull);
+      await _capture(tester, 'gameplay_night_${phone.name}_restart_confirm', phone.dpr);
+      await _leave(tester);
+    });
+  }
 
   testWidgets('win overlay', (tester) async {
     await start(tester);
@@ -631,7 +730,7 @@ void main() {
       expect(_inTray(id), findsNothing);
     }
     expect(find.bySemanticsLabel('Tray, 0 of 4 tiles'), findsOneWidget);
-    expect(find.text('4'), findsOneWidget, reason: 'a revive is not a move');
+    expect(_gameOf(tester).state.moveCount, 4, reason: 'a revive is not a move');
     expect(tester.takeException(), isNull);
     await _capture(tester, 'gameplay_night_411x914_revived', _large.dpr);
     // Play goes on: a returned tile can be tapped again.

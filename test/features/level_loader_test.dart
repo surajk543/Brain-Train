@@ -4,6 +4,7 @@ import 'package:brain_train/app/app_services.dart';
 import 'package:brain_train/app/theme.dart';
 import 'package:brain_train/data/progress_repository.dart';
 import 'package:brain_train/data/settings_repository.dart';
+import 'package:brain_train/features/gameplay/game_controller.dart';
 import 'package:brain_train/features/gameplay/game_screen.dart';
 import 'package:brain_train/features/home/home_screen.dart';
 import 'package:brain_train/features/levels/level_loader.dart';
@@ -191,5 +192,66 @@ void main() {
     expect(find.text('7 of 12 won'), findsOneWidget);
     expect(find.text('Glade 7'), findsOneWidget, reason: 'a completed level not on this device');
     await _leave(tester);
+  });
+
+  group('resume when opened without one (the win card\'s "Next level")', () {
+    Future<SavedGame> saveOneTap(AppServices services, int order) async {
+      final snapshot = services.content.snapshot;
+      final entry = snapshot.manifest.entry(content.levelId(order))!;
+      final probe = GameController(
+        entry: entry,
+        level: snapshot.levels[entry.levelId]!,
+        registry: snapshot.registry,
+        progress: services.progress,
+        settings: services.settings,
+      );
+      final tile = probe.state.free.first;
+      probe.dispose();
+      final saved = SavedGame(
+        levelId: entry.levelId,
+        levelUrl: entry.ref.url,
+        history: [tile],
+        moveCount: 1,
+        elapsedMs: 12345,
+      );
+      await services.progress.saveGame(saved);
+      return saved;
+    }
+
+    testWidgets('the highest level resumes its save', (tester) async {
+      final net = _Net(content)..online = false;
+      late AppServices services;
+      late SavedGame saved;
+      await tester.runAsync(() async {
+        services = await _services(net, setup: (p) => p.recordWin(content.levelId(1), moves: 8, timeMs: 1));
+        saved = await saveOneTap(services, 2);
+      });
+      final entry = services.content.snapshot.manifest.entry(content.levelId(2))!;
+      await _pump(tester, services, LevelLoaderScreen(entry: entry));
+      final resume = tester.widget<GameScreen>(find.byType(GameScreen)).resume;
+      expect(resume, isNotNull);
+      expect(resume!.levelId, saved.levelId);
+      expect(resume.history, saved.history);
+      expect(resume.moveCount, 1);
+      expect(resume.elapsedMs, 12345);
+      await _leave(tester);
+    });
+
+    testWidgets('a replay of a completed level starts fresh and keeps the highest save', (tester) async {
+      final net = _Net(content);
+      late AppServices services;
+      late SavedGame saved;
+      await tester.runAsync(() async {
+        services = await _services(net, setup: (p) => p.recordWin(content.levelId(1), moves: 8, timeMs: 1));
+        saved = await saveOneTap(services, 2);
+      });
+      final entry = services.content.snapshot.manifest.entry(content.levelId(1))!;
+      await _pump(tester, services, LevelLoaderScreen(entry: entry));
+      await tester.runAsync(() => Future<void>.delayed(const Duration(milliseconds: 200)));
+      await tester.pump();
+      expect(tester.widget<GameScreen>(find.byType(GameScreen)).resume, isNull);
+      expect(services.progress.savedGame()!.history, saved.history);
+      await _leave(tester);
+    });
   });
 }

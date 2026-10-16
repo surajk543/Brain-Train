@@ -407,6 +407,61 @@ class _SprigPainter extends CustomPainter {
   bool shouldRepaint(_SprigPainter old) => false;
 }
 
+/// Circular outlined icon button (48 px): the HUD's Back and Restart.
+/// [onPressed] null = disabled (dimmed, not tappable).
+class PremiumRoundIconButton extends StatelessWidget {
+  const PremiumRoundIconButton({super.key, required this.icon, required this.label, required this.onPressed, this.tooltip, this.iconSize = 32});
+
+  final IconData icon;
+
+  /// The accessibility label.
+  final String label;
+
+  /// Long-press text; [label] when null.
+  final String? tooltip;
+  final double iconSize;
+  final VoidCallback? onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    final enabled = onPressed != null;
+    // A dimmer colour rather than an Opacity layer.
+    final ink = BrainTrainColors.ivory.withValues(alpha: enabled ? 1 : 0.35);
+    return Semantics(
+      button: true,
+      enabled: enabled,
+      label: label,
+      excludeSemantics: true,
+      onTap: onPressed,
+      child: Tooltip(
+        message: tooltip ?? label,
+        excludeFromSemantics: true,
+        child: Material(
+          type: MaterialType.transparency,
+          shape: const CircleBorder(),
+          clipBehavior: Clip.antiAlias,
+          child: InkWell(
+            onTap: onPressed,
+            customBorder: const CircleBorder(),
+            child: Container(
+              width: 48,
+              height: 48,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                border: Border.all(color: BrainTrainColors.ivory.withValues(alpha: enabled ? 0.7 : 0.25), width: 1.3),
+                gradient: RadialGradient(
+                  colors: [Colors.white.withValues(alpha: 0.1), Colors.white.withValues(alpha: 0.02)],
+                ),
+              ),
+              child: Icon(icon, color: ink, size: iconSize),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 /// Circular outlined back button.
 class PremiumBackButton extends StatelessWidget {
   const PremiumBackButton({super.key, required this.onPressed});
@@ -414,37 +469,8 @@ class PremiumBackButton extends StatelessWidget {
   final VoidCallback onPressed;
 
   @override
-  Widget build(BuildContext context) => Semantics(
-    button: true,
-    label: 'Back',
-    excludeSemantics: true,
-    onTap: onPressed,
-    child: Tooltip(
-      message: 'Back',
-      excludeFromSemantics: true,
-      child: Material(
-        type: MaterialType.transparency,
-        shape: const CircleBorder(),
-        clipBehavior: Clip.antiAlias,
-        child: InkWell(
-          onTap: onPressed,
-          customBorder: const CircleBorder(),
-          child: Container(
-            width: 48,
-            height: 48,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              border: Border.all(color: BrainTrainColors.ivory.withValues(alpha: 0.7), width: 1.3),
-              gradient: RadialGradient(
-                colors: [Colors.white.withValues(alpha: 0.1), Colors.white.withValues(alpha: 0.02)],
-              ),
-            ),
-            child: const Icon(Icons.chevron_left_rounded, color: BrainTrainColors.ivory, size: 32),
-          ),
-        ),
-      ),
-    ),
-  );
+  Widget build(BuildContext context) =>
+      PremiumRoundIconButton(icon: Icons.chevron_left_rounded, label: 'Back', onPressed: onPressed);
 }
 
 /// Serif text button in three weights: gold-filled [primary], gold-outlined
