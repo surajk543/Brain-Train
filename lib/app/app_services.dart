@@ -43,9 +43,16 @@ import 'sound_effects.dart';
 /// After the initial (offline) load it checks for a new manifest and keeps
 /// the level window ready, in the background: at start, after every win (the
 /// window moves on), when the app comes back to the foreground, and, while
-/// the network is unreachable, on a backoff timer until it is back.
+/// any window level is still missing (offline, a server error, a rate limit),
+/// every few seconds ([retryDelays]) until all of them are on the device.
+/// Retries pause while the app is in the background.
 class ContentController extends ChangeNotifier with WidgetsBindingObserver {
-  ContentController(this.coordinator, {ProgressRepository? progress, this.autoRetry = true}) {
+  ContentController(
+    this.coordinator, {
+    ProgressRepository? progress,
+    this.autoRetry = true,
+    this.retryDelays = defaultRetryDelays,
+  }) {
     _subscriptions = [
       coordinator.snapshots.listen((_) => notifyListeners()),
       coordinator.statuses.listen((_) => notifyListeners()),
@@ -56,15 +63,18 @@ class ContentController extends ChangeNotifier with WidgetsBindingObserver {
 
   final ContentCoordinator coordinator;
 
-  /// Retry on a timer while offline (off in tests).
+  /// Retry on a timer while the window is incomplete (off in tests).
   final bool autoRetry;
 
-  static const List<Duration> retryDelays = [
+  /// Waits between window retries; the last one repeats until every window
+  /// level is ready.
+  final List<Duration> retryDelays;
+
+  static const List<Duration> defaultRetryDelays = [
+    Duration(seconds: 5),
     Duration(seconds: 10),
+    Duration(seconds: 15),
     Duration(seconds: 30),
-    Duration(minutes: 1),
-    Duration(minutes: 2),
-    Duration(minutes: 5),
   ];
 
   late final List<StreamSubscription<Object?>> _subscriptions;
@@ -117,9 +127,10 @@ class ContentController extends ChangeNotifier with WidgetsBindingObserver {
 
   Future<void> _window({bool offlineAlready = false}) async {
     final result = await coordinator.maintainWindow();
-    if (offlineAlready || result.offline) {
+    if (offlineAlready || result.offline || result.ready < result.window.length) {
       _scheduleRetry();
     } else {
+      _retry?.cancel();
       _retries = 0;
     }
   }
@@ -146,6 +157,9 @@ class ContentController extends ChangeNotifier with WidgetsBindingObserver {
     if (state == AppLifecycleState.resumed) {
       _retry?.cancel();
       unawaited(topUp());
+    } else if (state == AppLifecycleState.paused) {
+      // No downloads in the background; resuming tops up at once.
+      _retry?.cancel();
     }
   }
 
