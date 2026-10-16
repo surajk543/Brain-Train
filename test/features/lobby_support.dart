@@ -27,16 +27,19 @@ import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
 
 import '../helpers.dart';
+import 'package:brain_train/app/tablet_scale.dart';
 
-/// Services on the bundled content with the network unreachable.
+/// Services on the bundled content with the network unreachable (or
+/// answered by [client]).
 Future<AppServices> testServices({
   PlayGamesController? playGames,
   RewardedAdsController? ads,
   AppUpdateController? updates,
+  http.Client? client,
 }) async {
   final config = ContentConfig(baseUrl: Uri.parse('https://content.test/'), allowedHosts: const {'content.test'});
   final offline = MockClient((r) async => throw http.ClientException('offline', r.url));
-  final fetcher = ContentFetcher(client: offline, config: config, delay: (_) async {});
+  final fetcher = ContentFetcher(client: client ?? offline, config: config, delay: (_) async {});
   final cache = ContentCache(MemoryContentStore());
   final resolver = RemoteAssetResolver(config);
   final content = ContentController(
@@ -59,11 +62,26 @@ Future<AppServices> testServices({
   );
 }
 
+/// A content host that serves the starter pack (its manifest is the live
+/// one), so the content is up to date and the lobby shows no notice; other
+/// files (levels 6+) are out of reach, as if offline.
+final MockClient starterHost = MockClient((request) async {
+  final file = File('content/starter/${request.url.path.replaceFirst('/brain-train/', '')}');
+  if (!file.existsSync()) throw http.ClientException('offline', request.url);
+  return http.Response.bytes(file.readAsBytesSync(), 200);
+});
+
 typedef Phone = ({String name, double width, double height, double dpr, double top, double bottom});
 
 const Phone largePhone = (name: '411x914', width: 411, height: 914, dpr: 2.625, top: 24, bottom: 16);
 const Phone smallPhone = (name: '360x640', width: 360, height: 640, dpr: 2, top: 24, bottom: 0);
 const Phone tallPhone = (name: '430x932', width: 430, height: 932, dpr: 3, top: 47, bottom: 34);
+
+/// Store screenshot sizes, portrait: Google Play phone (1080 x 1920 px),
+/// App Store iPhone 6.9" (1320 x 2868 px) and iPad 13" (2064 x 2752 px).
+const Phone playPhone = (name: 'play-phone', width: 360, height: 640, dpr: 3, top: 24, bottom: 0);
+const Phone iphone69 = (name: 'iphone-6.9', width: 440, height: 956, dpr: 3, top: 62, bottom: 34);
+const Phone ipad13 = (name: 'ipad-13', width: 1032, height: 1376, dpr: 2, top: 24, bottom: 20);
 
 /// Real glyphs instead of test boxes, when the system fonts exist.
 Future<void> loadCaptureFonts() async {
@@ -114,7 +132,13 @@ Future<void> pumpLobby(
       key: lobbyBoundary,
       child: AppScope(
         services: services,
-        child: MaterialApp(debugShowCheckedModeBanner: false, theme: buildBrainTrainTheme(), home: home),
+        child: MaterialApp(
+          debugShowCheckedModeBanner: false,
+          theme: buildBrainTrainTheme(),
+          // Like the app: tablets scale the UI from a 600-px canvas.
+          builder: (context, child) => TabletScale(child: child!),
+          home: home,
+        ),
       ),
     ),
   );
@@ -131,9 +155,10 @@ Future<void> settleLobby(WidgetTester tester) async {
   await tester.pump(const Duration(milliseconds: 400));
 }
 
-/// Writes the current frame to `$CAPTURE_DIR/<name>.png` when set.
-Future<void> captureLobby(WidgetTester tester, String name, double dpr) async {
-  final dir = Platform.environment['CAPTURE_DIR'];
+/// Writes the current frame to `$CAPTURE_DIR/<name>.png` when set (or to
+/// `<dir>/<name>.png` when [dir] is given).
+Future<void> captureLobby(WidgetTester tester, String name, double dpr, {String? dir}) async {
+  dir ??= Platform.environment['CAPTURE_DIR'];
   if (dir == null) return;
   await tester.runAsync(() async {
     final boundary = lobbyBoundary.currentContext!.findRenderObject()! as RenderRepaintBoundary;

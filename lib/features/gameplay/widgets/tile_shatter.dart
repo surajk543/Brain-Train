@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 
 import '../../../app/brand.dart';
+import '../../../app/tablet_scale.dart';
 
 /// The matched tiles slide into each other (a short wind-up, then faster).
 const Duration kStrikeDuration = Duration(milliseconds: 180);
@@ -367,7 +368,7 @@ class _TileShatterOverlayState extends State<TileShatterOverlay> with SingleTick
 
   Offset _origin() {
     final box = context.findRenderObject() as RenderBox?;
-    return box == null || !box.hasSize ? Offset.zero : box.localToGlobal(Offset.zero);
+    return box == null || !box.hasSize ? Offset.zero : box.localToGlobal(Offset.zero, ancestor: TabletScale.canvasAbove(box));
   }
 
   @override

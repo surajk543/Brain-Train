@@ -25,7 +25,6 @@ import 'package:brain_train/data/progress_repository.dart';
 import 'package:brain_train/data/settings_repository.dart';
 import 'package:brain_train/features/common/flowing_leaves.dart';
 import 'package:brain_train/features/gameplay/game_screen.dart';
-import 'package:brain_train/features/gameplay/game_controller.dart';
 import 'package:brain_train/features/gameplay/widgets/board_intro.dart';
 import 'package:brain_train/features/gameplay/widgets/board_view.dart';
 import 'package:brain_train/features/gameplay/widgets/premium_chrome.dart';
@@ -33,10 +32,6 @@ import 'package:brain_train/features/gameplay/widgets/tile_flight_overlay.dart';
 import 'package:brain_train/features/gameplay/widgets/score_popups.dart';
 import 'package:brain_train/features/gameplay/widgets/tray_view.dart';
 import 'package:brain_train/game_engine/geometry/tile_mask.dart';
-import 'package:brain_train/game_engine/models/level_definition.dart';
-import 'package:brain_train/game_engine/models/symbol_registry.dart';
-import 'package:brain_train/game_engine/rules/match_rules.dart';
-import 'package:brain_train/game_engine/state/game_engine.dart';
 import 'package:brain_train/game_engine/validation/solver.dart';
 import 'package:brain_train/platform/rewarded_ads.dart';
 import 'package:brain_train/rendering/symbol_art.dart';
@@ -52,6 +47,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../helpers.dart';
 import '../helpers/fake_stopwatch.dart';
 import '../platform/fake_rewarded_ads.dart';
+import 'gameplay_support.dart';
+import 'package:brain_train/app/tablet_scale.dart';
 
 final String? _captureDir = Platform.environment['CAPTURE_DIR'];
 
@@ -125,52 +122,6 @@ Future<void> _loadFonts() async {
   }
 }
 
-GameEngine _engine(LevelDefinition level, SymbolRegistry registry) => GameEngine(
-  level: level,
-  rules: MatchRules(level: level, registry: registry),
-);
-
-/// The first [pairs] pairs of a solver solution, as a resumable game (each
-/// pair played as two taps through the tray).
-SavedGame _progress(ContentSnapshot snapshot, LevelManifestEntry entry, {int? pairs, int elapsedMs = 17000}) {
-  final level = snapshot.levels[entry.levelId]!;
-  final engine = _engine(level, snapshot.registry);
-  final solution = MahjongSolver(
-    geometry: engine.geometry,
-    rules: engine.rules,
-  ).solve(TileMask.all(level.tiles.length)).solution;
-  final history = [
-    for (final (a, b) in solution.take(pairs ?? solution.length)) ...[level.tiles[a].tileId, level.tiles[b].tileId],
-  ];
-  return SavedGame(
-    levelId: level.levelId,
-    levelUrl: entry.ref.url,
-    history: history,
-    moveCount: history.length,
-    elapsedMs: elapsedMs,
-  );
-}
-
-/// A line of play that leaves the tray one tile short of full (three of
-/// four, four of five), plus a free board tile that fills it without a match.
-(SavedGame, String) _nearlyFull(ContentSnapshot snapshot, LevelManifestEntry entry) {
-  final level = snapshot.levels[entry.levelId]!;
-  final engine = _engine(level, snapshot.registry);
-  String unmatched() => (engine.state.free.toList()..sort()).firstWhere(
-    (id) => !engine.state.tray.any((t) => engine.rules.matches(engine.indexOf(t)!, engine.indexOf(id)!)),
-  );
-  while (engine.state.tray.length < engine.trayCapacity - 1) {
-    engine.tap(unmatched());
-  }
-  final save = SavedGame(
-    levelId: level.levelId,
-    levelUrl: entry.ref.url,
-    history: engine.state.history,
-    elapsedMs: 94000,
-  );
-  return (save, unmatched());
-}
-
 final _boundary = GlobalKey();
 
 Future<void> _pumpGame(
@@ -200,6 +151,7 @@ Future<void> _pumpGame(
         child: MaterialApp(
           debugShowCheckedModeBanner: false,
           theme: buildBrainTrainTheme(Brightness.dark),
+          builder: (context, child) => TabletScale(child: child!),
           home: GameScreen(snapshot: services.content.snapshot, entry: entry, resume: resume, stopwatch: stopwatch),
         ),
       ),
@@ -207,7 +159,7 @@ Future<void> _pumpGame(
   );
   if (intro == _IntroWait.start) {
     // Stop as soon as the intro's first frame is drawn.
-    for (var i = 0; i < 80 && !_introOf(tester).isRunning; i++) {
+    for (var i = 0; i < 80 && !introOf(tester).isRunning; i++) {
       await tester.runAsync(() => Future<void>.delayed(const Duration(milliseconds: 60)));
       await tester.pump(const Duration(milliseconds: 16));
     }
@@ -215,7 +167,7 @@ Future<void> _pumpGame(
     return;
   }
   await _settle(tester);
-  if (intro == _IntroWait.finish) await _finishIntro(tester);
+  if (intro == _IntroWait.finish) await finishIntro(tester);
 }
 
 enum _IntroWait {
@@ -229,27 +181,9 @@ enum _IntroWait {
   none,
 }
 
-/// The game screen's board intro.
-BoardIntroController _introOf(WidgetTester tester) =>
-    tester.widget<BoardIntroOverlay>(find.byType(BoardIntroOverlay)).controller;
-
-/// The game screen's controller (through its board).
-GameController _gameOf(WidgetTester tester) => tester.widget<BoardView>(find.byType(BoardView)).controller;
-
-/// Pumps until the board intro has handed over to the board (big boards
-/// may still be decoding their art, which needs real time).
-Future<void> _finishIntro(WidgetTester tester) async {
-  for (var i = 0; i < 80 && (_introOf(tester).isRunning || _gameOf(tester).introPlaying); i++) {
-    if (!_introOf(tester).isRunning) await tester.runAsync(() => Future<void>.delayed(const Duration(milliseconds: 60)));
-    await tester.pump(const Duration(milliseconds: 100));
-  }
-  expect(_gameOf(tester).introPlaying, isFalse, reason: 'the intro handed over');
-  await tester.pump();
-}
-
 /// Pumps the running intro to [seconds] after its first frame.
 Future<void> _introTo(WidgetTester tester, double seconds) async {
-  final intro = _introOf(tester).intro;
+  final intro = introOf(tester).intro;
   if (intro == null) return;
   final step = ((seconds - intro.seconds) * 1000000).round();
   if (step > 0) await tester.pump(Duration(microseconds: step));
@@ -333,22 +267,6 @@ void _expectBottomHud(WidgetTester tester, _Phone phone) {
   expect(tester.getCenter(find.byTooltip('Back')).dy, greaterThan(hud.top));
 }
 
-/// Taps [tileId] on the board of a game resumed from [history].
-Future<void> _tapTile(
-  WidgetTester tester,
-  ContentSnapshot snapshot,
-  LevelManifestEntry entry,
-  List<String> history,
-  String tileId,
-) async {
-  final level = snapshot.levels[entry.levelId]!;
-  final engine = _engine(level, snapshot.registry)..replay(history);
-  final board = tester.getRect(find.byType(BoardView));
-  final projection = boardProjectionFor(level, engine.geometry, TileStyle.forTileSet(level.tileSetId), board.size);
-  final face = projection.faceRect(engine.indexOf(tileId)!);
-  await tester.tapAt(board.topLeft + Offset(face.centerX, face.centerY));
-}
-
 /// The tile [tileId] is drawn in the tray.
 Finder _inTray(String tileId) => find.descendant(of: find.byType(TrayView), matching: find.byKey(ValueKey(tileId)));
 
@@ -387,7 +305,7 @@ void main() {
         services: services,
         entry: meadow,
         phone: phone,
-        resume: _progress(snapshot, meadow, pairs: 2),
+        resume: solvedSave(snapshot, meadow, pairs: 2),
       );
       expect(tester.takeException(), isNull);
       expect(find.text(meadow.title), findsOneWidget);
@@ -409,7 +327,7 @@ void main() {
     await start(tester);
     final clock = FakeStopwatch();
     await _pumpGame(tester, services: services, entry: meadow, phone: _large, stopwatch: clock);
-    final game = _gameOf(tester);
+    final game = gameOf(tester);
     final level = snapshot.levels[meadow.levelId]!;
     final solution = MahjongSolver(
       geometry: game.engine.geometry,
@@ -448,7 +366,7 @@ void main() {
     final entry = snapshot.playableEntries.firstWhere((e) => e.trayCapacity == 5 && e.difficulty == '2');
     final level = snapshot.levels[entry.levelId]!;
     await _pumpGame(tester, services: services, entry: entry, phone: _small, stopwatch: clock);
-    final game = _gameOf(tester);
+    final game = gameOf(tester);
     final solution = MahjongSolver(
       geometry: game.engine.geometry,
       rules: game.engine.rules,
@@ -475,14 +393,14 @@ void main() {
 
   testWidgets('a tapped tile flies from the board into the tray', (tester) async {
     await start(tester);
-    final saved = _progress(snapshot, meadow, pairs: 2);
+    final saved = solvedSave(snapshot, meadow, pairs: 2);
     await _pumpGame(tester, services: services, entry: meadow, phone: _large, resume: saved);
     final level = snapshot.levels[meadow.levelId]!;
-    final engine = _engine(level, snapshot.registry)..replay(saved.history);
+    final engine = engineFor(level, snapshot.registry)..replay(saved.history);
     // The free tile drawn last (topmost) is the clearest to tap.
     final index = engine.geometry.drawOrder.lastWhere((i) => engine.isRemaining(i) && engine.isFreeIndex(i));
     final id = level.tiles[index].tileId;
-    await _tapTile(tester, snapshot, meadow, saved.history, id);
+    await tapBoardTile(tester, snapshot, meadow, saved.history, id);
     await tester.pump();
     expect(
       find.bySemanticsLabel('Mahjong board, ${engine.state.remaining.length - 1} tiles remaining'),
@@ -498,7 +416,7 @@ void main() {
     expect(tester.takeException(), isNull);
     expect(find.bySemanticsLabel('Tray, 1 of 4 tiles'), findsOneWidget);
     expect(find.text('2/${pairsOf(meadow)}'), findsOneWidget);
-    expect(_gameOf(tester).state.moveCount, 5, reason: 'one move per tap (the HUD shows the score now)');
+    expect(gameOf(tester).state.moveCount, 5, reason: 'one move per tap (the HUD shows the score now)');
     await _capture(tester, 'gameplay_night_411x914_tray1', _large.dpr);
     await _leave(tester);
   });
@@ -506,20 +424,20 @@ void main() {
   for (final phone in [_large, _small]) {
     testWidgets('a matching pair strikes and shatters in the tray ${phone.name}', (tester) async {
       await start(tester);
-      final saved = _progress(snapshot, meadow, pairs: 2);
+      final saved = solvedSave(snapshot, meadow, pairs: 2);
       await _pumpGame(tester, services: services, entry: meadow, phone: phone, resume: saved);
       final level = snapshot.levels[meadow.levelId]!;
-      final engine = _engine(level, snapshot.registry);
+      final engine = engineFor(level, snapshot.registry);
       final (a, b) = MahjongSolver(
         geometry: engine.geometry,
         rules: engine.rules,
       ).solve(TileMask.all(level.tiles.length)).solution[2];
       final first = level.tiles[a].tileId, second = level.tiles[b].tileId;
-      await _tapTile(tester, snapshot, meadow, saved.history, first);
+      await tapBoardTile(tester, snapshot, meadow, saved.history, first);
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 400));
       expect(_inTray(first), findsOneWidget);
-      await _tapTile(tester, snapshot, meadow, [...saved.history, first], second);
+      await tapBoardTile(tester, snapshot, meadow, [...saved.history, first], second);
       await tester.pump();
       // The second tile lands next to its partner; then the strike begins.
       await tester.pump(kTileFlightDuration);
@@ -544,10 +462,10 @@ void main() {
 
   testWidgets('taps during a strike keep working; the tray catches up', (tester) async {
     await start(tester);
-    final saved = _progress(snapshot, meadow, pairs: 2);
+    final saved = solvedSave(snapshot, meadow, pairs: 2);
     await _pumpGame(tester, services: services, entry: meadow, phone: _large, resume: saved);
     final level = snapshot.levels[meadow.levelId]!;
-    final engine = _engine(level, snapshot.registry)..replay(saved.history);
+    final engine = engineFor(level, snapshot.registry)..replay(saved.history);
     final (a, b) = MahjongSolver(
       geometry: engine.geometry,
       rules: engine.rules,
@@ -558,13 +476,13 @@ void main() {
       ..tap(second);
     // Any other free tile, tapped while the pair strikes.
     final third = (engine.state.free.toList()..sort()).first;
-    await _tapTile(tester, snapshot, meadow, saved.history, first);
+    await tapBoardTile(tester, snapshot, meadow, saved.history, first);
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 400));
-    await _tapTile(tester, snapshot, meadow, [...saved.history, first], second);
+    await tapBoardTile(tester, snapshot, meadow, [...saved.history, first], second);
     await tester.pump();
     await tester.pump(kTileFlightDuration + const Duration(milliseconds: 100));
-    await _tapTile(tester, snapshot, meadow, engine.state.history, third);
+    await tapBoardTile(tester, snapshot, meadow, engine.state.history, third);
     await _settle(tester);
     expect(_inTray(third), findsOneWidget);
     expect(find.bySemanticsLabel('Tray, 1 of 4 tiles'), findsOneWidget);
@@ -575,11 +493,11 @@ void main() {
   for (final phone in [_large, _small]) {
     testWidgets('a tray holding three tiles ${phone.name}', (tester) async {
       await start(tester);
-      final (save, _) = _nearlyFull(snapshot, meadow);
+      final (save, _) = nearlyFullSave(snapshot, meadow);
       await _pumpGame(tester, services: services, entry: meadow, phone: phone, resume: save);
       expect(tester.takeException(), isNull);
       expect(find.bySemanticsLabel('Tray, 3 of 4 tiles'), findsOneWidget);
-      final engine = _engine(snapshot.levels[meadow.levelId]!, snapshot.registry)..replay(save.history);
+      final engine = engineFor(snapshot.levels[meadow.levelId]!, snapshot.registry)..replay(save.history);
       for (final id in engine.state.tray) {
         expect(_inTray(id), findsOneWidget);
       }
@@ -603,7 +521,7 @@ void main() {
       entry: longTitle,
       phone: _small,
       textScale: 1.3,
-      resume: _progress(snapshot, meadow, pairs: 12, elapsedMs: 3723000),
+      resume: solvedSave(snapshot, meadow, pairs: 12, elapsedMs: 3723000),
     );
     expect(tester.takeException(), isNull);
     expect(find.text('12/${pairsOf(meadow)}'), findsOneWidget);
@@ -619,7 +537,7 @@ void main() {
       services: services,
       entry: meadow,
       phone: _large,
-      resume: _progress(snapshot, meadow, pairs: 3),
+      resume: solvedSave(snapshot, meadow, pairs: 3),
     );
     expect(find.text('3/${pairsOf(meadow)}'), findsOneWidget);
     expect(find.text('Restart'), findsNothing);
@@ -639,7 +557,7 @@ void main() {
         services: services,
         entry: meadow,
         phone: phone,
-        resume: _progress(snapshot, meadow, pairs: 3),
+        resume: solvedSave(snapshot, meadow, pairs: 3),
       );
       await tester.tap(find.byTooltip('Restart'));
       await tester.pump();
@@ -661,7 +579,7 @@ void main() {
       services: services,
       entry: meadow,
       phone: _large,
-      resume: _progress(snapshot, meadow, elapsedMs: 83000),
+      resume: solvedSave(snapshot, meadow, elapsedMs: 83000),
     );
     expect(find.text('Level complete!'), findsOneWidget);
     expect(find.text('Next level'), findsOneWidget);
@@ -678,10 +596,10 @@ void main() {
   for (final (phone, textScale) in [(_small, 1.3), (_large, 1.0)]) {
     testWidgets('tray-full overlay ${phone.name} at ${textScale}x text', (tester) async {
       await start(tester);
-      final (save, last) = _nearlyFull(snapshot, meadow);
+      final (save, last) = nearlyFullSave(snapshot, meadow);
       await _pumpGame(tester, services: services, entry: meadow, phone: phone, textScale: textScale, resume: save);
       // The fourth unmatched tile fills the tray: game over.
-      await _tapTile(tester, snapshot, meadow, save.history, last);
+      await tapBoardTile(tester, snapshot, meadow, save.history, last);
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 500));
       expect(find.text('Tray full'), findsNothing, reason: 'the tray shakes first');
@@ -717,9 +635,9 @@ void main() {
   ]) {
     testWidgets('tray-full overlay, ad ${status.name}, 360x640 at 1.3x text', (tester) async {
       await start(tester, ads: FakeRewardedAds(status));
-      final (save, last) = _nearlyFull(snapshot, meadow);
+      final (save, last) = nearlyFullSave(snapshot, meadow);
       await _pumpGame(tester, services: services, entry: meadow, phone: _small, textScale: 1.3, resume: save);
-      await _tapTile(tester, snapshot, meadow, save.history, last);
+      await tapBoardTile(tester, snapshot, meadow, save.history, last);
       await _settle(tester);
       expect(find.text('Tray full'), findsOneWidget);
       expect(find.text('Revive'), findsOneWidget);
@@ -735,20 +653,20 @@ void main() {
 
   testWidgets('revive flies the tray tiles back to the board', (tester) async {
     await start(tester);
-    final (save, last) = _nearlyFull(snapshot, meadow);
+    final (save, last) = nearlyFullSave(snapshot, meadow);
     await _pumpGame(tester, services: services, entry: meadow, phone: _large, resume: save);
     final level = snapshot.levels[meadow.levelId]!;
-    final engine = _engine(level, snapshot.registry)..replay([...save.history, last]);
+    final engine = engineFor(level, snapshot.registry)..replay([...save.history, last]);
     final trayTiles = engine.state.tray;
     final onBoard = engine.state.remaining.length;
-    await _tapTile(tester, snapshot, meadow, save.history, last);
+    await tapBoardTile(tester, snapshot, meadow, save.history, last);
     await _settle(tester);
     expect(find.text('Revive'), findsOneWidget);
     await tester.tap(find.text('Revive'));
     await tester.pump();
     expect(find.text('Tray full'), findsNothing, reason: 'the card goes at once');
-    expect(_gameOf(tester).introPlaying, isFalse, reason: 'a revive does not replay the intro');
-    expect(_introOf(tester).isRunning, isFalse);
+    expect(gameOf(tester).introPlaying, isFalse, reason: 'a revive does not replay the intro');
+    expect(introOf(tester).isRunning, isFalse);
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 200));
     // Mid-way: some tiles in the air, the board not yet showing them.
@@ -759,13 +677,13 @@ void main() {
       expect(_inTray(id), findsNothing);
     }
     expect(find.bySemanticsLabel('Tray, 0 of 4 tiles'), findsOneWidget);
-    expect(_gameOf(tester).state.moveCount, 4, reason: 'a revive is not a move');
+    expect(gameOf(tester).state.moveCount, 4, reason: 'a revive is not a move');
     expect(tester.takeException(), isNull);
     await _capture(tester, 'gameplay_night_411x914_revived', _large.dpr);
     // Play goes on: a returned tile can be tapped again.
     final free = engine..revive();
     final again = trayTiles.firstWhere((id) => free.isFreeIndex(free.indexOf(id)!));
-    await _tapTile(tester, snapshot, meadow, free.state.history, again);
+    await tapBoardTile(tester, snapshot, meadow, free.state.history, again);
     await _settle(tester);
     expect(_inTray(again), findsOneWidget);
     await _leave(tester);
@@ -795,7 +713,7 @@ void main() {
         final board = tester.getRect(find.byType(BoardView));
         final projection = boardProjectionFor(
           level,
-          _engine(level, snapshot.registry).geometry,
+          engineFor(level, snapshot.registry).geometry,
           TileStyle.forTileSet(level.tileSetId),
           board.size,
         );
@@ -824,10 +742,10 @@ void main() {
       await _capture(tester, 'tray5_${phone.name}_empty', phone.dpr);
       await _leave(tester);
 
-      final (save, last) = _nearlyFull(snapshot, entry);
+      final (save, last) = nearlyFullSave(snapshot, entry);
       await _pumpGame(tester, services: services, entry: entry, phone: phone, textScale: textScale, resume: save);
       expect(find.bySemanticsLabel('Tray, 4 of 5 tiles'), findsOneWidget);
-      final engine = _engine(level, snapshot.registry)..replay(save.history);
+      final engine = engineFor(level, snapshot.registry)..replay(save.history);
       final wells = <Rect>[for (final id in engine.state.tray) tester.getRect(_inTray(id))];
       expect(wells, hasLength(4));
       for (var i = 1; i < wells.length; i++) {
@@ -839,7 +757,7 @@ void main() {
       await _capture(tester, 'tray5_${phone.name}_four', phone.dpr);
 
       // The fifth unmatched tile fills the tray: game over.
-      await _tapTile(tester, snapshot, entry, save.history, last);
+      await tapBoardTile(tester, snapshot, entry, save.history, last);
       await _settle(tester);
       expect(find.text('Tray full'), findsOneWidget);
       expect(find.text('Revive'), findsOneWidget);
@@ -872,11 +790,11 @@ void main() {
     /// for a 2 s intro) and after the hand-over at its end.
     Future<List<ui.Image>> sequence(WidgetTester tester, String name) async {
       final frames = <ui.Image>[];
-      _gameOf(tester).restart();
+      gameOf(tester).restart();
       await tester.pump();
       await tester.pump();
-      expect(_introOf(tester).isRunning, isTrue);
-      final intro = _introOf(tester).intro!;
+      expect(introOf(tester).isRunning, isTrue);
+      final intro = introOf(tester).intro!;
       expect(intro.seconds, 0);
       final total = intro.choreography.total;
       for (final f in [0.1, 0.3, 0.5, 0.7, 0.9]) {
@@ -886,8 +804,8 @@ void main() {
       }
       await _introTo(tester, total);
       await tester.pump();
-      expect(_introOf(tester).isRunning, isFalse, reason: 'handed over to the board');
-      expect(_gameOf(tester).introPlaying, isFalse);
+      expect(introOf(tester).isRunning, isFalse, reason: 'handed over to the board');
+      expect(gameOf(tester).introPlaying, isFalse);
       await _capture(tester, '${name}_t${total.toStringAsFixed(1)}', _large.dpr, keep: frames);
       return frames;
     }
@@ -899,7 +817,7 @@ void main() {
           (e) => int.parse(e.difficulty!) >= 7 && IntroStyle.forLevel(e.levelId) == style,
         );
         await _pumpGame(tester, services: services, entry: entry, phone: _large);
-        expect(_introOf(tester).isRunning, isFalse);
+        expect(introOf(tester).isRunning, isFalse);
         final frames = await sequence(tester, 'intro_${style.name}_${entry.levelId}_411x914');
         await _writeSheet(tester, 'intro_sheet_${style.name}', [frames]);
         await _leave(tester);
@@ -910,11 +828,11 @@ void main() {
       await start(tester);
       final hard = firstOf('4');
       await _pumpGame(tester, services: services, entry: hard, phone: _large);
-      final game = _gameOf(tester);
+      final game = gameOf(tester);
       game.restart();
       await tester.pump();
       await tester.pump();
-      expect(_introOf(tester).intro!.choreography.total, closeTo(2.333, 1e-9));
+      expect(introOf(tester).intro!.choreography.total, closeTo(2.333, 1e-9));
       await _introTo(tester, 2.25);
       expect(game.introPlaying, isTrue, reason: 'longer than an easy intro');
       expect(game.elapsed, Duration.zero);
@@ -944,16 +862,16 @@ void main() {
     testWidgets('taps wait for the intro, the clock starts after it, a restart replays it', (tester) async {
       await start(tester);
       await _pumpGame(tester, services: services, entry: meadow, phone: _large);
-      final game = _gameOf(tester);
+      final game = gameOf(tester);
       game.restart();
       await tester.pump();
       await tester.pump();
       final level = snapshot.levels[meadow.levelId]!;
-      final engine = _engine(level, snapshot.registry);
+      final engine = engineFor(level, snapshot.registry);
       final id = (engine.state.free.toList()..sort()).first;
       await _introTo(tester, 1.0);
       expect(game.elapsed, Duration.zero, reason: 'the intro is not play time');
-      await _tapTile(tester, snapshot, meadow, const [], id);
+      await tapBoardTile(tester, snapshot, meadow, const [], id);
       await tester.pump();
       expect(game.state.moveCount, 0, reason: 'taps are ignored during the intro');
       expect(find.bySemanticsLabel('Tray, 0 of 4 tiles'), findsOneWidget);
@@ -963,11 +881,11 @@ void main() {
       await tester.pump();
       await tester.pump();
       expect(game.introSerial, isNot(serial));
-      expect(_introOf(tester).intro!.seconds, 0);
-      await _introTo(tester, _introOf(tester).intro!.choreography.total);
+      expect(introOf(tester).intro!.seconds, 0);
+      await _introTo(tester, introOf(tester).intro!.choreography.total);
       await tester.pump();
       expect(game.introPlaying, isFalse);
-      await _tapTile(tester, snapshot, meadow, const [], id);
+      await tapBoardTile(tester, snapshot, meadow, const [], id);
       await _settle(tester);
       expect(_inTray(id), findsOneWidget, reason: 'play is on after the intro');
       expect(game.elapsed, greaterThan(Duration.zero));
@@ -977,10 +895,10 @@ void main() {
 
     testWidgets('a resumed game: only board tiles fly, the tray shows its tiles at once', (tester) async {
       await start(tester);
-      final (save, _) = _nearlyFull(snapshot, meadow);
+      final (save, _) = nearlyFullSave(snapshot, meadow);
       await _pumpGame(tester, services: services, entry: meadow, phone: _large, resume: save, intro: _IntroWait.start);
-      final game = _gameOf(tester);
-      final intro = _introOf(tester).intro!;
+      final game = gameOf(tester);
+      final intro = introOf(tester).intro!;
       expect(intro.tiles.length, game.state.remaining.length);
       expect(intro.tiles.toSet().intersection({for (final id in game.state.tray) game.engine.indexOf(id)!}), isEmpty);
       for (var i = 0; i < 5; i++) {
@@ -991,7 +909,7 @@ void main() {
         expect(_inTray(id), findsOneWidget, reason: 'restored tray tiles just appear');
       }
       expect(game.elapsed, Duration(milliseconds: save.elapsedMs), reason: 'held at the saved time');
-      await _finishIntro(tester);
+      await finishIntro(tester);
       expect(tester.takeException(), isNull);
       await _leave(tester);
     });
@@ -999,7 +917,7 @@ void main() {
     testWidgets('leaving during the intro frees it cleanly', skip: !_hasFullTree /* needs content/brain-train/ */, (tester) async {
       await start(tester, full: true);
       await _pumpGame(tester, services: services, entry: firstOf('10'), phone: _large, intro: _IntroWait.start);
-      final intro = _introOf(tester).intro!;
+      final intro = introOf(tester).intro!;
       await _introTo(tester, 0.5);
       await _leave(tester);
       expect(intro.isDisposed, isTrue);
@@ -1013,12 +931,12 @@ void main() {
       tester.platformDispatcher.accessibilityFeaturesTestValue = const FakeAccessibilityFeatures(disableAnimations: true);
       addTearDown(tester.platformDispatcher.clearAccessibilityFeaturesTestValue);
       await _pumpGame(tester, services: services, entry: meadow, phone: _large, intro: _IntroWait.none);
-      final game = _gameOf(tester);
+      final game = gameOf(tester);
       expect(game.introPlaying, isFalse);
-      expect(_introOf(tester).isRunning, isFalse);
+      expect(introOf(tester).isRunning, isFalse);
       final level = snapshot.levels[meadow.levelId]!;
-      final id = (_engine(level, snapshot.registry).state.free.toList()..sort()).first;
-      await _tapTile(tester, snapshot, meadow, const [], id);
+      final id = (engineFor(level, snapshot.registry).state.free.toList()..sort()).first;
+      await tapBoardTile(tester, snapshot, meadow, const [], id);
       await _settle(tester);
       expect(_inTray(id), findsOneWidget);
       await _leave(tester);
