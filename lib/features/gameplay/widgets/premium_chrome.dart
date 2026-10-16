@@ -107,6 +107,18 @@ class _EmeraldBackdropState extends State<EmeraldBackdrop> {
 class _FeltPainter extends CustomPainter {
   _FeltPainter({required this.accent, required this.palette});
 
+  /// Day's patches of sunlight: centre (fractions of the screen) and radius
+  /// (fraction of the shorter side), mostly towards the sun at the top right.
+  static const List<(double, double, double)> _sunPatches = [
+    (0.78, 0.16, 0.34),
+    (0.18, 0.28, 0.22),
+    (0.62, 0.36, 0.2),
+    (0.9, 0.5, 0.26),
+    (0.3, 0.52, 0.18),
+    (0.08, 0.66, 0.24),
+    (0.7, 0.7, 0.2),
+  ];
+
   final Color accent;
 
   /// Felt colours, light and vignette of the current look.
@@ -153,6 +165,23 @@ class _FeltPainter extends CustomPainter {
           stops: const [0, 0.45, 1],
         ).createShader(glow),
     );
+    // Day: soft patches of sun through the leaves, kept off the action bar.
+    if (palette.feltSunPatches > 0) {
+      final sun = Paint()..blendMode = BlendMode.screen;
+      for (final (x, y, r) in _sunPatches) {
+        final centre = Offset(size.width * x, size.height * y);
+        final radius = size.shortestSide * r;
+        sun.shader = RadialGradient(
+          colors: [
+            light.withValues(alpha: palette.feltSunPatches),
+            light.withValues(alpha: palette.feltSunPatches * 0.4),
+            light.withValues(alpha: 0),
+          ],
+          stops: const [0, 0.5, 1],
+        ).createShader(Rect.fromCircle(center: centre, radius: radius));
+        canvas.drawCircle(centre, radius, sun);
+      }
+    }
     // Vignette, so the edges fall off into deep green.
     canvas.drawRect(
       rect,

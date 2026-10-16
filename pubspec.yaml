@@ -80,6 +80,8 @@ flutter:
     - assets/sounds/
     - assets/music/
     - assets/decor/
+    # Day gameplay foliage (tool/lobby_art/make_day_foliage.py).
+    - assets/decor/day/
     - assets/lobby/
     # Day lobby art (tool/lobby_art/make_day_lobby_art.py).
     - assets/lobby/day/
