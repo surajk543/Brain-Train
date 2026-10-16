@@ -30,7 +30,7 @@ dart run tool/smoke_remote.dart         # live check: app's content client vs pr
 - `lib/game_engine/` — pure Dart, no Flutter imports (tools import it). Models, geometry
   (`BoardGeometry`, `TileAvailabilityCalculator`, `BoardProjection`, `TileHitTester`), rules
   (`MatchRules`), `GameEngine`, `MahjongSolver`, `LevelValidator`, `LevelGenerator` (hand layouts),
-  `TraySimulator` (simulated tray player). `campaign/`: `CampaignConfig` (tiers from the catalog),
+  `TraySimulator` (simulated tray player). `scoring/`: `ScoringRules`, `ScoreKeeper`, `formatScore` (pure Dart). `campaign/`: `CampaignConfig` (tiers from the catalog),
   `scheduleTiers`, `board_shapes.dart` (22 symmetric shape families + stacking programs),
   `CampaignGenerator`, `LevelDecor` (titles, backdrops), `SeededRandom`/`stableHash` (pinned PRNG).
 - `lib/content/` — pure Dart except `file_content_store.dart` (dart:io). Manifest, registry and
@@ -46,7 +46,7 @@ dart run tool/smoke_remote.dart         # live check: app's content client vs pr
   backdrop, dialogs; `widgets/tray_view.dart` tray + `TrayController`; `widgets/tile_flight_overlay.dart`
   board↔tray flights + `TrayFlightDirector`; `widgets/tile_shatter.dart` match strike + shards;
   `widgets/tile_art.dart` single-tile art; `widgets/board_intro.dart` level-start intro; `widgets/win_trophy.dart` trophy Lottie
-  on the win card); `common/` shared lobby chrome, `glass_painters.dart` (`GlassRimPainter`/`GlassShadowPainter`), `PremiumMahjongTile`,
+  on the win card; `widgets/combo_badge.dart`, `widgets/score_popups.dart`); `common/` shared lobby chrome, `glass_painters.dart` (`GlassRimPainter`/`GlassShadowPainter`), `PremiumMahjongTile`,
   lobby background + fireflies; `intro/` studio video + logo screen.
 - `lib/app/` — `AppServices` (wiring), `AppScope` (above `MaterialApp`), `theme.dart`
   (`BrainTrainPalette.night`, `LobbyTheme.night`), `brand.dart` (serif display font, gold),
@@ -131,6 +131,11 @@ dart run tool/smoke_remote.dart         # live check: app's content client vs pr
   imports the plugin; every call is caught and timed out. The app ID comes from gitignored
   `android/play_games.properties`; without it `PlayGamesInitProvider` is disabled and Dart sees
   `UnavailablePlayGames`. Release signing reads gitignored `android/key.properties`. iOS min is 14.0 (plugin).
+- Scoring (owner): a match scores `100 x min(combo, 5)` + speed bonus (+50 gap < 1 s, +25 < 2 s, +10 for 2-4 s);
+  combo window 4 s on the game clock (pauses with it), every match restarts it from that match, a gap > 4 s starts over
+  at x1; only `TapOutcome.matched` scores; a blocked-tile tap costs 1 (never below 0) and ends the combo; Revive ends
+  the combo; Restart resets. State is `SavedGame.scoring`; `LevelRecord.bestScore/bestCombo` only go up. The combo badge
+  floats on the tray's bottom edge: never add layout space between tray and board (31-px faces).
 - The app never holds R2 keys or `ASSET_TOKEN_SECRET`. `.env` is gitignored and used only by tools.
 - R2 bucket `braintrain` is private. Worker `braintrain-assets` serves `brain-train/*` publicly (GET/HEAD);
   all other keys need an HMAC token (`aud: "bt-assets"`, max 10 min).
@@ -148,6 +153,7 @@ dart run tool/smoke_remote.dart         # live check: app's content client vs pr
   icon (`PremiumRoundIconButton`, right end; only while playing, not during the intro or result cards) with a confirm
   card "Restart this level?" / "Your moves and time start over." (Restart / Keep playing; clock paused, Android back
   closes it), from the Tray full card and from the win card (Replay).
+- HUD shows SCORE where Moves was (owner); the win card and Completed Levels show score, best score and best combo.
 - Win card ("Level complete!"): `assets/lottie/trophy_cup_rays.json` (LottieFiles, owner's premium licence) via `WinTrophy`, looping while the card is open
   (owner), last frame with reduce motion, `PremiumEmblem` fallback if it fails to load.
 - Google Play Games (owner, 2026-10-16): Android only; silent sign-in; two round lobby buttons top-right
@@ -234,8 +240,8 @@ dart run tool/smoke_remote.dart         # live check: app's content client vs pr
 - Open work: 100 static entries `awaiting download` in `art/asset_sources.json` (then prepare_symbols, build, bump
   contentVersion, publish); a frame-time slowdown after hours of play on the emulator (Impeller GLES; watch
   `adb logcat | grep app_time_stats`, app restart resets it) is not explained yet.
-- Open work: Play Console setup (docs/PLAY_GAMES.md) and Play Games pieces 2–3; scoring + combo system is in design
-  (spec pending).
+- Open work: Play Console setup (docs/PLAY_GAMES.md) and Play Games pieces 2–3 (piece 2 builds on
+  `bestScore`/`bestCombo`). Scoring + combo is implemented (4 s window).
 - Open work: 6 tests fail on this Mac (predate `feat/play-games`): RenderFlex overflow of 4.4 px at
   `lib/features/levels/level_select_screen.dart:232` (Completed Levels row) — level_select_test (2), level_loader_test (1),
   lobby_capture_test (2, per-phone "home, levels, settings"), gameplay_capture_test ("tray-full overlay 360x640 at 1.3x
