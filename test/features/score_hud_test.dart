@@ -7,6 +7,7 @@ import 'package:brain_train/features/gameplay/widgets/board_view.dart';
 import 'package:brain_train/features/gameplay/widgets/combo_badge.dart';
 import 'package:brain_train/features/gameplay/widgets/game_hud.dart';
 import 'package:brain_train/features/gameplay/widgets/score_popups.dart';
+import 'package:brain_train/features/gameplay/widgets/tray_view.dart';
 import 'package:brain_train/game_engine/geometry/tile_mask.dart';
 import 'package:brain_train/game_engine/scoring/score_format.dart';
 import 'package:brain_train/game_engine/validation/solver.dart';
@@ -178,6 +179,27 @@ void main() {
     expect(find.text('Best ×2'), findsOneWidget, reason: 'the chip alone once the combo ended');
     await tester.pumpWidget(const SizedBox());
   });
+
+  for (final phone in [smallPhone, midPhone, largePhone]) {
+    testWidgets('${phone.name}: the combo badge hangs on the tray\'s bottom edge, clear of the wells', (tester) async {
+      await start(tester);
+      final pairs = await _pumpGame(tester, services, clock, phone: phone);
+      _match(tester, pairs[0]);
+      clock.advance(const Duration(milliseconds: 500));
+      _match(tester, pairs[1]);
+      await tester.pump();
+      final pill = tester.getRect(
+        find.ancestor(of: find.text('COMBO ×2 · Best ×2'), matching: find.byType(Container)).first,
+      );
+      final tray = tester.state<TrayViewState>(find.byType(TrayView));
+      final wells = tray.wellRect(0)!;
+      final frame = tray.panelRect()!;
+      expect(pill.top, greaterThanOrEqualTo(wells.bottom), reason: 'the pill leaves the wells uncovered');
+      expect(pill.top, lessThan(frame.bottom), reason: 'it still sits on the frame\'s edge');
+      expect(pill.bottom, greaterThan(frame.bottom));
+      await tester.pumpWidget(const SizedBox());
+    });
+  }
 
   testWidgets('the HUD\'s COMBO cell shows the running multiplier; the badge never ticks', (tester) async {
     await start(tester);

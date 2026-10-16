@@ -1,5 +1,4 @@
 import 'dart:io';
-import 'dart:typed_data';
 
 import 'package:brain_train/app/app_services.dart';
 import 'package:brain_train/content/content_config.dart';
@@ -20,6 +19,7 @@ import 'package:brain_train/features/common/premium_mahjong_tile.dart';
 import 'package:brain_train/features/home/widgets/lobby_hero.dart';
 import 'package:brain_train/game_engine/models/symbol_definition.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -255,6 +255,27 @@ void main() {
       }
       expect(bundled, expected, reason: 'exactly the three hero symbols');
     });
+  });
+
+  testWidgets('status bar icons: dark over the Day home sky, light on Night and sub-screens', (tester) async {
+    final services = await _start(tester);
+    Brightness? iconsOf(Widget screen) => tester
+        .widgetList<AnnotatedRegion<SystemUiOverlayStyle>>(
+          find.descendant(of: find.byType(screen.runtimeType), matching: find.byType(AnnotatedRegion<SystemUiOverlayStyle>)),
+        )
+        .first
+        .value
+        .statusBarIconBrightness;
+    for (final (mode, home, settings) in [
+      (ThemeMode.light, Brightness.dark, Brightness.light),
+      (ThemeMode.dark, Brightness.light, Brightness.light),
+    ]) {
+      await pumpLobby(tester, services: services, home: const HomeScreen(), themeMode: mode);
+      expect(iconsOf(const HomeScreen()), home, reason: '$mode home');
+      await pumpLobby(tester, services: services, home: const SettingsScreen(), themeMode: mode);
+      expect(iconsOf(const SettingsScreen()), settings, reason: '$mode settings');
+      await _leave(tester);
+    }
   });
 
   testWidgets('home works offline on bundled content', (tester) async {

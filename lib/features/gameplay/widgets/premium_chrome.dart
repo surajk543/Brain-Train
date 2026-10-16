@@ -1,12 +1,14 @@
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../../../app/brand.dart';
 import '../../../app/theme.dart';
 import '../../../app/typography.dart';
 import '../../common/flowing_leaves.dart';
 import '../../common/frosted_glass.dart';
+import '../../common/lobby_background.dart';
 import '../../common/static_layer.dart';
 
 /// Night's darkest felt tone, at the screen edges. Screens use the current
@@ -81,25 +83,29 @@ class _EmeraldBackdropState extends State<EmeraldBackdrop> {
       );
     }
 
-    return Stack(
-      fit: StackFit.expand,
-      children: [
-        StaticLayer(
-          onRaster: _frost.update,
-          child: Stack(
-            fit: StackFit.expand,
-            children: [
-              CustomPaint(painter: _FeltPainter(accent: widget.accent, palette: palette)),
-              decor(foliage.right, 0.3, right: -0.06, topOfHeight: 0.19),
-              decor(foliage.topLeft, 0.7, left: -0.08, top: -0.07),
-              decor(foliage.bottomLeft, 0.7, left: -0.1, bottom: -0.08),
-              decor(foliage.bottomRight, 0.72, right: -0.1, bottom: -0.09),
-            ],
+    // Light status bar icons over the felt (the lobby's Day home sets dark).
+    return AnnotatedRegion<SystemUiOverlayStyle>(
+      value: kStatusBarLightIcons,
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          StaticLayer(
+            onRaster: _frost.update,
+            child: Stack(
+              fit: StackFit.expand,
+              children: [
+                CustomPaint(painter: _FeltPainter(accent: widget.accent, palette: palette)),
+                decor(foliage.right, 0.3, right: -0.06, topOfHeight: 0.19),
+                decor(foliage.topLeft, 0.7, left: -0.08, top: -0.07),
+                decor(foliage.bottomLeft, 0.7, left: -0.1, bottom: -0.08),
+                decor(foliage.bottomRight, 0.72, right: -0.1, bottom: -0.09),
+              ],
+            ),
           ),
-        ),
-        const RepaintBoundary(child: FlowingLeaves(count: 8, opacity: 0.62, scale: 0.9, speed: 0.85, seed: 23)),
-        FrostScope(source: _frost, child: widget.child),
-      ],
+          const RepaintBoundary(child: FlowingLeaves(count: 8, opacity: 0.62, scale: 0.9, speed: 0.85, seed: 23)),
+          FrostScope(source: _frost, child: widget.child),
+        ],
+      ),
     );
   }
 }

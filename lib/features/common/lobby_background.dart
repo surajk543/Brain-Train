@@ -1,6 +1,7 @@
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../../app/theme.dart';
 import 'flowing_leaves.dart';
@@ -53,30 +54,51 @@ class _LobbyBackgroundState extends State<LobbyBackground> {
     final lobby = LobbyTheme.of(context);
     final home = widget.variant == LobbySceneVariant.home;
     final child = widget.child;
-    return Stack(
-      fit: StackFit.expand,
-      children: [
-        StaticLayer(
-          onRaster: _frost.update,
-          child: _Scene(lobby: lobby, home: home),
-        ),
-        RepaintBoundary(
-          child: FlowingLeaves(
-            count: home ? lobby.leafCount : lobby.subScreenLeafCount,
-            opacity: lobby.leafOpacity * (home ? 1 : 0.8),
+    // Status bar icons: dark over the bright sky of the Day home scene, light
+    // everywhere else (Night, and the shaded Day sub-screens).
+    final darkIcons = home && !BrainTrainPalette.of(context).isNight;
+    return AnnotatedRegion<SystemUiOverlayStyle>(
+      value: darkIcons ? kStatusBarDarkIcons : kStatusBarLightIcons,
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          StaticLayer(
+            onRaster: _frost.update,
+            child: _Scene(lobby: lobby, home: home),
           ),
-        ),
-        if (home && lobby.particleCount > 0)
-          IgnorePointer(
-            child: RepaintBoundary(
-              child: LobbyParticles(count: lobby.particleCount, color: lobby.particleColor, size: lobby.particleSize),
+          RepaintBoundary(
+            child: FlowingLeaves(
+              count: home ? lobby.leafCount : lobby.subScreenLeafCount,
+              opacity: lobby.leafOpacity * (home ? 1 : 0.8),
             ),
           ),
-        if (child != null) FrostScope(source: _frost, child: child),
-      ],
+          if (home && lobby.particleCount > 0)
+            IgnorePointer(
+              child: RepaintBoundary(
+                child: LobbyParticles(count: lobby.particleCount, color: lobby.particleColor, size: lobby.particleSize),
+              ),
+            ),
+          if (child != null) FrostScope(source: _frost, child: child),
+        ],
+      ),
     );
   }
 }
+
+/// Transparent status bar with dark icons (over a bright scene). Only the
+/// status bar: the navigation bar keeps the platform's colours.
+const SystemUiOverlayStyle kStatusBarDarkIcons = SystemUiOverlayStyle(
+  statusBarColor: Color(0x00000000),
+  statusBarIconBrightness: Brightness.dark,
+  statusBarBrightness: Brightness.light,
+);
+
+/// Transparent status bar with light icons (over a dark scene).
+const SystemUiOverlayStyle kStatusBarLightIcons = SystemUiOverlayStyle(
+  statusBarColor: Color(0x00000000),
+  statusBarIconBrightness: Brightness.light,
+  statusBarBrightness: Brightness.dark,
+);
 
 class _Scene extends StatelessWidget {
   const _Scene({required this.lobby, required this.home});
