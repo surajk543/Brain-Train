@@ -46,6 +46,8 @@ dependencies:
   # Google Play Games Services (Android only; see docs/PLAY_GAMES.md).
   games_services: ^5.3.0
   google_mobile_ads: ^9.1.0
+  # Google Play In-App Updates for the lobby's update card (Android; docs/APP_UPDATES.md).
+  in_app_update: ^5.0.0
 
 dev_dependencies:
   flutter_test:
