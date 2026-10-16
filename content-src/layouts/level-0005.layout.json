@@ -1,0 +1,136 @@
+{
+  "levelId": "level-0005",
+  "title": "Anemone Crown",
+  "difficulty": "expert",
+  "seed": 505,
+  "symbols": [
+    "GALAXY_POMEGRANATE",
+    "WINGED_APPLE",
+    "MANDALA_ORB",
+    "COSMIC_HEART",
+    "EYE_SIGIL",
+    "GLASS_KNOT",
+    "AURORA_LEMON",
+    "FLAME_CROSS",
+    "PRISM_TRIANGLE",
+    "COSMIC_CHESTNUT",
+    "MOLTEN_MERCURY",
+    "CRYSTAL_STAR",
+    "WINGED_EYE",
+    "ORB_BERRIES",
+    "SPIRAL_COIN",
+    "ICE_CREAM_TWIST",
+    "CN_ZODIAC_TIGER",
+    "BIRD_HUMMINGBIRD",
+    "LOVE_BE_MINE",
+    "FLOWER_ZINNIA",
+    "DINO_PARASAUROLOPHUS",
+    "CN_HANDFAN_B",
+    "ICE_WAFFLE_BOWL",
+    "BIRD_LOVEBIRDS_B",
+    "CN_LION_DANCE",
+    "PLANT_POT_B",
+    "LOVE_COFFEE_CUP",
+    "BIRD_EAGLE",
+    "CN_OX_SYMBOL",
+    "ICE_CREAM_SANDWICH",
+    "BUG_LADYBUG",
+    "CN_SYMBOL_CLOUD",
+    "LOVE_HEART_BALLOONS",
+    "FLOWER_LAVENDER",
+    "DINO_ANKYLOSAURUS",
+    "CN_CHARM",
+    "BIRD_WOODPECKER",
+    "LOVE_CHOCOLATE_BOX",
+    "CN_FISH",
+    "BIRD_CHICKEN",
+    "LOVE_WEDDING_CAKE"
+  ],
+  "board": {
+    "tileWidth": 2,
+    "tileHeight": 2,
+    "layerOffsetX": -0.07,
+    "layerOffsetY": -0.07
+  },
+  "rules": {
+    "matchingMode": "same_symbol",
+    "requireSolvable": true
+  },
+  "backdrop": {
+    "colors": [
+      "#5B3FA8",
+      "#9B6BD6",
+      "#E46FA8"
+    ]
+  },
+  "blocks": [
+    {
+      "layer": 0,
+      "x": 2,
+      "y": 0,
+      "columns": 4,
+      "rows": 1
+    },
+    {
+      "layer": 0,
+      "x": 0,
+      "y": 2,
+      "columns": 6,
+      "rows": 2
+    },
+    {
+      "layer": 0,
+      "x": -2,
+      "y": 6,
+      "columns": 8,
+      "rows": 2
+    },
+    {
+      "layer": 0,
+      "x": 0,
+      "y": 10,
+      "columns": 6,
+      "rows": 2
+    },
+    {
+      "layer": 0,
+      "x": 2,
+      "y": 14,
+      "columns": 4,
+      "rows": 1
+    },
+    {
+      "layer": 1,
+      "x": 1,
+      "y": 2,
+      "columns": 5,
+      "rows": 6
+    },
+    {
+      "layer": 2,
+      "x": 2,
+      "y": 4,
+      "columns": 4,
+      "rows": 4
+    },
+    {
+      "layer": 3,
+      "x": 3,
+      "y": 6,
+      "columns": 3,
+      "rows": 2
+    }
+  ],
+  "slots": [
+    {
+      "x": 4,
+      "y": 7,
+      "layer": 4
+    },
+    {
+      "x": 6,
+      "y": 7,
+      "layer": 4
+    }
+  ]
+}

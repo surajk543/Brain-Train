@@ -1,0 +1,163 @@
+# Brain Train — notes for Claude
+
+Flutter Mahjong Solitaire game. Android + iOS. App ID `com.sungamestudio.braintrain` (do not change).
+Levels, symbols and artwork are data, served from Cloudflare R2 and bundled as an offline fallback.
+
+## Commands (run from repo root)
+
+```bash
+flutter pub get
+flutter analyze                         # must be clean
+flutter test                            # unit + widget tests, no network
+flutter run -d emulator-5554            # AVDs: Pixel_6_API_34, Pixel7_Play_API36
+dart run tool/content.dart build        # content-src/ -> content/brain-train/ (campaign: generate + solve + simulate + hash)
+dart run tool/content.dart validate     # check content/brain-train/ like the app, plus solver
+dart run tool/content.dart stats        # simulated tray-player win rates per tier of the built tree
+dart run tool/publish.dart --dry-run    # then without --dry-run to upload to R2 (parallel, manifest last)
+python3 tool/assets/prepare_symbols.py [--placeholders]   # art -> WebP symbols
+python3 tool/assets/make_app_icon.py    # launcher icons from the logo emblem (Android + iOS)
+python3 tool/assets/make_foliage.py     # gameplay edge foliage -> assets/decor/
+python3 tool/assets/make_lobby_art.py   # lobby night art -> assets/lobby/
+python3 tool/assets/make_sounds.py      # sound effects -> assets/sounds/
+CAPTURE_DIR=/tmp/x flutter test test/visual/   # write screenshots of lobby/gameplay at phone sizes
+dart run tool/smoke_remote.dart         # live check: app's content client vs production R2 (+ levels 1/57/128/200)
+```
+
+## Layout
+
+- `lib/game_engine/` — pure Dart, no Flutter imports (tools import it). Models, geometry
+  (`BoardGeometry`, `TileAvailabilityCalculator`, `BoardProjection`, `TileHitTester`), rules
+  (`MatchRules`), `GameEngine`, `MahjongSolver`, `LevelValidator`, `LevelGenerator` (hand layouts),
+  `TraySimulator` (simulated tray player). `campaign/`: `CampaignConfig` (tiers from the catalog),
+  `scheduleTiers`, `board_shapes.dart` (22 symmetric shape families + stacking programs),
+  `CampaignGenerator`, `LevelDecor` (titles, backdrops), `SeededRandom`/`stableHash` (pinned PRNG).
+- `lib/content/` — pure Dart except `file_content_store.dart` (dart:io). Manifest, registry and
+  level loading; cache; `ContentCoordinator` (known-good / bundled / background refresh).
+- `lib/rendering/` — tile body rasterizer, symbol art cache, board painter, effects.
+- `lib/features/` — screens. `levels/` lazy level grid (`LevelSelectScreen`, `LevelCell`, `DifficultyStyle`
+  badge colours); `home/` lobby (hero tiles, title, buttons, footer widgets);
+  `gameplay/` (`game_controller.dart` glues engine + UI; `widgets/premium_chrome.dart` HUD, felt
+  backdrop, dialogs; `widgets/tray_view.dart` tray + `TrayController`; `widgets/tile_flight_overlay.dart`
+  board↔tray flights + `TrayFlightDirector`; `widgets/tile_shatter.dart` match strike + shards;
+  `widgets/tile_art.dart` single-tile art); `common/` shared lobby chrome, `PremiumMahjongTile`,
+  lobby background + fireflies; `intro/` studio video + logo screen.
+- `lib/app/` — `AppServices` (wiring), `AppScope` (above `MaterialApp`), `theme.dart`
+  (`BrainTrainPalette.night`, `LobbyTheme.night`), `brand.dart` (serif display font, gold),
+  `sound_effects.dart`.
+- `content-src/` — authoring: `catalog.json` (`campaign`: seed, tiers, counts, bands). `layouts/*.layout.json`
+  are the old hand layouts (not in the catalog; the tool still accepts catalog `levels` entries).
+- `content/brain-train/` — generated, published tree. Mirrors R2 keys `brain-train/...`. Bundled via pubspec.
+- `art/` — `asset_sources.json` (IconScout attribution + status), masters, review sheets.
+  `art/source/` (licensed originals) is gitignored.
+- `infra/cloudflare/braintrain-assets/worker.js` — the deployed Worker's source of truth.
+- `docs/` — `CONTENT_PUBLISHING.md`, `ASSET_PIPELINE.md`.
+
+## Rules that are easy to break
+
+- Geometry: tile `(x, y)` = top-left of footprint in logical units; footprint = `board.tileWidth × tileHeight`
+  (levels use 2×2 so half offsets are integers). Layer offsets are rendering-only.
+  Renderer, hit tester and rules must all use `BoardGeometry`/`BoardProjection`.
+- Free tile = no remaining higher-layer tile overlaps it AND left or right same-layer side is open.
+- Matching uses symbol codes / match groups, never artwork.
+- Rendering: Impeller has no raster cache, so while anything animates (leaves, fireflies, Lottie) every layer
+  on screen is redrawn each frame. No `BackdropFilter`, `Opacity`/`ColorFilter` layers, per-frame mask blurs
+  or blend-mode passes behind ambient animation: flatten static subtrees with `StaticLayer` (no repaint
+  boundaries inside it) and use `FrostedGlass` (blurred copy from a `FrostSource`) for glass. The board caches
+  itself (`BoardLayers`: static image + moving symbols via `SymbolFrameAtlas`).
+- Play goes through a tray whose size is per level: `rules.trayCapacity` = 4 by default (and when absent), 5 for
+  hard and very hard levels; the validator allows 4 or 5, and `GameEngine`/`GameController`/`TrayController`
+  take it from the level (old builds ignore the field and play with 4, which is safe: every level is
+  pair-solvable). A tapped free tile leaves the board for the tray; if it matches a tray tile both clear;
+  `capacity` tiles without a match lose (`GameStatus.trayFull`) and show a Revive / Restart card. Revive
+  (`GameEngine.revive`, unlimited, not a move) puts all the tray tiles back in their board places. Saves store the tap sequence plus `GameEngine.reviveMarker` entries
+  (`progress.current.v2`); a tray-full game is saved so it can be revived later. Solver/generator still prove
+  pair-removal orders, which are valid tray orders (tap a, then b). Screen: tray at the top, board, HUD at the
+  bottom. The board drops a tile at the tap; `TileFlightOverlay` draws it until it lands (ticks only during
+  flights); revived tiles fly back one by one, slowly (owner: 700 ms each, 300 ms apart, lower tiles first) and
+  stay hidden on the board until they land. A matched pair
+  strikes and shatters in `TileShatterOverlay` (tiles rasterized once via `TrayViewState.snapshot`, shards
+  drawn with `drawVertices` + `ImageShader`, ticks only while running); match/win sound plays at impact
+  (`GameController.pairImpact`). The tray draws animated symbols through its own `SymbolFrameAtlas`; result
+  cards wait until flights, the tray and shatters are still.
+- Published object keys are immutable. Levels and the registry are content-addressed
+  (`levels/level-0001-<sha12>.json`, `registries/symbols-<sha12>.json`): changed bytes get a new key by
+  themselves, unchanged ones keep theirs. `tool/content.dart build` and `tool/publish.dart` refuse to overwrite
+  (publish checks every key before writing any). Only `manifest.json` is mutable, and it is uploaded last.
+- Bump `contentVersion` in `content-src/catalog.json` for every publish.
+- Symbols: only entries with `"status": "integrated"` (and a processed file) in `art/asset_sources.json` /
+  `art/animated_sources.json` enter the registry. Another agent may be editing `art/**` and `tool/assets/**`:
+  do not edit them; the build reads them fresh.
+- 70/30 rule: each level has `floor(30% of pairs)` animated pairs (at least 1, never above 30%), the rest
+  static; at most 12 distinct animated symbols per level (`SymbolFrameAtlas` renders each once per frame
+  step, so big boards reuse one for 2+ pairs). Codes per level come from rendezvous hashing (level × code):
+  new symbols change only codes, never boards, tiers, titles or win rates.
+- Tiers are data (`campaign.tiers`): `easy`, `medium`, `hard`, `veryHard`, 50 levels each, seeded shuffle,
+  level 1 easy, never 3 of a tier in a row; stored as `difficulty` in levels and manifest. The app labels any
+  id (`difficultyLabel`: "Very Hard") and colours the badge (`DifficultyStyle`).
+- Startup never waits for the network: `ContentCoordinator.loadInitial` builds only the newer of known-good and
+  bundled; `refresh` runs in the background, copies objects the bundle already has into the cache
+  (`AssetDownloadManager.seed`, SHA-256 checked) and downloads the rest 8 at a time; cached objects are never
+  downloaded again.
+- The app never holds R2 keys or `ASSET_TOKEN_SECRET`. `.env` is gitignored and used only by tools.
+- R2 bucket `braintrain` is private. Worker `braintrain-assets` serves `brain-train/*` publicly (GET/HEAD);
+  all other keys need an HMAC token (`aud: "bt-assets"`, max 10 min).
+- Content host is `ContentConfig.production` (`braintrain-assets.surajk543.workers.dev`), not
+  `assets.sungamestudio.com` (that is the king-teenpatti bucket's public domain).
+
+## Product decisions (from the owner)
+
+- Night look only: no day mode, no theme setting. `MaterialApp` is always dark.
+- Settings contains only Sound, Vibration and the app version. Do not add other options.
+- Background music `assets/music/water_flowing.mp3` loops at volume 0.6 (`lib/app/background_music.dart`),
+  starts after the studio intro, pauses in background, and follows the Sound switch (no separate music toggle).
+- Sounds: `assets/sounds/tap.wav` (one tap cut from the owner's Tap.mp3) on every playable tap; `assets/sounds/strike.wav` (one hit cut from the owner's strike.mp3, 0.95 s) is `Sfx.match`, played when a matched pair strikes in the tray; the last pair's strike is followed by `Sfx.win` 450 ms later.
+- No Undo and no Hint in the game; Restart is the only action (the engine has no undo).
+- Every launch: navy native screen (no icon) → `assets/video/sun_game_studio_intro.mp4`
+  (Sun Game Studio) → Brain Train logo on white (`assets/branding/brain_train_logo.jpg`, at least
+  2.2 s and until content is loaded) → lobby. Sequence lives in `lib/app/app.dart`.
+- App icon = the round emblem of the official logo (`art/branding/brain-train-logo.jpg`), adaptive on
+  Android 8+. Regenerate with `python3 tool/assets/make_app_icon.py`.
+- No "Mahjong Solitaire" subtitle on the lobby.
+- Look: emerald felt + botanical foliage, dark-green panels with fine gold borders, serif display
+  type (`brand.dart`), warm ivory tiles with olive-green underside. Level `backdrop.colors` only tints
+  the gameplay ambient light. Tune tiles in `TileStyle`, never the art.
+- Every tile everywhere (board, lobby hero) uses `MahjongTileRenderer`; no second tile renderer.
+
+## Current state (2026-10-16)
+
+- Published content 2026.10.16.9 (manifest `minClientContentSchema: 2`): a generated campaign of 200 levels
+  (`catalog.json` `campaign`, seed 20261039, chosen so levels 2–4 are easy/medium), content-addressed keys.
+  The registry (`registries/symbols-b932cfbdc9d6.json`) holds every integrated symbol: 82 static (set v4: owner
+  cut-outs + IconScout 3D/illustration packs) and 83 animated (IconScout Lottie: Emoji, Valentine, Dog, Cute
+  Monster, Shapes Loader restyled bold/coloured). 100 static IconScout entries are `awaiting download`
+  (IconScout 3D downloads hit a daily limit); finish them, then rebuild and publish.
+- Tiers (50 each; tiles / layers / tray / simulated random-player win rate over 200 games per level):
+  easy 24–48 / 1–2 / 4 / ~92%; medium 48–78 / 2–3 / 4 / ~42%; hard 84–120 / 3–4 / 5 / ~13%;
+  very hard 144–172 / 5–7 / 5 / ~0% (a pair-seeking player wins ~58%). Every level is solver-proven and keeps
+  tile faces >= 31 px wide on a 360x640 phone.
+- Rebuild after new symbols: bump `contentVersion`, `dart run tool/content.dart build` (the registry key and the
+  levels that rank a new code change by themselves), `validate`, `flutter test`, `publish --dry-run`, `publish`,
+  `smoke_remote`.
+- The app bundles all 200 level files (~1.4 MB raw, ~0.22 MB compressed), the registry and all art.
+- Lobby menu: Play/Continue, "Completed Levels", Settings. No "N levels ready" footer (owner); the footer only
+  shows a content notice (offline / update skipped / new content installed).
+- "Completed Levels" screen (`level_select_screen.dart`, owner): a panel with the next level to play (title, tier,
+  size, tray; Play/Continue) and below it ONLY the completed levels, in order, as a lazy list to replay from
+  (one row each: number, title, tier badge, tiles, best time, date-time of that best win). Replays keep the
+  fastest time and its date (`ProgressRepository.recordWin`). No list of all levels and no locked cells; an empty message before the first win.
+  Tray UI lays out 4 or 5 wells.
+- Static art pipeline: `art/asset_sources.json` → `python3 tool/assets/prepare_symbols.py` → `content/brain-train/symbols/v4/`.
+  Animated: `art/animated_sources.json` → `python3 tool/assets/prepare_animated.py` → `content/brain-train/animated-symbols/`.
+  Originals live in `art/source/` (gitignored). IconScout downloads use the owner's subscription via the iconscout MCP.
+- Art sources: each entry has a `status`; builds take only `integrated` ones. Static: 82 integrated (62 original
+  + 6 fitness `FIT_*` + 5 `JULY4_*` + 9 `SPORT_*`), 3 `rejected` (unreadable at 31 px), 100 `awaiting download`
+  (rest of Sport + Christmas `XMAS_*`, Technology `TECH_*`, Robot & AI `ROBOT_*`, Cinema `CINEMA_*`, Holiday Trip
+  `TRIP_*`: IconScout 3D downloads failed with server errors after ~24 that day; rerun the download, copy to
+  `art/source/symbols-v4/<expectedSourceFile>.png`, `prepare_symbols.py`, check at 31 px, set `integrated`).
+  Animated: 83 integrated (50 + Cute Monster `MONSTER_*` 20 + Shapes Loader `SHAPE_*` 13, restyled bold/coloured
+  via `restyle` into `*-bold.json`), 5 `SHAPE_*` rejected. Check new art at 31 px and 64 px tile width.
+- Not yet integrated: 4 IconScout AI images (spring rolls ×2, salad, nachos) — not reachable via the IconScout API.
+- Tray mechanic is integrated (tray at the top, flights, strike-and-shatter matches, Tray full card with
+  Revive / Restart), with 4 or 5 slots per level.
+
+Keep this file current when commands, layout, or these rules change.

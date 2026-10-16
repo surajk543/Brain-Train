@@ -1,0 +1,62 @@
+{
+  "schemaVersion": 1,
+  "levelId": "level-0095",
+  "title": "Wren Gateway",
+  "difficulty": "easy",
+  "tileSetId": "classic-ivory",
+  "board": {
+    "tileWidth": 2,
+    "tileHeight": 2,
+    "layerOffsetX": -0.07,
+    "layerOffsetY": -0.07
+  },
+  "rules": {
+    "matchingMode": "same_symbol",
+    "requireSolvable": true
+  },
+  "backdrop": {
+    "colors": [
+      "#5C7D5A",
+      "#A3C4A0",
+      "#E4EEDC"
+    ]
+  },
+  "tiles": [
+    {"tileId":"t001","symbolCode":"CN_HANDFAN_A","x":2,"y":0,"layer":0},
+    {"tileId":"t002","symbolCode":"SPORT_FRISBEE","x":4,"y":0,"layer":0},
+    {"tileId":"t003","symbolCode":"EMOJI_BEAMING_FACE","x":6,"y":0,"layer":0},
+    {"tileId":"t004","symbolCode":"DINO_BRONTOSAURUS","x":8,"y":0,"layer":0},
+    {"tileId":"t005","symbolCode":"EMOJI_BEAMING_FACE","x":10,"y":0,"layer":0},
+    {"tileId":"t006","symbolCode":"EMOJI_SMILING_FACE_WITH_HEARTS","x":0,"y":2,"layer":0},
+    {"tileId":"t007","symbolCode":"EMOJI_SMILING_FACE_WITH_HEARTS","x":2,"y":2,"layer":0},
+    {"tileId":"t008","symbolCode":"EMOJI_BEAMING_FACE","x":4,"y":2,"layer":0},
+    {"tileId":"t009","symbolCode":"EMOJI_SMILING_FACE_WITH_HEARTS","x":6,"y":2,"layer":0},
+    {"tileId":"t010","symbolCode":"CN_HANDFAN_A","x":8,"y":2,"layer":0},
+    {"tileId":"t011","symbolCode":"SPORT_FRISBEE","x":10,"y":2,"layer":0},
+    {"tileId":"t012","symbolCode":"EMOJI_BEAMING_FACE","x":12,"y":2,"layer":0},
+    {"tileId":"t013","symbolCode":"SPORT_FRISBEE","x":0,"y":4,"layer":0},
+    {"tileId":"t014","symbolCode":"ICE_CREAM_CONE","x":2,"y":4,"layer":0},
+    {"tileId":"t015","symbolCode":"EMOJI_BEAMING_FACE","x":10,"y":4,"layer":0},
+    {"tileId":"t016","symbolCode":"SPIRAL_COIN","x":12,"y":4,"layer":0},
+    {"tileId":"t017","symbolCode":"CN_HANDFAN_A","x":0,"y":6,"layer":0},
+    {"tileId":"t018","symbolCode":"DINO_BRONTOSAURUS","x":2,"y":6,"layer":0},
+    {"tileId":"t019","symbolCode":"DINO_BRONTOSAURUS","x":10,"y":6,"layer":0},
+    {"tileId":"t020","symbolCode":"SPORT_FRISBEE","x":12,"y":6,"layer":0},
+    {"tileId":"t021","symbolCode":"DINO_BRONTOSAURUS","x":0,"y":8,"layer":0},
+    {"tileId":"t022","symbolCode":"CN_HANDFAN_A","x":2,"y":8,"layer":0},
+    {"tileId":"t023","symbolCode":"ICE_CREAM_CONE","x":10,"y":8,"layer":0},
+    {"tileId":"t024","symbolCode":"EMOJI_SMILING_FACE_WITH_HEARTS","x":12,"y":8,"layer":0},
+    {"tileId":"t025","symbolCode":"DINO_BRONTOSAURUS","x":0,"y":10,"layer":0},
+    {"tileId":"t026","symbolCode":"DINO_BRONTOSAURUS","x":2,"y":10,"layer":0},
+    {"tileId":"t027","symbolCode":"CN_HANDFAN_A","x":10,"y":10,"layer":0},
+    {"tileId":"t028","symbolCode":"SPIRAL_COIN","x":12,"y":10,"layer":0},
+    {"tileId":"t029","symbolCode":"ICE_CREAM_CONE","x":0,"y":12,"layer":0},
+    {"tileId":"t030","symbolCode":"ICE_CREAM_CONE","x":2,"y":12,"layer":0},
+    {"tileId":"t031","symbolCode":"SPORT_FRISBEE","x":10,"y":12,"layer":0},
+    {"tileId":"t032","symbolCode":"SPORT_FRISBEE","x":12,"y":12,"layer":0},
+    {"tileId":"t033","symbolCode":"SPIRAL_COIN","x":0,"y":14,"layer":0},
+    {"tileId":"t034","symbolCode":"EMOJI_BEAMING_FACE","x":2,"y":14,"layer":0},
+    {"tileId":"t035","symbolCode":"CN_HANDFAN_A","x":10,"y":14,"layer":0},
+    {"tileId":"t036","symbolCode":"SPIRAL_COIN","x":12,"y":14,"layer":0}
+  ]
+}

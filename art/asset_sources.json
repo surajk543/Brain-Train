@@ -1,0 +1,1737 @@
+{
+  "_comment": "Static symbol artwork for Brain Train, set v4. Two kinds of source: (1) owner-supplied images (Downloads/symbol, generated with Gemini 2.5 Flash Image) on light backgrounds, style \"cutout\": the background is removed by tool/assets/cutout.py; (2) IconScout premium 3D icons and illustrations downloaded with the owner's IconScout subscription: 3D icons are transparent PNGs (trimmed, centred, normalised); illustrations with a scene background use \"cutout\" too. Originals live in art/source/symbols-v4/ (gitignored). Process with `python3 tool/assets/prepare_symbols.py`. Each entry has a `status`: \"integrated\" (WebP written and reviewed; only these go into the registry), \"pending\" (source present, not yet reviewed), \"rejected\" (see its `rejected` reason; unreadable at a 31 px tile) or \"awaiting download\" (IconScout source not downloaded yet; the 3D download quota ran out). Pack items left out as duplicates are not listed.",
+  "provider": "Owner-supplied (Gemini 2.5 Flash Image) + IconScout (premium 3D icons and illustrations)",
+  "licenseNote": "Owner-supplied images: supplied by the owner for use in Brain Train. IconScout assets: downloaded under the owner's IconScout subscription license (commercial use, no attribution required); sourceUrl lists each asset page.",
+  "imageSet": "v4",
+  "symbols": [
+    {
+      "code": "COSMIC_CHESTNUT",
+      "title": "Cosmic Chestnut",
+      "originalFile": "gemini-2.5-flash-image_a_surreal_and_vibrant_cinematic_photo_of_single_fruit_close_up_look_white_backgr-0.jpg",
+      "expectedSourceFile": "cosmic-chestnut",
+      "outputFile": "cosmic-chestnut.webp",
+      "style": "cutout",
+      "status": "integrated"
+    },
+    {
+      "code": "ORB_BERRIES",
+      "title": "Orb Berries",
+      "originalFile": "gemini-2.5-flash-image_a_surreal_and_vibrant_cinematic_photo_of_single_fruit_close_up_look_white_backgr-1.jpg",
+      "expectedSourceFile": "orb-berries",
+      "outputFile": "orb-berries.webp",
+      "style": "cutout",
+      "status": "integrated"
+    },
+    {
+      "code": "MANDALA_ORB",
+      "title": "Mandala Orb",
+      "originalFile": "gemini-2.5-flash-image_a_surreal_and_vibrant_cinematic_photo_of_single_fruit_close_up_look_white_backgr-2.jpg",
+      "expectedSourceFile": "mandala-orb",
+      "outputFile": "mandala-orb.webp",
+      "style": "cutout",
+      "status": "integrated"
+    },
+    {
+      "code": "WINGED_APPLE",
+      "title": "Winged Apple",
+      "originalFile": "gemini-2.5-flash-image_a_surreal_and_vibrant_cinematic_photo_of_single_fruit_close_up_look_white_backgr-3.jpg",
+      "expectedSourceFile": "winged-apple",
+      "outputFile": "winged-apple.webp",
+      "style": "cutout",
+      "status": "integrated"
+    },
+    {
+      "code": "GALAXY_POMEGRANATE",
+      "title": "Galaxy Pomegranate",
+      "originalFile": "gemini-2.5-flash-image_a_surreal_and_vibrant_cinematic_photo_of_single_fruit_close_up_look_white_backgr-4.jpg",
+      "expectedSourceFile": "galaxy-pomegranate",
+      "outputFile": "galaxy-pomegranate.webp",
+      "style": "cutout",
+      "status": "integrated"
+    },
+    {
+      "code": "AURORA_LEMON",
+      "title": "Aurora Lemon",
+      "originalFile": "gemini-2.5-flash-image_a_surreal_and_vibrant_cinematic_photo_of_single_fruit_close_up_look_white_backgr-5.jpg",
+      "expectedSourceFile": "aurora-lemon",
+      "outputFile": "aurora-lemon.webp",
+      "style": "cutout",
+      "status": "integrated"
+    },
+    {
+      "code": "CRYSTAL_STAR",
+      "title": "Crystal Star",
+      "originalFile": "gemini-2.5-flash-image_a_surreal_and_vibrant_cinematic_photo_of_single_fruit_close_up_look_white_backgr-6.jpg",
+      "expectedSourceFile": "crystal-star",
+      "outputFile": "crystal-star.webp",
+      "style": "cutout",
+      "status": "integrated"
+    },
+    {
+      "code": "COSMIC_HEART",
+      "title": "Cosmic Heart",
+      "originalFile": "gemini-2.5-flash-image_a_surreal_and_vibrant_cinematic_photo_of_single_fruit_close_up_look_white_backgr-7.jpg",
+      "expectedSourceFile": "cosmic-heart",
+      "outputFile": "cosmic-heart.webp",
+      "style": "cutout",
+      "status": "integrated"
+    },
+    {
+      "code": "EYE_SIGIL",
+      "title": "Eye Sigil",
+      "originalFile": "gemini-2.5-flash-image_a_surreal_and_vibrant_cinematic_photo_of_symbol_close_up_look_white_background_s-0.jpg",
+      "expectedSourceFile": "eye-sigil",
+      "outputFile": "eye-sigil.webp",
+      "style": "cutout",
+      "status": "integrated"
+    },
+    {
+      "code": "FLAME_CROSS",
+      "title": "Flame Cross",
+      "originalFile": "gemini-2.5-flash-image_a_surreal_and_vibrant_cinematic_photo_of_symbol_close_up_look_white_background_s-2.jpg",
+      "expectedSourceFile": "flame-cross",
+      "outputFile": "flame-cross.webp",
+      "style": "cutout",
+      "status": "integrated"
+    },
+    {
+      "code": "GLASS_KNOT",
+      "title": "Glass Knot",
+      "originalFile": "gemini-2.5-flash-image_a_surreal_and_vibrant_cinematic_photo_of_symbol_close_up_look_white_background_s-3.jpg",
+      "expectedSourceFile": "glass-knot",
+      "outputFile": "glass-knot.webp",
+      "style": "cutout",
+      "status": "integrated"
+    },
+    {
+      "code": "WINGED_EYE",
+      "title": "Winged Eye",
+      "originalFile": "gemini-2.5-flash-image_a_surreal_and_vibrant_cinematic_photo_of_symbol_close_up_look_white_background_s-4.jpg",
+      "expectedSourceFile": "winged-eye",
+      "outputFile": "winged-eye.webp",
+      "style": "cutout",
+      "status": "integrated"
+    },
+    {
+      "code": "PRISM_TRIANGLE",
+      "title": "Prism Triangle",
+      "originalFile": "gemini-2.5-flash-image_a_surreal_and_vibrant_cinematic_photo_of_symbol_close_up_look_white_background_s-5.jpg",
+      "expectedSourceFile": "prism-triangle",
+      "outputFile": "prism-triangle.webp",
+      "style": "cutout",
+      "status": "integrated"
+    },
+    {
+      "code": "MOLTEN_MERCURY",
+      "title": "Molten Mercury",
+      "originalFile": "gemini-2.5-flash-image_a_surreal_and_vibrant_cinematic_photo_of_symbol_close_up_look_white_background_s-6.jpg",
+      "expectedSourceFile": "molten-mercury",
+      "outputFile": "molten-mercury.webp",
+      "style": "cutout",
+      "status": "integrated",
+      "cutout": {
+        "max_saturation": 115
+      }
+    },
+    {
+      "code": "SPIRAL_COIN",
+      "title": "Spiral Coin",
+      "originalFile": "gemini-2.5-flash-image_a_surreal_and_vibrant_cinematic_photo_of_symbol_close_up_look_white_background_s-7 (1).jpg",
+      "expectedSourceFile": "spiral-coin",
+      "outputFile": "spiral-coin.webp",
+      "style": "cutout",
+      "status": "integrated"
+    },
+    {
+      "code": "ICE_BANANA_SPLIT",
+      "title": "Banana Split",
+      "originalFile": "banana-split-ice-cream-3d-icon_10109325.png",
+      "expectedSourceFile": "banana-split-ice-cream",
+      "outputFile": "banana-split-ice-cream.webp",
+      "sourceUrl": "https://iconscout.com/3d-illustration/banana-split-ice-cream_10109325",
+      "status": "integrated"
+    },
+    {
+      "code": "ICE_CREAM_BOWL",
+      "title": "Ice Cream Bowl",
+      "originalFile": "ice-cream-bowl-3d-icon_10109311.png",
+      "expectedSourceFile": "ice-cream-bowl",
+      "outputFile": "ice-cream-bowl.webp",
+      "sourceUrl": "https://iconscout.com/3d-illustration/ice-cream-bowl_10109311",
+      "status": "integrated"
+    },
+    {
+      "code": "ICE_CREAM_SCOOPS",
+      "title": "Ice Cream Scoops",
+      "originalFile": "ice-cream-3d-icon_9350903.png",
+      "expectedSourceFile": "ice-cream-scoops",
+      "outputFile": "ice-cream-scoops.webp",
+      "sourceUrl": "https://iconscout.com/3d-illustration/ice-cream_9350903",
+      "status": "integrated"
+    },
+    {
+      "code": "ICE_CREAM_CONE",
+      "title": "Ice Cream Cone",
+      "originalFile": "ice-cream-cone-3d-icon_9466020.png",
+      "expectedSourceFile": "ice-cream-cone",
+      "outputFile": "ice-cream-cone.webp",
+      "sourceUrl": "https://iconscout.com/3d-illustration/ice-cream-cone_9466020",
+      "status": "integrated"
+    },
+    {
+      "code": "ICE_CREAM_SANDWICH",
+      "title": "Ice Cream Sandwich",
+      "originalFile": "sandwich-ice-cream-3d-icon_10109317.png",
+      "expectedSourceFile": "sandwich-ice-cream",
+      "outputFile": "sandwich-ice-cream.webp",
+      "sourceUrl": "https://iconscout.com/3d-illustration/sandwich-ice-cream_10109317",
+      "status": "integrated"
+    },
+    {
+      "code": "ICE_WAFFLE_BOWL",
+      "title": "Waffle Bowl Ice Cream",
+      "originalFile": "waffle-bowl-ice-cream-3d-icon_10109314.png",
+      "expectedSourceFile": "waffle-bowl-ice-cream",
+      "outputFile": "waffle-bowl-ice-cream.webp",
+      "sourceUrl": "https://iconscout.com/3d-illustration/waffle-bowl-ice-cream_10109314",
+      "status": "integrated"
+    },
+    {
+      "code": "ICE_CREAM_TWIST",
+      "title": "Twin Scoop Cone",
+      "originalFile": "ice-cream-3d-icon_11089854.png",
+      "expectedSourceFile": "ice-cream-twist",
+      "outputFile": "ice-cream-twist.webp",
+      "sourceUrl": "https://iconscout.com/3d-illustration/ice-cream_11089854",
+      "status": "integrated"
+    },
+    {
+      "code": "PLANT_POT_A",
+      "title": "Plant Pot",
+      "originalFile": "plant-pot-3d-icon_9554747.png",
+      "expectedSourceFile": "plant-pot-a",
+      "outputFile": "plant-pot-a.webp",
+      "sourceUrl": "https://iconscout.com/3d-illustration/plant-pot_9554747",
+      "status": "integrated"
+    },
+    {
+      "code": "PLANT_POT_B",
+      "title": "Potted Plant",
+      "originalFile": "plant-pot-3d-icon_9554751.png",
+      "expectedSourceFile": "plant-pot-b",
+      "outputFile": "plant-pot-b.webp",
+      "sourceUrl": "https://iconscout.com/3d-illustration/plant-pot_9554751",
+      "status": "integrated"
+    },
+    {
+      "code": "FLOWER_PANSY",
+      "title": "Pansy",
+      "originalFile": "pansy-3d-icon_14289289.png",
+      "expectedSourceFile": "pansy",
+      "outputFile": "pansy.webp",
+      "sourceUrl": "https://iconscout.com/3d-illustration/pansy_14289289",
+      "status": "integrated"
+    },
+    {
+      "code": "FLOWER_ZINNIA",
+      "title": "Zinnia",
+      "originalFile": "zinnia-3d-icon_14289284.png",
+      "expectedSourceFile": "zinnia",
+      "outputFile": "zinnia.webp",
+      "sourceUrl": "https://iconscout.com/3d-illustration/zinnia_14289284",
+      "status": "integrated"
+    },
+    {
+      "code": "FLOWER_LAVENDER",
+      "title": "Lavender",
+      "originalFile": "lavender-3d-icon_14289276.png",
+      "expectedSourceFile": "lavender",
+      "outputFile": "lavender.webp",
+      "sourceUrl": "https://iconscout.com/3d-illustration/lavender_14289276",
+      "status": "integrated"
+    },
+    {
+      "code": "FLOWER_SUNFLOWER",
+      "title": "Sunflower",
+      "originalFile": "sunflower-3d-icon_14103705.png",
+      "expectedSourceFile": "sunflower",
+      "outputFile": "sunflower.webp",
+      "sourceUrl": "https://iconscout.com/3d-illustration/sunflower_14103705",
+      "status": "integrated"
+    },
+    {
+      "code": "CN_HANDFAN_A",
+      "title": "Chinese Hand Fan",
+      "originalFile": "chinese-handfan-3d-icon_8529701.png",
+      "expectedSourceFile": "chinese-handfan-a",
+      "outputFile": "chinese-handfan-a.webp",
+      "sourceUrl": "https://iconscout.com/3d-illustration/chinese-handfan_8529701",
+      "status": "integrated"
+    },
+    {
+      "code": "CN_HANDFAN_B",
+      "title": "Chinese Folding Fan",
+      "originalFile": "chinese-handfan-3d-icon_8529702.png",
+      "expectedSourceFile": "chinese-handfan-b",
+      "outputFile": "chinese-handfan-b.webp",
+      "sourceUrl": "https://iconscout.com/3d-illustration/chinese-handfan_8529702",
+      "status": "integrated"
+    },
+    {
+      "code": "CN_TIGER_MASK",
+      "title": "Tiger Mask",
+      "originalFile": "tiger-mask-3d-icon_4012828.png",
+      "expectedSourceFile": "tiger-mask",
+      "outputFile": "tiger-mask.webp",
+      "sourceUrl": "https://iconscout.com/3d-illustration/tiger-mask_4012828",
+      "status": "integrated"
+    },
+    {
+      "code": "CN_FISH",
+      "title": "Chinese Fish",
+      "originalFile": "chinese-fish-3d-icon_8499539.png",
+      "expectedSourceFile": "chinese-fish",
+      "outputFile": "chinese-fish.webp",
+      "sourceUrl": "https://iconscout.com/3d-illustration/chinese-fish_8499539",
+      "status": "integrated"
+    },
+    {
+      "code": "CN_LION",
+      "title": "Chinese Lion",
+      "originalFile": "chinese-lion-3d-icon_8211233.png",
+      "expectedSourceFile": "chinese-lion",
+      "outputFile": "chinese-lion.webp",
+      "sourceUrl": "https://iconscout.com/3d-illustration/chinese-lion_8211233",
+      "status": "integrated"
+    },
+    {
+      "code": "CN_CHARM",
+      "title": "Chinese Charm",
+      "originalFile": "chinese-charm-3d-icon_11009668.png",
+      "expectedSourceFile": "chinese-charm",
+      "outputFile": "chinese-charm.webp",
+      "sourceUrl": "https://iconscout.com/3d-illustration/chinese-charm_11009668",
+      "status": "integrated"
+    },
+    {
+      "code": "CN_LION_DANCE",
+      "title": "Lion Dance",
+      "originalFile": "free-traditional-chinese-lion-in-dance-festival-illustration_2600771.png",
+      "expectedSourceFile": "cn-lion-dance",
+      "outputFile": "cn-lion-dance.webp",
+      "style": "cutout",
+      "crop": [
+        0.25,
+        0.25,
+        0.81,
+        0.8
+      ],
+      "matte": "#F0F5FD",
+      "cutout": {
+        "min_hole": 1.0
+      },
+      "sourceUrl": "https://iconscout.com/free-illustration/free-traditional-chinese-lion-in-dance-festival_2600771",
+      "status": "integrated"
+    },
+    {
+      "code": "CN_ZODIAC_TIGER",
+      "title": "Zodiac Tiger",
+      "originalFile": "chinese-zodiac-tiger-with-chinese-girl-illustration_8666430.png",
+      "expectedSourceFile": "cn-zodiac-tiger",
+      "outputFile": "cn-zodiac-tiger.webp",
+      "erase": {
+        "colours": [
+          "#F9E2C9",
+          "#FFA86B",
+          "#FACC98",
+          "#F4DDC4",
+          "#F7EADA",
+          "#FF9E5B",
+          "#FF7E00"
+        ],
+        "tolerance": 8
+      },
+      "sourceUrl": "https://iconscout.com/illustration/chinese-zodiac-tiger-with-chinese-girl_8666430",
+      "status": "integrated"
+    },
+    {
+      "code": "CN_ZODIAC_OX",
+      "title": "Zodiac Ox",
+      "originalFile": "chinese-zodiac-ox-with-chinese-girl-illustration_8666426.png",
+      "expectedSourceFile": "cn-zodiac-ox",
+      "outputFile": "cn-zodiac-ox.webp",
+      "erase": {
+        "colours": [
+          "#F9E2C9",
+          "#FFA86B",
+          "#FACC98",
+          "#F4DDC4",
+          "#F7EADA",
+          "#FF9E5B",
+          "#FF7E00"
+        ],
+        "tolerance": 8
+      },
+      "sourceUrl": "https://iconscout.com/illustration/chinese-zodiac-ox-with-chinese-girl_8666426",
+      "status": "integrated"
+    },
+    {
+      "code": "CN_OX_SYMBOL",
+      "title": "Year of the Ox",
+      "originalFile": "free-chinese-new-year-2021-year-of-the-ox-chinese-zodiac-symbol-illustration_2600762.png",
+      "expectedSourceFile": "cn-ox-symbol",
+      "outputFile": "cn-ox-symbol.webp",
+      "style": "cutout",
+      "crop": [
+        0.33,
+        0.25,
+        0.76,
+        0.85
+      ],
+      "matte": "#FFEFD9",
+      "sourceUrl": "https://iconscout.com/free-illustration/free-chinese-new-year-2021-year-of-the-ox-chinese-zodiac-symbol_2600762",
+      "status": "integrated"
+    },
+    {
+      "code": "CN_DRAGON",
+      "title": "Dragon Badge",
+      "originalFile": "free-chinese-dragon-illustration_2600770.png",
+      "expectedSourceFile": "cn-dragon",
+      "outputFile": "cn-dragon.webp",
+      "crop": {
+        "box": [
+          0.19881,
+          0.13364,
+          0.73905,
+          0.82121
+        ],
+        "ellipse": true
+      },
+      "sourceUrl": "https://iconscout.com/free-illustration/free-chinese-dragon_2600770",
+      "status": "integrated"
+    },
+    {
+      "code": "BIRD_WOODPECKER",
+      "title": "Woodpecker",
+      "originalFile": "woodpecker-3d-icon_12192526.png",
+      "expectedSourceFile": "woodpecker",
+      "outputFile": "woodpecker.webp",
+      "sourceUrl": "https://iconscout.com/3d-illustration/woodpecker_12192526",
+      "status": "integrated"
+    },
+    {
+      "code": "BIRD_PEACOCK",
+      "title": "Peacock",
+      "originalFile": "peacock-displaying-feathers-3d-icon_9882133.png",
+      "expectedSourceFile": "peacock",
+      "outputFile": "peacock.webp",
+      "sourceUrl": "https://iconscout.com/3d-illustration/peacock-displaying-feathers_9882133",
+      "status": "integrated"
+    },
+    {
+      "code": "BIRD_HUMMINGBIRD",
+      "title": "Hummingbird",
+      "originalFile": "hummingbird-hovering-3d-icon_9882132.png",
+      "expectedSourceFile": "hummingbird",
+      "outputFile": "hummingbird.webp",
+      "sourceUrl": "https://iconscout.com/3d-illustration/hummingbird-hovering_9882132",
+      "status": "integrated"
+    },
+    {
+      "code": "BIRD_EAGLE",
+      "title": "Eagle",
+      "originalFile": "eagle-soaring-3d-icon_9882136.png",
+      "expectedSourceFile": "eagle",
+      "outputFile": "eagle.webp",
+      "sourceUrl": "https://iconscout.com/3d-illustration/eagle-soaring_9882136",
+      "status": "integrated"
+    },
+    {
+      "code": "DINO_PARASAUROLOPHUS",
+      "title": "Parasaurolophus",
+      "originalFile": "parasaurolophus-dinosaur-3d-icon_9828727.png",
+      "expectedSourceFile": "parasaurolophus",
+      "outputFile": "parasaurolophus.webp",
+      "sourceUrl": "https://iconscout.com/3d-illustration/parasaurolophus-dinosaur_9828727",
+      "status": "integrated"
+    },
+    {
+      "code": "DINO_ANKYLOSAURUS",
+      "title": "Ankylosaurus",
+      "originalFile": "ankylosaurus-dinosaur-3d-icon_9828729.png",
+      "expectedSourceFile": "ankylosaurus",
+      "outputFile": "ankylosaurus.webp",
+      "sourceUrl": "https://iconscout.com/3d-illustration/ankylosaurus-dinosaur_9828729",
+      "status": "integrated"
+    },
+    {
+      "code": "DINO_TRICERATOPS",
+      "title": "Triceratops",
+      "originalFile": "triceratops-dinosaur-3d-icon_9828730.png",
+      "expectedSourceFile": "triceratops",
+      "outputFile": "triceratops.webp",
+      "sourceUrl": "https://iconscout.com/3d-illustration/triceratops-dinosaur_9828730",
+      "status": "integrated"
+    },
+    {
+      "code": "DINO_BRONTOSAURUS",
+      "title": "Brontosaurus",
+      "originalFile": "brontosaurus-dinosaur-3d-icon_9828734.png",
+      "expectedSourceFile": "brontosaurus",
+      "outputFile": "brontosaurus.webp",
+      "sourceUrl": "https://iconscout.com/3d-illustration/brontosaurus-dinosaur_9828734",
+      "status": "integrated"
+    },
+    {
+      "code": "LOVE_BE_MINE",
+      "title": "Be Mine",
+      "originalFile": "be-mine-3d-icon_5625871.png",
+      "expectedSourceFile": "be-mine",
+      "outputFile": "be-mine.webp",
+      "sourceUrl": "https://iconscout.com/3d-illustration/be-mine_5625871",
+      "status": "integrated"
+    },
+    {
+      "code": "LOVE_BROKEN_HEART",
+      "title": "Broken Heart",
+      "originalFile": "broken-heart-3d-icon_5625863.png",
+      "expectedSourceFile": "broken-heart",
+      "outputFile": "broken-heart.webp",
+      "sourceUrl": "https://iconscout.com/3d-illustration/broken-heart_5625863",
+      "status": "integrated"
+    },
+    {
+      "code": "LOVE_HEART_BALLOONS",
+      "title": "Heart Balloons",
+      "originalFile": "heart-balloons-3d-icon_5625859.png",
+      "expectedSourceFile": "heart-balloons",
+      "outputFile": "heart-balloons.webp",
+      "sourceUrl": "https://iconscout.com/3d-illustration/heart-balloons_5625859",
+      "status": "integrated"
+    },
+    {
+      "code": "LOVE_I_LOVE_YOU",
+      "title": "I Love You",
+      "originalFile": "i-love-you-3d-icon_5625867.png",
+      "expectedSourceFile": "i-love-you",
+      "outputFile": "i-love-you.webp",
+      "sourceUrl": "https://iconscout.com/3d-illustration/i-love-you_5625867",
+      "status": "integrated"
+    },
+    {
+      "code": "LOVE_HEART",
+      "title": "Love",
+      "originalFile": "love-3d-icon_5625853.png",
+      "expectedSourceFile": "love-heart",
+      "outputFile": "love-heart.webp",
+      "sourceUrl": "https://iconscout.com/3d-illustration/love_5625853",
+      "status": "integrated"
+    },
+    {
+      "code": "LOVE_BIRDS_COUPLE",
+      "title": "Love Birds Couple",
+      "originalFile": "love-birds-couple-3d-icon_5625857.png",
+      "expectedSourceFile": "love-birds-couple",
+      "outputFile": "love-birds-couple.webp",
+      "sourceUrl": "https://iconscout.com/3d-illustration/love-birds-couple_5625857",
+      "status": "integrated"
+    },
+    {
+      "code": "LOVE_CHOCOLATE_BOX",
+      "title": "Chocolate Box",
+      "originalFile": "love-chocolate-box-3d-icon_5625855.png",
+      "expectedSourceFile": "love-chocolate-box",
+      "outputFile": "love-chocolate-box.webp",
+      "sourceUrl": "https://iconscout.com/3d-illustration/love-chocolate-box_5625855",
+      "status": "integrated"
+    },
+    {
+      "code": "LOVE_COFFEE_CUP",
+      "title": "Love Coffee Cup",
+      "originalFile": "love-coffe-cup-3d-icon_5625860.png",
+      "expectedSourceFile": "love-coffee-cup",
+      "outputFile": "love-coffee-cup.webp",
+      "sourceUrl": "https://iconscout.com/3d-illustration/love-coffe-cup_5625860",
+      "status": "integrated"
+    },
+    {
+      "code": "LOVE_WEDDING_CAKE",
+      "title": "Wedding Cake",
+      "originalFile": "wedding-cake-3d-icon_5625864.png",
+      "expectedSourceFile": "wedding-cake",
+      "outputFile": "wedding-cake.webp",
+      "sourceUrl": "https://iconscout.com/3d-illustration/wedding-cake_5625864",
+      "status": "integrated"
+    },
+    {
+      "code": "CN_SYMBOL_CLOUD",
+      "title": "New Year Cloud Symbol",
+      "originalFile": "chinese-new-year-symbol-and-cloud-3d-icon_3997892.png",
+      "expectedSourceFile": "cn-symbol-cloud",
+      "outputFile": "cn-symbol-cloud.webp",
+      "sourceUrl": "https://iconscout.com/3d-illustration/chinese-new-year-symbol-and-cloud_3997892",
+      "status": "integrated"
+    },
+    {
+      "code": "BIRD_LOVEBIRDS_A",
+      "title": "Love Birds Heart",
+      "originalFile": "love-birds-3d-icon_8747258.png",
+      "expectedSourceFile": "love-birds-a",
+      "outputFile": "love-birds-a.webp",
+      "sourceUrl": "https://iconscout.com/3d-illustration/love-birds_8747258",
+      "status": "integrated"
+    },
+    {
+      "code": "BUG_LADYBUG",
+      "title": "Ladybug",
+      "originalFile": "ladybug-3d-icon_13327129.png",
+      "expectedSourceFile": "ladybug",
+      "outputFile": "ladybug.webp",
+      "sourceUrl": "https://iconscout.com/3d-illustration/ladybug_13327129",
+      "status": "integrated"
+    },
+    {
+      "code": "BIRD_LOVEBIRDS_B",
+      "title": "Love Birds on Branch",
+      "originalFile": "love-birds-3d-icon_4094600.png",
+      "expectedSourceFile": "love-birds-b",
+      "outputFile": "love-birds-b.webp",
+      "sourceUrl": "https://iconscout.com/3d-illustration/love-birds_4094600",
+      "status": "integrated"
+    },
+    {
+      "code": "BIRD_LOVEBIRDS_C",
+      "title": "Kissing Doves",
+      "originalFile": "love-birds-3d-icon_8715552.png",
+      "expectedSourceFile": "love-birds-c",
+      "outputFile": "love-birds-c.webp",
+      "sourceUrl": "https://iconscout.com/3d-illustration/love-birds_8715552",
+      "status": "integrated"
+    },
+    {
+      "code": "BIRD_CHICKEN",
+      "title": "Cute Chicken",
+      "originalFile": "cute-chicken-3d-icon_12242724.png",
+      "expectedSourceFile": "cute-chicken",
+      "outputFile": "cute-chicken.webp",
+      "sourceUrl": "https://iconscout.com/3d-illustration/cute-chicken_12242724",
+      "status": "integrated"
+    },
+    {
+      "code": "FIT_WATER_BOTTLE",
+      "title": "Gym Water Bottle",
+      "originalFile": "gym-fitness-water-bottle-3d-icon_5559739.png",
+      "expectedSourceFile": "fit-water-bottle",
+      "outputFile": "fit-water-bottle.webp",
+      "sourceUrl": "https://iconscout.com/3d-icon/gym-fitness-water-bottle-3d-icon_5559739",
+      "status": "integrated"
+    },
+    {
+      "code": "FIT_TRACKER_BAND",
+      "title": "Fitness Tracker Band",
+      "originalFile": "fitness-tracker-3d-icon_7766902.png",
+      "expectedSourceFile": "fit-tracker-band",
+      "outputFile": "fit-tracker-band.webp",
+      "sourceUrl": "https://iconscout.com/3d-icon/fitness-tracker-3d-icon_7766902",
+      "status": "integrated"
+    },
+    {
+      "code": "FIT_GYM_BALL",
+      "title": "Gym Ball",
+      "originalFile": "gym-ball-3d-icon_14143255.png",
+      "expectedSourceFile": "fit-gym-ball",
+      "outputFile": "fit-gym-ball.webp",
+      "sourceUrl": "https://iconscout.com/3d-icon/gym-ball-3d-icon_14143255",
+      "status": "integrated"
+    },
+    {
+      "code": "FIT_GYM_CYCLE",
+      "title": "Gym Cycle",
+      "originalFile": "gym-cycle-3d-icon_14143243.png",
+      "expectedSourceFile": "fit-gym-cycle",
+      "outputFile": "fit-gym-cycle.webp",
+      "sourceUrl": "https://iconscout.com/3d-icon/gym-cycle-3d-icon_14143243",
+      "status": "integrated"
+    },
+    {
+      "code": "FIT_HEART_WATCH",
+      "title": "Fitness Watch",
+      "originalFile": "fitness-watch-3d-icon_9590365.png",
+      "expectedSourceFile": "fit-heart-watch",
+      "outputFile": "fit-heart-watch.webp",
+      "sourceUrl": "https://iconscout.com/3d-icon/fitness-watch-3d-icon_9590365",
+      "status": "integrated"
+    },
+    {
+      "code": "FIT_SMARTWATCH",
+      "title": "Fitness Smartwatch",
+      "originalFile": "fitness-tracker-3d-icon_12257484.png",
+      "expectedSourceFile": "fit-smartwatch",
+      "outputFile": "fit-smartwatch.webp",
+      "sourceUrl": "https://iconscout.com/3d-icon/fitness-tracker-3d-icon_12257484",
+      "status": "integrated"
+    },
+    {
+      "code": "JULY4_FLAG_BALLOONS",
+      "title": "American Flag Balloons",
+      "originalFile": "american-flag-balloons-3d-icon_7170581.png",
+      "expectedSourceFile": "july4-flag-balloons",
+      "outputFile": "july4-flag-balloons.webp",
+      "sourceUrl": "https://iconscout.com/3d-icon/american-flag-balloons-3d-icon_7170581",
+      "crop": [
+        0.15,
+        0.0,
+        0.85,
+        0.66
+      ],
+      "status": "integrated"
+    },
+    {
+      "code": "JULY4_TEXT_BALLOONS",
+      "title": "4th of July Balloons",
+      "originalFile": "american-independence-day-3d-icon_7170582.png",
+      "expectedSourceFile": "july4-text-balloons",
+      "outputFile": "july4-text-balloons.webp",
+      "sourceUrl": "https://iconscout.com/3d-icon/american-independence-day-3d-icon_7170582",
+      "status": "rejected",
+      "rejected": "unreadable at tile size: busy red/white/blue cluster, text illegible at 31 px"
+    },
+    {
+      "code": "JULY4_GIFT_BURST",
+      "title": "Independence Day Gift Box",
+      "originalFile": "american-independence-day-3d-icon_7170583.png",
+      "expectedSourceFile": "july4-gift-burst",
+      "outputFile": "july4-gift-burst.webp",
+      "sourceUrl": "https://iconscout.com/3d-icon/american-independence-day-3d-icon_7170583",
+      "status": "rejected",
+      "rejected": "unreadable at tile size: busy cluster, confusable with JULY4_HAT_BOUQUET"
+    },
+    {
+      "code": "JULY4_ROCKET_BOX",
+      "title": "Independence Day Rockets",
+      "originalFile": "american-independence-day-3d-icon_7170585.png",
+      "expectedSourceFile": "july4-rocket-box",
+      "outputFile": "july4-rocket-box.webp",
+      "sourceUrl": "https://iconscout.com/3d-icon/american-independence-day-3d-icon_7170585",
+      "status": "integrated"
+    },
+    {
+      "code": "JULY4_WREATH",
+      "title": "Independence Day Wreath",
+      "originalFile": "american-independence-day-3d-icon_7170586.png",
+      "expectedSourceFile": "july4-wreath",
+      "outputFile": "july4-wreath.webp",
+      "sourceUrl": "https://iconscout.com/3d-icon/american-independence-day-3d-icon_7170586",
+      "status": "integrated"
+    },
+    {
+      "code": "JULY4_CALENDAR",
+      "title": "4th of July Calendar",
+      "originalFile": "american-independence-day-3d-icon_7170587.png",
+      "expectedSourceFile": "july4-calendar",
+      "outputFile": "july4-calendar.webp",
+      "sourceUrl": "https://iconscout.com/3d-icon/american-independence-day-3d-icon_7170587",
+      "status": "integrated"
+    },
+    {
+      "code": "JULY4_TWO_HATS",
+      "title": "Uncle Sam Hats",
+      "originalFile": "american-independence-day-3d-icon_7170589.png",
+      "expectedSourceFile": "july4-two-hats",
+      "outputFile": "july4-two-hats.webp",
+      "sourceUrl": "https://iconscout.com/3d-icon/american-independence-day-3d-icon_7170589",
+      "status": "integrated"
+    },
+    {
+      "code": "JULY4_HAT_BOUQUET",
+      "title": "Uncle Sam Hat Bouquet",
+      "originalFile": "american-independence-day-3d-icon_7170590.png",
+      "expectedSourceFile": "july4-hat-bouquet",
+      "outputFile": "july4-hat-bouquet.webp",
+      "sourceUrl": "https://iconscout.com/3d-icon/american-independence-day-3d-icon_7170590",
+      "status": "rejected",
+      "rejected": "unreadable at tile size: busy cluster, confusable with JULY4_GIFT_BURST"
+    },
+    {
+      "code": "SPORT_BASKETBALL",
+      "title": "Basketball Hoop",
+      "originalFile": "basketball-3d-icon_12569474.png",
+      "expectedSourceFile": "sport-basketball",
+      "outputFile": "sport-basketball.webp",
+      "sourceUrl": "https://iconscout.com/3d-icon/basketball-3d-icon_12569474",
+      "status": "integrated"
+    },
+    {
+      "code": "SPORT_BOWLING",
+      "title": "Bowling",
+      "originalFile": "bowling-3d-icon_12569480.png",
+      "expectedSourceFile": "sport-bowling",
+      "outputFile": "sport-bowling.webp",
+      "sourceUrl": "https://iconscout.com/3d-icon/bowling-3d-icon_12569480",
+      "status": "integrated"
+    },
+    {
+      "code": "SPORT_CRICKET",
+      "title": "Cricket Bats",
+      "originalFile": "cricket-3d-icon_12569481.png",
+      "expectedSourceFile": "sport-cricket",
+      "outputFile": "sport-cricket.webp",
+      "sourceUrl": "https://iconscout.com/3d-icon/cricket-3d-icon_12569481",
+      "status": "integrated"
+    },
+    {
+      "code": "SPORT_CROQUET",
+      "title": "Croquet Mallet",
+      "originalFile": "croquet-3d-icon_12569482.png",
+      "expectedSourceFile": "sport-croquet",
+      "outputFile": "sport-croquet.webp",
+      "sourceUrl": "https://iconscout.com/3d-icon/croquet-3d-icon_12569482",
+      "status": "integrated"
+    },
+    {
+      "code": "SPORT_CURLING",
+      "title": "Curling Stone",
+      "originalFile": "curling-3d-icon_12569483.png",
+      "expectedSourceFile": "sport-curling",
+      "outputFile": "sport-curling.webp",
+      "sourceUrl": "https://iconscout.com/3d-icon/curling-3d-icon_12569483",
+      "status": "integrated"
+    },
+    {
+      "code": "SPORT_FENCING",
+      "title": "Fencing Foils",
+      "originalFile": "fencing-3d-icon_12569484.png",
+      "expectedSourceFile": "sport-fencing",
+      "outputFile": "sport-fencing.webp",
+      "sourceUrl": "https://iconscout.com/3d-icon/fencing-3d-icon_12569484",
+      "status": "integrated"
+    },
+    {
+      "code": "SPORT_FOOTBALL",
+      "title": "Football",
+      "originalFile": "football-3d-icon_12569479.png",
+      "expectedSourceFile": "sport-football",
+      "outputFile": "sport-football.webp",
+      "sourceUrl": "https://iconscout.com/3d-icon/football-3d-icon_12569479",
+      "status": "integrated"
+    },
+    {
+      "code": "SPORT_FRISBEE",
+      "title": "Frisbee",
+      "originalFile": "frisbee-3d-icon_12569485.png",
+      "expectedSourceFile": "sport-frisbee",
+      "outputFile": "sport-frisbee.webp",
+      "sourceUrl": "https://iconscout.com/3d-icon/frisbee-3d-icon_12569485",
+      "status": "integrated"
+    },
+    {
+      "code": "SPORT_GOLF",
+      "title": "Golf Green",
+      "originalFile": "golf-3d-icon_12569492.png",
+      "expectedSourceFile": "sport-golf",
+      "outputFile": "sport-golf.webp",
+      "sourceUrl": "https://iconscout.com/3d-icon/golf-3d-icon_12569492",
+      "status": "integrated"
+    },
+    {
+      "code": "SPORT_DUMBBELL",
+      "title": "Dumbbell",
+      "originalFile": "gym-3d-icon_12569493.png",
+      "expectedSourceFile": "sport-dumbbell",
+      "outputFile": "sport-dumbbell.webp",
+      "sourceUrl": "https://iconscout.com/3d-icon/gym-3d-icon_12569493",
+      "status": "awaiting download"
+    },
+    {
+      "code": "SPORT_HOCKEY",
+      "title": "Hockey Sticks",
+      "originalFile": "hockey-3d-icon_12569487.png",
+      "expectedSourceFile": "sport-hockey",
+      "outputFile": "sport-hockey.webp",
+      "sourceUrl": "https://iconscout.com/3d-icon/hockey-3d-icon_12569487",
+      "status": "awaiting download"
+    },
+    {
+      "code": "SPORT_TORCH",
+      "title": "Olympic Torch",
+      "originalFile": "olympic-torch-3d-icon_12569486.png",
+      "expectedSourceFile": "sport-torch",
+      "outputFile": "sport-torch.webp",
+      "sourceUrl": "https://iconscout.com/3d-icon/olympic-torch-3d-icon_12569486",
+      "status": "awaiting download"
+    },
+    {
+      "code": "SPORT_PING_PONG",
+      "title": "Ping Pong Paddle",
+      "originalFile": "ping-pong-3d-icon_12569477.png",
+      "expectedSourceFile": "sport-ping-pong",
+      "outputFile": "sport-ping-pong.webp",
+      "sourceUrl": "https://iconscout.com/3d-icon/ping-pong-3d-icon_12569477",
+      "status": "awaiting download"
+    },
+    {
+      "code": "SPORT_RUGBY",
+      "title": "Rugby Ball",
+      "originalFile": "rugby-3d-icon_12569491.png",
+      "expectedSourceFile": "sport-rugby",
+      "outputFile": "sport-rugby.webp",
+      "sourceUrl": "https://iconscout.com/3d-icon/rugby-3d-icon_12569491",
+      "status": "awaiting download"
+    },
+    {
+      "code": "SPORT_SKATEBOARD",
+      "title": "Skateboard",
+      "originalFile": "skateboard-3d-icon_12569475.png",
+      "expectedSourceFile": "sport-skateboard",
+      "outputFile": "sport-skateboard.webp",
+      "sourceUrl": "https://iconscout.com/3d-icon/skateboard-3d-icon_12569475",
+      "status": "awaiting download"
+    },
+    {
+      "code": "SPORT_MEDAL",
+      "title": "Star Medal",
+      "originalFile": "star-medal-3d-icon_12569490.png",
+      "expectedSourceFile": "sport-medal",
+      "outputFile": "sport-medal.webp",
+      "sourceUrl": "https://iconscout.com/3d-icon/star-medal-3d-icon_12569490",
+      "status": "awaiting download"
+    },
+    {
+      "code": "SPORT_TROPHY",
+      "title": "Star Trophy",
+      "originalFile": "star-trophy-3d-icon_12569489.png",
+      "expectedSourceFile": "sport-trophy",
+      "outputFile": "sport-trophy.webp",
+      "sourceUrl": "https://iconscout.com/3d-icon/star-trophy-3d-icon_12569489",
+      "status": "awaiting download"
+    },
+    {
+      "code": "SPORT_TENNIS",
+      "title": "Tennis Racket",
+      "originalFile": "tennis-3d-icon_12569488.png",
+      "expectedSourceFile": "sport-tennis",
+      "outputFile": "sport-tennis.webp",
+      "sourceUrl": "https://iconscout.com/3d-icon/tennis-3d-icon_12569488",
+      "status": "awaiting download"
+    },
+    {
+      "code": "SPORT_VOLLEYBALL",
+      "title": "Volleyball",
+      "originalFile": "volly-ball-3d-icon_12569476.png",
+      "expectedSourceFile": "sport-volleyball",
+      "outputFile": "sport-volleyball.webp",
+      "sourceUrl": "https://iconscout.com/3d-icon/volly-ball-3d-icon_12569476",
+      "status": "awaiting download"
+    },
+    {
+      "code": "XMAS_CANDLES",
+      "title": "Christmas Candles",
+      "originalFile": "burning-candle-3d-icon_13367858.png",
+      "expectedSourceFile": "xmas-candles",
+      "outputFile": "xmas-candles.webp",
+      "sourceUrl": "https://iconscout.com/3d-icon/burning-candle-3d-icon_13367858",
+      "status": "awaiting download"
+    },
+    {
+      "code": "XMAS_CANDY_CANES",
+      "title": "Candy Canes",
+      "originalFile": "candy-cane-3d-icon_13367848.png",
+      "expectedSourceFile": "xmas-candy-canes",
+      "outputFile": "xmas-candy-canes.webp",
+      "sourceUrl": "https://iconscout.com/3d-icon/candy-cane-3d-icon_13367848",
+      "status": "awaiting download"
+    },
+    {
+      "code": "XMAS_LOLLIPOPS",
+      "title": "Christmas Lollipops",
+      "originalFile": "candy-cane-3d-icon_13367856.png",
+      "expectedSourceFile": "xmas-lollipops",
+      "outputFile": "xmas-lollipops.webp",
+      "sourceUrl": "https://iconscout.com/3d-icon/candy-cane-3d-icon_13367856",
+      "status": "awaiting download"
+    },
+    {
+      "code": "XMAS_BAUBLES",
+      "title": "Christmas Baubles",
+      "originalFile": "christmas-balls-3d-icon_13367844.png",
+      "expectedSourceFile": "xmas-baubles",
+      "outputFile": "xmas-baubles.webp",
+      "sourceUrl": "https://iconscout.com/3d-icon/christmas-balls-3d-icon_13367844",
+      "status": "awaiting download"
+    },
+    {
+      "code": "XMAS_BELLS",
+      "title": "Christmas Bells",
+      "originalFile": "christmas-bells-3d-icon_13367834.png",
+      "expectedSourceFile": "xmas-bells",
+      "outputFile": "xmas-bells.webp",
+      "sourceUrl": "https://iconscout.com/3d-icon/christmas-bells-3d-icon_13367834",
+      "status": "awaiting download"
+    },
+    {
+      "code": "XMAS_CUPCAKE",
+      "title": "Christmas Cupcake",
+      "originalFile": "christmas-cupcake-3d-icon_13367855.png",
+      "expectedSourceFile": "xmas-cupcake",
+      "outputFile": "xmas-cupcake.webp",
+      "sourceUrl": "https://iconscout.com/3d-icon/christmas-cupcake-3d-icon_13367855",
+      "status": "awaiting download"
+    },
+    {
+      "code": "XMAS_CALENDAR",
+      "title": "Christmas Day Calendar",
+      "originalFile": "christmas-day-3d-icon_13367836.png",
+      "expectedSourceFile": "xmas-calendar",
+      "outputFile": "xmas-calendar.webp",
+      "sourceUrl": "https://iconscout.com/3d-icon/christmas-day-3d-icon_13367836",
+      "status": "awaiting download"
+    },
+    {
+      "code": "XMAS_FIREPLACE",
+      "title": "Christmas Fireplace",
+      "originalFile": "christmas-fireplace-3d-icon_13367835.png",
+      "expectedSourceFile": "xmas-fireplace",
+      "outputFile": "xmas-fireplace.webp",
+      "sourceUrl": "https://iconscout.com/3d-icon/christmas-fireplace-3d-icon_13367835",
+      "status": "awaiting download"
+    },
+    {
+      "code": "XMAS_GIFTS",
+      "title": "Christmas Gifts",
+      "originalFile": "christmas-gifts-3d-icon_13367863.png",
+      "expectedSourceFile": "xmas-gifts",
+      "outputFile": "xmas-gifts.webp",
+      "sourceUrl": "https://iconscout.com/3d-icon/christmas-gifts-3d-icon_13367863",
+      "status": "awaiting download"
+    },
+    {
+      "code": "XMAS_MITTENS",
+      "title": "Christmas Mittens",
+      "originalFile": "christmas-glove-3d-icon_13367841.png",
+      "expectedSourceFile": "xmas-mittens",
+      "outputFile": "xmas-mittens.webp",
+      "sourceUrl": "https://iconscout.com/3d-icon/christmas-glove-3d-icon_13367841",
+      "status": "awaiting download"
+    },
+    {
+      "code": "XMAS_SANTA_HAT",
+      "title": "Santa Hat",
+      "originalFile": "christmas-hat-3d-icon_13367846.png",
+      "expectedSourceFile": "xmas-santa-hat",
+      "outputFile": "xmas-santa-hat.webp",
+      "sourceUrl": "https://iconscout.com/3d-icon/christmas-hat-3d-icon_13367846",
+      "status": "awaiting download"
+    },
+    {
+      "code": "XMAS_LANTERN",
+      "title": "Christmas Lantern",
+      "originalFile": "christmas-lantern-3d-icon_13367837.png",
+      "expectedSourceFile": "xmas-lantern",
+      "outputFile": "xmas-lantern.webp",
+      "sourceUrl": "https://iconscout.com/3d-icon/christmas-lantern-3d-icon_13367837",
+      "status": "awaiting download"
+    },
+    {
+      "code": "XMAS_SCARF",
+      "title": "Christmas Scarf",
+      "originalFile": "christmas-scarf-3d-icon_13367842.png",
+      "expectedSourceFile": "xmas-scarf",
+      "outputFile": "xmas-scarf.webp",
+      "sourceUrl": "https://iconscout.com/3d-icon/christmas-scarf-3d-icon_13367842",
+      "status": "awaiting download"
+    },
+    {
+      "code": "XMAS_SHOPPING_BAG",
+      "title": "Christmas Shopping Bag",
+      "originalFile": "christmas-shopping-3d-icon_13367838.png",
+      "expectedSourceFile": "xmas-shopping-bag",
+      "outputFile": "xmas-shopping-bag.webp",
+      "sourceUrl": "https://iconscout.com/3d-icon/christmas-shopping-3d-icon_13367838",
+      "status": "awaiting download"
+    },
+    {
+      "code": "XMAS_STOCKINGS",
+      "title": "Christmas Stockings",
+      "originalFile": "christmas-socks-3d-icon_13367862.png",
+      "expectedSourceFile": "xmas-stockings",
+      "outputFile": "xmas-stockings.webp",
+      "sourceUrl": "https://iconscout.com/3d-icon/christmas-socks-3d-icon_13367862",
+      "status": "awaiting download"
+    },
+    {
+      "code": "XMAS_TREE",
+      "title": "Christmas Tree",
+      "originalFile": "christmas-tree-3d-icon_13367845.png",
+      "expectedSourceFile": "xmas-tree",
+      "outputFile": "xmas-tree.webp",
+      "sourceUrl": "https://iconscout.com/3d-icon/christmas-tree-3d-icon_13367845",
+      "status": "awaiting download"
+    },
+    {
+      "code": "XMAS_WREATH",
+      "title": "Christmas Wreath",
+      "originalFile": "christmas-wreath-3d-icon_13367839.png",
+      "expectedSourceFile": "xmas-wreath",
+      "outputFile": "xmas-wreath.webp",
+      "sourceUrl": "https://iconscout.com/3d-icon/christmas-wreath-3d-icon_13367839",
+      "status": "awaiting download"
+    },
+    {
+      "code": "XMAS_COOKIES",
+      "title": "Cookie Dish",
+      "originalFile": "cookie-dish-3d-icon_13367859.png",
+      "expectedSourceFile": "xmas-cookies",
+      "outputFile": "xmas-cookies.webp",
+      "sourceUrl": "https://iconscout.com/3d-icon/cookie-dish-3d-icon_13367859",
+      "status": "awaiting download"
+    },
+    {
+      "code": "XMAS_ANTLER_HEADBAND",
+      "title": "Antler Headband",
+      "originalFile": "deer-headband-3d-icon_13367847.png",
+      "expectedSourceFile": "xmas-antler-headband",
+      "outputFile": "xmas-antler-headband.webp",
+      "sourceUrl": "https://iconscout.com/3d-icon/deer-headband-3d-icon_13367847",
+      "status": "awaiting download"
+    },
+    {
+      "code": "XMAS_EARMUFFS",
+      "title": "Earmuffs",
+      "originalFile": "earmuffs-3d-icon_13367852.png",
+      "expectedSourceFile": "xmas-earmuffs",
+      "outputFile": "xmas-earmuffs.webp",
+      "sourceUrl": "https://iconscout.com/3d-icon/earmuffs-3d-icon_13367852",
+      "status": "awaiting download"
+    },
+    {
+      "code": "XMAS_SANTA_SACK",
+      "title": "Santa Gift Sack",
+      "originalFile": "gift-bag-3d-icon_13367853.png",
+      "expectedSourceFile": "xmas-santa-sack",
+      "outputFile": "xmas-santa-sack.webp",
+      "sourceUrl": "https://iconscout.com/3d-icon/gift-bag-3d-icon_13367853",
+      "status": "awaiting download"
+    },
+    {
+      "code": "XMAS_GINGERBREAD",
+      "title": "Gingerbread Man",
+      "originalFile": "gingerbread-man-3d-icon_13367843.png",
+      "expectedSourceFile": "xmas-gingerbread",
+      "outputFile": "xmas-gingerbread.webp",
+      "sourceUrl": "https://iconscout.com/3d-icon/gingerbread-man-3d-icon_13367843",
+      "status": "awaiting download"
+    },
+    {
+      "code": "XMAS_HOLLY",
+      "title": "Mistletoe",
+      "originalFile": "mistletoe-3d-icon_13367850.png",
+      "expectedSourceFile": "xmas-holly",
+      "outputFile": "xmas-holly.webp",
+      "sourceUrl": "https://iconscout.com/3d-icon/mistletoe-3d-icon_13367850",
+      "status": "awaiting download"
+    },
+    {
+      "code": "XMAS_REINDEER",
+      "title": "Reindeer",
+      "originalFile": "reindeer-3d-icon_13367854.png",
+      "expectedSourceFile": "xmas-reindeer",
+      "outputFile": "xmas-reindeer.webp",
+      "sourceUrl": "https://iconscout.com/3d-icon/reindeer-3d-icon_13367854",
+      "status": "awaiting download"
+    },
+    {
+      "code": "XMAS_SLEIGH",
+      "title": "Santa Sleigh",
+      "originalFile": "santa-sleigh-3d-icon_13367861.png",
+      "expectedSourceFile": "xmas-sleigh",
+      "outputFile": "xmas-sleigh.webp",
+      "sourceUrl": "https://iconscout.com/3d-icon/santa-sleigh-3d-icon_13367861",
+      "status": "awaiting download"
+    },
+    {
+      "code": "XMAS_SNOW_GLOBE",
+      "title": "Snow Globe",
+      "originalFile": "snow-globe-3d-icon_13367849.png",
+      "expectedSourceFile": "xmas-snow-globe",
+      "outputFile": "xmas-snow-globe.webp",
+      "sourceUrl": "https://iconscout.com/3d-icon/snow-globe-3d-icon_13367849",
+      "status": "awaiting download"
+    },
+    {
+      "code": "XMAS_SNOWFLAKE",
+      "title": "Snowflake",
+      "originalFile": "snowflake-3d-icon_13367851.png",
+      "expectedSourceFile": "xmas-snowflake",
+      "outputFile": "xmas-snowflake.webp",
+      "sourceUrl": "https://iconscout.com/3d-icon/snowflake-3d-icon_13367851",
+      "status": "awaiting download"
+    },
+    {
+      "code": "XMAS_SNOWMAN",
+      "title": "Snowman",
+      "originalFile": "snowman-3d-icon_13367857.png",
+      "expectedSourceFile": "xmas-snowman",
+      "outputFile": "xmas-snowman.webp",
+      "sourceUrl": "https://iconscout.com/3d-icon/snowman-3d-icon_13367857",
+      "status": "awaiting download"
+    },
+    {
+      "code": "TECH_CERTIFICATE",
+      "title": "Certificate",
+      "originalFile": "certificate-3d-icon_8841688.png",
+      "expectedSourceFile": "tech-certificate",
+      "outputFile": "tech-certificate.webp",
+      "sourceUrl": "https://iconscout.com/3d-icon/certificate-3d-icon_8841688",
+      "status": "awaiting download"
+    },
+    {
+      "code": "TECH_GEAR_CHECK",
+      "title": "Gear Check",
+      "originalFile": "check-3d-icon_8841684.png",
+      "expectedSourceFile": "tech-gear-check",
+      "outputFile": "tech-gear-check.webp",
+      "sourceUrl": "https://iconscout.com/3d-icon/check-3d-icon_8841684",
+      "status": "awaiting download"
+    },
+    {
+      "code": "TECH_GLOBE_SHIELD",
+      "title": "Internet Security",
+      "originalFile": "internet-security-3d-icon_8841685.png",
+      "expectedSourceFile": "tech-globe-shield",
+      "outputFile": "tech-globe-shield.webp",
+      "sourceUrl": "https://iconscout.com/3d-icon/internet-security-3d-icon_8841685",
+      "status": "awaiting download"
+    },
+    {
+      "code": "TECH_PEOPLE_NETWORK",
+      "title": "People Network",
+      "originalFile": "people-network-3d-icon_8841691.png",
+      "expectedSourceFile": "tech-people-network",
+      "outputFile": "tech-people-network.webp",
+      "sourceUrl": "https://iconscout.com/3d-icon/people-network-3d-icon_8841691",
+      "status": "awaiting download"
+    },
+    {
+      "code": "TECH_WIFI",
+      "title": "Wifi Signal",
+      "originalFile": "wifi-signal-3d-icon_8841683.png",
+      "expectedSourceFile": "tech-wifi",
+      "outputFile": "tech-wifi.webp",
+      "sourceUrl": "https://iconscout.com/3d-icon/wifi-signal-3d-icon_8841683",
+      "status": "awaiting download"
+    },
+    {
+      "code": "TECH_WORLD_PEOPLE",
+      "title": "World People Connection",
+      "originalFile": "world-people-connection-3d-icon_8841687.png",
+      "expectedSourceFile": "tech-world-people",
+      "outputFile": "tech-world-people.webp",
+      "sourceUrl": "https://iconscout.com/3d-icon/world-people-connection-3d-icon_8841687",
+      "status": "awaiting download"
+    },
+    {
+      "code": "ROBOT_AI_ALGORITHM",
+      "title": "AI Algorithm",
+      "originalFile": "ai-algorithm-3d-icon_7845299.png",
+      "expectedSourceFile": "robot-ai-algorithm",
+      "outputFile": "robot-ai-algorithm.webp",
+      "sourceUrl": "https://iconscout.com/3d-icon/ai-algorithm-3d-icon_7845299",
+      "status": "awaiting download"
+    },
+    {
+      "code": "ROBOT_CHATBOT",
+      "title": "AI Chatbot",
+      "originalFile": "ai-chatbot-3d-icon_7845303.png",
+      "expectedSourceFile": "robot-chatbot",
+      "outputFile": "robot-chatbot.webp",
+      "sourceUrl": "https://iconscout.com/3d-icon/ai-chatbot-3d-icon_7845303",
+      "status": "awaiting download"
+    },
+    {
+      "code": "ROBOT_AI_CHIP",
+      "title": "AI Chip",
+      "originalFile": "ai-chip-3d-icon_7845297.png",
+      "expectedSourceFile": "robot-ai-chip",
+      "outputFile": "robot-ai-chip.webp",
+      "sourceUrl": "https://iconscout.com/3d-icon/ai-chip-3d-icon_7845297",
+      "status": "awaiting download"
+    },
+    {
+      "code": "ROBOT_AI_CLOUD",
+      "title": "AI Cloud",
+      "originalFile": "ai-cloud-3d-icon_7845304.png",
+      "expectedSourceFile": "robot-ai-cloud",
+      "outputFile": "robot-ai-cloud.webp",
+      "sourceUrl": "https://iconscout.com/3d-icon/ai-cloud-3d-icon_7845304",
+      "status": "awaiting download"
+    },
+    {
+      "code": "ROBOT_AI_IDEA",
+      "title": "AI Idea",
+      "originalFile": "ai-idea-3d-icon_7845301.png",
+      "expectedSourceFile": "robot-ai-idea",
+      "outputFile": "robot-ai-idea.webp",
+      "sourceUrl": "https://iconscout.com/3d-icon/ai-idea-3d-icon_7845301",
+      "status": "awaiting download"
+    },
+    {
+      "code": "ROBOT_DRONE",
+      "title": "Autonomous Drone",
+      "originalFile": "autonomous-drone-3d-icon_7845293.png",
+      "expectedSourceFile": "robot-drone",
+      "outputFile": "robot-drone.webp",
+      "sourceUrl": "https://iconscout.com/3d-icon/autonomous-drone-3d-icon_7845293",
+      "status": "awaiting download"
+    },
+    {
+      "code": "ROBOT_CYBORG_EYE",
+      "title": "Cyborg Eye",
+      "originalFile": "cyborg-eye-3d-icon_7845302.png",
+      "expectedSourceFile": "robot-cyborg-eye",
+      "outputFile": "robot-cyborg-eye.webp",
+      "sourceUrl": "https://iconscout.com/3d-icon/cyborg-eye-3d-icon_7845302",
+      "status": "awaiting download"
+    },
+    {
+      "code": "ROBOT_DATA_FOLDER",
+      "title": "Data Visualization",
+      "originalFile": "data-visualization-3d-icon_7845295.png",
+      "expectedSourceFile": "robot-data-folder",
+      "outputFile": "robot-data-folder.webp",
+      "sourceUrl": "https://iconscout.com/3d-icon/data-visualization-3d-icon_7845295",
+      "status": "awaiting download"
+    },
+    {
+      "code": "ROBOT_DATABASE",
+      "title": "Database",
+      "originalFile": "database-3d-icon_7845305.png",
+      "expectedSourceFile": "robot-database",
+      "outputFile": "robot-database.webp",
+      "sourceUrl": "https://iconscout.com/3d-icon/database-3d-icon_7845305",
+      "status": "awaiting download"
+    },
+    {
+      "code": "ROBOT_ROBOT",
+      "title": "Futuristic Robot",
+      "originalFile": "futuristic-robot-3d-icon_7845291.png",
+      "expectedSourceFile": "robot-robot",
+      "outputFile": "robot-robot.webp",
+      "sourceUrl": "https://iconscout.com/3d-icon/futuristic-robot-3d-icon_7845291",
+      "status": "awaiting download"
+    },
+    {
+      "code": "ROBOT_SCREEN",
+      "title": "Robot Vision",
+      "originalFile": "robot-vision-3d-icon_7845298.png",
+      "expectedSourceFile": "robot-screen",
+      "outputFile": "robot-screen.webp",
+      "sourceUrl": "https://iconscout.com/3d-icon/robot-vision-3d-icon_7845298",
+      "status": "awaiting download"
+    },
+    {
+      "code": "ROBOT_ARM",
+      "title": "Robotic Arm",
+      "originalFile": "robotic-arm-3d-icon_7845300.png",
+      "expectedSourceFile": "robot-arm",
+      "outputFile": "robot-arm.webp",
+      "sourceUrl": "https://iconscout.com/3d-icon/robotic-arm-3d-icon_7845300",
+      "status": "awaiting download"
+    },
+    {
+      "code": "ROBOT_ENGINEER",
+      "title": "Robotics Engineer",
+      "originalFile": "robotics-engineer-3d-icon_7845287.png",
+      "expectedSourceFile": "robot-engineer",
+      "outputFile": "robot-engineer.webp",
+      "sourceUrl": "https://iconscout.com/3d-icon/robotics-engineer-3d-icon_7845287",
+      "status": "awaiting download"
+    },
+    {
+      "code": "CINEMA_SEATS",
+      "title": "Cinema Seats",
+      "originalFile": "cinema-chair-3d-icon_6323920.png",
+      "expectedSourceFile": "cinema-seats",
+      "outputFile": "cinema-seats.webp",
+      "sourceUrl": "https://iconscout.com/3d-icon/cinema-chair-3d-icon_6323920",
+      "status": "awaiting download"
+    },
+    {
+      "code": "CINEMA_PROJECTOR",
+      "title": "Cinema Projector",
+      "originalFile": "cinema-projector-3d-icon_6323921.png",
+      "expectedSourceFile": "cinema-projector",
+      "outputFile": "cinema-projector.webp",
+      "sourceUrl": "https://iconscout.com/3d-icon/cinema-projector-3d-icon_6323921",
+      "status": "awaiting download"
+    },
+    {
+      "code": "CINEMA_CLAPPERBOARD",
+      "title": "Clapperboard",
+      "originalFile": "clapperboard-3d-icon_6323932.png",
+      "expectedSourceFile": "cinema-clapperboard",
+      "outputFile": "cinema-clapperboard.webp",
+      "sourceUrl": "https://iconscout.com/3d-icon/clapperboard-3d-icon_6323932",
+      "status": "awaiting download"
+    },
+    {
+      "code": "CINEMA_DIRECTOR_CHAIR",
+      "title": "Director Chair",
+      "originalFile": "director-chair-3d-icon_6323930.png",
+      "expectedSourceFile": "cinema-director-chair",
+      "outputFile": "cinema-director-chair.webp",
+      "sourceUrl": "https://iconscout.com/3d-icon/director-chair-3d-icon_6323930",
+      "status": "awaiting download"
+    },
+    {
+      "code": "CINEMA_EXIT_DOOR",
+      "title": "Exit Door",
+      "originalFile": "exit-door-3d-icon_6323914.png",
+      "expectedSourceFile": "cinema-exit-door",
+      "outputFile": "cinema-exit-door.webp",
+      "sourceUrl": "https://iconscout.com/3d-icon/exit-door-3d-icon_6323914",
+      "status": "awaiting download"
+    },
+    {
+      "code": "CINEMA_RATING",
+      "title": "Film Rating",
+      "originalFile": "film-rating-3d-icon_6323929.png",
+      "expectedSourceFile": "cinema-rating",
+      "outputFile": "cinema-rating.webp",
+      "sourceUrl": "https://iconscout.com/3d-icon/film-rating-3d-icon_6323929",
+      "status": "awaiting download"
+    },
+    {
+      "code": "CINEMA_MEGAPHONE",
+      "title": "Megaphone",
+      "originalFile": "megaphone-3d-icon_6323919.png",
+      "expectedSourceFile": "cinema-megaphone",
+      "outputFile": "cinema-megaphone.webp",
+      "sourceUrl": "https://iconscout.com/3d-icon/megaphone-3d-icon_6323919",
+      "status": "awaiting download"
+    },
+    {
+      "code": "CINEMA_NO_CAMERA",
+      "title": "No Camera",
+      "originalFile": "no-camera-3d-icon_6323915.png",
+      "expectedSourceFile": "cinema-no-camera",
+      "outputFile": "cinema-no-camera.webp",
+      "sourceUrl": "https://iconscout.com/3d-icon/no-camera-3d-icon_6323915",
+      "status": "awaiting download"
+    },
+    {
+      "code": "CINEMA_NO_PHONE",
+      "title": "No Phone",
+      "originalFile": "no-phone-allow-3d-icon_6323917.png",
+      "expectedSourceFile": "cinema-no-phone",
+      "outputFile": "cinema-no-phone.webp",
+      "sourceUrl": "https://iconscout.com/3d-icon/no-phone-allow-3d-icon_6323917",
+      "status": "awaiting download"
+    },
+    {
+      "code": "CINEMA_NO_SMOKING",
+      "title": "No Smoking",
+      "originalFile": "no-smoking-3d-icon_6323922.png",
+      "expectedSourceFile": "cinema-no-smoking",
+      "outputFile": "cinema-no-smoking.webp",
+      "sourceUrl": "https://iconscout.com/3d-icon/no-smoking-3d-icon_6323922",
+      "status": "awaiting download"
+    },
+    {
+      "code": "CINEMA_POPCORN",
+      "title": "Popcorn Bucket",
+      "originalFile": "popcorn-bucket-3d-icon_6323913.png",
+      "expectedSourceFile": "cinema-popcorn",
+      "outputFile": "cinema-popcorn.webp",
+      "sourceUrl": "https://iconscout.com/3d-icon/popcorn-bucket-3d-icon_6323913",
+      "status": "awaiting download"
+    },
+    {
+      "code": "CINEMA_ROPE_BARRIER",
+      "title": "Rope Barrier",
+      "originalFile": "ribbon-barrier-3d-icon_6323925.png",
+      "expectedSourceFile": "cinema-rope-barrier",
+      "outputFile": "cinema-rope-barrier.webp",
+      "sourceUrl": "https://iconscout.com/3d-icon/ribbon-barrier-3d-icon_6323925",
+      "status": "awaiting download"
+    },
+    {
+      "code": "CINEMA_UFO",
+      "title": "Sci-Fi UFO",
+      "originalFile": "sci-fi-3d-icon_6323918.png",
+      "expectedSourceFile": "cinema-ufo",
+      "outputFile": "cinema-ufo.webp",
+      "sourceUrl": "https://iconscout.com/3d-icon/sci-fi-3d-icon_6323918",
+      "status": "awaiting download"
+    },
+    {
+      "code": "CINEMA_MAGIC_WAND",
+      "title": "Special Effect",
+      "originalFile": "special-effect-3d-icon_6323927.png",
+      "expectedSourceFile": "cinema-magic-wand",
+      "outputFile": "cinema-magic-wand.webp",
+      "sourceUrl": "https://iconscout.com/3d-icon/special-effect-3d-icon_6323927",
+      "status": "awaiting download"
+    },
+    {
+      "code": "CINEMA_SWORD",
+      "title": "Sword",
+      "originalFile": "sword-3d-icon_6323923.png",
+      "expectedSourceFile": "cinema-sword",
+      "outputFile": "cinema-sword.webp",
+      "sourceUrl": "https://iconscout.com/3d-icon/sword-3d-icon_6323923",
+      "status": "awaiting download"
+    },
+    {
+      "code": "CINEMA_THEATER_MASKS",
+      "title": "Theater Masks",
+      "originalFile": "theater-mask-3d-icon_6323931.png",
+      "expectedSourceFile": "cinema-theater-masks",
+      "outputFile": "cinema-theater-masks.webp",
+      "sourceUrl": "https://iconscout.com/3d-icon/theater-mask-3d-icon_6323931",
+      "status": "awaiting download"
+    },
+    {
+      "code": "CINEMA_VIDEO_CAMERA",
+      "title": "Video Camera",
+      "originalFile": "video-camera-3d-icon_6323928.png",
+      "expectedSourceFile": "cinema-video-camera",
+      "outputFile": "cinema-video-camera.webp",
+      "sourceUrl": "https://iconscout.com/3d-icon/video-camera-3d-icon_6323928",
+      "status": "awaiting download"
+    },
+    {
+      "code": "CINEMA_FILM_EDITING",
+      "title": "Video Editing",
+      "originalFile": "video-editing-3d-icon_6323926.png",
+      "expectedSourceFile": "cinema-film-editing",
+      "outputFile": "cinema-film-editing.webp",
+      "sourceUrl": "https://iconscout.com/3d-icon/video-editing-3d-icon_6323926",
+      "status": "awaiting download"
+    },
+    {
+      "code": "CINEMA_STREAMING",
+      "title": "Video Streaming",
+      "originalFile": "video-streaming-3d-icon_6323916.png",
+      "expectedSourceFile": "cinema-streaming",
+      "outputFile": "cinema-streaming.webp",
+      "sourceUrl": "https://iconscout.com/3d-icon/video-streaming-3d-icon_6323916",
+      "status": "awaiting download"
+    },
+    {
+      "code": "TRIP_HOT_AIR_BALLOON",
+      "title": "Hot Air Balloon",
+      "originalFile": "air-baloon-3d-icon_14044565.png",
+      "expectedSourceFile": "trip-hot-air-balloon",
+      "outputFile": "trip-hot-air-balloon.webp",
+      "sourceUrl": "https://iconscout.com/3d-icon/air-baloon-3d-icon_14044565",
+      "status": "awaiting download"
+    },
+    {
+      "code": "TRIP_BACKPACK",
+      "title": "Backpack",
+      "originalFile": "backpack-3d-icon_14044570.png",
+      "expectedSourceFile": "trip-backpack",
+      "outputFile": "trip-backpack.webp",
+      "sourceUrl": "https://iconscout.com/3d-icon/backpack-3d-icon_14044570",
+      "status": "awaiting download"
+    },
+    {
+      "code": "TRIP_BEACH",
+      "title": "Beach Island",
+      "originalFile": "beach-3d-icon_14044575.png",
+      "expectedSourceFile": "trip-beach",
+      "outputFile": "trip-beach.webp",
+      "sourceUrl": "https://iconscout.com/3d-icon/beach-3d-icon_14044575",
+      "status": "awaiting download"
+    },
+    {
+      "code": "TRIP_BED",
+      "title": "Hotel Bed",
+      "originalFile": "bed-3d-icon_14044577.png",
+      "expectedSourceFile": "trip-bed",
+      "outputFile": "trip-bed.webp",
+      "sourceUrl": "https://iconscout.com/3d-icon/bed-3d-icon_14044577",
+      "status": "awaiting download"
+    },
+    {
+      "code": "TRIP_BOARDING_PASS",
+      "title": "Boarding Pass",
+      "originalFile": "boarding-pass-3d-icon_14044563.png",
+      "expectedSourceFile": "trip-boarding-pass",
+      "outputFile": "trip-boarding-pass.webp",
+      "sourceUrl": "https://iconscout.com/3d-icon/boarding-pass-3d-icon_14044563",
+      "status": "awaiting download"
+    },
+    {
+      "code": "TRIP_BREAKFAST",
+      "title": "Breakfast",
+      "originalFile": "breakfast-3d-icon_14044566.png",
+      "expectedSourceFile": "trip-breakfast",
+      "outputFile": "trip-breakfast.webp",
+      "sourceUrl": "https://iconscout.com/3d-icon/breakfast-3d-icon_14044566",
+      "status": "awaiting download"
+    },
+    {
+      "code": "TRIP_CAMERA",
+      "title": "Instant Camera",
+      "originalFile": "camera-3d-icon_14044574.png",
+      "expectedSourceFile": "trip-camera",
+      "outputFile": "trip-camera.webp",
+      "sourceUrl": "https://iconscout.com/3d-icon/camera-3d-icon_14044574",
+      "status": "awaiting download"
+    },
+    {
+      "code": "TRIP_TENT",
+      "title": "Camp Tent",
+      "originalFile": "camp-tent-3d-icon_14044567.png",
+      "expectedSourceFile": "trip-tent",
+      "outputFile": "trip-tent.webp",
+      "sourceUrl": "https://iconscout.com/3d-icon/camp-tent-3d-icon_14044567",
+      "status": "awaiting download"
+    },
+    {
+      "code": "TRIP_CAMPFIRE",
+      "title": "Campfire",
+      "originalFile": "campfire-3d-icon_14044571.png",
+      "expectedSourceFile": "trip-campfire",
+      "outputFile": "trip-campfire.webp",
+      "sourceUrl": "https://iconscout.com/3d-icon/campfire-3d-icon_14044571",
+      "status": "awaiting download"
+    },
+    {
+      "code": "TRIP_CARAVAN",
+      "title": "Caravan",
+      "originalFile": "caravan-3d-icon_14044573.png",
+      "expectedSourceFile": "trip-caravan",
+      "outputFile": "trip-caravan.webp",
+      "sourceUrl": "https://iconscout.com/3d-icon/caravan-3d-icon_14044573",
+      "status": "awaiting download"
+    },
+    {
+      "code": "TRIP_CASH",
+      "title": "Cash",
+      "originalFile": "cash-3d-icon_14044576.png",
+      "expectedSourceFile": "trip-cash",
+      "outputFile": "trip-cash.webp",
+      "sourceUrl": "https://iconscout.com/3d-icon/cash-3d-icon_14044576",
+      "status": "awaiting download"
+    },
+    {
+      "code": "TRIP_COCKTAIL",
+      "title": "Cocktail",
+      "originalFile": "cocktail-3d-icon_14044572.png",
+      "expectedSourceFile": "trip-cocktail",
+      "outputFile": "trip-cocktail.webp",
+      "sourceUrl": "https://iconscout.com/3d-icon/cocktail-3d-icon_14044572",
+      "status": "awaiting download"
+    },
+    {
+      "code": "TRIP_COCONUT_DRINK",
+      "title": "Coconut Drink",
+      "originalFile": "coconut-drink-3d-icon_14044564.png",
+      "expectedSourceFile": "trip-coconut-drink",
+      "outputFile": "trip-coconut-drink.webp",
+      "sourceUrl": "https://iconscout.com/3d-icon/coconut-drink-3d-icon_14044564",
+      "status": "awaiting download"
+    },
+    {
+      "code": "TRIP_DESK_BELL",
+      "title": "Desk Bell",
+      "originalFile": "desk-bell-3d-icon_14044568.png",
+      "expectedSourceFile": "trip-desk-bell",
+      "outputFile": "trip-desk-bell.webp",
+      "sourceUrl": "https://iconscout.com/3d-icon/desk-bell-3d-icon_14044568",
+      "status": "awaiting download"
+    },
+    {
+      "code": "TRIP_ROUTE",
+      "title": "Route",
+      "originalFile": "distance-3d-icon_14044569.png",
+      "expectedSourceFile": "trip-route",
+      "outputFile": "trip-route.webp",
+      "sourceUrl": "https://iconscout.com/3d-icon/distance-3d-icon_14044569",
+      "status": "awaiting download"
+    },
+    {
+      "code": "TRIP_HOTEL",
+      "title": "Hotel",
+      "originalFile": "hotel-3d-icon_14044561.png",
+      "expectedSourceFile": "trip-hotel",
+      "outputFile": "trip-hotel.webp",
+      "sourceUrl": "https://iconscout.com/3d-icon/hotel-3d-icon_14044561",
+      "status": "awaiting download"
+    },
+    {
+      "code": "TRIP_HOTEL_KEY",
+      "title": "Hotel Key",
+      "originalFile": "hotel-key-3d-icon_14044556.png",
+      "expectedSourceFile": "trip-hotel-key",
+      "outputFile": "trip-hotel-key.webp",
+      "sourceUrl": "https://iconscout.com/3d-icon/hotel-key-3d-icon_14044556",
+      "status": "awaiting download"
+    },
+    {
+      "code": "TRIP_MAP_PHONE",
+      "title": "Phone Map",
+      "originalFile": "maps-3d-icon_14044562.png",
+      "expectedSourceFile": "trip-map-phone",
+      "outputFile": "trip-map-phone.webp",
+      "sourceUrl": "https://iconscout.com/3d-icon/maps-3d-icon_14044562",
+      "status": "awaiting download"
+    },
+    {
+      "code": "TRIP_MOUNTAIN",
+      "title": "Mountain",
+      "originalFile": "mountain-3d-icon_14044557.png",
+      "expectedSourceFile": "trip-mountain",
+      "outputFile": "trip-mountain.webp",
+      "sourceUrl": "https://iconscout.com/3d-icon/mountain-3d-icon_14044557",
+      "status": "awaiting download"
+    },
+    {
+      "code": "TRIP_PASSPORT",
+      "title": "Passport",
+      "originalFile": "passport-3d-icon_14044558.png",
+      "expectedSourceFile": "trip-passport",
+      "outputFile": "trip-passport.webp",
+      "sourceUrl": "https://iconscout.com/3d-icon/passport-3d-icon_14044558",
+      "status": "awaiting download"
+    },
+    {
+      "code": "TRIP_PICNIC",
+      "title": "Picnic",
+      "originalFile": "picnic-3d-icon_14044560.png",
+      "expectedSourceFile": "trip-picnic",
+      "outputFile": "trip-picnic.webp",
+      "sourceUrl": "https://iconscout.com/3d-icon/picnic-3d-icon_14044560",
+      "status": "awaiting download"
+    },
+    {
+      "code": "TRIP_SIGNPOST",
+      "title": "Signpost",
+      "originalFile": "road-sign-3d-icon_14044555.png",
+      "expectedSourceFile": "trip-signpost",
+      "outputFile": "trip-signpost.webp",
+      "sourceUrl": "https://iconscout.com/3d-icon/road-sign-3d-icon_14044555",
+      "status": "awaiting download"
+    },
+    {
+      "code": "TRIP_SUITCASE",
+      "title": "Suitcase",
+      "originalFile": "suitcase-3d-icon_14044559.png",
+      "expectedSourceFile": "trip-suitcase",
+      "outputFile": "trip-suitcase.webp",
+      "sourceUrl": "https://iconscout.com/3d-icon/suitcase-3d-icon_14044559",
+      "status": "awaiting download"
+    },
+    {
+      "code": "TRIP_CAR",
+      "title": "Travel Car",
+      "originalFile": "travel-car-3d-icon_14044554.png",
+      "expectedSourceFile": "trip-car",
+      "outputFile": "trip-car.webp",
+      "sourceUrl": "https://iconscout.com/3d-icon/travel-car-3d-icon_14044554",
+      "status": "awaiting download"
+    }
+  ]
+}

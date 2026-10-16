@@ -1,0 +1,66 @@
+{
+  "schemaVersion": 1,
+  "levelId": "level-0198",
+  "title": "Valley Waymark",
+  "difficulty": "easy",
+  "tileSetId": "classic-ivory",
+  "board": {
+    "tileWidth": 2,
+    "tileHeight": 2,
+    "layerOffsetX": -0.07,
+    "layerOffsetY": -0.07
+  },
+  "rules": {
+    "matchingMode": "same_symbol",
+    "requireSolvable": true
+  },
+  "backdrop": {
+    "colors": [
+      "#5C7D5A",
+      "#A3C4A0",
+      "#E4EEDC"
+    ]
+  },
+  "tiles": [
+    {"tileId":"t001","symbolCode":"VAL_CHEERS","x":8,"y":0,"layer":0},
+    {"tileId":"t002","symbolCode":"EMOJI_DEVIL_SMILE","x":10,"y":0,"layer":0},
+    {"tileId":"t003","symbolCode":"VAL_CHEERS","x":12,"y":0,"layer":0},
+    {"tileId":"t004","symbolCode":"SPORT_FRISBEE","x":8,"y":2,"layer":0},
+    {"tileId":"t005","symbolCode":"SPORT_CRICKET","x":10,"y":2,"layer":0},
+    {"tileId":"t006","symbolCode":"MONSTER_WATERMELON","x":12,"y":2,"layer":0},
+    {"tileId":"t007","symbolCode":"LOVE_BIRDS_COUPLE","x":8,"y":4,"layer":0},
+    {"tileId":"t008","symbolCode":"SPORT_CRICKET","x":10,"y":4,"layer":0},
+    {"tileId":"t009","symbolCode":"MONSTER_WATERMELON","x":12,"y":4,"layer":0},
+    {"tileId":"t010","symbolCode":"SPORT_FRISBEE","x":0,"y":6,"layer":0},
+    {"tileId":"t011","symbolCode":"SPORT_CRICKET","x":2,"y":6,"layer":0},
+    {"tileId":"t012","symbolCode":"SPORT_BASKETBALL","x":4,"y":6,"layer":0},
+    {"tileId":"t013","symbolCode":"SPORT_BASKETBALL","x":6,"y":6,"layer":0},
+    {"tileId":"t014","symbolCode":"SPORT_BASKETBALL","x":8,"y":6,"layer":0},
+    {"tileId":"t015","symbolCode":"ICE_BANANA_SPLIT","x":10,"y":6,"layer":0},
+    {"tileId":"t016","symbolCode":"SPORT_FRISBEE","x":12,"y":6,"layer":0},
+    {"tileId":"t017","symbolCode":"ICE_CREAM_SANDWICH","x":14,"y":6,"layer":0},
+    {"tileId":"t018","symbolCode":"ICE_BANANA_SPLIT","x":16,"y":6,"layer":0},
+    {"tileId":"t019","symbolCode":"VAL_CHEERS","x":18,"y":6,"layer":0},
+    {"tileId":"t020","symbolCode":"EMOJI_DEVIL_SMILE","x":20,"y":6,"layer":0},
+    {"tileId":"t021","symbolCode":"ICE_CREAM_SANDWICH","x":0,"y":8,"layer":0},
+    {"tileId":"t022","symbolCode":"ICE_BANANA_SPLIT","x":2,"y":8,"layer":0},
+    {"tileId":"t023","symbolCode":"SPORT_BASKETBALL","x":4,"y":8,"layer":0},
+    {"tileId":"t024","symbolCode":"SPORT_BASKETBALL","x":6,"y":8,"layer":0},
+    {"tileId":"t025","symbolCode":"ICE_CREAM_SANDWICH","x":8,"y":8,"layer":0},
+    {"tileId":"t026","symbolCode":"SPORT_BASKETBALL","x":10,"y":8,"layer":0},
+    {"tileId":"t027","symbolCode":"ICE_CREAM_SANDWICH","x":12,"y":8,"layer":0},
+    {"tileId":"t028","symbolCode":"SPORT_FRISBEE","x":14,"y":8,"layer":0},
+    {"tileId":"t029","symbolCode":"VAL_CHEERS","x":16,"y":8,"layer":0},
+    {"tileId":"t030","symbolCode":"LOVE_BIRDS_COUPLE","x":18,"y":8,"layer":0},
+    {"tileId":"t031","symbolCode":"EMOJI_DEVIL_SMILE","x":20,"y":8,"layer":0},
+    {"tileId":"t032","symbolCode":"MONSTER_WATERMELON","x":8,"y":10,"layer":0},
+    {"tileId":"t033","symbolCode":"EMOJI_DEVIL_SMILE","x":10,"y":10,"layer":0},
+    {"tileId":"t034","symbolCode":"LOVE_BIRDS_COUPLE","x":12,"y":10,"layer":0},
+    {"tileId":"t035","symbolCode":"SPORT_CRICKET","x":8,"y":12,"layer":0},
+    {"tileId":"t036","symbolCode":"ICE_BANANA_SPLIT","x":10,"y":12,"layer":0},
+    {"tileId":"t037","symbolCode":"LOVE_BIRDS_COUPLE","x":12,"y":12,"layer":0},
+    {"tileId":"t038","symbolCode":"MONSTER_WATERMELON","x":8,"y":14,"layer":0},
+    {"tileId":"t039","symbolCode":"LOVE_BIRDS_COUPLE","x":10,"y":14,"layer":0},
+    {"tileId":"t040","symbolCode":"LOVE_BIRDS_COUPLE","x":12,"y":14,"layer":0}
+  ]
+}

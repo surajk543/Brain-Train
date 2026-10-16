@@ -1,0 +1,58 @@
+{
+  "schemaVersion": 1,
+  "levelId": "level-0065",
+  "title": "Amber Star Moss",
+  "difficulty": "easy",
+  "tileSetId": "classic-ivory",
+  "board": {
+    "tileWidth": 2,
+    "tileHeight": 2,
+    "layerOffsetX": -0.07,
+    "layerOffsetY": -0.07
+  },
+  "rules": {
+    "matchingMode": "same_symbol",
+    "requireSolvable": true
+  },
+  "backdrop": {
+    "colors": [
+      "#1E5631",
+      "#4C9A2A",
+      "#A4DE02"
+    ]
+  },
+  "tiles": [
+    {"tileId":"t001","symbolCode":"LOVE_BIRDS_COUPLE","x":0,"y":0,"layer":0},
+    {"tileId":"t002","symbolCode":"LOVE_BIRDS_COUPLE","x":4,"y":0,"layer":0},
+    {"tileId":"t003","symbolCode":"FLOWER_PANSY","x":8,"y":0,"layer":0},
+    {"tileId":"t004","symbolCode":"FLOWER_PANSY","x":0,"y":2,"layer":0},
+    {"tileId":"t005","symbolCode":"CN_TIGER_MASK","x":2,"y":2,"layer":0},
+    {"tileId":"t006","symbolCode":"BIRD_HUMMINGBIRD","x":4,"y":2,"layer":0},
+    {"tileId":"t007","symbolCode":"JULY4_ROCKET_BOX","x":6,"y":2,"layer":0},
+    {"tileId":"t008","symbolCode":"CN_TIGER_MASK","x":8,"y":2,"layer":0},
+    {"tileId":"t009","symbolCode":"DOG_YARN_BALL","x":2,"y":4,"layer":0},
+    {"tileId":"t010","symbolCode":"LOVE_BIRDS_COUPLE","x":4,"y":4,"layer":0},
+    {"tileId":"t011","symbolCode":"MONSTER_PHONOGRAPH_RECORD","x":6,"y":4,"layer":0},
+    {"tileId":"t012","symbolCode":"MONSTER_PHONOGRAPH_RECORD","x":0,"y":6,"layer":0},
+    {"tileId":"t013","symbolCode":"FLOWER_PANSY","x":2,"y":6,"layer":0},
+    {"tileId":"t014","symbolCode":"BIRD_HUMMINGBIRD","x":4,"y":6,"layer":0},
+    {"tileId":"t015","symbolCode":"MONSTER_PHONOGRAPH_RECORD","x":6,"y":6,"layer":0},
+    {"tileId":"t016","symbolCode":"MONSTER_PHONOGRAPH_RECORD","x":8,"y":6,"layer":0},
+    {"tileId":"t017","symbolCode":"DOG_YARN_BALL","x":0,"y":8,"layer":0},
+    {"tileId":"t018","symbolCode":"FLOWER_PANSY","x":2,"y":8,"layer":0},
+    {"tileId":"t019","symbolCode":"BIRD_HUMMINGBIRD","x":4,"y":8,"layer":0},
+    {"tileId":"t020","symbolCode":"DOG_YARN_BALL","x":6,"y":8,"layer":0},
+    {"tileId":"t021","symbolCode":"JULY4_ROCKET_BOX","x":8,"y":8,"layer":0},
+    {"tileId":"t022","symbolCode":"JULY4_ROCKET_BOX","x":2,"y":10,"layer":0},
+    {"tileId":"t023","symbolCode":"LOVE_BIRDS_COUPLE","x":4,"y":10,"layer":0},
+    {"tileId":"t024","symbolCode":"CN_TIGER_MASK","x":6,"y":10,"layer":0},
+    {"tileId":"t025","symbolCode":"LOVE_BIRDS_COUPLE","x":0,"y":12,"layer":0},
+    {"tileId":"t026","symbolCode":"BIRD_HUMMINGBIRD","x":2,"y":12,"layer":0},
+    {"tileId":"t027","symbolCode":"BIRD_HUMMINGBIRD","x":4,"y":12,"layer":0},
+    {"tileId":"t028","symbolCode":"BIRD_HUMMINGBIRD","x":6,"y":12,"layer":0},
+    {"tileId":"t029","symbolCode":"JULY4_ROCKET_BOX","x":8,"y":12,"layer":0},
+    {"tileId":"t030","symbolCode":"CN_TIGER_MASK","x":0,"y":14,"layer":0},
+    {"tileId":"t031","symbolCode":"LOVE_BIRDS_COUPLE","x":4,"y":14,"layer":0},
+    {"tileId":"t032","symbolCode":"DOG_YARN_BALL","x":8,"y":14,"layer":0}
+  ]
+}

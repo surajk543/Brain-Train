@@ -1,0 +1,66 @@
+{
+  "schemaVersion": 1,
+  "levelId": "level-0166",
+  "title": "Velvet Isles",
+  "difficulty": "easy",
+  "tileSetId": "classic-ivory",
+  "board": {
+    "tileWidth": 2,
+    "tileHeight": 2,
+    "layerOffsetX": -0.07,
+    "layerOffsetY": -0.07
+  },
+  "rules": {
+    "matchingMode": "same_symbol",
+    "requireSolvable": true
+  },
+  "backdrop": {
+    "colors": [
+      "#5C7D5A",
+      "#A3C4A0",
+      "#E4EEDC"
+    ]
+  },
+  "tiles": [
+    {"tileId":"t001","symbolCode":"DOG_TENNIS_BALL","x":0,"y":0,"layer":0},
+    {"tileId":"t002","symbolCode":"VAL_VALENTINE_PRESENT","x":2,"y":0,"layer":0},
+    {"tileId":"t003","symbolCode":"DOG_TENNIS_BALL","x":6,"y":0,"layer":0},
+    {"tileId":"t004","symbolCode":"VAL_BALLOON_HEART","x":8,"y":0,"layer":0},
+    {"tileId":"t005","symbolCode":"BIRD_EAGLE","x":12,"y":0,"layer":0},
+    {"tileId":"t006","symbolCode":"DINO_ANKYLOSAURUS","x":14,"y":0,"layer":0},
+    {"tileId":"t007","symbolCode":"ICE_CREAM_SCOOPS","x":18,"y":0,"layer":0},
+    {"tileId":"t008","symbolCode":"CN_TIGER_MASK","x":20,"y":0,"layer":0},
+    {"tileId":"t009","symbolCode":"CRYSTAL_STAR","x":0,"y":2,"layer":0},
+    {"tileId":"t010","symbolCode":"ICE_CREAM_BOWL","x":2,"y":2,"layer":0},
+    {"tileId":"t011","symbolCode":"CN_TIGER_MASK","x":6,"y":2,"layer":0},
+    {"tileId":"t012","symbolCode":"VAL_VALENTINE_PRESENT","x":8,"y":2,"layer":0},
+    {"tileId":"t013","symbolCode":"CRYSTAL_STAR","x":12,"y":2,"layer":0},
+    {"tileId":"t014","symbolCode":"CN_TIGER_MASK","x":14,"y":2,"layer":0},
+    {"tileId":"t015","symbolCode":"CN_TIGER_MASK","x":18,"y":2,"layer":0},
+    {"tileId":"t016","symbolCode":"DINO_ANKYLOSAURUS","x":20,"y":2,"layer":0},
+    {"tileId":"t017","symbolCode":"DINO_ANKYLOSAURUS","x":0,"y":6,"layer":0},
+    {"tileId":"t018","symbolCode":"ICE_CREAM_BOWL","x":2,"y":6,"layer":0},
+    {"tileId":"t019","symbolCode":"ICE_CREAM_SCOOPS","x":6,"y":6,"layer":0},
+    {"tileId":"t020","symbolCode":"ICE_CREAM_BOWL","x":8,"y":6,"layer":0},
+    {"tileId":"t021","symbolCode":"ICE_CREAM_BOWL","x":12,"y":6,"layer":0},
+    {"tileId":"t022","symbolCode":"DOG_TENNIS_BALL","x":14,"y":6,"layer":0},
+    {"tileId":"t023","symbolCode":"DINO_ANKYLOSAURUS","x":18,"y":6,"layer":0},
+    {"tileId":"t024","symbolCode":"CN_TIGER_MASK","x":20,"y":6,"layer":0},
+    {"tileId":"t025","symbolCode":"CN_TIGER_MASK","x":0,"y":8,"layer":0},
+    {"tileId":"t026","symbolCode":"DOG_TENNIS_BALL","x":2,"y":8,"layer":0},
+    {"tileId":"t027","symbolCode":"VAL_BALLOON_HEART","x":6,"y":8,"layer":0},
+    {"tileId":"t028","symbolCode":"ICE_CREAM_BOWL","x":8,"y":8,"layer":0},
+    {"tileId":"t029","symbolCode":"VAL_VALENTINE_PRESENT","x":12,"y":8,"layer":0},
+    {"tileId":"t030","symbolCode":"ICE_CREAM_BOWL","x":14,"y":8,"layer":0},
+    {"tileId":"t031","symbolCode":"CRYSTAL_STAR","x":18,"y":8,"layer":0},
+    {"tileId":"t032","symbolCode":"BIRD_EAGLE","x":20,"y":8,"layer":0},
+    {"tileId":"t033","symbolCode":"VAL_VALENTINE_PRESENT","x":0,"y":12,"layer":0},
+    {"tileId":"t034","symbolCode":"ICE_CREAM_SCOOPS","x":2,"y":12,"layer":0},
+    {"tileId":"t035","symbolCode":"BIRD_EAGLE","x":6,"y":12,"layer":0},
+    {"tileId":"t036","symbolCode":"CRYSTAL_STAR","x":8,"y":12,"layer":0},
+    {"tileId":"t037","symbolCode":"VAL_BALLOON_HEART","x":12,"y":12,"layer":0},
+    {"tileId":"t038","symbolCode":"VAL_BALLOON_HEART","x":14,"y":12,"layer":0},
+    {"tileId":"t039","symbolCode":"ICE_CREAM_SCOOPS","x":18,"y":12,"layer":0},
+    {"tileId":"t040","symbolCode":"BIRD_EAGLE","x":20,"y":12,"layer":0}
+  ]
+}

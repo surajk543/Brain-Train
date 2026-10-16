@@ -1,0 +1,56 @@
+{
+  "schemaVersion": 1,
+  "levelId": "level-0119",
+  "title": "Poppy Wings",
+  "difficulty": "easy",
+  "tileSetId": "classic-ivory",
+  "board": {
+    "tileWidth": 2,
+    "tileHeight": 2,
+    "layerOffsetX": -0.07,
+    "layerOffsetY": -0.07
+  },
+  "rules": {
+    "matchingMode": "same_symbol",
+    "requireSolvable": true
+  },
+  "backdrop": {
+    "colors": [
+      "#B8860B",
+      "#E8B84A",
+      "#FBEBB5"
+    ]
+  },
+  "tiles": [
+    {"tileId":"t001","symbolCode":"ICE_CREAM_SCOOPS","x":8,"y":0,"layer":0},
+    {"tileId":"t002","symbolCode":"SPORT_BOWLING","x":10,"y":0,"layer":0},
+    {"tileId":"t003","symbolCode":"SPORT_BOWLING","x":6,"y":2,"layer":0},
+    {"tileId":"t004","symbolCode":"SHAPE_PACMAN","x":8,"y":2,"layer":0},
+    {"tileId":"t005","symbolCode":"ICE_CREAM_SCOOPS","x":10,"y":2,"layer":0},
+    {"tileId":"t006","symbolCode":"EMOJI_SQUINTING_FACE_WITH_TONGUE","x":12,"y":2,"layer":0},
+    {"tileId":"t007","symbolCode":"CN_DRAGON","x":4,"y":4,"layer":0},
+    {"tileId":"t008","symbolCode":"EMOJI_SQUINTING_FACE_WITH_TONGUE","x":6,"y":4,"layer":0},
+    {"tileId":"t009","symbolCode":"ICE_CREAM_SCOOPS","x":12,"y":4,"layer":0},
+    {"tileId":"t010","symbolCode":"CN_DRAGON","x":14,"y":4,"layer":0},
+    {"tileId":"t011","symbolCode":"SPORT_BOWLING","x":2,"y":6,"layer":0},
+    {"tileId":"t012","symbolCode":"EMOJI_SQUINTING_FACE_WITH_TONGUE","x":4,"y":6,"layer":0},
+    {"tileId":"t013","symbolCode":"CN_DRAGON","x":14,"y":6,"layer":0},
+    {"tileId":"t014","symbolCode":"EMOJI_SQUINTING_FACE_WITH_TONGUE","x":16,"y":6,"layer":0},
+    {"tileId":"t015","symbolCode":"ICE_CREAM_SCOOPS","x":0,"y":8,"layer":0},
+    {"tileId":"t016","symbolCode":"CN_DRAGON","x":2,"y":8,"layer":0},
+    {"tileId":"t017","symbolCode":"COSMIC_HEART","x":16,"y":8,"layer":0},
+    {"tileId":"t018","symbolCode":"CN_DRAGON","x":18,"y":8,"layer":0},
+    {"tileId":"t019","symbolCode":"SHAPE_PACMAN","x":0,"y":10,"layer":0},
+    {"tileId":"t020","symbolCode":"SPORT_BOWLING","x":18,"y":10,"layer":0},
+    {"tileId":"t021","symbolCode":"COSMIC_HEART","x":9,"y":0,"layer":1},
+    {"tileId":"t022","symbolCode":"COSMIC_HEART","x":7,"y":2,"layer":1},
+    {"tileId":"t023","symbolCode":"COSMIC_HEART","x":9,"y":2,"layer":1},
+    {"tileId":"t024","symbolCode":"SPORT_BOWLING","x":11,"y":2,"layer":1},
+    {"tileId":"t025","symbolCode":"CN_DRAGON","x":5,"y":4,"layer":1},
+    {"tileId":"t026","symbolCode":"SHAPE_PACMAN","x":13,"y":4,"layer":1},
+    {"tileId":"t027","symbolCode":"SPORT_BOWLING","x":3,"y":6,"layer":1},
+    {"tileId":"t028","symbolCode":"SHAPE_PACMAN","x":15,"y":6,"layer":1},
+    {"tileId":"t029","symbolCode":"COSMIC_HEART","x":1,"y":8,"layer":1},
+    {"tileId":"t030","symbolCode":"COSMIC_HEART","x":17,"y":8,"layer":1}
+  ]
+}

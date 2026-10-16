@@ -1,0 +1,56 @@
+{
+  "schemaVersion": 1,
+  "levelId": "level-0048",
+  "title": "Bluebell Skein",
+  "difficulty": "easy",
+  "tileSetId": "classic-ivory",
+  "board": {
+    "tileWidth": 2,
+    "tileHeight": 2,
+    "layerOffsetX": -0.07,
+    "layerOffsetY": -0.07
+  },
+  "rules": {
+    "matchingMode": "same_symbol",
+    "requireSolvable": true
+  },
+  "backdrop": {
+    "colors": [
+      "#A0522D",
+      "#E39B4A",
+      "#F4D58D"
+    ]
+  },
+  "tiles": [
+    {"tileId":"t001","symbolCode":"EMOJI_WINKING_FACE","x":8,"y":2,"layer":0},
+    {"tileId":"t002","symbolCode":"DINO_BRONTOSAURUS","x":10,"y":2,"layer":0},
+    {"tileId":"t003","symbolCode":"VAL_VALENTINE_CHOCOLATE","x":6,"y":4,"layer":0},
+    {"tileId":"t004","symbolCode":"FIT_SMARTWATCH","x":8,"y":4,"layer":0},
+    {"tileId":"t005","symbolCode":"FIT_SMARTWATCH","x":10,"y":4,"layer":0},
+    {"tileId":"t006","symbolCode":"FIT_TRACKER_BAND","x":12,"y":4,"layer":0},
+    {"tileId":"t007","symbolCode":"FIT_SMARTWATCH","x":4,"y":6,"layer":0},
+    {"tileId":"t008","symbolCode":"DINO_BRONTOSAURUS","x":6,"y":6,"layer":0},
+    {"tileId":"t009","symbolCode":"FIT_SMARTWATCH","x":12,"y":6,"layer":0},
+    {"tileId":"t010","symbolCode":"FIT_TRACKER_BAND","x":14,"y":6,"layer":0},
+    {"tileId":"t011","symbolCode":"FIT_TRACKER_BAND","x":2,"y":8,"layer":0},
+    {"tileId":"t012","symbolCode":"DINO_BRONTOSAURUS","x":4,"y":8,"layer":0},
+    {"tileId":"t013","symbolCode":"CN_HANDFAN_B","x":14,"y":8,"layer":0},
+    {"tileId":"t014","symbolCode":"EMOJI_WINKING_FACE","x":16,"y":8,"layer":0},
+    {"tileId":"t015","symbolCode":"CN_HANDFAN_B","x":0,"y":10,"layer":0},
+    {"tileId":"t016","symbolCode":"FIT_TRACKER_BAND","x":2,"y":10,"layer":0},
+    {"tileId":"t017","symbolCode":"DINO_BRONTOSAURUS","x":16,"y":10,"layer":0},
+    {"tileId":"t018","symbolCode":"VAL_VALENTINE_CHOCOLATE","x":18,"y":10,"layer":0},
+    {"tileId":"t019","symbolCode":"VAL_VALENTINE_CHOCOLATE","x":0,"y":12,"layer":0},
+    {"tileId":"t020","symbolCode":"EMOJI_WINKING_FACE","x":18,"y":12,"layer":0},
+    {"tileId":"t021","symbolCode":"FIT_TRACKER_BAND","x":9,"y":2,"layer":1},
+    {"tileId":"t022","symbolCode":"CN_HANDFAN_B","x":7,"y":4,"layer":1},
+    {"tileId":"t023","symbolCode":"CN_HANDFAN_B","x":9,"y":4,"layer":1},
+    {"tileId":"t024","symbolCode":"FIT_SMARTWATCH","x":11,"y":4,"layer":1},
+    {"tileId":"t025","symbolCode":"CN_HANDFAN_B","x":5,"y":6,"layer":1},
+    {"tileId":"t026","symbolCode":"CN_HANDFAN_B","x":13,"y":6,"layer":1},
+    {"tileId":"t027","symbolCode":"FIT_SMARTWATCH","x":3,"y":8,"layer":1},
+    {"tileId":"t028","symbolCode":"FIT_TRACKER_BAND","x":15,"y":8,"layer":1},
+    {"tileId":"t029","symbolCode":"VAL_VALENTINE_CHOCOLATE","x":1,"y":10,"layer":1},
+    {"tileId":"t030","symbolCode":"EMOJI_WINKING_FACE","x":17,"y":10,"layer":1}
+  ]
+}

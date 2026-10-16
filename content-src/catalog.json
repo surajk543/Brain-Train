@@ -1,0 +1,73 @@
+{
+  "_comment": "Authoring source for content/brain-train/. Run `dart run tool/content.dart build`. Bump contentVersion on every publish. Levels and the registry are content-addressed (levels/level-0001-<sha>.json), so a changed level gets a new key by itself; published keys never change.",
+  "contentVersion": "2026.10.16.9",
+  "registry": {
+    "_comment": "Symbols come from art/asset_sources.json (static, its imageSet) and art/animated_sources.json (Lottie): entries with status \"integrated\" whose processed file exists. registryVersion gets a hash of the symbol table appended.",
+    "registryVersion": "brain-train-symbols",
+    "imageSet": "v4",
+    "placeholder": false
+  },
+  "campaign": {
+    "_comment": "Procedural campaign (lib/game_engine/campaign/). Tier order: `count` levels per tier, shuffled with `seed`, level 1 = firstTier, no tier more than maxTierRun times in a row. Per level: animated pairs = floor(pairs * animatedShare) (at least 1, never above 30%), at most maxDistinctAnimated distinct animated symbols; the rest static. Tier fields: tiles/layers ranges, trayCapacity (4 or 5), pairsPerStaticSymbol/pairsPerAnimatedSymbol (symbol repeats: higher is easier), stalePairing (share of decoy pairs), freeRatio (share of tiles free at the start) and winRate (accepted win rate of the simulated tray player, 200 games). The seed is one whose shuffle opens gently (levels 2-4 easy or medium). Boards must keep tile faces >= minFaceWidth px on a 360x640 phone and be solver-proven within solverBudget nodes.",
+    "seed": 20261039,
+    "firstTier": "easy",
+    "maxTierRun": 2,
+    "animatedShare": 0.3,
+    "maxDistinctAnimated": 12,
+    "simulationRuns": 200,
+    "minFaceWidth": 31,
+    "solverBudget": 200000,
+    "category": "nature",
+    "tiers": [
+      {
+        "id": "easy",
+        "count": 50,
+        "tiles": [24, 48],
+        "layers": [1, 2],
+        "trayCapacity": 4,
+        "pairsPerStaticSymbol": 2.5,
+        "pairsPerAnimatedSymbol": 2.5,
+        "stalePairing": 0,
+        "freeRatio": [0.3, 1],
+        "winRate": [0.7, 1]
+      },
+      {
+        "id": "medium",
+        "count": 50,
+        "tiles": [48, 80],
+        "layers": [2, 3],
+        "trayCapacity": 4,
+        "pairsPerStaticSymbol": 2.5,
+        "pairsPerAnimatedSymbol": 2.5,
+        "stalePairing": 0,
+        "freeRatio": [0.2, 0.7],
+        "winRate": [0.3, 0.6]
+      },
+      {
+        "id": "hard",
+        "count": 50,
+        "tiles": [84, 120],
+        "layers": [3, 4],
+        "trayCapacity": 5,
+        "pairsPerStaticSymbol": 2.2,
+        "pairsPerAnimatedSymbol": 2.2,
+        "stalePairing": 0,
+        "freeRatio": [0.15, 0.5],
+        "winRate": [0.08, 0.25]
+      },
+      {
+        "id": "veryHard",
+        "count": 50,
+        "tiles": [144, 176],
+        "layers": [5, 7],
+        "trayCapacity": 5,
+        "pairsPerStaticSymbol": 1.25,
+        "pairsPerAnimatedSymbol": 2.2,
+        "stalePairing": 0.2,
+        "freeRatio": [0, 0.3],
+        "winRate": [0, 0.04]
+      }
+    ]
+  },
+  "levels": []
+}

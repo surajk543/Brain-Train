@@ -1,0 +1,64 @@
+{
+  "schemaVersion": 1,
+  "levelId": "level-0110",
+  "title": "Emerald Leaf",
+  "difficulty": "easy",
+  "tileSetId": "classic-ivory",
+  "board": {
+    "tileWidth": 2,
+    "tileHeight": 2,
+    "layerOffsetX": -0.07,
+    "layerOffsetY": -0.07
+  },
+  "rules": {
+    "matchingMode": "same_symbol",
+    "requireSolvable": true
+  },
+  "backdrop": {
+    "colors": [
+      "#5C7D5A",
+      "#A3C4A0",
+      "#E4EEDC"
+    ]
+  },
+  "tiles": [
+    {"tileId":"t001","symbolCode":"EMOJI_GESTURING_NO","x":8,"y":0,"layer":0},
+    {"tileId":"t002","symbolCode":"PLANT_POT_A","x":10,"y":0,"layer":0},
+    {"tileId":"t003","symbolCode":"EMOJI_GESTURING_NO","x":6,"y":2,"layer":0},
+    {"tileId":"t004","symbolCode":"CN_SYMBOL_CLOUD","x":8,"y":2,"layer":0},
+    {"tileId":"t005","symbolCode":"LOVE_BROKEN_HEART","x":10,"y":2,"layer":0},
+    {"tileId":"t006","symbolCode":"EMOJI_GESTURING_NO","x":12,"y":2,"layer":0},
+    {"tileId":"t007","symbolCode":"CN_SYMBOL_CLOUD","x":2,"y":4,"layer":0},
+    {"tileId":"t008","symbolCode":"LOVE_HEART_BALLOONS","x":4,"y":4,"layer":0},
+    {"tileId":"t009","symbolCode":"CN_SYMBOL_CLOUD","x":6,"y":4,"layer":0},
+    {"tileId":"t010","symbolCode":"SHAPE_SCALE","x":8,"y":4,"layer":0},
+    {"tileId":"t011","symbolCode":"SPORT_CRICKET","x":10,"y":4,"layer":0},
+    {"tileId":"t012","symbolCode":"LOVE_BROKEN_HEART","x":12,"y":4,"layer":0},
+    {"tileId":"t013","symbolCode":"SHAPE_SCALE","x":14,"y":4,"layer":0},
+    {"tileId":"t014","symbolCode":"LOVE_HEART_BALLOONS","x":16,"y":4,"layer":0},
+    {"tileId":"t015","symbolCode":"PLANT_POT_A","x":0,"y":6,"layer":0},
+    {"tileId":"t016","symbolCode":"LOVE_HEART_BALLOONS","x":2,"y":6,"layer":0},
+    {"tileId":"t017","symbolCode":"SPORT_CRICKET","x":4,"y":6,"layer":0},
+    {"tileId":"t018","symbolCode":"BUG_LADYBUG","x":6,"y":6,"layer":0},
+    {"tileId":"t019","symbolCode":"SPORT_CRICKET","x":8,"y":6,"layer":0},
+    {"tileId":"t020","symbolCode":"SHAPE_SCALE","x":10,"y":6,"layer":0},
+    {"tileId":"t021","symbolCode":"SHAPE_SCALE","x":12,"y":6,"layer":0},
+    {"tileId":"t022","symbolCode":"SPORT_CRICKET","x":14,"y":6,"layer":0},
+    {"tileId":"t023","symbolCode":"BUG_LADYBUG","x":16,"y":6,"layer":0},
+    {"tileId":"t024","symbolCode":"PLANT_POT_A","x":18,"y":6,"layer":0},
+    {"tileId":"t025","symbolCode":"LOVE_HEART_BALLOONS","x":2,"y":8,"layer":0},
+    {"tileId":"t026","symbolCode":"SHAPE_SCALE","x":4,"y":8,"layer":0},
+    {"tileId":"t027","symbolCode":"BUG_LADYBUG","x":6,"y":8,"layer":0},
+    {"tileId":"t028","symbolCode":"LOVE_HEART_BALLOONS","x":8,"y":8,"layer":0},
+    {"tileId":"t029","symbolCode":"BUG_LADYBUG","x":10,"y":8,"layer":0},
+    {"tileId":"t030","symbolCode":"CN_SYMBOL_CLOUD","x":12,"y":8,"layer":0},
+    {"tileId":"t031","symbolCode":"SHAPE_SCALE","x":14,"y":8,"layer":0},
+    {"tileId":"t032","symbolCode":"EMOJI_GESTURING_NO","x":16,"y":8,"layer":0},
+    {"tileId":"t033","symbolCode":"LOVE_BROKEN_HEART","x":6,"y":10,"layer":0},
+    {"tileId":"t034","symbolCode":"LOVE_BROKEN_HEART","x":8,"y":10,"layer":0},
+    {"tileId":"t035","symbolCode":"CN_SYMBOL_CLOUD","x":10,"y":10,"layer":0},
+    {"tileId":"t036","symbolCode":"PLANT_POT_A","x":12,"y":10,"layer":0},
+    {"tileId":"t037","symbolCode":"CN_SYMBOL_CLOUD","x":8,"y":12,"layer":0},
+    {"tileId":"t038","symbolCode":"LOVE_HEART_BALLOONS","x":10,"y":12,"layer":0}
+  ]
+}

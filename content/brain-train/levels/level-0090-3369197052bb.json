@@ -1,0 +1,60 @@
+{
+  "schemaVersion": 1,
+  "levelId": "level-0090",
+  "title": "Deer Swallowtail",
+  "difficulty": "easy",
+  "tileSetId": "classic-ivory",
+  "board": {
+    "tileWidth": 2,
+    "tileHeight": 2,
+    "layerOffsetX": -0.07,
+    "layerOffsetY": -0.07
+  },
+  "rules": {
+    "matchingMode": "same_symbol",
+    "requireSolvable": true
+  },
+  "backdrop": {
+    "colors": [
+      "#7B4B8E",
+      "#C38FC9",
+      "#F0D9EF"
+    ]
+  },
+  "tiles": [
+    {"tileId":"t001","symbolCode":"EMOJI_FLEXED_BICEPS","x":6,"y":0,"layer":0},
+    {"tileId":"t002","symbolCode":"LOVE_HEART","x":2,"y":2,"layer":0},
+    {"tileId":"t003","symbolCode":"FLOWER_ZINNIA","x":6,"y":2,"layer":0},
+    {"tileId":"t004","symbolCode":"LOVE_HEART","x":10,"y":2,"layer":0},
+    {"tileId":"t005","symbolCode":"COSMIC_CHESTNUT","x":2,"y":4,"layer":0},
+    {"tileId":"t006","symbolCode":"BIRD_LOVEBIRDS_C","x":4,"y":4,"layer":0},
+    {"tileId":"t007","symbolCode":"EMOJI_FLEXED_BICEPS","x":6,"y":4,"layer":0},
+    {"tileId":"t008","symbolCode":"SPORT_BOWLING","x":8,"y":4,"layer":0},
+    {"tileId":"t009","symbolCode":"BIRD_LOVEBIRDS_C","x":10,"y":4,"layer":0},
+    {"tileId":"t010","symbolCode":"FLOWER_ZINNIA","x":2,"y":6,"layer":0},
+    {"tileId":"t011","symbolCode":"EMOJI_FLEXED_BICEPS","x":4,"y":6,"layer":0},
+    {"tileId":"t012","symbolCode":"BIRD_LOVEBIRDS_C","x":6,"y":6,"layer":0},
+    {"tileId":"t013","symbolCode":"MONSTER_GLASS","x":8,"y":6,"layer":0},
+    {"tileId":"t014","symbolCode":"SPORT_BOWLING","x":10,"y":6,"layer":0},
+    {"tileId":"t015","symbolCode":"LOVE_HEART","x":0,"y":8,"layer":0},
+    {"tileId":"t016","symbolCode":"LOVE_HEART","x":2,"y":8,"layer":0},
+    {"tileId":"t017","symbolCode":"LOVE_HEART","x":4,"y":8,"layer":0},
+    {"tileId":"t018","symbolCode":"BIRD_LOVEBIRDS_C","x":8,"y":8,"layer":0},
+    {"tileId":"t019","symbolCode":"SPORT_BOWLING","x":10,"y":8,"layer":0},
+    {"tileId":"t020","symbolCode":"LOVE_HEART","x":12,"y":8,"layer":0},
+    {"tileId":"t021","symbolCode":"MONSTER_GLASS","x":2,"y":10,"layer":0},
+    {"tileId":"t022","symbolCode":"MONSTER_GLASS","x":4,"y":10,"layer":0},
+    {"tileId":"t023","symbolCode":"EMOJI_FLEXED_BICEPS","x":6,"y":10,"layer":0},
+    {"tileId":"t024","symbolCode":"FLOWER_ZINNIA","x":8,"y":10,"layer":0},
+    {"tileId":"t025","symbolCode":"COSMIC_CHESTNUT","x":10,"y":10,"layer":0},
+    {"tileId":"t026","symbolCode":"SPORT_BOWLING","x":2,"y":12,"layer":0},
+    {"tileId":"t027","symbolCode":"MONSTER_GLASS","x":4,"y":12,"layer":0},
+    {"tileId":"t028","symbolCode":"FLOWER_ZINNIA","x":6,"y":12,"layer":0},
+    {"tileId":"t029","symbolCode":"EMOJI_FLEXED_BICEPS","x":8,"y":12,"layer":0},
+    {"tileId":"t030","symbolCode":"SPORT_BOWLING","x":10,"y":12,"layer":0},
+    {"tileId":"t031","symbolCode":"EMOJI_FLEXED_BICEPS","x":2,"y":14,"layer":0},
+    {"tileId":"t032","symbolCode":"COSMIC_CHESTNUT","x":6,"y":14,"layer":0},
+    {"tileId":"t033","symbolCode":"COSMIC_CHESTNUT","x":10,"y":14,"layer":0},
+    {"tileId":"t034","symbolCode":"SPORT_BOWLING","x":6,"y":16,"layer":0}
+  ]
+}

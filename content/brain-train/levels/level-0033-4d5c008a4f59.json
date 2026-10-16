@@ -1,0 +1,58 @@
+{
+  "schemaVersion": 1,
+  "levelId": "level-0033",
+  "title": "Deer Span",
+  "difficulty": "easy",
+  "tileSetId": "classic-ivory",
+  "board": {
+    "tileWidth": 2,
+    "tileHeight": 2,
+    "layerOffsetX": -0.07,
+    "layerOffsetY": -0.07
+  },
+  "rules": {
+    "matchingMode": "same_symbol",
+    "requireSolvable": true
+  },
+  "backdrop": {
+    "colors": [
+      "#1F7A8C",
+      "#5FC4C9",
+      "#CDEFE6"
+    ]
+  },
+  "tiles": [
+    {"tileId":"t001","symbolCode":"FIT_TRACKER_BAND","x":0,"y":0,"layer":0},
+    {"tileId":"t002","symbolCode":"EMOJI_THUNDERCLOUD_LIGHTNING","x":2,"y":0,"layer":0},
+    {"tileId":"t003","symbolCode":"MONSTER_DONUTS","x":12,"y":0,"layer":0},
+    {"tileId":"t004","symbolCode":"MONSTER_DONUTS","x":14,"y":0,"layer":0},
+    {"tileId":"t005","symbolCode":"DINO_ANKYLOSAURUS","x":0,"y":2,"layer":0},
+    {"tileId":"t006","symbolCode":"EMOJI_THUNDERCLOUD_LIGHTNING","x":2,"y":2,"layer":0},
+    {"tileId":"t007","symbolCode":"DINO_ANKYLOSAURUS","x":4,"y":2,"layer":0},
+    {"tileId":"t008","symbolCode":"BIRD_WOODPECKER","x":6,"y":2,"layer":0},
+    {"tileId":"t009","symbolCode":"CN_DRAGON","x":8,"y":2,"layer":0},
+    {"tileId":"t010","symbolCode":"FIT_TRACKER_BAND","x":10,"y":2,"layer":0},
+    {"tileId":"t011","symbolCode":"EMOJI_THUNDERCLOUD_LIGHTNING","x":12,"y":2,"layer":0},
+    {"tileId":"t012","symbolCode":"DINO_ANKYLOSAURUS","x":14,"y":2,"layer":0},
+    {"tileId":"t013","symbolCode":"CN_HANDFAN_B","x":0,"y":4,"layer":0},
+    {"tileId":"t014","symbolCode":"BIRD_WOODPECKER","x":2,"y":4,"layer":0},
+    {"tileId":"t015","symbolCode":"BIRD_WOODPECKER","x":4,"y":4,"layer":0},
+    {"tileId":"t016","symbolCode":"BIRD_WOODPECKER","x":6,"y":4,"layer":0},
+    {"tileId":"t017","symbolCode":"CN_HANDFAN_B","x":8,"y":4,"layer":0},
+    {"tileId":"t018","symbolCode":"DINO_ANKYLOSAURUS","x":10,"y":4,"layer":0},
+    {"tileId":"t019","symbolCode":"EMOJI_THUNDERCLOUD_LIGHTNING","x":12,"y":4,"layer":0},
+    {"tileId":"t020","symbolCode":"DINO_ANKYLOSAURUS","x":14,"y":4,"layer":0},
+    {"tileId":"t021","symbolCode":"CN_HANDFAN_B","x":0,"y":6,"layer":0},
+    {"tileId":"t022","symbolCode":"CN_HANDFAN_B","x":2,"y":6,"layer":0},
+    {"tileId":"t023","symbolCode":"FIT_TRACKER_BAND","x":4,"y":6,"layer":0},
+    {"tileId":"t024","symbolCode":"CN_DRAGON","x":6,"y":6,"layer":0},
+    {"tileId":"t025","symbolCode":"CN_DRAGON","x":8,"y":6,"layer":0},
+    {"tileId":"t026","symbolCode":"CN_DRAGON","x":10,"y":6,"layer":0},
+    {"tileId":"t027","symbolCode":"DINO_ANKYLOSAURUS","x":12,"y":6,"layer":0},
+    {"tileId":"t028","symbolCode":"FIT_TRACKER_BAND","x":14,"y":6,"layer":0},
+    {"tileId":"t029","symbolCode":"CN_HANDFAN_B","x":0,"y":8,"layer":0},
+    {"tileId":"t030","symbolCode":"MONSTER_DONUTS","x":2,"y":8,"layer":0},
+    {"tileId":"t031","symbolCode":"MONSTER_DONUTS","x":12,"y":8,"layer":0},
+    {"tileId":"t032","symbolCode":"CN_HANDFAN_B","x":14,"y":8,"layer":0}
+  ]
+}
