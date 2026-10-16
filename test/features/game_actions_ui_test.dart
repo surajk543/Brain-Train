@@ -138,9 +138,10 @@ void main() {
       expect(_button(tester, GameAction.undo).onPressed, isNull, reason: 'nothing to undo yet');
       expect(_button(tester, GameAction.hint).onPressed, isNotNull);
       expect(_button(tester, GameAction.shuffle).onPressed, isNotNull);
-      expect(_button(tester, GameAction.undo).usesLeft, 3);
-      expect(_button(tester, GameAction.hint).usesLeft, 3);
-      expect(_button(tester, GameAction.shuffle).usesLeft, 1);
+      for (final action in GameAction.values) {
+        expect(_button(tester, action).usesLeft, 1, reason: '$action starts with one use');
+        expect(find.descendant(of: _action(action), matching: find.text('1')), findsOneWidget);
+      }
       expect(find.byTooltip('Restart'), findsOneWidget);
 
       final game = _gameOf(tester);
@@ -150,8 +151,13 @@ void main() {
       await tester.tap(_action(GameAction.undo));
       await _settle(tester, rounds: 8);
       expect(game.state.tray, isEmpty);
-      expect(_button(tester, GameAction.undo).usesLeft, 2);
-      expect(find.descendant(of: _action(GameAction.undo), matching: find.text('2')), findsOneWidget);
+      expect(_button(tester, GameAction.undo).usesLeft, 0);
+      expect(find.descendant(of: _action(GameAction.undo), matching: find.text('1')), findsNothing);
+      // A build without ads: a "+" where the play mark would offer an ad.
+      expect(find.descendant(of: _action(GameAction.undo), matching: find.byIcon(Icons.add_rounded)), findsOneWidget);
+      expect(game.useHint(), isNotNull);
+      await tester.pump();
+      expect(_button(tester, GameAction.hint).usesLeft, 0);
 
       // A restart replays the intro: every button is off meanwhile.
       game.restart();
@@ -161,6 +167,17 @@ void main() {
         expect(_button(tester, action).onPressed, isNull, reason: '$action during the intro');
       }
       expect(tester.widget<GameActionButton>(find.byKey(const ValueKey('action-restart'))).onPressed, isNull);
+      // Then every action is back to one use.
+      for (var i = 0; i < 80 && game.introPlaying; i++) {
+        await tester.runAsync(() => Future<void>.delayed(const Duration(milliseconds: 40)));
+        await tester.pump(const Duration(milliseconds: 100));
+      }
+      expect(game.introPlaying, isFalse);
+      await tester.pump();
+      for (final action in GameAction.values) {
+        expect(_button(tester, action).usesLeft, 1, reason: '$action after Restart');
+        expect(find.descendant(of: _action(action), matching: find.text('1')), findsOneWidget);
+      }
       await tester.pumpWidget(const SizedBox());
     });
 
@@ -194,13 +211,16 @@ void main() {
       final hint = overlay.hint;
       expect(hint, isNotNull);
       expect(game.state.moveCount, moves, reason: 'a hint does not move');
-      expect(game.usesLeft(GameAction.hint), 2);
+      expect(game.usesLeft(GameAction.hint), 0);
       expect(overlay.strength, greaterThan(0));
       game.tapTile(hint!.tileId);
       await tester.pump();
       expect(overlay.hint, isNull, reason: 'the next tap clears it');
 
-      // Untouched, it fades out by itself.
+      // Untouched, it fades out by itself (a second hint: the free one is
+      // spent, so one is granted as a rewarded ad would).
+      expect(game.grant(GameAction.hint), isTrue);
+      await tester.pump();
       await tester.tap(_action(GameAction.hint));
       await tester.pump();
       expect(overlay.hint, isNotNull);
@@ -301,6 +321,7 @@ void main() {
       await start(tester, adStatus: RewardedAdStatus.ready);
       await pumpGame(tester);
       final game = await spendHints(tester);
+      expect(game.actions.hintsUsed, 1, reason: 'one free hint per level');
       expect(_button(tester, GameAction.hint).usesLeft, 0);
       expect(find.descendant(of: _action(GameAction.hint), matching: find.byIcon(Icons.play_arrow_rounded)), findsOneWidget);
       await tester.tap(_action(GameAction.hint));

@@ -56,13 +56,32 @@ void main() {
     return counts;
   }
 
+  /// [e] with [extra] more uses of [action], granted the way a rewarded ad
+  /// does (each grant is a `!grant:` marker in the history).
+  GameEngine withGranted(GameEngine e, GameAction action, int extra) {
+    for (var i = 0; i < extra; i++) {
+      expect(e.grant(action), isTrue);
+    }
+    return e;
+  }
+
   group('uses', () {
-    test('a level starts with 3 undos, 3 hints and 1 shuffle, none used', () {
-      expect(kStartingCharges, {GameAction.undo: 3, GameAction.hint: 3, GameAction.shuffle: 1});
+    test('a level starts with 1 undo, 1 hint and 1 shuffle, none used', () {
+      expect(kStartingCharges, {GameAction.undo: 1, GameAction.hint: 1, GameAction.shuffle: 1});
+      expect(
+        ActionCounts.initial,
+        ActionCounts(
+          undosLeft: kStartingCharges[GameAction.undo]!,
+          hintsLeft: kStartingCharges[GameAction.hint]!,
+          shufflesLeft: kStartingCharges[GameAction.shuffle]!,
+        ),
+      );
       final e = engine(wide);
       expect(e.state.actions, ActionCounts.initial);
-      expect((e.usesLeft(GameAction.undo), e.usesLeft(GameAction.hint), e.usesLeft(GameAction.shuffle)), (3, 3, 1));
-      expect(e.state.actions.used(GameAction.undo), 0);
+      expect((e.usesLeft(GameAction.undo), e.usesLeft(GameAction.hint), e.usesLeft(GameAction.shuffle)), (1, 1, 1));
+      for (final action in GameAction.values) {
+        expect(e.state.actions.used(action), 0);
+      }
     });
 
     test('grant adds one use and is saved as a marker; refused once won', () {
@@ -70,14 +89,15 @@ void main() {
       expect(e.grant(GameAction.shuffle), isTrue);
       expect(e.grant(GameAction.undo), isTrue);
       expect(e.state.actions.shufflesLeft, 2);
-      expect(e.state.actions.undosLeft, 4);
+      expect(e.state.actions.undosLeft, 2);
+      expect(e.state.actions.hintsLeft, 1);
       expect(e.state.history, ['!grant:shuffle', '!grant:undo']);
       final won = engine(level([('a1', 'A', 0, 0, 0), ('a2', 'A', 4, 0, 0)]))
         ..tap('a1')
         ..tap('a2');
       expect(won.state.status, GameStatus.won);
       expect(won.grant(GameAction.hint), isFalse);
-      expect(won.state.actions.hintsLeft, 3);
+      expect(won.state.actions.hintsLeft, 1);
     });
 
     test('restart gives the uses back; revive does not change them', () {
@@ -91,10 +111,12 @@ void main() {
       }
       expect(e.state.status, GameStatus.trayFull);
       final before = e.state.actions;
+      expect((before.undosLeft, before.hintsLeft, before.shufflesLeft), (0, 1, 1));
       e.revive();
       expect(e.state.actions, before);
       e.restart();
       expect(e.state.actions, ActionCounts.initial);
+      expect((e.usesLeft(GameAction.undo), e.usesLeft(GameAction.hint), e.usesLeft(GameAction.shuffle)), (1, 1, 1));
     });
   });
 
@@ -110,7 +132,7 @@ void main() {
       expect(e.state.free, contains('b1'));
       expect(e.state.moveCount, 1);
       expect(e.state.history, ['a1', 'b1', GameEngine.undoMarker]);
-      expect(e.state.actions.undosLeft, 2);
+      expect(e.state.actions.undosLeft, 0);
       expect(e.state.actions.undosUsed, 1);
       expect(e.tap('b1').slot, 1, reason: 'it plays again');
     });
@@ -141,7 +163,8 @@ void main() {
     });
 
     test('undos chain back to the start, then there is nothing to undo', () {
-      final e = engine(wide);
+      final e = withGranted(engine(wide), GameAction.undo, 2);
+      expect(e.usesLeft(GameAction.undo), 3);
       expect(e.undoAvailable, isFalse, reason: 'before any tap');
       expect(e.undo(), isNull);
       e
@@ -154,15 +177,14 @@ void main() {
       expect(e.state.remaining, hasLength(8));
       expect(e.state.tray, isEmpty);
       expect(e.undoAvailable, isFalse);
+      expect(e.usesLeft(GameAction.undo), 0);
     });
 
     test('needs a use: none left, none taken; a granted one works', () {
-      final e = engine(wide);
-      for (var i = 0; i < 3; i++) {
-        e
-          ..tap('a1')
-          ..undo();
-      }
+      final e = engine(wide)
+        ..tap('a1')
+        ..undo();
+      expect(e.state.actions.undosUsed, 1, reason: 'the free use');
       e.tap('a1');
       expect(e.undoAvailable, isTrue);
       expect(e.state.actions.undosLeft, 0);
@@ -170,7 +192,8 @@ void main() {
       expect(e.state.tray, ['a1']);
       e.grant(GameAction.undo);
       expect(e.undo()!.tileId, 'a1');
-      expect(e.state.actions.undosUsed, 4);
+      expect(e.state.actions.undosUsed, 2);
+      expect(e.state.actions.undosLeft, 0);
     });
 
     test('not after a win or with a full tray', () {
@@ -187,7 +210,7 @@ void main() {
       expect(full.state.status, GameStatus.trayFull);
       expect(full.undoAvailable, isFalse);
       expect(full.undo(), isNull);
-      expect(full.state.actions.undosLeft, 3);
+      expect(full.state.actions.undosLeft, 1);
     });
 
     test('never crosses a revive', () {
@@ -303,7 +326,7 @@ void main() {
       expect(e.state.status, GameStatus.playing);
       expect(e.findHint(), isNull, reason: 'every tap fills the tray');
       expect(e.useHint(), isNull);
-      expect(e.state.actions.hintsLeft, 3, reason: 'no hint, no use spent');
+      expect(e.state.actions.hintsLeft, 1, reason: 'no hint, no use spent');
     });
 
     test('on a board with no tray match and no safe pair, the solver picks a winning tap', () {
@@ -365,7 +388,7 @@ void main() {
       final hint = e.useHint()!;
       expect(hint.tileId, 'a2');
       expect(e.state.tray, ['a1'], reason: 'nothing is applied');
-      expect(e.state.actions.hintsLeft, 2);
+      expect(e.state.actions.hintsLeft, 0);
       expect(e.state.actions.hintsUsed, 1);
       expect(e.state.history.last, GameEngine.hintMarker);
       expect(e.state.undoAvailable, isTrue, reason: 'a hint is not a barrier for undo');
@@ -373,10 +396,14 @@ void main() {
 
     test('needs a use and a game in play', () {
       final e = engine(wide);
-      for (var i = 0; i < 3; i++) {
-        expect(e.useHint(), isNotNull);
-      }
+      expect(e.useHint(), isNotNull, reason: 'the free use');
       expect(e.useHint(), isNull);
+      expect(e.state.actions.hintsUsed, 1);
+      withGranted(e, GameAction.hint, 2);
+      expect(e.useHint(), isNotNull);
+      expect(e.useHint(), isNotNull);
+      expect(e.useHint(), isNull);
+      expect(e.state.actions.hintsUsed, 3);
       e.grant(GameAction.hint);
       expect(e.useHint(), isNotNull);
       final full = engine(wide);
@@ -569,7 +596,10 @@ void main() {
         e.tap(next);
       }
       if (e.state.status == GameStatus.trayFull) e.revive();
-      e.useHint();
+      // The free hint is spent: a granted one after the revive.
+      e
+        ..grant(GameAction.hint)
+        ..useHint();
       final replayed = engine(wide, tray: 3);
       expect(replayed.replay(e.state.history), isTrue);
       expect(snapshot(replayed), snapshot(e));
@@ -603,8 +633,9 @@ void main() {
       expect(engine(wide).replay(['!grant:teleport']), isFalse);
       expect(engine(wide).replay(['!future']), isFalse);
       expect(engine(wide).replay(['!shuffle:1:5', '!shuffle:1:6']), isFalse, reason: 'one shuffle per level');
-      expect(engine(wide).replay(['!hint', '!hint', '!hint', '!hint']), isFalse, reason: 'three hints');
-      expect(engine(wide).replay(['!grant:hint', '!hint', '!hint', '!hint', '!hint']), isTrue);
+      expect(engine(wide).replay(['!hint', '!hint']), isFalse, reason: 'one hint');
+      expect(engine(wide).replay(['!grant:hint', '!hint', '!hint']), isTrue);
+      expect(engine(wide).replay(['!grant:hint', '!hint', '!hint', '!hint']), isFalse, reason: 'one free + one granted');
     });
   });
 }

@@ -77,6 +77,15 @@ void main() {
 
   Future<void> settle() => Future<void>.delayed(Duration.zero);
 
+  /// [c] with [extra] more uses of [action] than the one a level starts with,
+  /// granted the way a rewarded ad does ([GameController.grant]).
+  GameController withGranted(GameController c, GameAction action, int extra) {
+    for (var i = 0; i < extra; i++) {
+      expect(c.grant(action), isTrue);
+    }
+    return c;
+  }
+
   /// Collects board and score events until [stop].
   (List<BoardEvent>, List<ScoreEvent>, Future<void> Function()) listen(GameController c) {
     final board = <BoardEvent>[], score = <ScoreEvent>[];
@@ -105,7 +114,7 @@ void main() {
       expect(undone.pointsTakenBack, 0);
       expect(c.elapsed, elapsed, reason: 'undo never rewinds the clock');
       expect(c.clockRunning, isTrue);
-      expect(c.actions.undosLeft, 2);
+      expect(c.actions.undosLeft, 0);
       expect(c.actions.undosUsed, 1);
       expect(progress.savedGame()!.history, ['a1', 'b1', GameEngine.undoMarker]);
       expect(sounds.played.last, Sfx.select);
@@ -114,7 +123,7 @@ void main() {
     });
 
     test('a match: score, combo and best combo go back to before the tap; later penalties stay', () async {
-      final c = controllerFor();
+      final c = withGranted(controllerFor(), GameAction.undo, 1);
       final (events, _, stop) = listen(c);
       c
         ..tapTile('a1')
@@ -173,11 +182,11 @@ void main() {
 
     test('no use left: available but not usable; a granted use (after an ad) works and is saved', () async {
       final c = controllerFor();
-      for (var i = 0; i < 3; i++) {
-        c
-          ..tapTile('a1')
-          ..undo();
-      }
+      expect(c.usesLeft(GameAction.undo), 1);
+      c
+        ..tapTile('a1')
+        ..undo();
+      expect(c.actions.undosUsed, 1, reason: 'the free use');
       c.tapTile('a1');
       expect(c.isAvailable(GameAction.undo), isTrue);
       expect(c.usesLeft(GameAction.undo), 0);
@@ -187,7 +196,10 @@ void main() {
       await settle();
       expect(progress.savedGame()!.history.last, '!grant:undo');
       expect(c.undo(), isNotNull);
-      expect(c.actions.undosUsed, 4);
+      expect(c.actions.undosUsed, 2);
+      expect(c.usesLeft(GameAction.undo), 0);
+      c.tapTile('a1');
+      expect(c.canUse(GameAction.undo), isFalse, reason: 'one ad, one use');
       c.dispose();
     });
 
@@ -254,6 +266,7 @@ void main() {
       );
       final c = controllerFor(resume: saved);
       expect(c.actions, ActionCounts.initial);
+      withGranted(c, GameAction.undo, 1);
       expect(c.undo()!.tileId, 'b1');
       expect(c.isAvailable(GameAction.undo), isFalse, reason: 'no score checkpoint for the a1-a2 match');
       expect(c.score, 100);
@@ -278,7 +291,7 @@ void main() {
       expect(c.state.tray, tray);
       expect(c.score, score);
       expect(scores, isEmpty);
-      expect(c.actions.hintsLeft, 2);
+      expect(c.actions.hintsLeft, 0);
       expect(c.actions.hintsUsed, 1);
       expect(progress.savedGame()!.history, ['a1', GameEngine.hintMarker]);
       await stop();
@@ -293,12 +306,15 @@ void main() {
         ..beginTutorial();
       expect(c.isAvailable(GameAction.hint), isFalse);
       c.endTutorial();
-      for (var i = 0; i < 3; i++) {
-        expect(c.useHint(), isNotNull);
-      }
+      expect(c.useHint(), isNotNull, reason: 'the free use');
       expect(c.isAvailable(GameAction.hint), isTrue);
       expect(c.canUse(GameAction.hint), isFalse);
       expect(c.useHint(), isNull);
+      withGranted(c, GameAction.hint, 2);
+      expect(c.useHint(), isNotNull);
+      expect(c.useHint(), isNotNull);
+      expect(c.useHint(), isNull);
+      expect(c.actions.hintsUsed, 3);
       c.grant(GameAction.hint);
       expect(c.useHint(), isNotNull);
       for (final id in ['a1', 'b1', 'c1', 'd1']) {
@@ -363,12 +379,17 @@ void main() {
       c.endTutorial();
       expect(c.shuffle().shuffled, isTrue);
       c.tapTile(c.state.free.first);
-      c.useHint();
+      c
+        ..useHint()
+        ..undo()
+        ..grant(GameAction.hint);
+      expect((c.usesLeft(GameAction.undo), c.usesLeft(GameAction.hint), c.usesLeft(GameAction.shuffle)), (0, 1, 0));
       final serial = c.symbolsSerial;
       c.restart();
       expect(c.symbolsSerial, isNot(serial));
       expect(c.boardLevel, same(c.level));
       expect(c.actions, ActionCounts.initial);
+      expect((c.usesLeft(GameAction.undo), c.usesLeft(GameAction.hint), c.usesLeft(GameAction.shuffle)), (1, 1, 1));
       c.dispose();
     });
   });
@@ -401,8 +422,8 @@ void main() {
     expect(resumed.state.remaining, c.state.remaining);
     expect(resumed.actions, c.actions);
     expect(resumed.actions, const ActionCounts(
-      undosLeft: 3,
-      hintsLeft: 2,
+      undosLeft: 1,
+      hintsLeft: 0,
       shufflesLeft: 0,
       undosUsed: 1,
       hintsUsed: 1,
@@ -426,6 +447,7 @@ void main() {
       ..tapTile('a1')
       ..undo()
       ..useHint()
+      ..grant(GameAction.hint)
       ..useHint();
     expect(c.shuffle().shuffled, isTrue);
     while (c.state.status == GameStatus.playing) {

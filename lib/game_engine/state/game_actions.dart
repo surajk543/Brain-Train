@@ -1,5 +1,5 @@
 /// The player's helper actions (owner, 2026-10-17, 1.1.0): Undo, Hint and
-/// Shuffle, each with a few uses per level and +1 per rewarded ad.
+/// Shuffle, each with one use per level and +1 per rewarded ad.
 library;
 
 enum GameAction {
@@ -32,8 +32,9 @@ class ActionCounts {
     this.shufflesUsed = 0,
   });
 
-  /// A new game: [kStartingCharges] left, none used.
-  static const ActionCounts initial = ActionCounts(undosLeft: 3, hintsLeft: 3, shufflesLeft: 1);
+  /// A new game: [kStartingCharges] left, none used (a test keeps the two
+  /// equal; a const map lookup cannot build a const value).
+  static const ActionCounts initial = ActionCounts(undosLeft: 1, hintsLeft: 1, shufflesLeft: 1);
 
   final int undosLeft;
   final int hintsLeft;
