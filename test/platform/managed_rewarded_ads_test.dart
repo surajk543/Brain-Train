@@ -36,6 +36,7 @@ class _FakeBackend implements AdsBackend {
   /// Failures for the next loads, in order (null: load fine).
   final List<AdsFailure?> loadFailures = [];
   AdsFailure? consentFailure;
+  AdsFailure? trackingFailure;
 
   /// When set, loads wait for it.
   Completer<void>? loadGate;
@@ -65,6 +66,12 @@ class _FakeBackend implements AdsBackend {
 
   @override
   Future<void> showPrivacyOptionsForm() async => calls.add('privacy');
+
+  @override
+  Future<void> requestTracking() async {
+    calls.add('tracking');
+    if (trackingFailure case final failure?) throw failure;
+  }
 
   @override
   Future<void> initialize() async => calls.add('initialize');
@@ -139,11 +146,21 @@ void main() {
     expect(backend.consentAudience!.childDirected, isTrue);
   });
 
-  test('13+: the normal flow, rated PG', () async {
+  test('13+: the normal flow, rated PG, the tracking prompt after consent and before the SDK', () async {
     ads.start(_teenOrAdult);
     await _until(ads, RewardedAdStatus.ready);
     expect(backend.configured!.childDirected, isFalse);
     expect(backend.configured!.maxContentRating, AdContentRating.pg);
+    expect(backend.calls, ['configure', 'consent', 'tracking', 'initialize', 'load']);
+  });
+
+  test('the tracking prompt is asked once, and a failure does not stop ads', () async {
+    backend.trackingFailure = const AdsFailure('no answer');
+    ads.start(_teenOrAdult);
+    await _until(ads, RewardedAdStatus.ready);
+    expect(await ads.show(), RewardedAdResult.earned);
+    await _until(ads, RewardedAdStatus.ready);
+    expect(backend.calls.where((c) => c == 'tracking'), hasLength(1));
   });
 
   test('only the first start counts', () async {
