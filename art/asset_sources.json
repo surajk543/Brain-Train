@@ -1869,7 +1869,8 @@
       "originalFile": "nano-banana-2.1_a_lush_3d_render_of_single_weapon_close_up_look_white_background_3D_model_excite-1.jpg",
       "expectedSourceFile": "weapon-crystal-sword",
       "outputFile": "weapon-crystal-sword.webp",
-      "status": "integrated"
+      "status": "rejected",
+      "rejected": "Not suitable for a 4+ App Store age rating: a weapon or an object that may cause bodily harm. Removed 2026-10-17 (owner)."
     },
     {
       "code": "WEAPON_CROSSED_SWORDS",
@@ -1877,7 +1878,8 @@
       "originalFile": "nano-banana-2.1_a_lush_3d_render_of_single_weapon_close_up_look_white_background_3D_model_excite-2.jpg",
       "expectedSourceFile": "weapon-crossed-swords",
       "outputFile": "weapon-crossed-swords.webp",
-      "status": "integrated"
+      "status": "rejected",
+      "rejected": "Not suitable for a 4+ App Store age rating: a weapon or an object that may cause bodily harm. Removed 2026-10-17 (owner)."
     },
     {
       "code": "WEAPON_RAY_GUN_ORANGE",
@@ -1885,7 +1887,8 @@
       "originalFile": "nano-banana-2.1_a_lush_3d_render_of_single_weapon_close_up_look_white_background_3D_model_excite-3 (1).jpg",
       "expectedSourceFile": "weapon-ray-gun-orange",
       "outputFile": "weapon-ray-gun-orange.webp",
-      "status": "integrated"
+      "status": "rejected",
+      "rejected": "Not suitable for a 4+ App Store age rating: a weapon or an object that may cause bodily harm. Removed 2026-10-17 (owner)."
     },
     {
       "code": "WEAPON_RAY_GUN_VIOLET",
@@ -1893,7 +1896,8 @@
       "originalFile": "nano-banana-2.1_a_lush_3d_render_of_single_weapon_close_up_look_white_background_3D_model_excite-3.jpg",
       "expectedSourceFile": "weapon-ray-gun-violet",
       "outputFile": "weapon-ray-gun-violet.webp",
-      "status": "integrated"
+      "status": "rejected",
+      "rejected": "Not suitable for a 4+ App Store age rating: a weapon or an object that may cause bodily harm. Removed 2026-10-17 (owner)."
     },
     {
       "code": "WEAPON_SPIRAL_BLASTER",
@@ -1901,7 +1905,8 @@
       "originalFile": "nano-banana-2.1_a_lush_3d_render_of_single_weapon_close_up_look_white_background_3D_model_excite-4.jpg",
       "expectedSourceFile": "weapon-spiral-blaster",
       "outputFile": "weapon-spiral-blaster.webp",
-      "status": "integrated"
+      "status": "rejected",
+      "rejected": "Not suitable for a 4+ App Store age rating: a weapon or an object that may cause bodily harm. Removed 2026-10-17 (owner)."
     },
     {
       "code": "WEAPON_WAR_HAMMER",
@@ -1909,7 +1914,8 @@
       "originalFile": "nano-banana-2.1_a_lush_3d_render_of_single_weapon_close_up_look_white_background_3D_model_excite-5.jpg",
       "expectedSourceFile": "weapon-war-hammer",
       "outputFile": "weapon-war-hammer.webp",
-      "status": "integrated"
+      "status": "rejected",
+      "rejected": "Not suitable for a 4+ App Store age rating: a weapon or an object that may cause bodily harm. Removed 2026-10-17 (owner)."
     },
     {
       "code": "HERO_SUPERHERO",
@@ -2356,7 +2362,8 @@
       "expectedSourceFile": "equip-cutter",
       "outputFile": "equip-cutter.webp",
       "sourceUrl": "https://iconscout.com/3d-icon/cutter-3d-icon_11627150",
-      "status": "integrated"
+      "status": "rejected",
+      "rejected": "Not suitable for a 4+ App Store age rating: a weapon or an object that may cause bodily harm. Removed 2026-10-17 (owner)."
     },
     {
       "code": "EQUIP_DRILL",
@@ -2392,7 +2399,8 @@
       "expectedSourceFile": "equip-staple-gun",
       "outputFile": "equip-staple-gun.webp",
       "sourceUrl": "https://iconscout.com/3d-icon/staple-gun-3d-icon_11627142",
-      "status": "integrated"
+      "status": "rejected",
+      "rejected": "Not suitable for a 4+ App Store age rating: a weapon or an object that may cause bodily harm. Removed 2026-10-17 (owner)."
     },
     {
       "code": "EQUIP_TAPE_MEASURE",
