@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "contentVersion": "2026.10.16.9",
-  "publishedAt": "2026-10-15 23:31:49",
+  "publishedAt": "2026-10-16 06:26:17",
   "compatibility": {
     "minClientContentSchema": 2
   },
@@ -18,7 +18,8 @@
       "sha256": "176020c9449ab2f776ab4d16e886bfab662eafdceaa836c504d5d602052b9a4c",
       "difficulty": "easy",
       "category": "nature",
-      "tileCount": 28
+      "tileCount": 28,
+      "trayCapacity": 4
     },
     {
       "levelId": "level-0002",
@@ -28,7 +29,8 @@
       "sha256": "8ef5f67d3353c94dea2c62784ad316eb69b2420eecc4f7772c870f19c33d4069",
       "difficulty": "easy",
       "category": "nature",
-      "tileCount": 26
+      "tileCount": 26,
+      "trayCapacity": 4
     },
     {
       "levelId": "level-0003",
@@ -38,7 +40,8 @@
       "sha256": "437bd30971f7ee37c1bac05c5ec2920fea0fc56484d2b49a74ae471bcdbc1b9d",
       "difficulty": "medium",
       "category": "nature",
-      "tileCount": 48
+      "tileCount": 48,
+      "trayCapacity": 4
     },
     {
       "levelId": "level-0004",
@@ -48,7 +51,8 @@
       "sha256": "47174f1a9852fbcac8d4a31ff68e2d6f16a3e04c78036739475f1bc186f015aa",
       "difficulty": "medium",
       "category": "nature",
-      "tileCount": 48
+      "tileCount": 48,
+      "trayCapacity": 4
     },
     {
       "levelId": "level-0005",
@@ -58,7 +62,8 @@
       "sha256": "727b1e1ab9734a46da058747d4626bc6f1227afddf0796573b924c5fbf166ac2",
       "difficulty": "hard",
       "category": "nature",
-      "tileCount": 90
+      "tileCount": 90,
+      "trayCapacity": 5
     },
     {
       "levelId": "level-0006",
@@ -68,7 +73,8 @@
       "sha256": "44cfe2c04a1cb1f6f588d0846936e6cae3d1c7a87f75a2024c29d81689e84526",
       "difficulty": "medium",
       "category": "nature",
-      "tileCount": 54
+      "tileCount": 54,
+      "trayCapacity": 4
     },
     {
       "levelId": "level-0007",
@@ -78,7 +84,8 @@
       "sha256": "ecd748cb957f608ba64db085c9ab7eab1a1c3f19e90650655ff617a538d89767",
       "difficulty": "hard",
       "category": "nature",
-      "tileCount": 84
+      "tileCount": 84,
+      "trayCapacity": 5
     },
     {
       "levelId": "level-0008",
@@ -88,7 +95,8 @@
       "sha256": "9d48ef618c5d2303c23b6e32dd6909783c3fd5de229cf1a15892360a25963365",
       "difficulty": "veryHard",
       "category": "nature",
-      "tileCount": 166
+      "tileCount": 166,
+      "trayCapacity": 5
     },
     {
       "levelId": "level-0009",
@@ -98,7 +106,8 @@
       "sha256": "7dad703d880746c1e403927d03b46903368f93708ace1e6419582407cc25b2e5",
       "difficulty": "hard",
       "category": "nature",
-      "tileCount": 96
+      "tileCount": 96,
+      "trayCapacity": 5
     },
     {
       "levelId": "level-0010",
@@ -108,7 +117,8 @@
       "sha256": "ba97769931b62d38f5178c3bc2a7c006bb7a1e04b5a25a26307cdf3220d234b5",
       "difficulty": "hard",
       "category": "nature",
-      "tileCount": 88
+      "tileCount": 88,
+      "trayCapacity": 5
     },
     {
       "levelId": "level-0011",
@@ -118,7 +128,8 @@
       "sha256": "2b3ce1efe9cd06bef7d0be8b527fcdfbd0b551ffa13c407235afd2b4b61abb82",
       "difficulty": "medium",
       "category": "nature",
-      "tileCount": 52
+      "tileCount": 52,
+      "trayCapacity": 4
     },
     {
       "levelId": "level-0012",
@@ -128,7 +139,8 @@
       "sha256": "19941c50e0bc6beb490acb1ea87efd352e6834c10b3811dbd8fd31e7cf5b911a",
       "difficulty": "easy",
       "category": "nature",
-      "tileCount": 32
+      "tileCount": 32,
+      "trayCapacity": 4
     },
     {
       "levelId": "level-0013",
@@ -138,7 +150,8 @@
       "sha256": "640b621914d079b14cc5d6007e3b8823bb092dd8ef2449c9aad579fb03dffb61",
       "difficulty": "veryHard",
       "category": "nature",
-      "tileCount": 152
+      "tileCount": 152,
+      "trayCapacity": 5
     },
     {
       "levelId": "level-0014",
@@ -148,7 +161,8 @@
       "sha256": "cb3f1854113e684dc1df581a0ffdf975d3c2f53290413cd1800e33c717782eae",
       "difficulty": "medium",
       "category": "nature",
-      "tileCount": 60
+      "tileCount": 60,
+      "trayCapacity": 4
     },
     {
       "levelId": "level-0015",
@@ -158,7 +172,8 @@
       "sha256": "d47eb30c6a39d53820e9f21979e76916990ed178f50bd11cdf3913d8f85d377a",
       "difficulty": "hard",
       "category": "nature",
-      "tileCount": 84
+      "tileCount": 84,
+      "trayCapacity": 5
     },
     {
       "levelId": "level-0016",
@@ -168,7 +183,8 @@
       "sha256": "8445c6601153acb85bc070089bf1774dbb070d676fe5f16f361d60874ee4ca2b",
       "difficulty": "easy",
       "category": "nature",
-      "tileCount": 28
+      "tileCount": 28,
+      "trayCapacity": 4
     },
     {
       "levelId": "level-0017",
@@ -178,7 +194,8 @@
       "sha256": "7e73e0ea975b79ff5206e64fc0cb97120d665477b90b060357472dcd5dd181cc",
       "difficulty": "easy",
       "category": "nature",
-      "tileCount": 30
+      "tileCount": 30,
+      "trayCapacity": 4
     },
     {
       "levelId": "level-0018",
@@ -188,7 +205,8 @@
       "sha256": "6b5db2e87c6c648f651ca4bdb593c626ce741d75b782edfb737887876407ddd4",
       "difficulty": "medium",
       "category": "nature",
-      "tileCount": 48
+      "tileCount": 48,
+      "trayCapacity": 4
     },
     {
       "levelId": "level-0019",
@@ -198,7 +216,8 @@
       "sha256": "f58ea5758d2e30d62f06038f8db32644ea66faa2a38955d7b682675bb9669f42",
       "difficulty": "veryHard",
       "category": "nature",
-      "tileCount": 160
+      "tileCount": 160,
+      "trayCapacity": 5
     },
     {
       "levelId": "level-0020",
@@ -208,7 +227,8 @@
       "sha256": "f32624cb0f5bf3bf7e18c5b99df3a5c33b83654e5f0220baee0e53b1e5f1008a",
       "difficulty": "hard",
       "category": "nature",
-      "tileCount": 90
+      "tileCount": 90,
+      "trayCapacity": 5
     },
     {
       "levelId": "level-0021",
@@ -218,7 +238,8 @@
       "sha256": "fb68f32d635a53d271e3941d9d06c277c3d0ab089f3d134551dcb7a3c0d4e176",
       "difficulty": "veryHard",
       "category": "nature",
-      "tileCount": 148
+      "tileCount": 148,
+      "trayCapacity": 5
     },
     {
       "levelId": "level-0022",
@@ -228,7 +249,8 @@
       "sha256": "f469567c585640e7cd27b3bf0bd19aa2eb2f92383c5fe167d1849b46636704df",
       "difficulty": "easy",
       "category": "nature",
-      "tileCount": 30
+      "tileCount": 30,
+      "trayCapacity": 4
     },
     {
       "levelId": "level-0023",
@@ -238,7 +260,8 @@
       "sha256": "c7952db69ebd33dde1c9a9979a99721580cc3d3c29065ba6384b93b0b424aa03",
       "difficulty": "medium",
       "category": "nature",
-      "tileCount": 58
+      "tileCount": 58,
+      "trayCapacity": 4
     },
     {
       "levelId": "level-0024",
@@ -248,7 +271,8 @@
       "sha256": "60f048f80df3e0e6c78dd3156b1ea1c638159919d6163a84e8abcadc9c617fc4",
       "difficulty": "easy",
       "category": "nature",
-      "tileCount": 34
+      "tileCount": 34,
+      "trayCapacity": 4
     },
     {
       "levelId": "level-0025",
@@ -258,7 +282,8 @@
       "sha256": "468e6c19ef1708ba486d5b09b1792823333ef9db0878716915e6d0a1da6ad794",
       "difficulty": "hard",
       "category": "nature",
-      "tileCount": 90
+      "tileCount": 90,
+      "trayCapacity": 5
     },
     {
       "levelId": "level-0026",
@@ -268,7 +293,8 @@
       "sha256": "4e92570398e28c7450b1dde1c2a2452a29b8778fb1bc07a5baa3e331a6dfc67c",
       "difficulty": "veryHard",
       "category": "nature",
-      "tileCount": 146
+      "tileCount": 146,
+      "trayCapacity": 5
     },
     {
       "levelId": "level-0027",
@@ -278,7 +304,8 @@
       "sha256": "232d66a9f4252672d0e77df0a0da023fd7c81da4316d12df0bb2f0538b57d423",
       "difficulty": "veryHard",
       "category": "nature",
-      "tileCount": 162
+      "tileCount": 162,
+      "trayCapacity": 5
     },
     {
       "levelId": "level-0028",
@@ -288,7 +315,8 @@
       "sha256": "0212157b441c2081f63f9ac8ff569f53766e29d125950918e7c1a42e5286dbb4",
       "difficulty": "medium",
       "category": "nature",
-      "tileCount": 56
+      "tileCount": 56,
+      "trayCapacity": 4
     },
     {
       "levelId": "level-0029",
@@ -298,7 +326,8 @@
       "sha256": "18fd359092362a5d52abc2bb53fca0c2ff5c129aecb1672ec09c099a4bc30e85",
       "difficulty": "medium",
       "category": "nature",
-      "tileCount": 50
+      "tileCount": 50,
+      "trayCapacity": 4
     },
     {
       "levelId": "level-0030",
@@ -308,7 +337,8 @@
       "sha256": "634edde7d6b4da50f45e96e1d33a77e95b1f6470269e129e77ea4833629cba44",
       "difficulty": "hard",
       "category": "nature",
-      "tileCount": 92
+      "tileCount": 92,
+      "trayCapacity": 5
     },
     {
       "levelId": "level-0031",
@@ -318,7 +348,8 @@
       "sha256": "96656d4271f01f012ac565b532420a1f64ff7f7443055aab410f03d764f78be9",
       "difficulty": "easy",
       "category": "nature",
-      "tileCount": 24
+      "tileCount": 24,
+      "trayCapacity": 4
     },
     {
       "levelId": "level-0032",
@@ -328,7 +359,8 @@
       "sha256": "22ef1d44cf4031a1a3c01504929da498dcde24adedb2dcfc3af2757ee0eddcee",
       "difficulty": "veryHard",
       "category": "nature",
-      "tileCount": 148
+      "tileCount": 148,
+      "trayCapacity": 5
     },
     {
       "levelId": "level-0033",
@@ -338,7 +370,8 @@
       "sha256": "4d5c008a4f59f1286756d7f1dd1120ccf989f4be79edbeb90ed24cb72c0a6a97",
       "difficulty": "easy",
       "category": "nature",
-      "tileCount": 32
+      "tileCount": 32,
+      "trayCapacity": 4
     },
     {
       "levelId": "level-0034",
@@ -348,7 +381,8 @@
       "sha256": "f42b0a3a719f314119de81e22eb89fb18b0fa0f7794d611811c7e3f109bb3b71",
       "difficulty": "veryHard",
       "category": "nature",
-      "tileCount": 144
+      "tileCount": 144,
+      "trayCapacity": 5
     },
     {
       "levelId": "level-0035",
@@ -358,7 +392,8 @@
       "sha256": "28ebe88906c8602bc7ae04d42c1bf7c990ab73dfef98986f031c3a1823db62c8",
       "difficulty": "medium",
       "category": "nature",
-      "tileCount": 64
+      "tileCount": 64,
+      "trayCapacity": 4
     },
     {
       "levelId": "level-0036",
@@ -368,7 +403,8 @@
       "sha256": "02c260162bad3913a3e70f262a83fca77e3a61e44db3475eb5bd2d7eca1c5af8",
       "difficulty": "veryHard",
       "category": "nature",
-      "tileCount": 150
+      "tileCount": 150,
+      "trayCapacity": 5
     },
     {
       "levelId": "level-0037",
@@ -378,7 +414,8 @@
       "sha256": "886fd8ccc252fac7c593b2cb2357fd909fc8dfc7c1ca88979266c14ce2b3a6f3",
       "difficulty": "hard",
       "category": "nature",
-      "tileCount": 98
+      "tileCount": 98,
+      "trayCapacity": 5
     },
     {
       "levelId": "level-0038",
@@ -388,7 +425,8 @@
       "sha256": "03d7785a39cdff4c9486023698467ec995cfeaac7c23125564c489d2326fe96f",
       "difficulty": "veryHard",
       "category": "nature",
-      "tileCount": 150
+      "tileCount": 150,
+      "trayCapacity": 5
     },
     {
       "levelId": "level-0039",
@@ -398,7 +436,8 @@
       "sha256": "72d4178fdcc2d1d927848e14ffc13a6a967f326a63c4431a6af7a17d173f9419",
       "difficulty": "easy",
       "category": "nature",
-      "tileCount": 24
+      "tileCount": 24,
+      "trayCapacity": 4
     },
     {
       "levelId": "level-0040",
@@ -408,7 +447,8 @@
       "sha256": "f683279bd77377fc91f93354032abdb6bb5cc6b7d12cc994708fb7011c5400af",
       "difficulty": "veryHard",
       "category": "nature",
-      "tileCount": 150
+      "tileCount": 150,
+      "trayCapacity": 5
     },
     {
       "levelId": "level-0041",
@@ -418,7 +458,8 @@
       "sha256": "1c02ac7aacc1ed1f5764775ad3dc0451210e295ed0258c8d05acdac7f4c4c960",
       "difficulty": "hard",
       "category": "nature",
-      "tileCount": 94
+      "tileCount": 94,
+      "trayCapacity": 5
     },
     {
       "levelId": "level-0042",
@@ -428,7 +469,8 @@
       "sha256": "0e897bec27aeb5bee268732db428076008e67b5d78a303c1b5695f6b9693999d",
       "difficulty": "medium",
       "category": "nature",
-      "tileCount": 62
+      "tileCount": 62,
+      "trayCapacity": 4
     },
     {
       "levelId": "level-0043",
@@ -438,7 +480,8 @@
       "sha256": "f4e17ff25c7d8f7b3a33045483ff81104fb78fc8c42a437d6ac84b0aa5002ba1",
       "difficulty": "veryHard",
       "category": "nature",
-      "tileCount": 158
+      "tileCount": 158,
+      "trayCapacity": 5
     },
     {
       "levelId": "level-0044",
@@ -448,7 +491,8 @@
       "sha256": "1da423cb4eaaa6e0ec57c281f54b7307a1f371efee3e947c3dd504f540658e2f",
       "difficulty": "hard",
       "category": "nature",
-      "tileCount": 94
+      "tileCount": 94,
+      "trayCapacity": 5
     },
     {
       "levelId": "level-0045",
@@ -458,7 +502,8 @@
       "sha256": "8a6f203b9e9fa1d23149edb252990c7028ca91ef5ec9c007d9ef17ac36d17992",
       "difficulty": "hard",
       "category": "nature",
-      "tileCount": 96
+      "tileCount": 96,
+      "trayCapacity": 5
     },
     {
       "levelId": "level-0046",
@@ -468,7 +513,8 @@
       "sha256": "05f69a2f319798b4e63346addc1a15cd868b46b3fd5650381edcefd486d7522d",
       "difficulty": "veryHard",
       "category": "nature",
-      "tileCount": 168
+      "tileCount": 168,
+      "trayCapacity": 5
     },
     {
       "levelId": "level-0047",
@@ -478,7 +524,8 @@
       "sha256": "7932fe56063b1e5022e047c76936a02c68d14358140ec5afb2c446eb040d0ae5",
       "difficulty": "easy",
       "category": "nature",
-      "tileCount": 26
+      "tileCount": 26,
+      "trayCapacity": 4
     },
     {
       "levelId": "level-0048",
@@ -488,7 +535,8 @@
       "sha256": "6c228367a37f539675450c650080163d0b1835ceb8d131dba8687876dfbc2d7c",
       "difficulty": "easy",
       "category": "nature",
-      "tileCount": 30
+      "tileCount": 30,
+      "trayCapacity": 4
     },
     {
       "levelId": "level-0049",
@@ -498,7 +546,8 @@
       "sha256": "cd4e3cf16af024e25d65c018d308b15c95ee048079b1cda406b2ca94bb210008",
       "difficulty": "hard",
       "category": "nature",
-      "tileCount": 104
+      "tileCount": 104,
+      "trayCapacity": 5
     },
     {
       "levelId": "level-0050",
@@ -508,7 +557,8 @@
       "sha256": "791c7b5a0fe8c17f364307aeaf89bda548ea0ebdb40367554101ae0fdc81201a",
       "difficulty": "medium",
       "category": "nature",
-      "tileCount": 58
+      "tileCount": 58,
+      "trayCapacity": 4
     },
     {
       "levelId": "level-0051",
@@ -518,7 +568,8 @@
       "sha256": "b6503a2eac1ccd2dbeed03b1727e0fd193435ec340186b49e32477ab0f2b04db",
       "difficulty": "easy",
       "category": "nature",
-      "tileCount": 32
+      "tileCount": 32,
+      "trayCapacity": 4
     },
     {
       "levelId": "level-0052",
@@ -528,7 +579,8 @@
       "sha256": "a5d9d800a3ea95582760b43b28d046c4ff2d0328abc75290883affcd44d3d91a",
       "difficulty": "hard",
       "category": "nature",
-      "tileCount": 100
+      "tileCount": 100,
+      "trayCapacity": 5
     },
     {
       "levelId": "level-0053",
@@ -538,7 +590,8 @@
       "sha256": "bf3c3788e096df70f6ac9350a39663ba9c5b0e55c307a2ba498c35a6440dc9c1",
       "difficulty": "veryHard",
       "category": "nature",
-      "tileCount": 148
+      "tileCount": 148,
+      "trayCapacity": 5
     },
     {
       "levelId": "level-0054",
@@ -548,7 +601,8 @@
       "sha256": "3ab2787244cc764fc1547a39e3906a806e6d4ef7cf36f865951a0684139e5e0e",
       "difficulty": "hard",
       "category": "nature",
-      "tileCount": 96
+      "tileCount": 96,
+      "trayCapacity": 5
     },
     {
       "levelId": "level-0055",
@@ -558,7 +612,8 @@
       "sha256": "2564949b128a5af0ab95cfc94759d4339963982752edc253bb8866bbf80a8697",
       "difficulty": "medium",
       "category": "nature",
-      "tileCount": 58
+      "tileCount": 58,
+      "trayCapacity": 4
     },
     {
       "levelId": "level-0056",
@@ -568,7 +623,8 @@
       "sha256": "37737924ef400c5757f92e8a250c80328c1dc1b7457f3901e759af289eaeca85",
       "difficulty": "medium",
       "category": "nature",
-      "tileCount": 58
+      "tileCount": 58,
+      "trayCapacity": 4
     },
     {
       "levelId": "level-0057",
@@ -578,7 +634,8 @@
       "sha256": "8233d6aa4699f537fc887672bc6f8be958a39766b3c97c5a79875a104e2140ea",
       "difficulty": "easy",
       "category": "nature",
-      "tileCount": 32
+      "tileCount": 32,
+      "trayCapacity": 4
     },
     {
       "levelId": "level-0058",
@@ -588,7 +645,8 @@
       "sha256": "252468ab2e3b1d86479c0554232dfc9274f972e7f9823d415be900b48bdb7c62",
       "difficulty": "veryHard",
       "category": "nature",
-      "tileCount": 150
+      "tileCount": 150,
+      "trayCapacity": 5
     },
     {
       "levelId": "level-0059",
@@ -598,7 +656,8 @@
       "sha256": "7a3aa725b4c10f2a2140cd153ab86b706b68c31c8c393e01f2aa198ef9bbfefa",
       "difficulty": "veryHard",
       "category": "nature",
-      "tileCount": 154
+      "tileCount": 154,
+      "trayCapacity": 5
     },
     {
       "levelId": "level-0060",
@@ -608,7 +667,8 @@
       "sha256": "85977de22ed369fbb2add1103dd154006f60cacfad932820c015e494b3bc8837",
       "difficulty": "medium",
       "category": "nature",
-      "tileCount": 66
+      "tileCount": 66,
+      "trayCapacity": 4
     },
     {
       "levelId": "level-0061",
@@ -618,7 +678,8 @@
       "sha256": "0cade2cedfecd287eb2e889a7c40342316efec727c17e216daaa748f1269056a",
       "difficulty": "easy",
       "category": "nature",
-      "tileCount": 32
+      "tileCount": 32,
+      "trayCapacity": 4
     },
     {
       "levelId": "level-0062",
@@ -628,7 +689,8 @@
       "sha256": "9bfaa464d453aca92b870572652719a01b8519571ebe2b455febbc32f6045d3d",
       "difficulty": "easy",
       "category": "nature",
-      "tileCount": 28
+      "tileCount": 28,
+      "trayCapacity": 4
     },
     {
       "levelId": "level-0063",
@@ -638,7 +700,8 @@
       "sha256": "9d1edfdfe55fb7de746564cbc8c04675fa723aa70c25a4fa3e4503e36dce47d7",
       "difficulty": "hard",
       "category": "nature",
-      "tileCount": 86
+      "tileCount": 86,
+      "trayCapacity": 5
     },
     {
       "levelId": "level-0064",
@@ -648,7 +711,8 @@
       "sha256": "e2582acbddba1f5677ce8dde3975fed54c2f167dc181afd30965d440a637387c",
       "difficulty": "veryHard",
       "category": "nature",
-      "tileCount": 158
+      "tileCount": 158,
+      "trayCapacity": 5
     },
     {
       "levelId": "level-0065",
@@ -658,7 +722,8 @@
       "sha256": "1aba43867e130d8d818b5f21beb6c8e42e1d4daf153293f29414985a1482e3d8",
       "difficulty": "easy",
       "category": "nature",
-      "tileCount": 32
+      "tileCount": 32,
+      "trayCapacity": 4
     },
     {
       "levelId": "level-0066",
@@ -668,7 +733,8 @@
       "sha256": "38d840520034f616c6de8c2751e6dcaafe53bae96659c3e8d6d84b18d09ef395",
       "difficulty": "hard",
       "category": "nature",
-      "tileCount": 102
+      "tileCount": 102,
+      "trayCapacity": 5
     },
     {
       "levelId": "level-0067",
@@ -678,7 +744,8 @@
       "sha256": "ebef19c692aec0af75d4a1e2ba3dd97a62945ba826fb2690b1fda317526184df",
       "difficulty": "easy",
       "category": "nature",
-      "tileCount": 28
+      "tileCount": 28,
+      "trayCapacity": 4
     },
     {
       "levelId": "level-0068",
@@ -688,7 +755,8 @@
       "sha256": "8ad3bec73a9641ffc420c8eef14afb6e9402fcf241a70074796d6c215a452edd",
       "difficulty": "easy",
       "category": "nature",
-      "tileCount": 32
+      "tileCount": 32,
+      "trayCapacity": 4
     },
     {
       "levelId": "level-0069",
@@ -698,7 +766,8 @@
       "sha256": "ff5c79f73a3a5126fae2b31763e1807036ac57de38c7f821643a422ab31e4d9a",
       "difficulty": "medium",
       "category": "nature",
-      "tileCount": 58
+      "tileCount": 58,
+      "trayCapacity": 4
     },
     {
       "levelId": "level-0070",
@@ -708,7 +777,8 @@
       "sha256": "1b135fde6be9ec4bd6c941f1f1199973c10d7f0460611f3c6f4402387f39b451",
       "difficulty": "medium",
       "category": "nature",
-      "tileCount": 58
+      "tileCount": 58,
+      "trayCapacity": 4
     },
     {
       "levelId": "level-0071",
@@ -718,7 +788,8 @@
       "sha256": "816e0cbe183f88c43442e7d22553fcdd08e79fa3d9925dbfe9946da8dc7e29dc",
       "difficulty": "veryHard",
       "category": "nature",
-      "tileCount": 160
+      "tileCount": 160,
+      "trayCapacity": 5
     },
     {
       "levelId": "level-0072",
@@ -728,7 +799,8 @@
       "sha256": "5437e025e7bbc1f6098d94a603e64ef9adf1022888837a8b937064542a12c604",
       "difficulty": "easy",
       "category": "nature",
-      "tileCount": 30
+      "tileCount": 30,
+      "trayCapacity": 4
     },
     {
       "levelId": "level-0073",
@@ -738,7 +810,8 @@
       "sha256": "c57ab33b94f8439bd4e88c1679996e5f097fdaa7b2df8bef8e4a78319d22d3db",
       "difficulty": "hard",
       "category": "nature",
-      "tileCount": 90
+      "tileCount": 90,
+      "trayCapacity": 5
     },
     {
       "levelId": "level-0074",
@@ -748,7 +821,8 @@
       "sha256": "dafeef4f701e9757564a3d87b63d865b46d956124c9d8e6dbb95b2cf8fd48e95",
       "difficulty": "veryHard",
       "category": "nature",
-      "tileCount": 160
+      "tileCount": 160,
+      "trayCapacity": 5
     },
     {
       "levelId": "level-0075",
@@ -758,7 +832,8 @@
       "sha256": "dbd6a1c9b8343898abf3905c6286bdc797159030a3fc12c7c5888b690af57adb",
       "difficulty": "easy",
       "category": "nature",
-      "tileCount": 34
+      "tileCount": 34,
+      "trayCapacity": 4
     },
     {
       "levelId": "level-0076",
@@ -768,7 +843,8 @@
       "sha256": "f7c132190c1a49d724786647564f642b6daef840fe0fe4f41bd43fe4b305c30d",
       "difficulty": "hard",
       "category": "nature",
-      "tileCount": 102
+      "tileCount": 102,
+      "trayCapacity": 5
     },
     {
       "levelId": "level-0077",
@@ -778,7 +854,8 @@
       "sha256": "550cd17ecd1c547824a18c7eb5120dfff07ec58b1790a5fe0275b78fe77434e8",
       "difficulty": "hard",
       "category": "nature",
-      "tileCount": 102
+      "tileCount": 102,
+      "trayCapacity": 5
     },
     {
       "levelId": "level-0078",
@@ -788,7 +865,8 @@
       "sha256": "6eedbfdd3857fe1d55c407cd7b551911296d74974caeda62295e06cf09962d99",
       "difficulty": "veryHard",
       "category": "nature",
-      "tileCount": 162
+      "tileCount": 162,
+      "trayCapacity": 5
     },
     {
       "levelId": "level-0079",
@@ -798,7 +876,8 @@
       "sha256": "034b9a340b49e76ce250e8311406c29c471a794e1552145af50215a68f09dc5f",
       "difficulty": "hard",
       "category": "nature",
-      "tileCount": 100
+      "tileCount": 100,
+      "trayCapacity": 5
     },
     {
       "levelId": "level-0080",
@@ -808,7 +887,8 @@
       "sha256": "1a7614c66d561e815756e578126d6e76ac861c1c40c317b84adc9ff40e9eca60",
       "difficulty": "easy",
       "category": "nature",
-      "tileCount": 40
+      "tileCount": 40,
+      "trayCapacity": 4
     },
     {
       "levelId": "level-0081",
@@ -818,7 +898,8 @@
       "sha256": "3823a8db855d8c4bfb370479b87c329145b3b4b6d42c43f817c69cd092fa8794",
       "difficulty": "veryHard",
       "category": "nature",
-      "tileCount": 156
+      "tileCount": 156,
+      "trayCapacity": 5
     },
     {
       "levelId": "level-0082",
@@ -828,7 +909,8 @@
       "sha256": "e831c4729ad3199f42e6a78ef49fdc1e7f59a000374e4b88f6bc9e594565006d",
       "difficulty": "medium",
       "category": "nature",
-      "tileCount": 64
+      "tileCount": 64,
+      "trayCapacity": 4
     },
     {
       "levelId": "level-0083",
@@ -838,7 +920,8 @@
       "sha256": "1663e1fbe1d389e7d84be7b66f1c8f39102a035238c6352a5582485093967506",
       "difficulty": "hard",
       "category": "nature",
-      "tileCount": 102
+      "tileCount": 102,
+      "trayCapacity": 5
     },
     {
       "levelId": "level-0084",
@@ -848,7 +931,8 @@
       "sha256": "00627f2fe306e0efcc4027e124839f6378414b9bbad86d4f6dd742fd28b2d85c",
       "difficulty": "medium",
       "category": "nature",
-      "tileCount": 72
+      "tileCount": 72,
+      "trayCapacity": 4
     },
     {
       "levelId": "level-0085",
@@ -858,7 +942,8 @@
       "sha256": "f7057722c3ac3197d8d40a29c0d0b2b252d4c10e2a29c9c1cd029a20dba8f043",
       "difficulty": "easy",
       "category": "nature",
-      "tileCount": 30
+      "tileCount": 30,
+      "trayCapacity": 4
     },
     {
       "levelId": "level-0086",
@@ -868,7 +953,8 @@
       "sha256": "81d7b6d9e3c3b8b19460f38bb37f750ef9ebc10380e1438f44d4c5ddf49a817e",
       "difficulty": "medium",
       "category": "nature",
-      "tileCount": 54
+      "tileCount": 54,
+      "trayCapacity": 4
     },
     {
       "levelId": "level-0087",
@@ -878,7 +964,8 @@
       "sha256": "7bef6f9cbbb6b9247423b0967254703ac6f5a4fd91d5be68348a6bfbdd15e7b8",
       "difficulty": "easy",
       "category": "nature",
-      "tileCount": 32
+      "tileCount": 32,
+      "trayCapacity": 4
     },
     {
       "levelId": "level-0088",
@@ -888,7 +975,8 @@
       "sha256": "4366b73948634958e9420bd0840dd8fc6c488d2f6ae0152068381ce0b470efa5",
       "difficulty": "medium",
       "category": "nature",
-      "tileCount": 58
+      "tileCount": 58,
+      "trayCapacity": 4
     },
     {
       "levelId": "level-0089",
@@ -898,7 +986,8 @@
       "sha256": "4a322bcf718cf99335fa5377568d51a8c0d37dbfafbba4969c7ce28c68ac64bf",
       "difficulty": "hard",
       "category": "nature",
-      "tileCount": 108
+      "tileCount": 108,
+      "trayCapacity": 5
     },
     {
       "levelId": "level-0090",
@@ -908,7 +997,8 @@
       "sha256": "3369197052bb075271d58bda23a60dfd7f6fb19bb946886752f5ce385fb5ea66",
       "difficulty": "easy",
       "category": "nature",
-      "tileCount": 34
+      "tileCount": 34,
+      "trayCapacity": 4
     },
     {
       "levelId": "level-0091",
@@ -918,7 +1008,8 @@
       "sha256": "5c35e90c30cb66cc7cac7f8d0feed3840afd279cfb227cbd874fbc5a175d61a8",
       "difficulty": "hard",
       "category": "nature",
-      "tileCount": 90
+      "tileCount": 90,
+      "trayCapacity": 5
     },
     {
       "levelId": "level-0092",
@@ -928,7 +1019,8 @@
       "sha256": "04964e421aee3f88ecc193e419a693bf945bc9988520fe50930d68af9542a8b1",
       "difficulty": "veryHard",
       "category": "nature",
-      "tileCount": 154
+      "tileCount": 154,
+      "trayCapacity": 5
     },
     {
       "levelId": "level-0093",
@@ -938,7 +1030,8 @@
       "sha256": "fc641b05e6532ed47b6836472c88535f1d170c55c883e9611d47c2413f617a19",
       "difficulty": "hard",
       "category": "nature",
-      "tileCount": 112
+      "tileCount": 112,
+      "trayCapacity": 5
     },
     {
       "levelId": "level-0094",
@@ -948,7 +1041,8 @@
       "sha256": "70f7cfc3277c748e64536206a3e8c3ca433442b978b69409a4c407768d830f11",
       "difficulty": "medium",
       "category": "nature",
-      "tileCount": 56
+      "tileCount": 56,
+      "trayCapacity": 4
     },
     {
       "levelId": "level-0095",
@@ -958,7 +1052,8 @@
       "sha256": "96ebc4bbfa2902926fec3c823959168b7b1a5570ff4c1a44aaf89b68e55ae6a4",
       "difficulty": "easy",
       "category": "nature",
-      "tileCount": 36
+      "tileCount": 36,
+      "trayCapacity": 4
     },
     {
       "levelId": "level-0096",
@@ -968,7 +1063,8 @@
       "sha256": "da0d8d5d51d8fb3713adb85f07c532b80d68cbad1cd4627579d9c005dea0dd10",
       "difficulty": "easy",
       "category": "nature",
-      "tileCount": 32
+      "tileCount": 32,
+      "trayCapacity": 4
     },
     {
       "levelId": "level-0097",
@@ -978,7 +1074,8 @@
       "sha256": "e7a7e0d269a8e22ce4b47f6d719c9950094d9fdc5fe037ec31365c30a1af5e6f",
       "difficulty": "veryHard",
       "category": "nature",
-      "tileCount": 146
+      "tileCount": 146,
+      "trayCapacity": 5
     },
     {
       "levelId": "level-0098",
@@ -988,7 +1085,8 @@
       "sha256": "ab2dbeb0700afec36776174ed61c1cf5dd958395ab061769a3dddb05267f3eec",
       "difficulty": "easy",
       "category": "nature",
-      "tileCount": 42
+      "tileCount": 42,
+      "trayCapacity": 4
     },
     {
       "levelId": "level-0099",
@@ -998,7 +1096,8 @@
       "sha256": "4181506c3e3126a01f70de223efb84eee86d6d173bdf19747fd7006c95c3f8b0",
       "difficulty": "hard",
       "category": "nature",
-      "tileCount": 100
+      "tileCount": 100,
+      "trayCapacity": 5
     },
     {
       "levelId": "level-0100",
@@ -1008,7 +1107,8 @@
       "sha256": "aed203e098c52bda3ac797e85397e457efd0c613872b8e5aeb3b92cc7ad2f144",
       "difficulty": "hard",
       "category": "nature",
-      "tileCount": 100
+      "tileCount": 100,
+      "trayCapacity": 5
     },
     {
       "levelId": "level-0101",
@@ -1018,7 +1118,8 @@
       "sha256": "4dceba7b99f5d56824450866e4b6cd8e566411a2f57e3d36eab78fce8b11aef1",
       "difficulty": "easy",
       "category": "nature",
-      "tileCount": 30
+      "tileCount": 30,
+      "trayCapacity": 4
     },
     {
       "levelId": "level-0102",
@@ -1028,7 +1129,8 @@
       "sha256": "af6142ab440e0a9198aa444f59aa0dd49874b6898822daad6d94117bd4c3dd4a",
       "difficulty": "medium",
       "category": "nature",
-      "tileCount": 56
+      "tileCount": 56,
+      "trayCapacity": 4
     },
     {
       "levelId": "level-0103",
@@ -1038,7 +1140,8 @@
       "sha256": "b6dabb8651992ac29eba2e7b0ed4235fa038f8aa34742320fac9c6dceea5dc11",
       "difficulty": "medium",
       "category": "nature",
-      "tileCount": 66
+      "tileCount": 66,
+      "trayCapacity": 4
     },
     {
       "levelId": "level-0104",
@@ -1048,7 +1151,8 @@
       "sha256": "2a0f381b3baaa33eddfff0d47265776eb264555efb0e1eb08ab1145b31aa20c6",
       "difficulty": "veryHard",
       "category": "nature",
-      "tileCount": 150
+      "tileCount": 150,
+      "trayCapacity": 5
     },
     {
       "levelId": "level-0105",
@@ -1058,7 +1162,8 @@
       "sha256": "0b886b88cc6e050ea8f237a004a4c2771abd5f65c2e70efdec1f179b0c40269b",
       "difficulty": "hard",
       "category": "nature",
-      "tileCount": 108
+      "tileCount": 108,
+      "trayCapacity": 5
     },
     {
       "levelId": "level-0106",
@@ -1068,7 +1173,8 @@
       "sha256": "38dc6aa3017b60ddfc1292ddb5f3dc8aef1d4bfbafb89b30d05d4e918d9be4c6",
       "difficulty": "easy",
       "category": "nature",
-      "tileCount": 36
+      "tileCount": 36,
+      "trayCapacity": 4
     },
     {
       "levelId": "level-0107",
@@ -1078,7 +1184,8 @@
       "sha256": "debd367b5ed68d758e8f88efabfe61f8ec2476ac5e966c7a71f540e7be51f2ef",
       "difficulty": "hard",
       "category": "nature",
-      "tileCount": 106
+      "tileCount": 106,
+      "trayCapacity": 5
     },
     {
       "levelId": "level-0108",
@@ -1088,7 +1195,8 @@
       "sha256": "20811b1d333dd0033236a1f01ac5626bf47d3e27aa13c4b978148c0aaca732a9",
       "difficulty": "medium",
       "category": "nature",
-      "tileCount": 60
+      "tileCount": 60,
+      "trayCapacity": 4
     },
     {
       "levelId": "level-0109",
@@ -1098,7 +1206,8 @@
       "sha256": "43fd339e3b3128e8fa2b3e6a3e5bfadd0da890568bdd6c6ab9305750360a832d",
       "difficulty": "medium",
       "category": "nature",
-      "tileCount": 70
+      "tileCount": 70,
+      "trayCapacity": 4
     },
     {
       "levelId": "level-0110",
@@ -1108,7 +1217,8 @@
       "sha256": "e452e3505748af98a2094bdd957a8cbab4d351b78efb410c78bf52196a956239",
       "difficulty": "easy",
       "category": "nature",
-      "tileCount": 38
+      "tileCount": 38,
+      "trayCapacity": 4
     },
     {
       "levelId": "level-0111",
@@ -1118,7 +1228,8 @@
       "sha256": "883925e7f2861593d41c7792509b0f64e53fcd1e9de09d84dbde42b0b8039b4d",
       "difficulty": "veryHard",
       "category": "nature",
-      "tileCount": 150
+      "tileCount": 150,
+      "trayCapacity": 5
     },
     {
       "levelId": "level-0112",
@@ -1128,7 +1239,8 @@
       "sha256": "a16c1737ec05fe3d82a138cf915fdef52bb5b0043bbce18da2ccb1fc74f9a804",
       "difficulty": "medium",
       "category": "nature",
-      "tileCount": 72
+      "tileCount": 72,
+      "trayCapacity": 4
     },
     {
       "levelId": "level-0113",
@@ -1138,7 +1250,8 @@
       "sha256": "6973412366db36131d4e735ba53b617718bc2d2630b98368c112170275d8450c",
       "difficulty": "hard",
       "category": "nature",
-      "tileCount": 106
+      "tileCount": 106,
+      "trayCapacity": 5
     },
     {
       "levelId": "level-0114",
@@ -1148,7 +1261,8 @@
       "sha256": "2bd721144b437bcb2e82906e498ad25d3b980eda0bb0101ec20c29ffb57e6bf4",
       "difficulty": "easy",
       "category": "nature",
-      "tileCount": 40
+      "tileCount": 40,
+      "trayCapacity": 4
     },
     {
       "levelId": "level-0115",
@@ -1158,7 +1272,8 @@
       "sha256": "3ffbd7bdcd41ec5ee4957c39f27aad23f506431bf2b728d93480a5f5f8cc4d4d",
       "difficulty": "hard",
       "category": "nature",
-      "tileCount": 88
+      "tileCount": 88,
+      "trayCapacity": 5
     },
     {
       "levelId": "level-0116",
@@ -1168,7 +1283,8 @@
       "sha256": "6681d6aa87e6c35e5ef4a28a8937354191bbb5a1f1782a8b1416cd0795fe135f",
       "difficulty": "easy",
       "category": "nature",
-      "tileCount": 32
+      "tileCount": 32,
+      "trayCapacity": 4
     },
     {
       "levelId": "level-0117",
@@ -1178,7 +1294,8 @@
       "sha256": "4769674c579c19ef7b90a7be89e2ce64b23a0455f4a5f75851888f8b30f89550",
       "difficulty": "hard",
       "category": "nature",
-      "tileCount": 100
+      "tileCount": 100,
+      "trayCapacity": 5
     },
     {
       "levelId": "level-0118",
@@ -1188,7 +1305,8 @@
       "sha256": "3a09f78d71dc1abe8dae8885ebce89541b023a31b4f540b3ad5b23d2fade9db3",
       "difficulty": "hard",
       "category": "nature",
-      "tileCount": 100
+      "tileCount": 100,
+      "trayCapacity": 5
     },
     {
       "levelId": "level-0119",
@@ -1198,7 +1316,8 @@
       "sha256": "937712dc6f51878f6f731892d1d68e4a7a74fb4e4a24b20c706720d3d36fd0f8",
       "difficulty": "easy",
       "category": "nature",
-      "tileCount": 30
+      "tileCount": 30,
+      "trayCapacity": 4
     },
     {
       "levelId": "level-0120",
@@ -1208,7 +1327,8 @@
       "sha256": "a7ca4dc55ac2530e7bd53947980f58ae2f92d2fbf38a2b43c7e3f5f562b34f56",
       "difficulty": "veryHard",
       "category": "nature",
-      "tileCount": 152
+      "tileCount": 152,
+      "trayCapacity": 5
     },
     {
       "levelId": "level-0121",
@@ -1218,7 +1338,8 @@
       "sha256": "8cfd43d40ec86fc8d227bf278361243dde32f52206247b90fcf5204411fc82b6",
       "difficulty": "hard",
       "category": "nature",
-      "tileCount": 106
+      "tileCount": 106,
+      "trayCapacity": 5
     },
     {
       "levelId": "level-0122",
@@ -1228,7 +1349,8 @@
       "sha256": "37b2ccb92214119ad86da9ee5506a8f9d42a127f8d477a1ffd1228203fb22526",
       "difficulty": "medium",
       "category": "nature",
-      "tileCount": 60
+      "tileCount": 60,
+      "trayCapacity": 4
     },
     {
       "levelId": "level-0123",
@@ -1238,7 +1360,8 @@
       "sha256": "978a53844e378a929c7d64de544c5400231ba334b38c1ca8862be805c972d520",
       "difficulty": "medium",
       "category": "nature",
-      "tileCount": 70
+      "tileCount": 70,
+      "trayCapacity": 4
     },
     {
       "levelId": "level-0124",
@@ -1248,7 +1371,8 @@
       "sha256": "48d0f24212253ee1b969b2305b6c91275e8ad5abd2e585d7e8abd1a1ce8b76b1",
       "difficulty": "hard",
       "category": "nature",
-      "tileCount": 100
+      "tileCount": 100,
+      "trayCapacity": 5
     },
     {
       "levelId": "level-0125",
@@ -1258,7 +1382,8 @@
       "sha256": "b077dcbf0a8d82fbbe9b87b6072aaf9a7463b36cf0d3ce494f0d3505decb74ed",
       "difficulty": "easy",
       "category": "nature",
-      "tileCount": 40
+      "tileCount": 40,
+      "trayCapacity": 4
     },
     {
       "levelId": "level-0126",
@@ -1268,7 +1393,8 @@
       "sha256": "673afa3397594ab4e032eabe4d2f809db95d7653313ed2331e64ed17cb6b73c6",
       "difficulty": "hard",
       "category": "nature",
-      "tileCount": 100
+      "tileCount": 100,
+      "trayCapacity": 5
     },
     {
       "levelId": "level-0127",
@@ -1278,7 +1404,8 @@
       "sha256": "33c609bb6437f4d2809f6d22ffc80d89df6581b8d7402905f4608bfe6c8465a2",
       "difficulty": "medium",
       "category": "nature",
-      "tileCount": 64
+      "tileCount": 64,
+      "trayCapacity": 4
     },
     {
       "levelId": "level-0128",
@@ -1288,7 +1415,8 @@
       "sha256": "68ffcf7c4c51e7c58dcd54a529d909c6c05eb095f94c04fd56bc5eae4c23916a",
       "difficulty": "veryHard",
       "category": "nature",
-      "tileCount": 162
+      "tileCount": 162,
+      "trayCapacity": 5
     },
     {
       "levelId": "level-0129",
@@ -1298,7 +1426,8 @@
       "sha256": "62f6fc11d65fe5f71de9deaf11e2e2d15e8b34b08fa8f4043aa0c863ff7c970f",
       "difficulty": "easy",
       "category": "nature",
-      "tileCount": 38
+      "tileCount": 38,
+      "trayCapacity": 4
     },
     {
       "levelId": "level-0130",
@@ -1308,7 +1437,8 @@
       "sha256": "458411ae19a1d088960f7ec0daffed171e4b00a416655259415dfb9838f22c8b",
       "difficulty": "easy",
       "category": "nature",
-      "tileCount": 40
+      "tileCount": 40,
+      "trayCapacity": 4
     },
     {
       "levelId": "level-0131",
@@ -1318,7 +1448,8 @@
       "sha256": "3f852c9c420cb3e1d69df17f5b218adf4c1d8fb6ae7ad96ed835f578b77e2648",
       "difficulty": "medium",
       "category": "nature",
-      "tileCount": 72
+      "tileCount": 72,
+      "trayCapacity": 4
     },
     {
       "levelId": "level-0132",
@@ -1328,7 +1459,8 @@
       "sha256": "963b634e2168f6409547e0fc29d486c8137276625949383c64f4001459d085f5",
       "difficulty": "veryHard",
       "category": "nature",
-      "tileCount": 146
+      "tileCount": 146,
+      "trayCapacity": 5
     },
     {
       "levelId": "level-0133",
@@ -1338,7 +1470,8 @@
       "sha256": "1447d558a47392d858f0d1bbc8b69c3e9c7eeb157f2e1ad41aa98186cd7262f7",
       "difficulty": "veryHard",
       "category": "nature",
-      "tileCount": 162
+      "tileCount": 162,
+      "trayCapacity": 5
     },
     {
       "levelId": "level-0134",
@@ -1348,7 +1481,8 @@
       "sha256": "387414fc7224903098c07b06254891d246457025fd23e7dcc499903b21dc5c51",
       "difficulty": "easy",
       "category": "nature",
-      "tileCount": 44
+      "tileCount": 44,
+      "trayCapacity": 4
     },
     {
       "levelId": "level-0135",
@@ -1358,7 +1492,8 @@
       "sha256": "3cd94edc87380b85b5fb4c272c09d0c0b56c747147721d536f8110b21e9ca2de",
       "difficulty": "hard",
       "category": "nature",
-      "tileCount": 114
+      "tileCount": 114,
+      "trayCapacity": 5
     },
     {
       "levelId": "level-0136",
@@ -1368,7 +1503,8 @@
       "sha256": "fb39cae0e4e016813e607dd6a1536434622902be931928bac76dd18cb21bdc4d",
       "difficulty": "easy",
       "category": "nature",
-      "tileCount": 40
+      "tileCount": 40,
+      "trayCapacity": 4
     },
     {
       "levelId": "level-0137",
@@ -1378,7 +1514,8 @@
       "sha256": "b1c7e52e6203e9790150e1deb095c679b2b1be64b49b80f643ee23c00c74a0ea",
       "difficulty": "veryHard",
       "category": "nature",
-      "tileCount": 170
+      "tileCount": 170,
+      "trayCapacity": 5
     },
     {
       "levelId": "level-0138",
@@ -1388,7 +1525,8 @@
       "sha256": "cf7748a4d682ba4f9188f1f0ef57a3a7450b5fd1fc15fb2aae0817fd46a9048b",
       "difficulty": "easy",
       "category": "nature",
-      "tileCount": 48
+      "tileCount": 48,
+      "trayCapacity": 4
     },
     {
       "levelId": "level-0139",
@@ -1398,7 +1536,8 @@
       "sha256": "a607e455c08ca0d9df80042c213d39b66818ae165c995c1347cbb622b8b4683d",
       "difficulty": "medium",
       "category": "nature",
-      "tileCount": 72
+      "tileCount": 72,
+      "trayCapacity": 4
     },
     {
       "levelId": "level-0140",
@@ -1408,7 +1547,8 @@
       "sha256": "791cbecf407a8d5d896b33e5e59b47a8ce2d87f3c0fe7ad25423ba2e32ec7a25",
       "difficulty": "medium",
       "category": "nature",
-      "tileCount": 70
+      "tileCount": 70,
+      "trayCapacity": 4
     },
     {
       "levelId": "level-0141",
@@ -1418,7 +1558,8 @@
       "sha256": "8a2cda63ba754763036a56b5fed901a97ae8a4ffb78b736c77064ac38239c0dd",
       "difficulty": "veryHard",
       "category": "nature",
-      "tileCount": 160
+      "tileCount": 160,
+      "trayCapacity": 5
     },
     {
       "levelId": "level-0142",
@@ -1428,7 +1569,8 @@
       "sha256": "355886fd2ddbe44b7a74c38341f22644d711e80a1e8aeb2813f4b30eef49a90b",
       "difficulty": "veryHard",
       "category": "nature",
-      "tileCount": 158
+      "tileCount": 158,
+      "trayCapacity": 5
     },
     {
       "levelId": "level-0143",
@@ -1438,7 +1580,8 @@
       "sha256": "1f60fa5e01f621a6d6991121ef8f93f7a1ec7f6c196ad27db39217b95eb3a784",
       "difficulty": "medium",
       "category": "nature",
-      "tileCount": 66
+      "tileCount": 66,
+      "trayCapacity": 4
     },
     {
       "levelId": "level-0144",
@@ -1448,7 +1591,8 @@
       "sha256": "f16878e092358d7cdfa72dc52ed399d7cf35f45d79376086ab7682059649cc57",
       "difficulty": "veryHard",
       "category": "nature",
-      "tileCount": 168
+      "tileCount": 168,
+      "trayCapacity": 5
     },
     {
       "levelId": "level-0145",
@@ -1458,7 +1602,8 @@
       "sha256": "9e8b334553a2298751929d0b62f3521743f94a0f239051775bf77f67995f0a98",
       "difficulty": "hard",
       "category": "nature",
-      "tileCount": 112
+      "tileCount": 112,
+      "trayCapacity": 5
     },
     {
       "levelId": "level-0146",
@@ -1468,7 +1613,8 @@
       "sha256": "220d59ecb41bf652c528953553e0ca437904d9bc98372d44b9005cbcdaaffc58",
       "difficulty": "medium",
       "category": "nature",
-      "tileCount": 76
+      "tileCount": 76,
+      "trayCapacity": 4
     },
     {
       "levelId": "level-0147",
@@ -1478,7 +1624,8 @@
       "sha256": "7ac1a7fd019551b6fb9caeaf9129418b05be4ff9a8d9f62f87b1751d0337c866",
       "difficulty": "hard",
       "category": "nature",
-      "tileCount": 88
+      "tileCount": 88,
+      "trayCapacity": 5
     },
     {
       "levelId": "level-0148",
@@ -1488,7 +1635,8 @@
       "sha256": "deb32dc8877c8b0fdbdf8de674d6232d08693d7fdc71eb69c2e97e47ea69bae4",
       "difficulty": "hard",
       "category": "nature",
-      "tileCount": 108
+      "tileCount": 108,
+      "trayCapacity": 5
     },
     {
       "levelId": "level-0149",
@@ -1498,7 +1646,8 @@
       "sha256": "d71d864fa94b23c22428b77a7e9bed4f51937b6bb638e886b3f2e2cda915064f",
       "difficulty": "medium",
       "category": "nature",
-      "tileCount": 66
+      "tileCount": 66,
+      "trayCapacity": 4
     },
     {
       "levelId": "level-0150",
@@ -1508,7 +1657,8 @@
       "sha256": "8c3da663b0231fdd718ba688ffa41fc9e9ea0338978d6b96bd242ba02edfb569",
       "difficulty": "medium",
       "category": "nature",
-      "tileCount": 70
+      "tileCount": 70,
+      "trayCapacity": 4
     },
     {
       "levelId": "level-0151",
@@ -1518,7 +1668,8 @@
       "sha256": "6e32fcd9ad4698b02fa37d64efa0992801d60b64e889df2d08874d9a48eb49b9",
       "difficulty": "veryHard",
       "category": "nature",
-      "tileCount": 160
+      "tileCount": 160,
+      "trayCapacity": 5
     },
     {
       "levelId": "level-0152",
@@ -1528,7 +1679,8 @@
       "sha256": "e77cb643e91e4958eec378ce18f5c267e8e8803cbcbc65bbc5618252408ee366",
       "difficulty": "hard",
       "category": "nature",
-      "tileCount": 114
+      "tileCount": 114,
+      "trayCapacity": 5
     },
     {
       "levelId": "level-0153",
@@ -1538,7 +1690,8 @@
       "sha256": "07421f495372a9f4db88b7e65208259d42ac39493768c2292527d14591a7f406",
       "difficulty": "easy",
       "category": "nature",
-      "tileCount": 44
+      "tileCount": 44,
+      "trayCapacity": 4
     },
     {
       "levelId": "level-0154",
@@ -1548,7 +1701,8 @@
       "sha256": "20ff82863e07a3b9cc020e22e3a9164c805f1d56f91ed814d4bcf52fd81e7d18",
       "difficulty": "medium",
       "category": "nature",
-      "tileCount": 64
+      "tileCount": 64,
+      "trayCapacity": 4
     },
     {
       "levelId": "level-0155",
@@ -1558,7 +1712,8 @@
       "sha256": "216fc61fb56471d50caad558e8b5e73be2e88621fef13cf19ddef461aad50795",
       "difficulty": "hard",
       "category": "nature",
-      "tileCount": 106
+      "tileCount": 106,
+      "trayCapacity": 5
     },
     {
       "levelId": "level-0156",
@@ -1568,7 +1723,8 @@
       "sha256": "443151b53f9c1631e810e8205b3764bf000c7c5f262ede64e2a575712cd0740c",
       "difficulty": "easy",
       "category": "nature",
-      "tileCount": 44
+      "tileCount": 44,
+      "trayCapacity": 4
     },
     {
       "levelId": "level-0157",
@@ -1578,7 +1734,8 @@
       "sha256": "22abfb02035f1597bb11426c56c8f309a511ffbf7ada248f2c950020ae48a583",
       "difficulty": "veryHard",
       "category": "nature",
-      "tileCount": 160
+      "tileCount": 160,
+      "trayCapacity": 5
     },
     {
       "levelId": "level-0158",
@@ -1588,7 +1745,8 @@
       "sha256": "77d6e7e43556179d1bf42d73fa0d327e8a41715c3c36acfc0c9bde57707d502c",
       "difficulty": "easy",
       "category": "nature",
-      "tileCount": 42
+      "tileCount": 42,
+      "trayCapacity": 4
     },
     {
       "levelId": "level-0159",
@@ -1598,7 +1756,8 @@
       "sha256": "704da52df1a64902798d99731f5b8d477d0f3d592c41e34983f02094a3a497b7",
       "difficulty": "easy",
       "category": "nature",
-      "tileCount": 46
+      "tileCount": 46,
+      "trayCapacity": 4
     },
     {
       "levelId": "level-0160",
@@ -1608,7 +1767,8 @@
       "sha256": "fee5e5a19d01f49f10c4a9f29fd1d78f265019891bd35b6e7f3c3af63da0ef6e",
       "difficulty": "hard",
       "category": "nature",
-      "tileCount": 120
+      "tileCount": 120,
+      "trayCapacity": 5
     },
     {
       "levelId": "level-0161",
@@ -1618,7 +1778,8 @@
       "sha256": "c624b6b19f8973c06d95d77abdc9c0e19fb13c05087c898e3e4a03027095d858",
       "difficulty": "hard",
       "category": "nature",
-      "tileCount": 86
+      "tileCount": 86,
+      "trayCapacity": 5
     },
     {
       "levelId": "level-0162",
@@ -1628,7 +1789,8 @@
       "sha256": "5a2cda27c492502a0f203fce7293bfdbc0565b749fb844f621bff937d2321a93",
       "difficulty": "medium",
       "category": "nature",
-      "tileCount": 76
+      "tileCount": 76,
+      "trayCapacity": 4
     },
     {
       "levelId": "level-0163",
@@ -1638,7 +1800,8 @@
       "sha256": "94072ae80232e005eb6d844395a05732cb235caa71d545a6eac4520a190443e3",
       "difficulty": "medium",
       "category": "nature",
-      "tileCount": 68
+      "tileCount": 68,
+      "trayCapacity": 4
     },
     {
       "levelId": "level-0164",
@@ -1648,7 +1811,8 @@
       "sha256": "bbc81084db19e880d008ab9ae275bb4f46ae080ce22ce90be85d9def105c8ccd",
       "difficulty": "veryHard",
       "category": "nature",
-      "tileCount": 146
+      "tileCount": 146,
+      "trayCapacity": 5
     },
     {
       "levelId": "level-0165",
@@ -1658,7 +1822,8 @@
       "sha256": "08a96a9c2cbda426e62860f9e8db9bc5419583da35f71cb8c48bc2f2acdb38eb",
       "difficulty": "hard",
       "category": "nature",
-      "tileCount": 108
+      "tileCount": 108,
+      "trayCapacity": 5
     },
     {
       "levelId": "level-0166",
@@ -1668,7 +1833,8 @@
       "sha256": "e7b04160d74f0dd0868125b639e10e1c2497b77ab433d25a2bee996bfc276336",
       "difficulty": "easy",
       "category": "nature",
-      "tileCount": 40
+      "tileCount": 40,
+      "trayCapacity": 4
     },
     {
       "levelId": "level-0167",
@@ -1678,7 +1844,8 @@
       "sha256": "e95d85f06a1bc18227692e6537c255c56aa16e85a5d2b205c65dce5a42331ea0",
       "difficulty": "veryHard",
       "category": "nature",
-      "tileCount": 144
+      "tileCount": 144,
+      "trayCapacity": 5
     },
     {
       "levelId": "level-0168",
@@ -1688,7 +1855,8 @@
       "sha256": "8bb1903f668e9199cba003d0468b17b9cac0810437d07c9f172fdc2372100178",
       "difficulty": "medium",
       "category": "nature",
-      "tileCount": 72
+      "tileCount": 72,
+      "trayCapacity": 4
     },
     {
       "levelId": "level-0169",
@@ -1698,7 +1866,8 @@
       "sha256": "925b2936c9b3ba84a141c3877bd3e0f8ca266c6c3a9fe82a08d222f9f4810ad4",
       "difficulty": "medium",
       "category": "nature",
-      "tileCount": 72
+      "tileCount": 72,
+      "trayCapacity": 4
     },
     {
       "levelId": "level-0170",
@@ -1708,7 +1877,8 @@
       "sha256": "8a65b0c2819949db1d35ea5db55d48c7e447ae04a132bc8362e9a1be247fa2ed",
       "difficulty": "easy",
       "category": "nature",
-      "tileCount": 48
+      "tileCount": 48,
+      "trayCapacity": 4
     },
     {
       "levelId": "level-0171",
@@ -1718,7 +1888,8 @@
       "sha256": "f8a8a3d556fbb4dab5d713f33f14b06aacbc1b72c13655e8037ee4f96cd6e136",
       "difficulty": "hard",
       "category": "nature",
-      "tileCount": 120
+      "tileCount": 120,
+      "trayCapacity": 5
     },
     {
       "levelId": "level-0172",
@@ -1728,7 +1899,8 @@
       "sha256": "48da540f4119e513bb027055a955921e38b3a7973ed798cb6d010d3b28386e00",
       "difficulty": "medium",
       "category": "nature",
-      "tileCount": 66
+      "tileCount": 66,
+      "trayCapacity": 4
     },
     {
       "levelId": "level-0173",
@@ -1738,7 +1910,8 @@
       "sha256": "d1d63274c6dce2441d972683f736b1bcb17845af4347891761c0c57ccccc0873",
       "difficulty": "veryHard",
       "category": "nature",
-      "tileCount": 172
+      "tileCount": 172,
+      "trayCapacity": 5
     },
     {
       "levelId": "level-0174",
@@ -1748,7 +1921,8 @@
       "sha256": "d28cf706e83871255e98c986a97defc1fb588aa42b3809d23e0d6749ccff951f",
       "difficulty": "veryHard",
       "category": "nature",
-      "tileCount": 148
+      "tileCount": 148,
+      "trayCapacity": 5
     },
     {
       "levelId": "level-0175",
@@ -1758,7 +1932,8 @@
       "sha256": "3cf20b69ff9627396d3826ce6626bd0de5c95ad10ecce6f7af2dd5b78f74f556",
       "difficulty": "easy",
       "category": "nature",
-      "tileCount": 40
+      "tileCount": 40,
+      "trayCapacity": 4
     },
     {
       "levelId": "level-0176",
@@ -1768,7 +1943,8 @@
       "sha256": "f89c05c95e025393926280d2ab722383a3363835d251d4e093d3e5d9359dd174",
       "difficulty": "medium",
       "category": "nature",
-      "tileCount": 72
+      "tileCount": 72,
+      "trayCapacity": 4
     },
     {
       "levelId": "level-0177",
@@ -1778,7 +1954,8 @@
       "sha256": "d59a981ab88784c56d984d41cf40f67047f80c91f00fe70b494374a85cfd609c",
       "difficulty": "easy",
       "category": "nature",
-      "tileCount": 48
+      "tileCount": 48,
+      "trayCapacity": 4
     },
     {
       "levelId": "level-0178",
@@ -1788,7 +1965,8 @@
       "sha256": "b80efd69f85e7b811f4b79ff8d8ef492314ee6c2f13538d18c17fe70b157e1dd",
       "difficulty": "veryHard",
       "category": "nature",
-      "tileCount": 170
+      "tileCount": 170,
+      "trayCapacity": 5
     },
     {
       "levelId": "level-0179",
@@ -1798,7 +1976,8 @@
       "sha256": "23048f29cbed3d73ef0e3a93184bd22498f5f9ac0a6a1bdf8c9d76e4b19935ff",
       "difficulty": "veryHard",
       "category": "nature",
-      "tileCount": 144
+      "tileCount": 144,
+      "trayCapacity": 5
     },
     {
       "levelId": "level-0180",
@@ -1808,7 +1987,8 @@
       "sha256": "d151a83f9cd6217e49e3b03bf2ecaf3fd45e3e34a99cfd7212a8cdcaf3e32acc",
       "difficulty": "hard",
       "category": "nature",
-      "tileCount": 108
+      "tileCount": 108,
+      "trayCapacity": 5
     },
     {
       "levelId": "level-0181",
@@ -1818,7 +1998,8 @@
       "sha256": "f2db56c6a56331932b120fee0a863e513d00135297e8450acd714a57cd5d4fd6",
       "difficulty": "easy",
       "category": "nature",
-      "tileCount": 46
+      "tileCount": 46,
+      "trayCapacity": 4
     },
     {
       "levelId": "level-0182",
@@ -1828,7 +2009,8 @@
       "sha256": "19e63034b7a5554db7ce252a105a39135800a5f3a59b7850e987c3844aa488c6",
       "difficulty": "veryHard",
       "category": "nature",
-      "tileCount": 166
+      "tileCount": 166,
+      "trayCapacity": 5
     },
     {
       "levelId": "level-0183",
@@ -1838,7 +2020,8 @@
       "sha256": "edfb5494ad675b2b676da9e169069a6ebcf090e4838eaa96141af37dcc3e111a",
       "difficulty": "medium",
       "category": "nature",
-      "tileCount": 78
+      "tileCount": 78,
+      "trayCapacity": 4
     },
     {
       "levelId": "level-0184",
@@ -1848,7 +2031,8 @@
       "sha256": "0cf9083332ff8d558d4afee30db803f507234d70f5144dec9f52c6534aec095b",
       "difficulty": "veryHard",
       "category": "nature",
-      "tileCount": 152
+      "tileCount": 152,
+      "trayCapacity": 5
     },
     {
       "levelId": "level-0185",
@@ -1858,7 +2042,8 @@
       "sha256": "93259461f3f483ff205dd6028c598cacf06909a584c460800e3fc581bd01435e",
       "difficulty": "veryHard",
       "category": "nature",
-      "tileCount": 166
+      "tileCount": 166,
+      "trayCapacity": 5
     },
     {
       "levelId": "level-0186",
@@ -1868,7 +2053,8 @@
       "sha256": "3777d5086d82bc93af469ca501fad909759841076dca3dca56b5a2f4cbe69e1d",
       "difficulty": "hard",
       "category": "nature",
-      "tileCount": 108
+      "tileCount": 108,
+      "trayCapacity": 5
     },
     {
       "levelId": "level-0187",
@@ -1878,7 +2064,8 @@
       "sha256": "2d447b79972ec18636f5f4a6f453e5af9a508fb95e0eb12a441c113577452d55",
       "difficulty": "medium",
       "category": "nature",
-      "tileCount": 70
+      "tileCount": 70,
+      "trayCapacity": 4
     },
     {
       "levelId": "level-0188",
@@ -1888,7 +2075,8 @@
       "sha256": "02e4c8f6fc385902ce317b3380f2b028e9ed28be80298f3b16ae4e52dbb9808e",
       "difficulty": "medium",
       "category": "nature",
-      "tileCount": 78
+      "tileCount": 78,
+      "trayCapacity": 4
     },
     {
       "levelId": "level-0189",
@@ -1898,7 +2086,8 @@
       "sha256": "49b5ab656a12dba9db9a28fd20fcda7cf50a632f1ed5b89827ca12274fb94a76",
       "difficulty": "veryHard",
       "category": "nature",
-      "tileCount": 162
+      "tileCount": 162,
+      "trayCapacity": 5
     },
     {
       "levelId": "level-0190",
@@ -1908,7 +2097,8 @@
       "sha256": "0a4403cf8e2f219a3256bbdb3cbda7df51b77784dbf621a6789333fd991b1d3a",
       "difficulty": "medium",
       "category": "nature",
-      "tileCount": 70
+      "tileCount": 70,
+      "trayCapacity": 4
     },
     {
       "levelId": "level-0191",
@@ -1918,7 +2108,8 @@
       "sha256": "2146ee8ffbdf20d486cbabcd18414d3bfb86ba257ebc5eb06f674f566c45c6c6",
       "difficulty": "veryHard",
       "category": "nature",
-      "tileCount": 170
+      "tileCount": 170,
+      "trayCapacity": 5
     },
     {
       "levelId": "level-0192",
@@ -1928,7 +2119,8 @@
       "sha256": "423fda366b609f91e27fd9f7be5d24f1adb25e427e4f5d4be62e8a21df9c7743",
       "difficulty": "medium",
       "category": "nature",
-      "tileCount": 72
+      "tileCount": 72,
+      "trayCapacity": 4
     },
     {
       "levelId": "level-0193",
@@ -1938,7 +2130,8 @@
       "sha256": "1f8b9ff29b944954c228417855e91ba0be3d13993a6f1b3984199f2ec0f22666",
       "difficulty": "veryHard",
       "category": "nature",
-      "tileCount": 160
+      "tileCount": 160,
+      "trayCapacity": 5
     },
     {
       "levelId": "level-0194",
@@ -1948,7 +2141,8 @@
       "sha256": "fa257c6b9eece2bb4215c8693dc437c67e21de0ad1bd7c73bdd3fde723cad983",
       "difficulty": "hard",
       "category": "nature",
-      "tileCount": 88
+      "tileCount": 88,
+      "trayCapacity": 5
     },
     {
       "levelId": "level-0195",
@@ -1958,7 +2152,8 @@
       "sha256": "10cff6641dff48a6afdcca6b3bb4692f455d1d62d888f6240835ef08cc15718b",
       "difficulty": "medium",
       "category": "nature",
-      "tileCount": 72
+      "tileCount": 72,
+      "trayCapacity": 4
     },
     {
       "levelId": "level-0196",
@@ -1968,7 +2163,8 @@
       "sha256": "e001ad9d34bddedf9a2f3f73cc89f6d789fe583d7e943a491d65013f631f6ca8",
       "difficulty": "hard",
       "category": "nature",
-      "tileCount": 110
+      "tileCount": 110,
+      "trayCapacity": 5
     },
     {
       "levelId": "level-0197",
@@ -1978,7 +2174,8 @@
       "sha256": "9a9db74229edf0acad586707c505a59d809f6687d5024405beb71289983fde37",
       "difficulty": "veryHard",
       "category": "nature",
-      "tileCount": 168
+      "tileCount": 168,
+      "trayCapacity": 5
     },
     {
       "levelId": "level-0198",
@@ -1988,7 +2185,8 @@
       "sha256": "e41e70db9f2263f8d86a6e0b71ffe2071e90dff061ae828e5b1e5cec7b43320e",
       "difficulty": "easy",
       "category": "nature",
-      "tileCount": 40
+      "tileCount": 40,
+      "trayCapacity": 4
     },
     {
       "levelId": "level-0199",
@@ -1998,7 +2196,8 @@
       "sha256": "8ca14e7416f437a419306d4c540e28e46d86a0cef123041c1d8fb47bb7fbc9cf",
       "difficulty": "veryHard",
       "category": "nature",
-      "tileCount": 172
+      "tileCount": 172,
+      "trayCapacity": 5
     },
     {
       "levelId": "level-0200",
@@ -2008,7 +2207,8 @@
       "sha256": "aa9965fc1d37cba53b9b0de9b9c95f51fbdae842f42e37bd371a7b93af55ff01",
       "difficulty": "veryHard",
       "category": "nature",
-      "tileCount": 160
+      "tileCount": 160,
+      "trayCapacity": 5
     }
   ]
 }

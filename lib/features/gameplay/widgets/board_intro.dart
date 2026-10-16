@@ -7,11 +7,64 @@ import 'package:flutter/scheduler.dart';
 import '../../../game_engine/geometry/board_projection.dart';
 import '../../../rendering/board_renderer.dart';
 
-/// How long the board intro runs: tiles fly in, mix, then settle.
-const Duration kBoardIntroDuration = Duration(seconds: 2);
+/// How a level's intro mixes its tiles between flying in and settling.
+enum IntroStyle {
+  /// The cloud swirls; neighbouring tiles orbit opposite ways and cross.
+  swirl,
 
-/// The side of the screen a tile flies in from.
-enum IntroSide { left, right, top, bottom }
+  /// Tiles weave along a figure-8 (infinity) loop, half one way, half the
+  /// other.
+  weave,
+
+  /// The cloud spirals in towards the centre and back out.
+  spiral,
+
+  /// Rows of tiles slide past each other, alternately left and right.
+  waves;
+
+  /// The style of the level [levelId], always the same for a level. Levels
+  /// numbered one apart (`level-0007`, `level-0008`) never share a style;
+  /// other ids pick one from their hash.
+  static IntroStyle forLevel(String levelId) {
+    final digits = RegExp(r'(\d+)$').firstMatch(levelId)?.group(1);
+    final number = digits == null ? _fnv(levelId) : int.parse(digits);
+    return _sequence[number % _sequence.length];
+  }
+
+  // No two neighbours (wrapping round) are the same.
+  static const List<IntroStyle> _sequence = [swirl, weave, waves, spiral, weave, swirl, spiral, waves];
+}
+
+/// FNV-1a of [text]: a stable seed (String.hashCode is not).
+int _fnv(String text) {
+  var hash = 0x811c9dc5;
+  for (final unit in text.codeUnits) {
+    hash = ((hash ^ unit) * 0x01000193) & 0xffffffff;
+  }
+  return hash;
+}
+
+/// The choreography's seed for [levelId]: the same intro every time.
+int introSeed(String levelId) => _fnv(levelId);
+
+/// How long a level's intro runs, by its tier: bigger boards get longer so
+/// every tile has time to fly in, mix and land.
+abstract final class IntroTiming {
+  static const Duration easy = Duration(milliseconds: 2000);
+  static const Duration medium = Duration(milliseconds: 2300);
+  static const Duration hard = Duration(milliseconds: 2600);
+  static const Duration veryHard = Duration(milliseconds: 3000);
+
+  /// For a level's tier (`easy`, `medium`, `hard`, `veryHard`), or by its
+  /// [tileCount] when it has none (or an unknown one).
+  static Duration forLevel({String? difficulty, required int tileCount}) => switch (difficulty) {
+    'easy' => easy,
+    'medium' => medium,
+    'hard' => hard,
+    'veryHard' => veryHard,
+    _ => tileCount < 50 ? easy : (tileCount < 82 ? medium : (tileCount < 130 ? hard : veryHard)),
+  };
+}
 
 /// Where a tile is at one moment of the intro (overlay coordinates).
 class IntroPose {
@@ -37,20 +90,35 @@ class IntroStage {
   final double faceWidth;
 }
 
-/// The intro choreography, deterministic for a seed (pure maths, no
-/// Flutter state):
+/// The intro choreography for one board, deterministic for a seed (pure
+/// maths, no Flutter state). For an intro of [total] seconds:
 ///
-/// * Fly in, 0-0.8 s: every tile enters from off-screen, a quarter from
-///   each side (shuffled per tile), easing out into a loose cloud around
-///   the board centre with a little spin.
-/// * Mix, 0.8-1.3 s: the cloud swirls; neighbouring tiles orbit in opposite
-///   directions, so they cross each other.
-/// * Settle, 1.3-2.0 s: each tile flies to its board place, lower layers
-///   first, with a small squash on landing; at 2.0 s every tile is exactly
-///   in place, unrotated, at full size.
+/// * Fly in, 0-0.8 s (always snappy): every tile enters from off-screen, a
+///   quarter from each side (shuffled per tile), easing out into a loose
+///   formation around the board centre with a little spin.
+/// * Mix ([style]): the formation moves, so the tiles clearly mix. Longer
+///   intros mostly lengthen this phase.
+/// * Settle (0.7 s at 2 s, up to 1.0 s at 3 s): each tile flies to its board
+///   place, lower layers first, with a small squash on landing. The last
+///   [finalHold] seconds every tile is exactly in place, unrotated, at full
+///   size, so the hand-over to the board has no jump.
 class IntroChoreography {
-  IntroChoreography({required this.layers, required int seed}) : _maxLayer = layers.fold(0, math.max) {
+  IntroChoreography({
+    required this.layers,
+    required int seed,
+    this.style = IntroStyle.swirl,
+    Duration duration = IntroTiming.easy,
+  }) : total = duration.inMicroseconds / Duration.microsecondsPerSecond,
+       _maxLayer = layers.fold(0, math.max) {
+    final extra = math.max(0.0, total - 2.0);
+    final settle = 0.7 + extra * 0.3;
+    mixEnd = total - settle;
+    layerSpread = 0.25 * settle / 0.7;
     final random = math.Random(seed);
+    // Within a layer tiles leave a little apart, but never as late as the
+    // next layer: lower layers always start, and land, first.
+    final jitter = _maxLayer == 0 ? settleJitter : math.min(settleJitter, layerSpread / _maxLayer * 0.9);
+    settleTime = settle - finalHold - layerSpread - settleJitter;
     final sides = [for (var i = 0; i < layers.length; i++) IntroSide.values[i % 4]]..shuffle(random);
     this.sides = List.unmodifiable(sides);
     for (var i = 0; i < layers.length; i++) {
@@ -62,50 +130,66 @@ class IntroChoreography {
       _orbit.add(direction * (1.0 + random.nextDouble() * 0.9));
       _spin.add((random.nextBool() ? 1 : -1) * (0.5 + random.nextDouble() * 0.8));
       _spinMix.add((random.nextBool() ? 1 : -1) * (1.2 + random.nextDouble() * 1.6));
-      _jitter.add(random.nextDouble() * settleJitter);
+      _jitter.add(random.nextDouble() * jitter);
+      _row.add(random.nextInt(_rows));
+      _rowX.add(random.nextDouble() * 2 - 1);
     }
   }
 
+  /// End of the fly-in (seconds), whatever the intro's length.
   static const double flyInEnd = 0.8;
-  static const double mixEnd = 1.3;
-  static const double total = 2.0;
-
-  /// Settle starts this much later for the top layer than for layer 0.
-  static const double layerSpread = 0.25;
 
   /// Extra random settle delay within a layer.
   static const double settleJitter = 0.06;
 
-  /// Each tile's flight from the cloud to its place (landing included).
-  static const double settleTime = total - mixEnd - layerSpread - settleJitter;
+  /// Every tile is in its final pose this long before the end.
+  static const double finalHold = 0.05;
 
-  /// Tiles shrink a little while they are in the cloud.
+  /// Tiles shrink a little while they mix.
   static const double cloudScale = 0.86;
+
+  static const int _rows = 5;
 
   /// Board layer of each tile, in draw order.
   final List<int> layers;
+  final IntroStyle style;
+
+  /// Length of the intro (seconds).
+  final double total;
+
+  /// End of the mix (seconds): settling begins.
+  late final double mixEnd;
+
+  /// Settle starts this much later for the top layer than for layer 0.
+  late final double layerSpread;
+
+  /// Each tile's flight from the formation to its place (landing included).
+  late final double settleTime;
   final int _maxLayer;
   late final List<IntroSide> sides;
   final List<double> _along = [], _delay = [], _cloudAngle = [], _cloudRadius = [];
-  final List<double> _orbit = [], _spin = [], _spinMix = [], _jitter = [];
+  final List<double> _orbit = [], _spin = [], _spinMix = [], _jitter = [], _rowX = [];
+  final List<int> _row = [];
 
   int get length => layers.length;
 
-  /// When tile [i] leaves the cloud for its place (seconds).
-  double settleStart(int i) =>
-      mixEnd + (_maxLayer == 0 ? 0 : layerSpread * layers[i] / _maxLayer) + _jitter[i];
+  /// When tile [i] leaves the formation for its place (seconds).
+  double settleStart(int i) => mixEnd + (_maxLayer == 0 ? 0 : layerSpread * layers[i] / _maxLayer) + _jitter[i];
 
-  /// When tile [i] has landed (seconds); never after [total].
+  /// When tile [i] has landed (seconds); never after [total] - [finalHold].
   double settleEnd(int i) => settleStart(i) + settleTime;
 
-  /// When every tile of [layer] has landed (seconds).
-  double layerLanded(int layer) {
-    var latest = 0.0;
+  /// When every tile of [layer] has landed (seconds); 0 for a layer with no
+  /// tiles.
+  double layerLanded(int layer) => _layerLanded[layer] ?? 0;
+
+  late final Map<int, double> _layerLanded = () {
+    final landed = <int, double>{};
     for (var i = 0; i < length; i++) {
-      if (layers[i] == layer) latest = math.max(latest, settleEnd(i));
+      landed[layers[i]] = math.max(landed[layers[i]] ?? 0, settleEnd(i));
     }
-    return latest;
-  }
+    return landed;
+  }();
 
   Offset _start(int i, IntroStage stage) {
     final reach = stage.faceWidth * 1.6;
@@ -118,7 +202,7 @@ class IntroChoreography {
     };
   }
 
-  /// Cloud radii around the board centre, kept on screen.
+  /// Formation radii around the board centre, kept on screen.
   Size _cloud(IntroStage stage) {
     final min = stage.faceWidth * 1.8;
     return Size(
@@ -127,21 +211,56 @@ class IntroChoreography {
     );
   }
 
-  /// Position in the swirling cloud at [t] (seconds, from [flyInEnd] on).
-  Offset _cloudPoint(int i, double t, IntroStage stage) {
-    final cloud = _cloud(stage);
+  /// Mix progress at [t]: 0 when the mix starts, easing in to 1 at its end,
+  /// then growing at the same rate for tiles that settle later (no jerk).
+  double _mixProgress(double t) {
     final m = (t - flyInEnd) / (mixEnd - flyInEnd);
-    // Eases in, then keeps turning at the same rate for tiles that settle
-    // later (no jerk at the end of the mix).
-    final swirl = m <= 0 ? 0.0 : (m >= 1 ? 1 + (m - 1) * math.pi / 2 : 1 - math.cos(math.pi * m / 2));
-    final angle = _cloudAngle[i] + _orbit[i] * swirl;
-    final radius = _cloudRadius[i] * (1 + 0.18 * math.sin(math.pi * m.clamp(0.0, 1.0)));
-    return stage.board.center + Offset(math.cos(angle) * cloud.width * radius, math.sin(angle) * cloud.height * radius);
+    if (m <= 0) return 0;
+    return m >= 1 ? 1 + (m - 1) * math.pi / 2 : 1 - math.cos(math.pi * m / 2);
   }
 
-  double _cloudRotation(int i, double t) {
+  /// Where tile [i] is in the mixing formation at [t] (seconds, from
+  /// [flyInEnd] on): the fly-in ends here, the settle starts from here.
+  Offset _formation(int i, double t, IntroStage stage) {
+    final cloud = _cloud(stage);
+    final c = stage.board.center;
+    final m = ((t - flyInEnd) / (mixEnd - flyInEnd)).clamp(0.0, 1.0);
+    final p = _mixProgress(t);
+    final r = _cloudRadius[i];
+    switch (style) {
+      case IntroStyle.swirl:
+        final angle = _cloudAngle[i] + _orbit[i] * p;
+        final radius = r * (1 + 0.18 * math.sin(math.pi * m));
+        return c + Offset(math.cos(angle) * cloud.width * radius, math.sin(angle) * cloud.height * radius);
+      case IntroStyle.weave:
+        // A lemniscate of Gerono; each tile has its own place on the loop
+        // and half the tiles run it backwards, so they weave through each
+        // other at the crossing.
+        final phase = _cloudAngle[i] + (_orbit[i] > 0 ? 1 : -1) * p * math.pi * 0.9;
+        final spread = 0.75 + 0.25 * r;
+        return c + Offset(math.cos(phase) * cloud.width * spread, math.sin(2 * phase) / 2 * cloud.height * 1.5 * spread);
+      case IntroStyle.spiral:
+        // Everyone turns the same way while the cloud draws in towards the
+        // centre and opens out again.
+        final angle = _cloudAngle[i] + p * 1.4 * math.pi;
+        final radius = r * (1 - 0.72 * math.sin(math.pi * m));
+        return c + Offset(math.cos(angle) * cloud.width * radius, math.sin(angle) * cloud.height * radius);
+      case IntroStyle.waves:
+        // Rows of a loose block; alternate rows slide left and right past
+        // each other, with a gentle ripple.
+        final row = _row[i];
+        final y = ((row + 0.5) / _rows * 2 - 1) * cloud.height;
+        final direction = row.isEven ? 1.0 : -1.0;
+        final x = _rowX[i] * cloud.width + direction * cloud.width * 0.85 * math.sin(math.pi / 2 * math.min(p, 2.0));
+        final ripple = math.sin(_rowX[i] * math.pi * 2 + p * math.pi * 2) * stage.faceWidth * 0.25;
+        return c + Offset(x, y + ripple);
+    }
+  }
+
+  double _mixRotation(int i, double t) {
     final m = ((t - flyInEnd) / (mixEnd - flyInEnd)).clamp(0.0, double.infinity);
-    return _spin[i] * 0.3 + _spinMix[i] * math.min(m, 1.4);
+    final turn = style == IntroStyle.waves ? 0.35 : 1.0;
+    return _spin[i] * 0.3 + _spinMix[i] * turn * math.min(m, 1.4);
   }
 
   /// Tile [i] at [t] seconds, landing on [target] (its face centre).
@@ -151,26 +270,24 @@ class IntroChoreography {
       final delay = _delay[i];
       final u = ((t - delay) / (flyInEnd - delay)).clamp(0.0, 1.0);
       final e = Curves.easeOutCubic.transform(u);
-      final cloud = _cloudPoint(i, flyInEnd, stage);
       return IntroPose(
-        Offset.lerp(_start(i, stage), cloud, e)!,
+        Offset.lerp(_start(i, stage), _formation(i, flyInEnd, stage), e)!,
         _spin[i] * (1 - 0.7 * e),
         1 + (cloudScale - 1) * e,
       );
     }
     final s0 = settleStart(i);
-    if (t < s0) return IntroPose(_cloudPoint(i, t, stage), _cloudRotation(i, t), cloudScale);
+    if (t < s0) return IntroPose(_formation(i, t, stage), _mixRotation(i, t), cloudScale);
     final v = (t - s0) / settleTime;
     final e = Curves.easeOutCubic.transform(v);
     var scale = cloudScale + (1 - cloudScale) * e;
     if (v > 0.75) scale *= 1 - 0.05 * math.sin(math.pi * (v - 0.75) / 0.25);
-    return IntroPose(
-      Offset.lerp(_cloudPoint(i, s0, stage), target, e)!,
-      _cloudRotation(i, s0) * (1 - e),
-      scale,
-    );
+    return IntroPose(Offset.lerp(_formation(i, s0, stage), target, e)!, _mixRotation(i, s0) * (1 - e), scale);
   }
 }
+
+/// The side of the screen a tile flies in from.
+enum IntroSide { left, right, top, bottom }
 
 /// Where the board is this frame: its projection and its transform to
 /// global coordinates.
@@ -185,10 +302,12 @@ class BoardIntro {
     required this.tiles,
     required List<int> layers,
     required int seed,
+    IntroStyle style = IntroStyle.swirl,
+    Duration duration = IntroTiming.easy,
     required this.geometry,
     this.onLayerLanded,
     this.onDone,
-  }) : choreography = IntroChoreography(layers: layers, seed: seed),
+  }) : choreography = IntroChoreography(layers: layers, seed: seed, style: style, duration: duration),
        _transforms = Float32List(tiles.length * 4),
        _rects = Float32List(tiles.length * 4) {
     for (final (k, index) in tiles.indexed) {
@@ -277,7 +396,7 @@ class BoardIntroController extends ChangeNotifier {
 
   /// Advances to [now] on the driving ticker's clock (the intro's clock
   /// starts at its first tick): reports layers as they land, and ends the
-  /// intro after [kBoardIntroDuration].
+  /// intro after its choreography's [IntroChoreography.total].
   void tick(Duration now) {
     final intro = _intro;
     if (intro == null) return;
@@ -288,7 +407,7 @@ class BoardIntroController extends ChangeNotifier {
         if (intro._seconds >= intro.choreography.layerLanded(layer)) layer,
     ]..sort();
     intro._layersLeft.removeAll(landed);
-    final done = intro._seconds >= IntroChoreography.total;
+    final done = intro._seconds >= intro.choreography.total;
     if (done) {
       _intro = null;
       intro._dispose();

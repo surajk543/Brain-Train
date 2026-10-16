@@ -9,6 +9,10 @@
 ///   every animated level missing.
 const int kClientContentSchema = 2;
 
+/// Asset prefix of the starter pack bundled in the app (levels 1-5, their
+/// art, the manifest and the registry); written by `tool/content.dart build`.
+const String kStarterContentPrefix = 'content/starter/';
+
 /// Largest Lottie JSON accepted for an animated symbol.
 const int kMaxAnimationBytes = 1024 * 1024;
 

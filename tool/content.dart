@@ -43,7 +43,14 @@ import 'package:brain_train/game_engine/rules/match_rules.dart';
 import 'package:brain_train/game_engine/validation/tray_simulator.dart';
 import 'package:crypto/crypto.dart';
 
+/// The full publishable tree (local build output, gitignored; publish.dart
+/// uploads it to R2).
 final Directory contentRoot = Directory('content/brain-train');
+
+/// The starter pack bundled in the app: the manifest and registry (metadata
+/// of every level) plus the first levels and only the art they use, so a
+/// first launch without internet can play. Committed to git.
+final Directory starterRoot = Directory('content/starter');
 const String staticSourcesPath = 'art/asset_sources.json';
 const String animatedSourcesPath = 'art/animated_sources.json';
 const JsonEncoder pretty = JsonEncoder.withIndent('  ');
@@ -145,6 +152,7 @@ Future<void> build({required bool force}) async {
           difficulty: level.difficulty,
           category: config.category,
           tileCount: level.tiles.length,
+          trayCapacity: level.rules.trayCapacity,
         ),
       );
       levels.add(generated);
@@ -179,6 +187,7 @@ Future<void> build({required bool force}) async {
         difficulty: level.difficulty,
         category: spec['category'] as String?,
         tileCount: level.tiles.length,
+        trayCapacity: level.rules.trayCapacity,
       ),
     );
     print('level     $path  ${_describe(level, registry)}  solved in ${report.solve!.nodesVisited} nodes');
@@ -227,6 +236,55 @@ Future<void> build({required bool force}) async {
     }
   }
   if (pruned > 0) print('pruned    $pruned unreferenced level/registry files from ${contentRoot.path}');
+
+  writeStarterPack(manifest, registry, count: (catalog['starterLevels'] as int?) ?? 5);
+}
+
+/// Copies the manifest, the registry, the first [count] levels and exactly
+/// the art they use into [starterRoot], removing anything else there.
+void writeStarterPack(LevelManifest manifest, SymbolRegistry registry, {required int count}) {
+  final paths = starterPaths(manifest, registry, count: count);
+  final keep = <String>{};
+  var bytes = 0;
+  for (final path in paths) {
+    final source = File('${contentRoot.path}/$path');
+    final target = File('${starterRoot.path}/$path');
+    final data = source.readAsBytesSync();
+    bytes += data.length;
+    keep.add(target.path);
+    if (target.existsSync() && sha(target.readAsBytesSync()) == sha(data)) continue;
+    target.parent.createSync(recursive: true);
+    target.writeAsBytesSync(data);
+  }
+  var removed = 0;
+  if (starterRoot.existsSync()) {
+    for (final file in starterRoot.listSync(recursive: true).whereType<File>()) {
+      if (!keep.contains(file.path)) {
+        file.deleteSync();
+        removed++;
+      }
+    }
+  }
+  final art = paths.where((p) => p.startsWith('symbols/') || p.startsWith('animated-symbols/')).length;
+  print(
+    'starter   ${starterRoot.path}: manifest, registry, levels 1-$count, $art art files '
+    '(${(bytes / 1024).toStringAsFixed(0)} KB)${removed == 0 ? '' : ', removed $removed old files'}',
+  );
+}
+
+/// The content paths of the starter pack: manifest, registry, the first
+/// [count] levels and the art files they use.
+List<String> starterPaths(LevelManifest manifest, SymbolRegistry registry, {required int count}) {
+  final levels = manifest.levels.take(count).toList();
+  final art = <String>{};
+  for (final entry in levels) {
+    final level = LevelDefinition.fromJson(readJson('${contentRoot.path}/${entry.ref.url}'));
+    for (final tile in level.tiles) {
+      final symbol = registry[tile.symbolCode];
+      if (symbol != null && ContentKind.forSymbol(symbol) != null) art.add(symbol.assetPath!);
+    }
+  }
+  return ['manifest.json', manifest.symbolRegistry.url, for (final e in levels) e.ref.url, ...(art.toList()..sort())];
 }
 
 String _pct(double rate) => '${(rate * 100).toStringAsFixed(1)}%';
@@ -450,6 +508,23 @@ Future<bool> validate() async {
         problem('${entry.levelId}: $error');
       }
     }
+    // The starter pack: the same manifest and registry, the first levels and
+    // exactly their art, byte for byte.
+    final count = ((readJson('content-src/catalog.json')! as Map<String, Object?>)['starterLevels'] as int?) ?? 5;
+    final expected = starterPaths(manifest, registry, count: count).toSet();
+    final present = {
+      if (starterRoot.existsSync())
+        for (final file in starterRoot.listSync(recursive: true).whereType<File>())
+          file.path.substring(starterRoot.path.length + 1),
+    };
+    if (present.difference(expected).isNotEmpty) problem('starter pack has extra files: ${present.difference(expected)}');
+    if (expected.difference(present).isNotEmpty) problem('starter pack is missing: ${expected.difference(present)}');
+    for (final path in expected.intersection(present)) {
+      if (sha(File('${starterRoot.path}/$path').readAsBytesSync()) != sha(File('${contentRoot.path}/$path').readAsBytesSync())) {
+        problem('starter pack $path differs from ${contentRoot.path}/$path; run build');
+      }
+    }
+    print('starter   ${expected.length} files match (levels 1-$count, ${expected.where((p) => p.contains('symbols/')).length} art files)');
     if (usesAnimation && manifest.minClientContentSchema < 2) {
       problem(
         'levels use animated symbols but manifest minClientContentSchema is ${manifest.minClientContentSchema}; needs 2',

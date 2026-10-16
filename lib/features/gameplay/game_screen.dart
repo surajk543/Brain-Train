@@ -12,6 +12,7 @@ import '../../data/progress_repository.dart';
 import '../../game_engine/models/level_definition.dart';
 import '../../game_engine/state/game_state.dart';
 import '../../rendering/symbol_art.dart';
+import '../levels/level_loader.dart';
 import 'game_controller.dart';
 import 'widgets/board_intro.dart';
 import 'widgets/board_view.dart';
@@ -183,21 +184,18 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
         atlas: atlas,
         tiles: tiles,
         layers: [for (final index in tiles) level.tiles[index].layer],
-        seed: _introSeed(level.levelId),
+        // The same intro every time a level starts; longer for bigger boards.
+        seed: introSeed(level.levelId),
+        style: IntroStyle.forLevel(level.levelId),
+        duration: IntroTiming.forLevel(
+          difficulty: level.difficulty ?? widget.entry.difficulty,
+          tileCount: level.tiles.length,
+        ),
         geometry: () => _boardKey.currentState?.introGeometry(),
         onLayerLanded: (_) => controller.introLayerLanded(),
         onDone: controller.endIntro,
       ),
     );
-  }
-
-  /// The same choreography every time a level starts (FNV-1a of its id).
-  static int _introSeed(String levelId) {
-    var hash = 0x811c9dc5;
-    for (final unit in levelId.codeUnits) {
-      hash = ((hash ^ unit) * 0x01000193) & 0xffffffff;
-    }
-    return hash;
   }
 
   /// A tile is in the air, or the tray or a shatter is still animating.
@@ -223,7 +221,8 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
     if (next == null) return;
     Navigator.of(context).pushReplacement(
       MaterialPageRoute<void>(
-        builder: (_) => GameScreen(snapshot: widget.snapshot, entry: next),
+        // Through the loader: the next level may still need downloading.
+        builder: (_) => LevelLoaderScreen(entry: next),
       ),
     );
   }
@@ -620,9 +619,18 @@ class _CompletionCard extends StatelessWidget {
         const SizedBox(height: 16),
         if (hasNext) PremiumButton(label: 'Next level', primary: true, expand: true, onPressed: onNext),
         if (hasNext) const SizedBox(height: 10),
-        PremiumButton(label: 'Replay', expand: true, onPressed: onReplay),
+        // The last level: every level is done (owner: say new ones are coming).
+        if (!hasNext) ...[
+          Text(
+            'You have completed every level!\nNew levels are coming soon.',
+            textAlign: TextAlign.center,
+            style: displayText(16, color: BrandGold.base, weight: FontWeight.w600),
+          ),
+          const SizedBox(height: 14),
+        ],
+        PremiumButton(label: 'Replay', primary: !hasNext, expand: true, onPressed: onReplay),
         const SizedBox(height: 4),
-        PremiumButton(label: 'All levels', quiet: true, expand: true, onPressed: onLevels),
+        PremiumButton(label: 'Completed Levels', quiet: true, expand: true, onPressed: onLevels),
       ],
     );
   }

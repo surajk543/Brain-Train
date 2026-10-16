@@ -5,6 +5,7 @@
 //
 //   CAPTURE_DIR=/tmp/shots flutter test test/visual/gameplay_capture_test.dart
 import 'dart:io';
+import 'dart:math' as math;
 import 'dart:ui' as ui;
 
 import 'package:brain_train/app/app_services.dart';
@@ -22,6 +23,8 @@ import 'package:brain_train/data/progress_repository.dart';
 import 'package:brain_train/data/settings_repository.dart';
 import 'package:brain_train/features/common/flowing_leaves.dart';
 import 'package:brain_train/features/gameplay/game_screen.dart';
+import 'package:brain_train/features/gameplay/game_controller.dart';
+import 'package:brain_train/features/gameplay/widgets/board_intro.dart';
 import 'package:brain_train/features/gameplay/widgets/board_view.dart';
 import 'package:brain_train/features/gameplay/widgets/premium_chrome.dart';
 import 'package:brain_train/features/gameplay/widgets/tile_flight_overlay.dart';
@@ -155,6 +158,7 @@ Future<void> _pumpGame(
   required _Phone phone,
   SavedGame? resume,
   double textScale = 1,
+  _IntroWait intro = _IntroWait.finish,
 }) async {
   tester.view
     ..physicalSize = Size(phone.width * phone.dpr, phone.height * phone.dpr)
@@ -178,7 +182,54 @@ Future<void> _pumpGame(
       ),
     ),
   );
+  if (intro == _IntroWait.start) {
+    // Stop as soon as the intro's first frame is drawn.
+    for (var i = 0; i < 80 && !_introOf(tester).isRunning; i++) {
+      await tester.runAsync(() => Future<void>.delayed(const Duration(milliseconds: 60)));
+      await tester.pump(const Duration(milliseconds: 16));
+    }
+    await tester.pump();
+    return;
+  }
   await _settle(tester);
+  if (intro == _IntroWait.finish) await _finishIntro(tester);
+}
+
+enum _IntroWait {
+  /// Return once the board intro has handed over (most tests).
+  finish,
+
+  /// Return right after the intro starts.
+  start,
+
+  /// Just settle (there may be no intro).
+  none,
+}
+
+/// The game screen's board intro.
+BoardIntroController _introOf(WidgetTester tester) =>
+    tester.widget<BoardIntroOverlay>(find.byType(BoardIntroOverlay)).controller;
+
+/// The game screen's controller (through its board).
+GameController _gameOf(WidgetTester tester) => tester.widget<BoardView>(find.byType(BoardView)).controller;
+
+/// Pumps until the board intro has handed over to the board (big boards
+/// may still be decoding their art, which needs real time).
+Future<void> _finishIntro(WidgetTester tester) async {
+  for (var i = 0; i < 80 && (_introOf(tester).isRunning || _gameOf(tester).introPlaying); i++) {
+    if (!_introOf(tester).isRunning) await tester.runAsync(() => Future<void>.delayed(const Duration(milliseconds: 60)));
+    await tester.pump(const Duration(milliseconds: 100));
+  }
+  expect(_gameOf(tester).introPlaying, isFalse, reason: 'the intro handed over');
+  await tester.pump();
+}
+
+/// Pumps the running intro to [seconds] after its first frame.
+Future<void> _introTo(WidgetTester tester, double seconds) async {
+  final intro = _introOf(tester).intro;
+  if (intro == null) return;
+  final step = ((seconds - intro.seconds) * 1000000).round();
+  if (step > 0) await tester.pump(Duration(microseconds: step));
 }
 
 /// Lets tile bodies, symbol art and foliage decode (real async work).
@@ -190,18 +241,56 @@ Future<void> _settle(WidgetTester tester) async {
   await tester.pump(const Duration(milliseconds: 400));
 }
 
-Future<void> _capture(WidgetTester tester, String name, double dpr) async {
+Future<void> _capture(WidgetTester tester, String name, double dpr, {List<ui.Image>? keep}) async {
   final dir = _captureDir;
   if (dir == null) return;
   await tester.runAsync(() async {
     final boundary = _boundary.currentContext!.findRenderObject()! as RenderRepaintBoundary;
     final image = await boundary.toImage(pixelRatio: dpr);
     final bytes = await image.toByteData(format: ui.ImageByteFormat.png);
-    image.dispose();
+    if (keep != null) {
+      keep.add(image);
+    } else {
+      image.dispose();
+    }
     final file = File('$dir/$name.png');
     await file.parent.create(recursive: true);
     await file.writeAsBytes(bytes!.buffer.asUint8List());
   });
+}
+
+/// Writes [rows] of frames side by side, scaled down, as one PNG.
+Future<void> _writeSheet(WidgetTester tester, String name, List<List<ui.Image>> rows) async {
+  final dir = _captureDir;
+  if (dir == null || rows.every((r) => r.isEmpty)) return;
+  await tester.runAsync(() async {
+    const scale = 0.32, gap = 12.0;
+    final cellWidth = rows.expand((r) => r).map((i) => i.width * scale).reduce(math.max);
+    final cellHeight = rows.expand((r) => r).map((i) => i.height * scale).reduce(math.max);
+    final columns = rows.map((r) => r.length).reduce(math.max);
+    final width = (columns * (cellWidth + gap) + gap).ceil(), height = (rows.length * (cellHeight + gap) + gap).ceil();
+    final recorder = ui.PictureRecorder();
+    final canvas = Canvas(recorder)..drawRect(Rect.fromLTWH(0, 0, width.toDouble(), height.toDouble()), Paint()..color = const Color(0xFF101410));
+    for (final (r, row) in rows.indexed) {
+      for (final (c, image) in row.indexed) {
+        canvas.drawImageRect(
+          image,
+          Rect.fromLTWH(0, 0, image.width.toDouble(), image.height.toDouble()),
+          Rect.fromLTWH(gap + c * (cellWidth + gap), gap + r * (cellHeight + gap), image.width * scale, image.height * scale),
+          Paint()..filterQuality = FilterQuality.medium,
+        );
+      }
+    }
+    final picture = recorder.endRecording();
+    final sheet = await picture.toImage(width, height);
+    picture.dispose();
+    final bytes = await sheet.toByteData(format: ui.ImageByteFormat.png);
+    sheet.dispose();
+    await File('$dir/$name.png').writeAsBytes(bytes!.buffer.asUint8List());
+  });
+  for (final image in rows.expand((r) => r)) {
+    image.dispose();
+  }
 }
 
 /// Top to bottom: the tray just under the status bar, the board, and the
@@ -462,10 +551,10 @@ void main() {
     expect(find.text('Level complete!'), findsOneWidget);
     expect(find.text('Next level'), findsOneWidget);
     expect(find.text('Replay'), findsOneWidget);
-    expect(find.text('All levels'), findsOneWidget);
+    expect(find.text('Completed Levels'), findsOneWidget);
     // The result card sits over the board and leaves the HUD uncovered.
     _expectBottomHud(tester, _large);
-    expect(tester.getRect(find.text('All levels')).bottom, lessThan(tester.getRect(find.byType(PremiumHudFrame)).top));
+    expect(tester.getRect(find.text('Completed Levels')).bottom, lessThan(tester.getRect(find.byType(PremiumHudFrame)).top));
     expect(tester.takeException(), isNull);
     await _capture(tester, 'gameplay_night_411x914_win', _large.dpr);
     await _leave(tester);
@@ -488,7 +577,7 @@ void main() {
       // Exactly two choices; Back stays in the HUD.
       expect(find.text('Revive'), findsOneWidget);
       expect(find.text('Restart'), findsOneWidget);
-      expect(find.text('All levels'), findsNothing);
+      expect(find.text('Completed Levels'), findsNothing);
       expect(find.byTooltip('Back'), findsOneWidget);
       _expectBottomHud(tester, phone);
       expect(tester.getRect(find.text('Restart')).bottom, lessThan(tester.getRect(find.byType(PremiumHudFrame)).top));
@@ -518,6 +607,8 @@ void main() {
     await tester.tap(find.text('Revive'));
     await tester.pump();
     expect(find.text('Tray full'), findsNothing, reason: 'the card goes at once');
+    expect(_gameOf(tester).introPlaying, isFalse, reason: 'a revive does not replay the intro');
+    expect(_introOf(tester).isRunning, isFalse);
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 200));
     // Mid-way: some tiles in the air, the board not yet showing them.
@@ -630,4 +721,166 @@ void main() {
       await _leave(tester);
     });
   }
+
+  group('board intro', () {
+    LevelManifestEntry firstOf(String difficulty) =>
+        snapshot.playableEntries.firstWhere((e) => e.difficulty == difficulty);
+
+    /// Replays the intro from its start (everything already decoded) and
+    /// captures it at 10, 30, 50, 70 and 90% of its length (0.2 ... 1.8 s
+    /// for a 2 s intro) and after the hand-over at its end.
+    Future<List<ui.Image>> sequence(WidgetTester tester, String name) async {
+      final frames = <ui.Image>[];
+      _gameOf(tester).restart();
+      await tester.pump();
+      await tester.pump();
+      expect(_introOf(tester).isRunning, isTrue);
+      final intro = _introOf(tester).intro!;
+      expect(intro.seconds, 0);
+      final total = intro.choreography.total;
+      for (final f in [0.1, 0.3, 0.5, 0.7, 0.9]) {
+        await _introTo(tester, total * f);
+        expect(tester.takeException(), isNull);
+        await _capture(tester, '${name}_t${(total * f).toStringAsFixed(1)}', _large.dpr, keep: frames);
+      }
+      await _introTo(tester, total);
+      await tester.pump();
+      expect(_introOf(tester).isRunning, isFalse, reason: 'handed over to the board');
+      expect(_gameOf(tester).introPlaying, isFalse);
+      await _capture(tester, '${name}_t${total.toStringAsFixed(1)}', _large.dpr, keep: frames);
+      return frames;
+    }
+
+    testWidgets('a contact sheet per mix style, on hard and very hard boards', (tester) async {
+      await start(tester);
+      for (final style in IntroStyle.values) {
+        final entry = snapshot.playableEntries.firstWhere(
+          (e) => (e.difficulty == 'hard' || e.difficulty == 'veryHard') && IntroStyle.forLevel(e.levelId) == style,
+        );
+        await _pumpGame(tester, services: services, entry: entry, phone: _large);
+        expect(_introOf(tester).isRunning, isFalse);
+        final frames = await sequence(tester, 'intro_${style.name}_${entry.levelId}_411x914');
+        await _writeSheet(tester, 'intro_sheet_${style.name}', [frames]);
+        await _leave(tester);
+      }
+    });
+
+    testWidgets('the clock starts after the tier\'s intro: 2.6 s on a hard board', (tester) async {
+      await start(tester);
+      final hard = firstOf('hard');
+      await _pumpGame(tester, services: services, entry: hard, phone: _large);
+      final game = _gameOf(tester);
+      game.restart();
+      await tester.pump();
+      await tester.pump();
+      expect(_introOf(tester).intro!.choreography.total, 2.6);
+      await _introTo(tester, 2.5);
+      expect(game.introPlaying, isTrue, reason: 'longer than an easy intro');
+      expect(game.elapsed, Duration.zero);
+      await _introTo(tester, 2.6);
+      await tester.pump();
+      expect(game.introPlaying, isFalse);
+      // The clock is a real stopwatch: give it real time.
+      await tester.runAsync(() => Future<void>.delayed(const Duration(milliseconds: 30)));
+      expect(game.elapsed, greaterThan(Duration.zero), reason: 'running now');
+      await _leave(tester);
+    });
+
+    testWidgets('frame sequence at 411x914: a very hard level and an easy one', (tester) async {
+      await start(tester);
+      final hard = firstOf('veryHard');
+      await _pumpGame(tester, services: services, entry: hard, phone: _large);
+      expect(snapshot.levels[hard.levelId]!.tiles.length, greaterThan(140));
+      final hardFrames = await sequence(tester, 'intro_${hard.levelId}_411x914');
+      await _leave(tester);
+      final easy = firstOf('easy');
+      await _pumpGame(tester, services: services, entry: easy, phone: _large);
+      final easyFrames = await sequence(tester, 'intro_${easy.levelId}_411x914');
+      await _writeSheet(tester, 'intro_sheet', [hardFrames, easyFrames]);
+      await _leave(tester);
+    });
+
+    testWidgets('taps wait for the intro, the clock starts after it, a restart replays it', (tester) async {
+      await start(tester);
+      await _pumpGame(tester, services: services, entry: meadow, phone: _large);
+      final game = _gameOf(tester);
+      game.restart();
+      await tester.pump();
+      await tester.pump();
+      final level = snapshot.levels[meadow.levelId]!;
+      final engine = _engine(level, snapshot.registry);
+      final id = (engine.state.free.toList()..sort()).first;
+      await _introTo(tester, 1.0);
+      expect(game.elapsed, Duration.zero, reason: 'the intro is not play time');
+      await _tapTile(tester, snapshot, meadow, const [], id);
+      await tester.pump();
+      expect(game.state.moveCount, 0, reason: 'taps are ignored during the intro');
+      expect(find.bySemanticsLabel('Tray, 0 of 4 tiles'), findsOneWidget);
+      // A restart mid-intro starts it again.
+      final serial = game.introSerial;
+      game.restart();
+      await tester.pump();
+      await tester.pump();
+      expect(game.introSerial, isNot(serial));
+      expect(_introOf(tester).intro!.seconds, 0);
+      await _introTo(tester, _introOf(tester).intro!.choreography.total);
+      await tester.pump();
+      expect(game.introPlaying, isFalse);
+      await _tapTile(tester, snapshot, meadow, const [], id);
+      await _settle(tester);
+      expect(_inTray(id), findsOneWidget, reason: 'play is on after the intro');
+      expect(game.elapsed, greaterThan(Duration.zero));
+      expect(tester.takeException(), isNull);
+      await _leave(tester);
+    });
+
+    testWidgets('a resumed game: only board tiles fly, the tray shows its tiles at once', (tester) async {
+      await start(tester);
+      final (save, _) = _nearlyFull(snapshot, meadow);
+      await _pumpGame(tester, services: services, entry: meadow, phone: _large, resume: save, intro: _IntroWait.start);
+      final game = _gameOf(tester);
+      final intro = _introOf(tester).intro!;
+      expect(intro.tiles.length, game.state.remaining.length);
+      expect(intro.tiles.toSet().intersection({for (final id in game.state.tray) game.engine.indexOf(id)!}), isEmpty);
+      for (var i = 0; i < 5; i++) {
+        await tester.runAsync(() => Future<void>.delayed(const Duration(milliseconds: 60)));
+        await tester.pump(const Duration(milliseconds: 16));
+      }
+      for (final id in game.state.tray) {
+        expect(_inTray(id), findsOneWidget, reason: 'restored tray tiles just appear');
+      }
+      expect(game.elapsed, Duration(milliseconds: save.elapsedMs), reason: 'held at the saved time');
+      await _finishIntro(tester);
+      expect(tester.takeException(), isNull);
+      await _leave(tester);
+    });
+
+    testWidgets('leaving during the intro frees it cleanly', (tester) async {
+      await start(tester);
+      await _pumpGame(tester, services: services, entry: firstOf('veryHard'), phone: _large, intro: _IntroWait.start);
+      final intro = _introOf(tester).intro!;
+      await _introTo(tester, 0.5);
+      await _leave(tester);
+      expect(intro.isDisposed, isTrue);
+      expect(intro.atlas.image.debugDisposed, isTrue);
+      expect(tester.takeException(), isNull);
+      expect(tester.binding.hasScheduledFrame, isFalse);
+    });
+
+    testWidgets('with reduced motion there is no intro', (tester) async {
+      await start(tester);
+      tester.platformDispatcher.accessibilityFeaturesTestValue = const FakeAccessibilityFeatures(disableAnimations: true);
+      addTearDown(tester.platformDispatcher.clearAccessibilityFeaturesTestValue);
+      await _pumpGame(tester, services: services, entry: meadow, phone: _large, intro: _IntroWait.none);
+      final game = _gameOf(tester);
+      expect(game.introPlaying, isFalse);
+      expect(_introOf(tester).isRunning, isFalse);
+      final level = snapshot.levels[meadow.levelId]!;
+      final id = (_engine(level, snapshot.registry).state.free.toList()..sort()).first;
+      await _tapTile(tester, snapshot, meadow, const [], id);
+      await _settle(tester);
+      expect(_inTray(id), findsOneWidget);
+      await _leave(tester);
+    });
+  });
 }

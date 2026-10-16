@@ -39,7 +39,7 @@ dart run tool/smoke_remote.dart         # live check: app's content client vs pr
   `gameplay/` (`game_controller.dart` glues engine + UI; `widgets/premium_chrome.dart` HUD, felt
   backdrop, dialogs; `widgets/tray_view.dart` tray + `TrayController`; `widgets/tile_flight_overlay.dart`
   board↔tray flights + `TrayFlightDirector`; `widgets/tile_shatter.dart` match strike + shards;
-  `widgets/tile_art.dart` single-tile art); `common/` shared lobby chrome, `PremiumMahjongTile`,
+  `widgets/tile_art.dart` single-tile art; `widgets/board_intro.dart` level-start intro); `common/` shared lobby chrome, `PremiumMahjongTile`,
   lobby background + fireflies; `intro/` studio video + logo screen.
 - `lib/app/` — `AppServices` (wiring), `AppScope` (above `MaterialApp`), `theme.dart`
   (`BrainTrainPalette.night`, `LobbyTheme.night`), `brand.dart` (serif display font, gold),
@@ -79,6 +79,15 @@ dart run tool/smoke_remote.dart         # live check: app's content client vs pr
   drawn with `drawVertices` + `ImageShader`, ticks only while running); match/win sound plays at impact
   (`GameController.pairImpact`). The tray draws animated symbols through its own `SymbolFrameAtlas`; result
   cards wait until flights, the tray and shatters are still.
+- Level intro (`widgets/board_intro.dart`): every game start (new, Restart, resumed save; not Revive; skipped with
+  reduce-motion) flies the board tiles in from all four sides, mixes them, then settles them by layer onto the
+  board. Length by tier (`IntroTiming`: easy 2.0 s, medium 2.3, hard 2.6, very hard 3.0; by tile count without a
+  tier); fly-in always 0.8 s, the extra time goes to the mix and a calmer settle; mix style per level
+  (`IntroStyle.forLevel`: swirl / figure-8 weave / spiral / row waves; neighbouring level numbers differ),
+  seeded by level id. `GameController(playIntro: true)` blocks taps and holds the clock until `endIntro()`; the
+  board paints nothing meanwhile (`BoardPainter.hidden`). The overlay draws every tile with one `drawRawAtlas`
+  from a `BoardSpriteAtlas` (the board's own tile drawing, rendered once, disposed at the end); the last 50 ms
+  are exactly the board, so the hand-over has no jump. Ticks only while it runs.
 - Published object keys are immutable. Levels and the registry are content-addressed
   (`levels/level-0001-<sha12>.json`, `registries/symbols-<sha12>.json`): changed bytes get a new key by
   themselves, unchanged ones keep theirs. `tool/content.dart build` and `tool/publish.dart` refuse to overwrite
@@ -144,7 +153,10 @@ dart run tool/smoke_remote.dart         # live check: app's content client vs pr
 - "Completed Levels" screen (`level_select_screen.dart`, owner): a panel with the next level to play (title, tier,
   size, tray; Play/Continue) and below it ONLY the completed levels, in order, as a lazy list to replay from
   (one row each: number, title, tier badge, tiles, best time, date-time of that best win). Replays keep the
-  fastest time and its date (`ProgressRepository.recordWin`). No list of all levels and no locked cells; an empty message before the first win.
+  fastest time and its date (`ProgressRepository.recordWin`).
+- All levels won (owner): `AllLevelsCompleteNote` ("All N levels complete! New levels are coming soon.") in the
+  lobby (Play becomes "Replay · Level N") and in place of the next-level panel on Completed Levels; the last
+  level's win card says so instead of "Next level". No list of all levels and no locked cells; an empty message before the first win.
   Tray UI lays out 4 or 5 wells.
 - Static art pipeline: `art/asset_sources.json` → `python3 tool/assets/prepare_symbols.py` → `content/brain-train/symbols/v4/`.
   Animated: `art/animated_sources.json` → `python3 tool/assets/prepare_animated.py` → `content/brain-train/animated-symbols/`.

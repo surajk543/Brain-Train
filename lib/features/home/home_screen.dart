@@ -6,8 +6,9 @@ import '../../app/app_services.dart';
 import '../../app/theme.dart';
 import '../../content/level_manifest.dart';
 import '../../data/progress_repository.dart';
+import '../common/all_levels_complete_note.dart';
 import '../common/lobby_background.dart';
-import '../gameplay/game_screen.dart';
+import '../levels/level_loader.dart';
 import '../levels/level_select_screen.dart';
 import '../settings/settings_screen.dart';
 import 'widgets/lobby_buttons.dart';
@@ -25,7 +26,8 @@ class HomeScreen extends StatefulWidget {
     if (saved == null) return null;
     final entry = services.content.snapshot.manifest.entry(saved.levelId);
     if (entry == null || entry.ref.url != saved.levelUrl) return null;
-    if (!services.content.snapshot.levels.containsKey(entry.levelId)) return null;
+    // Resumable even when its file is not on the device yet: the loader gets it.
+    if (services.content.snapshot.levelErrors.containsKey(entry.levelId)) return null;
     return (entry, saved);
   }
 
@@ -36,10 +38,20 @@ class HomeScreen extends StatefulWidget {
     return entries.firstWhere((e) => !completed.containsKey(e.levelId), orElse: () => entries.last);
   }
 
-  /// "Continue · Level N" for a resumable game, else "Play · Level N".
+  /// Whether every playable level has been won (owner: then say new levels
+  /// are coming soon).
+  static bool allCompleted(AppServices services) {
+    final entries = services.content.snapshot.playableEntries;
+    final completed = services.progress.completed();
+    return entries.isNotEmpty && entries.every((e) => completed.containsKey(e.levelId));
+  }
+
+  /// "Continue · Level N" for a resumable game, else "Play · Level N"
+  /// ("Replay · Level N" once every level is won).
   static String playLabel(AppServices services) {
     final resume = resumable(services);
-    return resume != null ? 'Continue · Level ${resume.$1.order}' : 'Play · Level ${nextLevel(services).order}';
+    if (resume != null) return 'Continue · Level ${resume.$1.order}';
+    return '${allCompleted(services) ? 'Replay' : 'Play'} · Level ${nextLevel(services).order}';
   }
 
   @override
@@ -63,10 +75,11 @@ class _HomeScreenState extends State<HomeScreen> {
 
   void _play(AppServices services) {
     // Resolved at tap time, so it always matches the latest progress/content.
-    final snapshot = services.content.snapshot;
     final resume = HomeScreen.resumable(services);
     final entry = resume?.$1 ?? HomeScreen.nextLevel(services);
-    _open((_) => GameScreen(snapshot: snapshot, entry: entry, resume: resume?.$2));
+    // Straight into the game when the level is on the device, else it is
+    // downloaded first.
+    _open((_) => LevelLoaderScreen(entry: entry, resume: resume?.$2));
   }
 
   @override
@@ -118,6 +131,13 @@ class _HomeScreenState extends State<HomeScreen> {
                 const Spacer(flex: 2),
                 LobbyTagline(width: taglineWidth, fontSize: taglineSize),
                 SizedBox(height: h * 0.065),
+                if (HomeScreen.allCompleted(services) && HomeScreen.resumable(services) == null) ...[
+                  SizedBox(
+                    width: buttonWidth,
+                    child: AllLevelsCompleteNote(levelCount: services.content.snapshot.playableEntries.length),
+                  ),
+                  SizedBox(height: gap * 1.25),
+                ],
                 SizedBox(
                   width: buttonWidth,
                   child: LobbyPrimaryButton(

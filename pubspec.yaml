@@ -66,8 +66,8 @@ flutter:
   # the material Icons class.
   uses-material-design: true
 
-  # Bundled fallback content: a fresh install can play with no network.
-  # Mirrors the R2 keys under brain-train/ (see docs/CONTENT_PUBLISHING.md).
+  # Bundled starter content: a fresh install can play levels 1-5 with no
+  # network. Mirrors the R2 keys under brain-train/ (see docs/CONTENT_PUBLISHING.md).
   assets:
     - assets/video/sun_game_studio_intro.mp4
     - assets/branding/brain_train_logo.jpg
@@ -76,12 +76,14 @@ flutter:
     - assets/music/
     - assets/decor/
     - assets/lobby/
-    - content/brain-train/manifest.json
-    - content/brain-train/registries/
-    - content/brain-train/levels/
-    - content/brain-train/symbols/v4/
-    # Animated (Lottie JSON) symbols; see tool/assets/prepare_animated.py.
-    - content/brain-train/animated-symbols/
+    # Starter pack only (written by `dart run tool/content.dart build`): the
+    # manifest and registry (metadata of every level), levels 1-5 and only
+    # the art they use. Everything else is downloaded from R2 on demand.
+    - content/starter/manifest.json
+    - content/starter/registries/
+    - content/starter/levels/
+    - content/starter/symbols/v4/
+    - content/starter/animated-symbols/
 
   # To add assets to your application, add an assets section, like this:
   # assets:

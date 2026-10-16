@@ -163,6 +163,18 @@ void main() {
     await tester.pump(const Duration(milliseconds: 500));
     await _leave(tester);
   });
+
+  testWidgets('every level won: a "new levels are coming soon" note instead of the next level', (tester) async {
+    final services = await _start(tester, won: 200);
+    await pumpLobby(tester, services: services, home: const LevelSelectScreen(), phone: smallPhone);
+    expect(tester.takeException(), isNull);
+    expect(find.text('All 200 levels complete!'), findsOneWidget);
+    expect(find.text('New levels are coming soon. Stay tuned!'), findsOneWidget);
+    expect(find.bySemanticsLabel(RegExp(r'^(Play|Continue|Replay) level ')), findsNothing);
+    expect(find.bySemanticsLabel(RegExp(r'^Level 1, .*, completed, ')), findsOneWidget);
+    await captureLobby(tester, 'levels-all-complete-360x640', smallPhone.dpr);
+    await _leave(tester);
+  });
 }
 
 LevelManifestEntry _entry(int i) => LevelManifestEntry(

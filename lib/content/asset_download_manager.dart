@@ -40,6 +40,10 @@ class AssetDownloadManager implements ContentSource {
   /// Objects copied from [seed] instead of downloaded. For tests and logs.
   int seededObjects = 0;
 
+  /// Bytes and paths fetched from the network so far. For tests and logs.
+  int downloadedBytes = 0;
+  final List<String> downloadedPaths = [];
+
   ContentConfig get config => fetcher.config;
 
   @override
@@ -93,6 +97,8 @@ class AssetDownloadManager implements ContentSource {
         break;
     }
     await cache.writeObject(path, bytes);
+    downloadedBytes += bytes.length;
+    downloadedPaths.add(path);
     return bytes;
   }
 

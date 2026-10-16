@@ -51,17 +51,22 @@ void main() {
     sounds = _RecordingSounds(settings);
   });
 
-  GameController controllerFor({LevelDefinition? on, SavedGame? resume, Duration delay = Duration.zero}) =>
-      GameController(
-        entry: entry,
-        level: on ?? board,
-        registry: reg,
-        progress: progress,
-        settings: settings,
-        sounds: sounds,
-        resume: resume,
-        arrivalFeedbackDelay: delay,
-      );
+  GameController controllerFor({
+    LevelDefinition? on,
+    SavedGame? resume,
+    Duration delay = Duration.zero,
+    bool intro = false,
+  }) => GameController(
+    entry: entry,
+    level: on ?? board,
+    registry: reg,
+    progress: progress,
+    settings: settings,
+    sounds: sounds,
+    resume: resume,
+    arrivalFeedbackDelay: delay,
+    playIntro: intro,
+  );
 
   /// Taps [ids] and returns the events they emitted.
   Future<List<BoardEvent>> tap(GameController controller, List<String> ids) async {
@@ -280,6 +285,72 @@ void main() {
     await Future<void>.delayed(Duration.zero);
     expect(progress.savedGame(), isNull);
     controller.dispose();
+  });
+
+  group('board intro', () {
+    test('taps are ignored and the clock waits until the intro ends', () async {
+      final controller = controllerFor(intro: true);
+      expect(controller.introPlaying, isTrue);
+      expect(await tap(controller, ['a1']), isEmpty);
+      expect(controller.state.moveCount, 0);
+      expect(sounds.played, isEmpty);
+      await Future<void>.delayed(const Duration(milliseconds: 20));
+      expect(controller.elapsed, Duration.zero, reason: 'no time counted during the intro');
+      controller.pauseClock();
+      controller.resumeClock();
+      expect(controller.elapsed, Duration.zero, reason: 'coming back to the app does not start it either');
+      controller.endIntro();
+      expect(controller.introPlaying, isFalse);
+      await Future<void>.delayed(const Duration(milliseconds: 20));
+      expect(controller.elapsed, greaterThan(Duration.zero));
+      expect(await tap(controller, ['a1']), hasLength(1));
+      controller
+        ..introLayerLanded()
+        ..dispose();
+      expect(sounds.played.last, Sfx.select, reason: 'one soft tick per landed layer');
+    });
+
+    test('plays again on restart (a new serial), not on revive', () async {
+      final controller = controllerFor(intro: true);
+      final first = controller.introSerial;
+      controller.endIntro();
+      await tap(controller, ['a1', 'b1', 'c1', 'd1']);
+      expect(controller.state.status, GameStatus.trayFull);
+      expect(controller.revive(), isTrue);
+      expect(controller.introPlaying, isFalse, reason: 'revive goes straight back to play');
+      controller.restart();
+      expect(controller.introPlaying, isTrue);
+      expect(controller.introSerial, isNot(first));
+      expect(controller.elapsed, Duration.zero);
+      expect(await tap(controller, ['a1']), isEmpty);
+      // A restart during the intro restarts it.
+      final second = controller.introSerial;
+      controller.restart();
+      expect(controller.introSerial, isNot(second));
+      controller.dispose();
+    });
+
+    test('a resumed game plays it, with its clock held at the saved time', () async {
+      final resumed = controllerFor(
+        intro: true,
+        resume: SavedGame(levelId: 'test-level', levelUrl: entry.ref.url, history: ['a1', 'b1'], elapsedMs: 5000),
+      );
+      expect(resumed.introPlaying, isTrue);
+      expect(resumed.state.tray, ['a1', 'b1']);
+      await Future<void>.delayed(const Duration(milliseconds: 20));
+      expect(resumed.elapsed, const Duration(seconds: 5));
+      resumed.endIntro();
+      await Future<void>.delayed(const Duration(milliseconds: 20));
+      expect(resumed.elapsed, greaterThan(const Duration(seconds: 5)));
+      resumed.dispose();
+    });
+
+    test('without it (reduced motion, tests) play starts at once', () async {
+      final controller = controllerFor();
+      expect(controller.introPlaying, isFalse);
+      expect(await tap(controller, ['a1']), hasLength(1));
+      controller.dispose();
+    });
   });
 
   test('a save resumes board, tray and clock; a save that no longer replays starts over', () async {

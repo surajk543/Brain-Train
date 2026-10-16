@@ -57,6 +57,7 @@ class LevelManifestEntry {
     this.difficulty,
     this.category,
     this.tileCount,
+    this.trayCapacity,
   });
 
   factory LevelManifestEntry.fromJson(JsonReader json) => LevelManifestEntry(
@@ -67,6 +68,7 @@ class LevelManifestEntry {
     difficulty: json.optString('difficulty'),
     category: json.optString('category'),
     tileCount: json.optInt('tileCount'),
+    trayCapacity: json.optInt('trayCapacity'),
   );
 
   final String levelId;
@@ -77,6 +79,23 @@ class LevelManifestEntry {
   final String? category;
   final int? tileCount;
 
+  /// The level's `rules.trayCapacity`, so lists and panels never need the
+  /// level file. Null in manifests older than 2026.10.16.9 (then 4).
+  final int? trayCapacity;
+
+  /// This entry pointing at another file of the same level (an older
+  /// version still on the device).
+  LevelManifestEntry withRef(ContentRef other) => LevelManifestEntry(
+    levelId: levelId,
+    order: order,
+    title: title,
+    ref: other,
+    difficulty: difficulty,
+    category: category,
+    tileCount: tileCount,
+    trayCapacity: trayCapacity,
+  );
+
   Map<String, Object?> toJson() => {
     'levelId': levelId,
     'order': order,
@@ -85,6 +104,7 @@ class LevelManifestEntry {
     if (difficulty != null) 'difficulty': difficulty,
     if (category != null) 'category': category,
     if (tileCount != null) 'tileCount': tileCount,
+    if (trayCapacity != null) 'trayCapacity': trayCapacity,
   };
 }
 

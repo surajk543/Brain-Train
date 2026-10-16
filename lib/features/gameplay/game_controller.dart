@@ -264,7 +264,10 @@ class GameController extends ChangeNotifier {
     _cancelFeedback();
     _pendingImpacts = 0;
     _baseElapsed = Duration.zero;
-    _stopwatch.reset();
+    // reset() alone keeps a running watch running.
+    _stopwatch
+      ..stop()
+      ..reset();
     if (playIntro) {
       // The new game opens with its intro; the clock starts after it.
       _introPlaying = true;

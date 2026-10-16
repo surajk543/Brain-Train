@@ -76,13 +76,15 @@ void main() {
       expect(HomeScreen.playLabel(services), 'Play · Level 1');
     });
 
-    test('with every level won, Play offers the last level', () async {
+    test('with every level won, Play offers a replay of the last level', () async {
       final services = await testServices();
+      expect(HomeScreen.allCompleted(services), isFalse);
       for (final entry in services.content.snapshot.playableEntries) {
         await services.progress.recordWin(entry.levelId, moves: 10, timeMs: 1000);
       }
       final last = services.content.snapshot.playableEntries.last;
-      expect(HomeScreen.playLabel(services), 'Play · Level ${last.order}');
+      expect(HomeScreen.allCompleted(services), isTrue);
+      expect(HomeScreen.playLabel(services), 'Replay · Level ${last.order}');
     });
   });
 
@@ -137,6 +139,22 @@ void main() {
     await tester.runAsync(() => services.progress.saveGame(_savedOn(services, 0)));
     await tester.pump();
     expect(find.text('Continue · Level 1'), findsOneWidget);
+    await _leave(tester);
+  });
+
+  testWidgets('every level won: the lobby says new levels are coming soon', (tester) async {
+    final services = await _start(tester, (services) async {
+      for (final entry in services.content.snapshot.playableEntries) {
+        await services.progress.recordWin(entry.levelId, moves: 10, timeMs: 1000);
+      }
+    });
+    await pumpLobby(tester, services: services, home: const HomeScreen(), phone: smallPhone);
+    final count = services.content.snapshot.playableEntries.length;
+    expect(find.text('All $count levels complete!'), findsOneWidget);
+    expect(find.text('New levels are coming soon. Stay tuned!'), findsOneWidget);
+    expect(find.text('Replay · Level $count'), findsOneWidget);
+    expect(tester.takeException(), isNull, reason: 'fits a small phone');
+    await captureLobby(tester, 'home-all-complete-360x640', smallPhone.dpr);
     await _leave(tester);
   });
 

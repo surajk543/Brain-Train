@@ -1,6 +1,7 @@
 import 'package:crypto/crypto.dart';
 
 import '../game_engine/models/level_definition.dart';
+import '../game_engine/models/level_rules.dart';
 import '../game_engine/models/symbol_definition.dart';
 import '../game_engine/models/symbol_registry.dart';
 import '../game_engine/validation/level_validator.dart';
@@ -43,6 +44,9 @@ class ContentValidator {
     for (final level in manifest.levels) {
       if (!ids.add(level.levelId)) error('duplicate_level', 'level ${level.levelId} is listed twice');
       if (!orders.add(level.order)) error('duplicate_order', 'order ${level.order} is used twice');
+      if (level.trayCapacity != null && !kAllowedTrayCapacities.contains(level.trayCapacity)) {
+        error('invalid_tray_capacity', '${level.levelId} trayCapacity ${level.trayCapacity} is not supported');
+      }
       _checkRef(level.ref.url, level.ref.sha256, ContentKind.json, level.levelId, error);
     }
     return errors;

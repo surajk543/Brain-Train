@@ -43,10 +43,13 @@ class KnownGoodRecord {
   final DateTime savedAt;
 }
 
-/// Persistent cache of immutable content objects plus the known-good pointer.
+/// Persistent cache of immutable content objects plus the known-good pointer
+/// and the index of ready levels.
 ///
-/// Objects are addressed by their content path, which is versioned
-/// (`levels/level-0001-v1.json`), so a cached object never goes stale.
+/// Objects are addressed by their content path, which is content-addressed
+/// or versioned (`levels/level-0001-<sha>.json`), so a cached object never
+/// goes stale. Nothing is ever evicted: levels and art a player has had stay
+/// playable offline.
 class ContentCache {
   ContentCache(this.store);
 
@@ -98,19 +101,49 @@ class ContentCache {
     })),
   );
 
-  /// Deletes every cached object not in [keepPaths] and returns how many
-  /// were removed. Versioned paths are never reused, so an object the current
-  /// content does not reference can only waste space. This bounds the cache
-  /// to roughly one content version.
-  Future<int> prune({required Set<String> keepPaths}) async {
-    final sizes = await store.sizes();
-    var removed = 0;
-    for (final key in sizes.keys) {
-      if (!key.startsWith('objects/')) continue;
-      if (keepPaths.contains(key.substring('objects/'.length))) continue;
-      await store.delete(key);
-      removed++;
+  /// The cached file of each level the device can play: its level file and
+  /// the registry that resolves its symbols, by level id. A level is
+  /// recorded once its file and all its art are cached, and only replaced by
+  /// a newer file of the same level once that one is cached too, so a level
+  /// that was ever ready stays playable offline across content updates.
+  Future<Map<String, CachedLevel>> readLevelIndex() async {
+    final bytes = await store.read(_levelIndexKey);
+    if (bytes == null) return {};
+    try {
+      final json = jsonDecode(utf8.decode(bytes)) as Map<String, Object?>;
+      return {
+        for (final MapEntry(key: id, value: raw) in json.entries) id: CachedLevel.fromJson(raw! as Map<String, Object?>),
+      };
+    } on Object {
+      // A corrupt index only costs the offline fallback; it is rebuilt.
+      return {};
     }
-    return removed;
   }
+
+  Future<void> writeLevelIndex(Map<String, CachedLevel> index) => store.write(
+    _levelIndexKey,
+    utf8.encode(jsonEncode({for (final MapEntry(key: id, value: level) in index.entries) id: level.toJson()})),
+  );
+
+  static const String _levelIndexKey = 'state/levels.json';
+}
+
+/// Where a ready level's files are in the cache.
+class CachedLevel {
+  const CachedLevel({required this.level, required this.registry});
+
+  factory CachedLevel.fromJson(Map<String, Object?> json) => CachedLevel(
+    level: (url: json['url']! as String, sha256: json['sha256'] as String?),
+    registry: (url: json['registry']! as String, sha256: json['registrySha256'] as String?),
+  );
+
+  final ({String url, String? sha256}) level;
+  final ({String url, String? sha256}) registry;
+
+  Map<String, Object?> toJson() => {
+    'url': level.url,
+    'sha256': ?level.sha256,
+    'registry': registry.url,
+    'registrySha256': ?registry.sha256,
+  };
 }

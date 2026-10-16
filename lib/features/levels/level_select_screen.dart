@@ -8,12 +8,15 @@ import '../../app/theme.dart';
 import '../../content/content_snapshot.dart';
 import '../../content/level_manifest.dart';
 import '../../data/progress_repository.dart';
+import '../common/all_levels_complete_note.dart';
 import '../common/lobby_background.dart';
 import '../common/lobby_chrome.dart';
 import '../common/static_layer.dart';
-import '../gameplay/game_screen.dart';
+import '../gameplay/game_screen.dart' show formatDuration;
+import '../../game_engine/models/level_rules.dart';
 import '../home/home_screen.dart';
 import 'difficulty_style.dart';
+import 'level_loader.dart';
 
 enum LevelState { open, inProgress, completed, locked }
 
@@ -74,8 +77,9 @@ class _LevelSelectScreenState extends State<LevelSelectScreen> {
     }
   }
 
+  // Downloads the level first when it is not on the device.
   void _play(ContentSnapshot snapshot, LevelManifestEntry entry, SavedGame? resume) =>
-      _open((_) => GameScreen(snapshot: snapshot, entry: entry, resume: resume));
+      _open((_) => LevelLoaderScreen(entry: entry, resume: resume));
 
   @override
   Widget build(BuildContext context) {
@@ -107,15 +111,20 @@ class _LevelSelectScreenState extends State<LevelSelectScreen> {
                   constraints: const BoxConstraints(maxWidth: 560),
                   child: Column(
                     children: [
-                      if (entries.isNotEmpty)
+                      if (entries.isNotEmpty && done.length == entries.length)
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(_padding, 8, _padding, 6),
+                          child: AllLevelsCompleteNote(levelCount: entries.length),
+                        )
+                      else if (entries.isNotEmpty)
                         Padding(
                           padding: const EdgeInsets.fromLTRB(_padding, 8, _padding, 6),
                           child: _FocusPanel(
                             entry: entries[focus],
                             state: states[focus],
-                            tileCount:
-                                entries[focus].tileCount ?? snapshot.levels[entries[focus].levelId]!.tiles.length,
-                            trayCapacity: snapshot.levels[entries[focus].levelId]!.rules.trayCapacity,
+                            // Manifest metadata: the level file may not be on the device.
+                            tileCount: entries[focus].tileCount ?? 0,
+                            trayCapacity: entries[focus].trayCapacity ?? kDefaultTrayCapacity,
                             won: completed.length,
                             total: entries.length,
                             onTap: () => _play(
@@ -142,7 +151,7 @@ class _LevelSelectScreenState extends State<LevelSelectScreen> {
                                       key: ValueKey(entry.levelId),
                                       entry: entry,
                                       record: completed[entry.levelId]!,
-                                      tileCount: entry.tileCount ?? snapshot.levels[entry.levelId]!.tiles.length,
+                                      tileCount: entry.tileCount ?? 0,
                                       onTap: () => _play(snapshot, entry, null),
                                     ),
                                   );

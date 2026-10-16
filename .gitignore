@@ -54,3 +54,8 @@ app.*.map.json
 # Python tooling
 __pycache__/
 .venv/
+
+# Generated, published content tree (dart run tool/content.dart build): R2 is
+# its home (tool/publish.dart uploads it). Only the starter pack the app
+# bundles, content/starter/, is committed.
+/content/brain-train/
