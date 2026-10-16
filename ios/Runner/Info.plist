@@ -25,9 +25,9 @@
 	<key>CFBundleVersion</key>
 	<string>$(FLUTTER_BUILD_NUMBER)</string>
 	<key>BrainTrainRewardedAdUnitId</key>
-	<string>ca-app-pub-3940256099942544/1712485313</string>
+	<string>ca-app-pub-6766349950907943/7563920896</string>
 	<key>GADApplicationIdentifier</key>
-	<string>ca-app-pub-3940256099942544~1458002511</string>
+	<string>ca-app-pub-6766349950907943~6846744759</string>
 	<key>NSUserTrackingUsageDescription</key>
 	<string>Allow tracking so the short video you choose to watch for a revive can be more relevant to you.</string>
 	<key>GADDelayAppMeasurementInit</key>

@@ -292,7 +292,7 @@ dart run tool/smoke_remote.dart         # live check: app's content client vs pr
 - Not yet integrated: 4 IconScout AI images (spring rolls ×2, salad, nachos) — not reachable via the IconScout API.
 - Tray mechanic is integrated (tray at the top, flights, strike-and-shatter matches, Tray full card with
   Revive / Restart), with 2 to 5 slots per level.
-- App version 1.0.0+5 (2026-10-17): new content host, update popup, iOS release settings. 1.0.0+4 (`feat/rewarded-ads`, merged into `feat/campaign-v2`): rewarded ads on Revive, age screen,
+- App version 1.0.0+6 (2026-10-17): real AdMob IDs. 1.0.0+5: new content host, update popup, iOS release settings. 1.0.0+4 (`feat/rewarded-ads`, merged into `feat/campaign-v2`): rewarded ads on Revive, age screen,
   Privacy choices row, built with Google's AdMob test IDs (`google_mobile_ads` 9.1.0). This bundle (66.7 MB AAB,
   19.2 MB install) is the Closed testing - Alpha release in the Play Console.
 - Play Store listing (owner-approved): texts in `art/store/listing-en-US.md`, `art/store/icon-512.png`,
@@ -355,6 +355,10 @@ dart run tool/smoke_remote.dart         # live check: app's content client vs pr
   testers = Google Group sungamestudiotesters@googlegroups.com, feedback contact@sungamestudio.com. Its 16 changes sit
   in Publishing overview, not yet sent for review (owner decides; Google Play Games on PC is opted in by default).
   Production needs 12+ opted-in testers for 14 days, then real AdMob IDs.
+- AdMob (2026-10-17): account ca-app-pub-6766349950907943 (under review; apps "Brain Train - Tile Match" show limited
+  ad serving until linked to a published store listing). iOS app `~6846744759`, rewarded "Revive" unit `/7563920896`
+  (in `ios/Runner/Info.plist`); Android app `~8517909911`, rewarded "Revive" unit `/5905943038` (in gitignored
+  `android/admob.properties` on the Linux machine; copy it to another machine like `key.properties`).
 - Open work (ads, docs/ADS.md "Owner setup"): AdMob account, app and "Revive" rewarded unit → real IDs in
   `android/admob.properties` and `ios/Runner/Info.plist`; app-ads.txt on sungamestudio.com; AdMob Families /
   mixed-audience settings and a published GDPR consent message; Play Console Ads, Advertising ID, Target audience and
