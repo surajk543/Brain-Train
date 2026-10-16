@@ -17,6 +17,7 @@ import '../../common/frosted_glass.dart';
 import '../../common/static_layer.dart';
 import 'tile_art.dart';
 import 'tile_shatter.dart';
+import '../../../app/tablet_scale.dart';
 
 enum TrayItemPhase {
   /// Flying in from the board: its slot is reserved but drawn empty.
@@ -352,7 +353,7 @@ class TrayViewState extends State<TrayView> with TickerProviderStateMixin {
     final box = context.findRenderObject() as RenderBox?;
     if (layout == null || box == null || !box.hasSize || !box.attached) return null;
     final face = layout.faces[index.clamp(0, layout.faces.length - 1)];
-    return MatrixUtils.transformRect(box.getTransformTo(null), face);
+    return MatrixUtils.transformRect(box.getTransformTo(TabletScale.canvasAbove(box)), face);
   }
 
   /// Global rect of the face where [tileId] sits (or is about to land) in

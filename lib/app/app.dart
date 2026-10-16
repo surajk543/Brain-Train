@@ -7,6 +7,7 @@ import '../features/intro/age_screen.dart';
 import '../features/intro/brand_logo_screen.dart';
 import '../features/intro/intro_video_screen.dart';
 import 'app_services.dart';
+import 'tablet_scale.dart';
 import 'theme.dart';
 
 /// Launch sequence: Sun Game Studio video, then the Brain Train logo (at
@@ -75,6 +76,8 @@ class _BrainTrainAppState extends State<BrainTrainApp> {
     darkTheme: _theme,
     themeMode: ThemeMode.dark,
     home: home,
+    // Tablets: the whole UI on a 600-px canvas scaled to the screen.
+    builder: (context, child) => TabletScale(child: child ?? const SizedBox.shrink()),
   );
 
   @override

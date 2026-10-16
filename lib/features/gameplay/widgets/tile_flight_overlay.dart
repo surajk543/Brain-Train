@@ -10,6 +10,7 @@ import '../game_controller.dart';
 import 'tile_art.dart';
 import 'tile_shatter.dart';
 import 'tray_view.dart';
+import '../../../app/tablet_scale.dart';
 
 /// How long a tile takes to fly from the board to its tray slot.
 const Duration kTileFlightDuration = Duration(milliseconds: 320);
@@ -280,7 +281,7 @@ class _TileFlightOverlayState extends State<TileFlightOverlay> with SingleTicker
 
   Offset _origin() {
     final box = context.findRenderObject() as RenderBox?;
-    return box == null || !box.hasSize ? Offset.zero : box.localToGlobal(Offset.zero);
+    return box == null || !box.hasSize ? Offset.zero : box.localToGlobal(Offset.zero, ancestor: TabletScale.canvasAbove(box));
   }
 
   @override

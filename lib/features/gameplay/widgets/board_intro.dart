@@ -7,6 +7,7 @@ import 'package:flutter/scheduler.dart';
 import '../../../game_engine/campaign/campaign_config.dart';
 import '../../../game_engine/geometry/board_projection.dart';
 import '../../../rendering/board_renderer.dart';
+import '../../../app/tablet_scale.dart';
 
 /// How a level's intro mixes its tiles between flying in and settling.
 enum IntroStyle {
@@ -489,7 +490,7 @@ class _BoardIntroOverlayState extends State<BoardIntroOverlay> with SingleTicker
 
   Offset _origin() {
     final box = context.findRenderObject() as RenderBox?;
-    return box == null || !box.hasSize ? Offset.zero : box.localToGlobal(Offset.zero);
+    return box == null || !box.hasSize ? Offset.zero : box.localToGlobal(Offset.zero, ancestor: TabletScale.canvasAbove(box));
   }
 
   @override

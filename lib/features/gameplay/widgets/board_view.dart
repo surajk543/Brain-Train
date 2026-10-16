@@ -15,6 +15,7 @@ import '../../../rendering/tile_style.dart';
 import '../game_controller.dart';
 import 'board_intro.dart';
 import 'tile_art.dart';
+import '../../../app/tablet_scale.dart';
 
 /// How [BoardView] lays out [level] in a viewport of [size]: the board fills
 /// the area edge to edge (a small margin for shadows), centred.
@@ -276,7 +277,7 @@ class BoardViewState extends State<BoardView> with SingleTickerProviderStateMixi
     final projection = _projection;
     final box = context.findRenderObject();
     if (projection == null || box is! RenderBox || !box.hasSize || !box.attached) return null;
-    return (projection: projection, transform: box.getTransformTo(null));
+    return (projection: projection, transform: box.getTransformTo(TabletScale.canvasAbove(box)));
   }
 
   /// The board's tile art (tile body and symbols at the board's face size),
@@ -302,7 +303,7 @@ class BoardViewState extends State<BoardView> with SingleTickerProviderStateMixi
     final face = projection.faceRect(index);
     final fx = _effects.fx(tileId);
     final local = Rect.fromLTWH(face.left + fx.shakeX * face.width, face.top, face.width, face.height);
-    return MatrixUtils.transformRect(box.getTransformTo(ancestor), local);
+    return MatrixUtils.transformRect(box.getTransformTo(ancestor ?? TabletScale.canvasAbove(box)), local);
   }
 
   /// Stops drawing [tileIds] (tiles flying back to the board) until each is
