@@ -1,9 +1,17 @@
 // ignore_for_file: avoid_print
 
-// Publishes content/brain-train/ to the R2 bucket under `brain-train/`.
+// Publishes content/brain-train/ to the public R2 bucket [contentBucket] under
+// `brain-train/`, served at https://braintrain-cdn.sungamestudio.com/ (R2
+// custom domain, cached at Cloudflare's edge).
 //
 //   dart run tool/publish.dart --dry-run   # show what would be uploaded
 //   dart run tool/publish.dart             # validate, upload, verify
+//   dart run tool/publish.dart --app-update-only [--dry-run]
+//                                          # only content-src/app-update.json
+//
+// content-src/app-update.json (the lobby update notice, docs/APP_UPDATES.md)
+// is uploaded as `brain-train/app-update.json` after the manifest, mutable
+// like it (60 s cache), whenever the file exists.
 //
 // Order matters: every immutable object (artwork, registry, levels) is
 // compared with the bucket first (in parallel); an existing object with
@@ -13,8 +21,9 @@
 // Unchanged (content-addressed) objects are skipped.
 //
 // Credentials come from .env (R2_ACCOUNT_ID, R2_ACCESS_KEY_ID,
-// R2_SECRET_ACCESS_KEY, R2_BUCKET_NAME). They are only used here, never in
-// the app.
+// R2_SECRET_ACCESS_KEY). They are only used by tools, never in the app.
+// R2_BUCKET_NAME in .env is the private bucket (tool/r2_art.dart, the old
+// Worker host); content always goes to [contentBucket].
 
 import 'dart:convert';
 import 'dart:io';
@@ -28,20 +37,28 @@ import 'content.dart' as content;
 
 const String prefix = 'brain-train/';
 
+/// The public content bucket. Everything in it is public through its custom
+/// domain, so it must only ever hold `brain-train/` game content.
+const String contentBucket = 'braintrain-public';
+
 Future<void> main(List<String> args) async {
   final dryRun = args.contains('--dry-run');
   final force = args.contains('--force');
-  if (!await content.validate()) {
-    stderr.writeln('content is invalid; nothing published');
-    exit(1);
-  }
   final env = readEnv();
   final r2 = R2Client(
     accountId: env['R2_ACCOUNT_ID']!,
     accessKeyId: env['R2_ACCESS_KEY_ID']!,
     secretAccessKey: env['R2_SECRET_ACCESS_KEY']!,
-    bucket: env['R2_BUCKET_NAME']!,
+    bucket: contentBucket,
   );
+  if (args.contains('--app-update-only')) {
+    await _publishAppUpdate(r2, dryRun: dryRun);
+    return;
+  }
+  if (!await content.validate()) {
+    stderr.writeln('content is invalid; nothing published');
+    exit(1);
+  }
 
   final manifestFile = File('${content.contentRoot.path}/manifest.json');
   final manifest = jsonDecode(manifestFile.readAsStringSync()) as Map<String, Object?>;
@@ -87,7 +104,7 @@ Future<void> main(List<String> args) async {
     await _parallel(upload, (path) async {
       final key = '$prefix$path';
       final bytes = local[path]!;
-      await r2.put(key, bytes, contentType: _contentType(path));
+      await r2.put(key, bytes, contentType: _contentType(path), cacheControl: immutableCacheControl);
       final stored = await r2.headEtag(key);
       final localMd5 = md5.convert(bytes).toString();
       if (stored != localMd5) throw StateError('verification failed for $key: stored ETag $stored, local MD5 $localMd5');
@@ -99,19 +116,42 @@ Future<void> main(List<String> args) async {
   final manifestBytes = manifestFile.readAsBytesSync();
   if (dryRun) {
     print('would put ${prefix}manifest.json last');
+    await _publishAppUpdate(r2, dryRun: true);
     return;
   }
-  await r2.put('${prefix}manifest.json', manifestBytes, contentType: 'application/json; charset=utf-8');
+  await r2.put('${prefix}manifest.json', manifestBytes, contentType: 'application/json; charset=utf-8', cacheControl: mutableCacheControl);
   print('put       ${prefix}manifest.json (last)');
+  await _publishAppUpdate(r2, dryRun: false);
 
-  // End-to-end check through the public Worker URL the app uses.
+  // End-to-end check through the public URL the app uses.
   final publicUrl = ContentConfig.production.baseUrl.resolve('${prefix}manifest.json');
   final response = await http.get(publicUrl);
   if (response.statusCode == 200 && sha256.convert(response.bodyBytes) == sha256.convert(manifestBytes)) {
     print('\nverified  $publicUrl serves the new manifest');
   } else {
-    print('\nWARNING   $publicUrl returned ${response.statusCode}; the Worker may not expose $prefix yet');
+    print('\nWARNING   $publicUrl returned ${response.statusCode} or other bytes; the edge may still cache the old '
+        'manifest (up to 60 s)');
   }
+}
+
+/// Uploads content-src/app-update.json (if present) as the mutable
+/// `brain-train/app-update.json`, after checking it is a JSON object with a
+/// `schemaVersion`.
+Future<void> _publishAppUpdate(R2Client r2, {required bool dryRun}) async {
+  final file = File('content-src/app-update.json');
+  if (!file.existsSync()) return;
+  final bytes = file.readAsBytesSync();
+  final json = jsonDecode(utf8.decode(bytes));
+  if (json is! Map<String, Object?> || json['schemaVersion'] is! int) {
+    stderr.writeln('ABORT     content-src/app-update.json is not an object with an integer schemaVersion');
+    exit(1);
+  }
+  if (dryRun) {
+    print('would put ${prefix}app-update.json (${bytes.length} bytes)');
+    return;
+  }
+  await r2.put('${prefix}app-update.json', bytes, contentType: 'application/json; charset=utf-8', cacheControl: mutableCacheControl);
+  print('put       ${prefix}app-update.json');
 }
 
 /// Runs [task] for every item, at most [concurrency] at a time; the first
@@ -156,6 +196,13 @@ Map<String, String> readEnv() {
   };
 }
 
+/// Cache-Control for content-addressed objects: their bytes never change.
+const String immutableCacheControl = 'public, max-age=31536000, immutable';
+
+/// Cache-Control for the mutable manifest: clients and the edge recheck it
+/// after a minute.
+const String mutableCacheControl = 'public, max-age=60, must-revalidate';
+
 String _contentType(String path) => switch (path.split('.').last) {
   'json' => 'application/json; charset=utf-8',
   'webp' => 'image/webp',
@@ -192,8 +239,11 @@ class R2Client {
     return response.bodyBytes;
   }
 
-  Future<void> put(String key, Uint8List bytes, {required String contentType}) async {
-    final response = await _send('PUT', key, bytes, {'content-type': contentType});
+  Future<void> put(String key, Uint8List bytes, {required String contentType, String? cacheControl}) async {
+    final response = await _send('PUT', key, bytes, {
+      'content-type': contentType,
+      'cache-control': ?cacheControl,
+    });
     if (response.statusCode != 200) {
       throw HttpException('PUT $key -> ${response.statusCode}: ${response.body}');
     }

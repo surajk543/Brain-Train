@@ -1,7 +1,7 @@
 // ignore_for_file: avoid_print
 
-// Lists, and on request deletes, every object under `brain-train/` in the R2
-// bucket that the published manifest no longer references (old levels, old
+// Lists, and on request deletes, every object under `brain-train/` in the
+// public content bucket (`contentBucket`) that the published manifest no longer references (old levels, old
 // registries, retired symbol sets, unused art).
 //
 //   dart run tool/r2_prune.dart            # list what would be deleted
@@ -9,10 +9,12 @@
 //
 // The keep-set is built from content/brain-train/manifest.json: the manifest
 // itself, its registry and every symbol in it, and every level file. Before
-// listing, the live manifest (through the public Worker URL the app uses)
+// listing, the live manifest (through the public URL the app uses)
 // must be byte-identical to the local one, so nothing a client can still
 // fetch from the live manifest is ever removed. Only `brain-train/` is
-// touched; other prefixes in the bucket are never listed or deleted.
+// touched; other prefixes in the bucket are never listed or deleted. The old
+// private bucket's `brain-train/` copy (behind the workers.dev Worker, for
+// builds before versionCode 5) is never touched.
 //
 // Credentials come from .env, as for tool/publish.dart.
 
@@ -24,7 +26,7 @@ import 'package:crypto/crypto.dart';
 import 'package:http/http.dart' as http;
 
 import 'content.dart' as content;
-import 'publish.dart' show R2Client, prefix, readEnv;
+import 'publish.dart' show R2Client, contentBucket, prefix, readEnv;
 
 Future<void> main(List<String> args) async {
   final delete = args.contains('--delete');
@@ -57,7 +59,7 @@ Future<void> main(List<String> args) async {
     accountId: env['R2_ACCOUNT_ID']!,
     accessKeyId: env['R2_ACCESS_KEY_ID']!,
     secretAccessKey: env['R2_SECRET_ACCESS_KEY']!,
-    bucket: env['R2_BUCKET_NAME']!,
+    bucket: contentBucket,
   );
   final objects = await r2.list(prefix);
   final missing = keep.difference({for (final (key, _) in objects) key});

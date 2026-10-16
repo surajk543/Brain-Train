@@ -38,12 +38,13 @@ class ContentConfig {
     this.maxAnimationBytes = kMaxAnimationBytes,
   });
 
-  /// Public read-only Brain Train content, served by the `braintrain-assets`
-  /// Worker from the `braintrain` R2 bucket. Only `brain-train/` keys are
-  /// public; everything else in the bucket needs a signed token.
+  /// Public read-only Brain Train content: the `braintrain-public` R2 bucket
+  /// on its custom domain, cached at Cloudflare's edge and rate limited per
+  /// IP. Builds before versionCode 5 use the `braintrain-assets` Worker on
+  /// workers.dev (the private `braintrain` bucket), which keeps serving them.
   static final ContentConfig production = ContentConfig(
-    baseUrl: Uri.parse('https://braintrain-assets.surajk543.workers.dev/'),
-    allowedHosts: const {'braintrain-assets.surajk543.workers.dev'},
+    baseUrl: Uri.parse('https://braintrain-cdn.sungamestudio.com/'),
+    allowedHosts: const {'braintrain-cdn.sungamestudio.com'},
   );
 
   final Uri baseUrl;
