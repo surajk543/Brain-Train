@@ -18,6 +18,7 @@ dart run tool/content.dart validate     # check content/brain-train/ like the ap
 dart run tool/content.dart stats        # simulated tray-player win rates per tier of the built tree
 dart run tool/publish.dart --dry-run    # then without --dry-run to upload to R2 (parallel, manifest last)
 dart run tool/r2_prune.dart             # list R2 objects the live manifest no longer uses (--delete: owner only)
+dart run tool/r2_art.dart push|pull     # symbol masters art/masters/ <-> R2 (private keys art/masters/..., not in git)
 python3 tool/assets/prepare_symbols.py [--placeholders]   # art -> WebP symbols
 python3 tool/assets/make_app_icon.py    # launcher icons from the logo emblem (Android + iOS)
 python3 tool/assets/make_foliage.py     # gameplay edge foliage -> assets/decor/
@@ -67,7 +68,8 @@ dart run tool/smoke_remote.dart         # live check: app's content client vs pr
   uploaded by `tool/publish.dart`). Mirrors R2 keys `brain-train/...`.
 - `content/starter/` — the starter pack, committed and the only content in pubspec: the full manifest and the
   registry (metadata of all levels), levels 1–5 and only their art (~2 MB). Written by `tool/content.dart build`.
-- `art/` — `asset_sources.json` (IconScout attribution + status), masters, review sheets.
+- `art/` — `asset_sources.json` (IconScout attribution + status), review sheets. `art/masters/` (full-size symbol
+  PNGs) is gitignored and lives in R2 (`tool/r2_art.dart`).
   `art/source/` (licensed originals) is gitignored.
 - `infra/cloudflare/braintrain-assets/worker.js` — the deployed Worker's source of truth.
 - `docs/` — `level-design-rules.md` (all level rules: difficulty 1–10, tray 2–5, 85/15, batches),
@@ -280,7 +282,11 @@ dart run tool/smoke_remote.dart         # live check: app's content client vs pr
   on a new machine, mirror the live tree: `dart run tool/fetch_content.dart` (public prefix, no keys, sha256-checked).
 - Secrets: copy `.env` by a secure channel (password manager), never git/chat/email, likewise `android/key.properties`,
   `android/play_games.properties`, `android/admob.properties` and the upload keystore. Keys: `R2_ACCOUNT_ID`,
-  `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_BUCKET_NAME`, `ASSET_TOKEN_SECRET`. Only publishing needs it.
+  `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_BUCKET_NAME`, `ASSET_TOKEN_SECRET`. Only publishing and
+  `tool/r2_art.dart` need it.
+- Symbol masters `art/masters/` are not in git (moved to R2 on 2026-10-16, 260 PNGs, ~39 MB; older git history still
+  has them): `dart run tool/r2_art.dart pull` fetches them, `push` stores new ones after `prepare_symbols.py`.
+  Needed only for `make_app_icon.py --symbol` and art review; builds and the app never read them.
 - Licensed originals `art/source/` are not in git; needed only to re-process art. Re-download through the IconScout
   MCP (`claude mcp add --transport http iconscout https://mcp.iconscout.com/mcp`) from `art/asset_sources.json` /
   `art/animated_sources.json` (`sourceUrl`; slug `<name>_<assetId>`). IconScout 3D downloads once failed after ~24 in a

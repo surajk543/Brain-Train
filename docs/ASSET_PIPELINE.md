@@ -40,16 +40,18 @@ shows the count). They are not IconScout art.
    `{"registryVersion": "brain-train-nature-v1", "path": "registries/symbols-v1.json", "imageSet": "v1", "placeholder": false}`
    and bump `contentVersion`. Levels do not change: they reference symbol codes.
 4. Set each `status` in `art/asset_sources.json` to `integrated`.
-5. `dart run tool/content.dart build`, `flutter test`, `dart run tool/publish.dart`.
+5. `dart run tool/content.dart build`, `flutter test`, `dart run tool/publish.dart`, then
+   `dart run tool/r2_art.dart push` to store the new masters in R2 (`art/masters/` is not in git).
 6. (Historical: the app now bundles only `content/starter/`, written by `tool/content.dart build`;
    no pubspec change is needed for new art.)
 7. `python3 tool/assets/make_app_icon.py --symbol art/masters/v1/sunflower.png` to rebuild the
-   launcher icon from the licensed sunflower.
+   launcher icon from the licensed sunflower (on a new machine, `dart run tool/r2_art.dart pull` first).
 
 ### Current static set (v1) and per-entry options
 
 `imageSet` in `art/asset_sources.json` names the set; originals live in `art/source/symbols-<set>/`
-(gitignored), outputs in `art/masters/<set>/`, `content/brain-train/symbols/<set>/` and
+(gitignored), outputs in `art/masters/<set>/` (gitignored; kept in R2 under the private key prefix
+`art/masters/` by `dart run tool/r2_art.dart push | pull`), `content/brain-train/symbols/<set>/` and
 `art/review/<set>-contact-sheet.png`. Set v1 (named v4 until 2026-10-16) mixes owner-supplied images and IconScout premium 3D
 icons / illustrations (owner's subscription, no attribution required; `sourceUrl` per entry).
 Optional keys per entry, applied in this order:
