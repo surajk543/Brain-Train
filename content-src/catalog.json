@@ -1,73 +1,150 @@
 {
   "_comment": "Authoring source for content/brain-train/. Run `dart run tool/content.dart build`. Bump contentVersion on every publish. Levels and the registry are content-addressed (levels/level-0001-<sha>.json), so a changed level gets a new key by itself; published keys never change.",
-  "contentVersion": "2026.10.16.10",
+  "contentVersion": "2026.10.16.11",
   "_starterLevels": "Levels bundled in the app (with only their art) for a first launch without internet: content/starter/.",
   "starterLevels": 5,
   "registry": {
     "_comment": "Symbols come from art/asset_sources.json (static, its imageSet) and art/animated_sources.json (Lottie): entries with status \"integrated\" whose processed file exists. registryVersion gets a hash of the symbol table appended.",
     "registryVersion": "brain-train-symbols",
-    "imageSet": "v4",
+    "imageSet": "v1",
     "placeholder": false
   },
   "campaign": {
-    "_comment": "Procedural campaign (lib/game_engine/campaign/). Tier order: `count` levels per tier, shuffled with `seed`, level 1 = firstTier, no tier more than maxTierRun times in a row. Per level: animated pairs = floor(pairs * animatedShare) (at least 1, never above 30%), at most maxDistinctAnimated distinct animated symbols; the rest static. Tier fields: tiles/layers ranges, trayCapacity (4 or 5), pairsPerStaticSymbol/pairsPerAnimatedSymbol (symbol repeats: higher is easier), stalePairing (share of decoy pairs), freeRatio (share of tiles free at the start) and winRate (accepted win rate of the simulated tray player, 200 games). The seed is one whose shuffle opens gently (levels 2-4 easy or medium). Boards must keep tile faces >= minFaceWidth px on a 360x640 phone and be solver-proven within solverBudget nodes.",
-    "seed": 20261039,
-    "firstTier": "easy",
+    "_comment": "Procedural campaign (lib/game_engine/campaign/). Difficulty tiers 1 (very easy) to 10 (hardest), stored as the level's `difficulty`. Tier order: `batches` lists levels per tier id; each batch is shuffled with `seed` (and its batch number after the first), level 1 = firstTier, no tier more than maxTierRun times in a row. A batch depends only on the batches before it: add levels by appending a batch, never by editing one. Per level: animated pairs = floor(pairs * animatedShare) (at least 1; animatedShare at most 0.3), at most maxDistinctAnimated distinct animated symbols; the rest static. No symbol has more than maxPairsPerSymbol pairs on one level. Symbols per level: the least used so far come first (ties by a seeded hash), so every integrated symbol is on some level and new symbols join by themselves. Full rules: docs/level-design-rules.md. Tier fields: tiles/layers ranges, trayCapacity (2-5; one size or [min, max] picked per level), pairsPerStaticSymbol/pairsPerAnimatedSymbol (symbol repeats: higher is easier), stalePairing (share of decoy pairs), freeRatio (share of tiles free at the start) and winRate (accepted win rate of the simulated tray player, 200 games). The seed is one whose shuffle opens gently. Boards must keep tile faces >= minFaceWidth px on a 360x640 phone and be solver-proven within solverBudget nodes.",
+    "seed": 20261641,
+    "firstTier": "1",
     "maxTierRun": 2,
-    "animatedShare": 0.3,
+    "animatedShare": 0.15,
     "maxDistinctAnimated": 12,
+    "maxPairsPerSymbol": 2,
     "simulationRuns": 200,
     "minFaceWidth": 31,
     "solverBudget": 200000,
     "category": "nature",
+    "batches": [
+      {
+        "1": 10,
+        "2": 10,
+        "3": 10,
+        "4": 10,
+        "5": 10,
+        "6": 10,
+        "7": 10,
+        "8": 10,
+        "9": 10,
+        "10": 10
+      }
+    ],
     "tiers": [
       {
-        "id": "easy",
-        "count": 50,
-        "tiles": [24, 48],
+        "id": "1",
+        "tiles": [24, 36],
         "layers": [1, 2],
-        "trayCapacity": 4,
-        "pairsPerStaticSymbol": 2.5,
-        "pairsPerAnimatedSymbol": 2.5,
+        "trayCapacity": [5, 5],
+        "pairsPerStaticSymbol": 2.0,
+        "pairsPerAnimatedSymbol": 2.0,
+        "stalePairing": 0,
+        "freeRatio": [0.35, 1],
+        "winRate": [0.85, 1]
+      },
+      {
+        "id": "2",
+        "tiles": [28, 44],
+        "layers": [1, 2],
+        "trayCapacity": [5, 5],
+        "pairsPerStaticSymbol": 2.0,
+        "pairsPerAnimatedSymbol": 2.0,
         "stalePairing": 0,
         "freeRatio": [0.3, 1],
-        "winRate": [0.7, 1]
+        "winRate": [0.7, 0.95]
       },
       {
-        "id": "medium",
-        "count": 50,
-        "tiles": [48, 80],
+        "id": "3",
+        "tiles": [36, 56],
         "layers": [2, 3],
-        "trayCapacity": 4,
-        "pairsPerStaticSymbol": 2.5,
-        "pairsPerAnimatedSymbol": 2.5,
+        "trayCapacity": [4, 5],
+        "pairsPerStaticSymbol": 2.0,
+        "pairsPerAnimatedSymbol": 2.0,
+        "stalePairing": 0,
+        "freeRatio": [0.25, 0.9],
+        "winRate": [0.55, 0.8]
+      },
+      {
+        "id": "4",
+        "tiles": [44, 64],
+        "layers": [2, 3],
+        "trayCapacity": [4, 4],
+        "pairsPerStaticSymbol": 2.0,
+        "pairsPerAnimatedSymbol": 2.0,
+        "stalePairing": 0,
+        "freeRatio": [0.2, 0.8],
+        "winRate": [0.4, 0.65]
+      },
+      {
+        "id": "5",
+        "tiles": [56, 80],
+        "layers": [2, 3],
+        "trayCapacity": [4, 4],
+        "pairsPerStaticSymbol": 2.0,
+        "pairsPerAnimatedSymbol": 2.0,
         "stalePairing": 0,
         "freeRatio": [0.2, 0.7],
-        "winRate": [0.3, 0.6]
+        "winRate": [0.25, 0.45]
       },
       {
-        "id": "hard",
-        "count": 50,
-        "tiles": [84, 120],
+        "id": "6",
+        "tiles": [68, 96],
         "layers": [3, 4],
-        "trayCapacity": 5,
-        "pairsPerStaticSymbol": 2.2,
-        "pairsPerAnimatedSymbol": 2.2,
+        "trayCapacity": [4, 4],
+        "pairsPerStaticSymbol": 1.9,
+        "pairsPerAnimatedSymbol": 1.8,
+        "stalePairing": 0,
+        "freeRatio": [0.15, 0.6],
+        "winRate": [0.1, 0.3]
+      },
+      {
+        "id": "7",
+        "tiles": [84, 112],
+        "layers": [3, 4],
+        "trayCapacity": [3, 4],
+        "pairsPerStaticSymbol": 1.8,
+        "pairsPerAnimatedSymbol": 1.8,
         "stalePairing": 0,
         "freeRatio": [0.15, 0.5],
-        "winRate": [0.08, 0.25]
+        "winRate": [0.02, 0.15]
       },
       {
-        "id": "veryHard",
-        "count": 50,
+        "id": "8",
+        "tiles": [100, 132],
+        "layers": [4, 5],
+        "trayCapacity": [3, 3],
+        "pairsPerStaticSymbol": 1.6,
+        "pairsPerAnimatedSymbol": 1.5,
+        "stalePairing": 0.05,
+        "freeRatio": [0.1, 0.45],
+        "winRate": [0, 0.06]
+      },
+      {
+        "id": "9",
+        "tiles": [120, 152],
+        "layers": [4, 6],
+        "trayCapacity": [2, 3],
+        "pairsPerStaticSymbol": 1.4,
+        "pairsPerAnimatedSymbol": 1.5,
+        "stalePairing": 0.1,
+        "freeRatio": [0, 0.4],
+        "winRate": [0, 0.03]
+      },
+      {
+        "id": "10",
         "tiles": [144, 176],
         "layers": [5, 7],
-        "trayCapacity": 5,
+        "trayCapacity": [2, 2],
         "pairsPerStaticSymbol": 1.25,
-        "pairsPerAnimatedSymbol": 2.2,
+        "pairsPerAnimatedSymbol": 1.25,
         "stalePairing": 0.2,
         "freeRatio": [0, 0.3],
-        "winRate": [0, 0.04]
+        "winRate": [0, 0.02]
       }
     ]
   },

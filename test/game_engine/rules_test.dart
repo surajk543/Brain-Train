@@ -369,12 +369,12 @@ void main() {
       expect(engineFor(parsed, reg6).state.trayCapacity, 5);
     });
 
-    test('the validator accepts 4 and 5 slots only', () {
-      for (final capacity in [4, 5]) {
+    test('the validator accepts 2 to 5 slots only', () {
+      for (final capacity in [2, 3, 4, 5]) {
         final ok = level([('a1', 'A', 0, 0, 0), ('a2', 'A', 4, 0, 0)], rules: LevelRules(trayCapacity: capacity));
         expect(LevelValidator(registry: reg6).validate(ok).isValid, isTrue, reason: '$capacity');
       }
-      for (final capacity in [2, 3, 6]) {
+      for (final capacity in [1, 6, 7]) {
         final bad = level([('a1', 'A', 0, 0, 0), ('a2', 'A', 4, 0, 0)], rules: LevelRules(trayCapacity: capacity));
         expect(LevelValidator(registry: reg6).validate(bad).hasError('invalid_tray_capacity'), isTrue, reason: '$capacity');
       }

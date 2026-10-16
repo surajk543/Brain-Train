@@ -22,9 +22,10 @@ enum MatchingMode {
 
 /// Tray slots a level may ask for (`rules.trayCapacity`). Absent means
 /// [kDefaultTrayCapacity]. Builds that predate the field ignore it and play
-/// with 4, which is safe: every published level is pair-solvable.
+/// with 4, which is safe: every published level is pair-solvable. Sizes 2
+/// and 3 need content schema 3 (see `kClientContentSchema`).
 const int kDefaultTrayCapacity = 4;
-const Set<int> kAllowedTrayCapacities = {4, 5};
+const Set<int> kAllowedTrayCapacities = {2, 3, 4, 5};
 
 class LevelRules {
   const LevelRules({

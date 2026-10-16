@@ -46,11 +46,11 @@ shows the count). They are not IconScout art.
 7. `python3 tool/assets/make_app_icon.py --symbol art/masters/v1/sunflower.png` to rebuild the
    launcher icon from the licensed sunflower.
 
-### Current static set (v4) and per-entry options
+### Current static set (v1) and per-entry options
 
 `imageSet` in `art/asset_sources.json` names the set; originals live in `art/source/symbols-<set>/`
 (gitignored), outputs in `art/masters/<set>/`, `content/brain-train/symbols/<set>/` and
-`art/review/<set>-contact-sheet.png`. Set v4 mixes owner-supplied images and IconScout premium 3D
+`art/review/<set>-contact-sheet.png`. Set v1 (named v4 until 2026-10-16) mixes owner-supplied images and IconScout premium 3D
 icons / illustrations (owner's subscription, no attribution required; `sourceUrl` per entry).
 Optional keys per entry, applied in this order:
 

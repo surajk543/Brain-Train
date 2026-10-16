@@ -57,18 +57,59 @@ void main() {
   });
 
   group('tier schedule', () {
-    test('the catalog: 50 levels per tier, level 1 easy, never three of a tier in a row', () {
+    test('the catalog: difficulty 1-10, 10 levels each, level 1 is 1, never three of a tier in a row', () {
       final config = catalogCampaign();
       final order = scheduleTiers(config);
-      expect(config.tiers.map((t) => t.id), ['easy', 'medium', 'hard', 'veryHard']);
-      expect(order, hasLength(200));
+      expect(config.tiers.map((t) => t.id), [for (var d = 1; d <= 10; d++) '$d']);
+      expect(order, hasLength(config.levelCount));
       for (final tier in config.tiers) {
-        expect(order.where((t) => t == tier.id), hasLength(tier.count), reason: tier.id);
-        expect(tier.count, 50);
+        expect(order.where((t) => t == tier.id), hasLength(config.batches.fold<int>(0, (n, b) => n + (b[tier.id] ?? 0))), reason: tier.id);
+        expect(config.countIn(0, tier.id), 10);
       }
-      expect(order.first, 'easy');
+      expect(order.first, '1');
       expect(longestRun(order), lessThanOrEqualTo(2));
       expect(scheduleTiers(config), order, reason: 'deterministic');
+    });
+
+    test('the catalog: trays shrink as difficulty rises, within 2-5', () {
+      final config = catalogCampaign();
+      for (var i = 0; i < config.tiers.length; i++) {
+        final tier = config.tiers[i];
+        expect(tier.trayCapacity, inInclusiveRange(2, 5), reason: tier.id);
+        expect(tier.maxTrayCapacity, inInclusiveRange(tier.trayCapacity, 5), reason: tier.id);
+        if (i > 0) expect(tier.maxTrayCapacity, lessThanOrEqualTo(config.tiers[i - 1].maxTrayCapacity), reason: tier.id);
+      }
+      expect(config.animatedShare, 0.15);
+    });
+
+    test('a tray range is picked per level, seeded and inside the range', () {
+      final config = CampaignConfig.fromJson({
+        'seed': 5,
+        'tiers': [
+          {'id': 'easy', 'count': 4, 'tiles': [24, 30], 'layers': [1, 1], 'trayCapacity': [2, 5]},
+        ],
+      });
+      final tier = config.tiers.single;
+      final picks = [for (var order = 1; order <= 60; order++) config.trayCapacityFor(order, tier)];
+      expect(picks.toSet(), {2, 3, 4, 5});
+      expect([for (var order = 1; order <= 60; order++) config.trayCapacityFor(order, tier)], picks, reason: 'deterministic');
+    });
+
+    test('appending a batch never changes the levels before it', () {
+      Map<String, Object?> campaign(List<Map<String, int>> batches) => {
+        'seed': 9,
+        'firstTier': '1',
+        'batches': batches,
+        'tiers': [
+          for (final id in ['1', '2', '3']) {'id': id, 'tiles': [24, 30], 'layers': [1, 1]},
+        ],
+      };
+      final first = scheduleTiers(CampaignConfig.fromJson(campaign([{'1': 4, '2': 4, '3': 4}])));
+      final longer = scheduleTiers(CampaignConfig.fromJson(campaign([{'1': 4, '2': 4, '3': 4}, {'2': 3, '3': 5}])));
+      expect(longer, hasLength(20));
+      expect(longer.sublist(0, 12), first);
+      expect(longer.sublist(12).where((t) => t == '3'), hasLength(5));
+      expect(longestRun(longer), lessThanOrEqualTo(2));
     });
 
     test('tiers are data: any set, counts and run limit', () {
@@ -101,6 +142,9 @@ void main() {
       expect(difficultyLabel('veryHard'), 'Very Hard');
       expect(difficultyLabel('veryVeryHard'), 'Very Very Hard');
       expect(difficultyLabel('expert'), 'Expert');
+      expect(difficultyLabel('1'), '1/10');
+      expect(difficultyLabel('10'), '10/10');
+      expect(difficultyLabel('11'), '11', reason: 'off the scale');
     });
 
     test('bad configs are rejected', () {
@@ -115,6 +159,9 @@ void main() {
       expect(() => CampaignConfig.fromJson({'seed': 1, 'animatedShare': 0.4, 'tiers': [tier('easy')]}), throwsA(anything));
       expect(() => CampaignConfig.fromJson({'seed': 1, 'tiers': [tier('easy'), tier('easy')]}), throwsA(anything));
       expect(() => CampaignConfig.fromJson({'seed': 1, 'firstTier': 'hard', 'tiers': [tier('easy')]}), throwsA(anything));
+      expect(() => CampaignConfig.fromJson({'seed': 1, 'tiers': [tier('easy', capacity: 6)]}), throwsA(anything));
+      expect(() => CampaignConfig.fromJson({'seed': 1, 'tiers': [tier('easy', capacity: [5, 3])]}), throwsA(anything));
+      expect(() => CampaignConfig.fromJson({'seed': 1, 'firstTier': '0', 'tiers': [tier('0')]}), throwsA(anything));
     });
   });
 

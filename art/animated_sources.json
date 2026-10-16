@@ -1,6 +1,6 @@
 {
   "_comment": "Animated (Lottie) tile symbols, downloaded by the owner with their IconScout subscription into art/source/animated-symbols/ (gitignored; tools never download from IconScout). `python3 tool/assets/prepare_animated.py` validates + minifies each sourceFile into content/brain-train/animated-symbols/<outputFile>; `dart run tool/content.dart build` adds them to the registry as `lottie` symbols and gives ~20% of each level's pairs to them. Order matters: levels take the next unused symbols in this order (level 1 the first 2, level 2 the next 3, ...), so emoji, Valentine and dog items alternate and look-alikes are kept apart. Codes and outputFile names are published and immutable. Only entries with \"status\": \"integrated\" go into the registry; \"rejected\" ones (reason in `rejected`) are kept as a record so they are not downloaded again. `restyle` (prepare_animated.py) thickens, recolours and zooms thin line-art loaders so they read on a 31 px tile; it writes a new outputFile, never over a published one.",
-  "provider": "IconScout",
+  "provider": "IconScout + LottieFiles (free animations)",
   "packs": [
     {
       "title": "Emoji Animation Pack",
@@ -31,9 +31,15 @@
       "author": "Graphiqa Studio",
       "url": "https://iconscout.com/lottie-animation-pack/cute-monster-animation-pack_141399",
       "codePrefix": "MONSTER_"
+    },
+    {
+      "title": "Country Flag Animation Pack",
+      "author": "ViaMotion.studio",
+      "url": "https://iconscout.com/lottie-animation-pack/country-flag-animation-pack_437278",
+      "codePrefix": "FLAG_"
     }
   ],
-  "licenseNote": "Premium IconScout packs under the owner's subscription license; no attribution required. Keep the original JSON files out of git (art/source/ is gitignored).",
+  "licenseNote": "Premium IconScout packs under the owner's subscription license; no attribution required. Keep the original JSON files out of git (art/source/ is gitignored). LF_ entries: LottieFiles free animations the owner downloaded, under the Lottie Simple License (https://lottiefiles.com/page/license); each records `license` and its `sourceUrl` or downloaded `originalFile`.",
   "symbols": [
     {
       "code": "EMOJI_FIRE",
@@ -886,6 +892,667 @@
       "outputFile": "cute-monster-watermelon.json",
       "sourceUrl": "https://iconscout.com/lottie-animation-pack/cute-monster-animation-pack_141399",
       "status": "integrated"
+    },
+    {
+      "code": "LF_BOXING_GLOVES",
+      "title": "Boxing Gloves Pow",
+      "sourceFile": "lottiefiles-boxing-gloves-pow.json",
+      "outputFile": "lottiefiles-boxing-gloves-pow.json",
+      "sourceUrl": "https://lottiefiles.com/free-animation/boxing-kickboxing-fight-pow-animation-tRFvpNhNPf",
+      "originalFile": "923C54LE2W.json (LottieFiles optimised JSON, images as WebP)",
+      "license": "Lottie Simple License (LottieFiles free animation by Marketorr)",
+      "status": "integrated"
+    },
+    {
+      "code": "LF_BUTTERFLY",
+      "title": "Butterfly",
+      "sourceFile": "lottiefiles-butterfly.json",
+      "outputFile": "lottiefiles-butterfly.json",
+      "originalFile": "Butterfly Lottie Animation (1).json",
+      "license": "Lottie Simple License (LottieFiles free animation)",
+      "status": "integrated"
+    },
+    {
+      "code": "LF_BURGER",
+      "title": "Burger",
+      "sourceFile": "lottiefiles-fast-food-burger.json",
+      "outputFile": "lottiefiles-fast-food-burger.json",
+      "originalFile": "Fast Food (1).json",
+      "license": "Lottie Simple License (LottieFiles free animation)",
+      "status": "integrated"
+    },
+    {
+      "code": "LF_FOOD_BOWL",
+      "title": "Rice Bowl, Bread and Water",
+      "sourceFile": "lottiefiles-food-bowl.json",
+      "outputFile": "lottiefiles-food-bowl.json",
+      "originalFile": "Food (1).json",
+      "license": "Lottie Simple License (LottieFiles free animation)",
+      "status": "integrated"
+    },
+    {
+      "code": "LF_HEART_PLATE",
+      "title": "Heart on a Plate",
+      "sourceFile": "lottiefiles-food-heart-plate.json",
+      "outputFile": "lottiefiles-food-heart-plate.json",
+      "originalFile": "Food (2).json",
+      "license": "Lottie Simple License (LottieFiles free animation)",
+      "status": "integrated"
+    },
+    {
+      "code": "LF_LOVE_BIRDS",
+      "title": "Love Birds",
+      "sourceFile": "lottiefiles-love-birds.json",
+      "outputFile": "lottiefiles-love-birds.json",
+      "originalFile": "Love birds.json",
+      "license": "Lottie Simple License (LottieFiles free animation)",
+      "status": "integrated"
+    },
+    {
+      "code": "LF_PARROT",
+      "title": "Parrot",
+      "sourceFile": "lottiefiles-parrot.json",
+      "outputFile": "lottiefiles-parrot.json",
+      "originalFile": "Parrot.json",
+      "license": "Lottie Simple License (LottieFiles free animation)",
+      "status": "integrated"
+    },
+    {
+      "code": "LF_TOUCAN",
+      "title": "Toucan",
+      "sourceFile": "lottiefiles-toucan.json",
+      "outputFile": "lottiefiles-toucan.json",
+      "originalFile": "Toucan.json",
+      "license": "Lottie Simple License (LottieFiles free animation)",
+      "status": "integrated"
+    },
+    {
+      "code": "LF_PLATE_CLOCK",
+      "title": "Waiting for Food",
+      "sourceFile": "lottiefiles-waiting-for-food.json",
+      "outputFile": "lottiefiles-waiting-for-food.json",
+      "originalFile": "Waiting For Food.json",
+      "license": "Lottie Simple License (LottieFiles free animation)",
+      "status": "integrated"
+    },
+    {
+      "code": "LF_BIRD_FEEDING",
+      "title": "Bird Feeding",
+      "sourceFile": "lottiefiles-bird-feeding.json",
+      "outputFile": "lottiefiles-bird-feeding.json",
+      "originalFile": "Bird Feeding.json",
+      "license": "Lottie Simple License (LottieFiles free animation)",
+      "status": "rejected",
+      "rejected": "unreadable at tile size: frame 0 (the still frame the app shows) is empty, then two small birds fly in"
+    },
+    {
+      "code": "LF_FAST_FOOD_COMBO",
+      "title": "Drink and Burger",
+      "sourceFile": "lottiefiles-fast-food-combo.json",
+      "outputFile": "lottiefiles-fast-food-combo.json",
+      "originalFile": "Fast Food.json",
+      "license": "Lottie Simple License (LottieFiles free animation)",
+      "status": "rejected",
+      "rejected": "unreadable at tile size: drink and burger use only 44% x 58% of the canvas, tiny at 31 px; 310 KB"
+    },
+    {
+      "code": "LF_FIGHTING_SWORDS",
+      "title": "Fighting Swords",
+      "sourceFile": "lottiefiles-fighting-swords.json",
+      "outputFile": "lottiefiles-fighting-swords.json",
+      "originalFile": "Fighting swords.json",
+      "license": "Lottie Simple License (LottieFiles free animation)",
+      "status": "rejected",
+      "rejected": "unreadable at tile size: first and last frames empty, thin swords on a pale disc; 899 KB, 102 layers, 193 frames (3x the 300 KB the pipeline warns at)"
+    },
+    {
+      "code": "LF_FLYING_PENGUIN",
+      "title": "Flying Penguin",
+      "sourceFile": "lottiefiles-flying-penguin.json",
+      "outputFile": "lottiefiles-flying-penguin.json",
+      "originalFile": "Flying Pengiun.json",
+      "license": "Lottie Simple License (LottieFiles free animation)",
+      "status": "rejected",
+      "rejected": "frame 0 (the still frame the app shows) is empty: the penguin parachutes in"
+    },
+    {
+      "code": "LF_FOOD_COMBO",
+      "title": "Fries, Drink and Burger",
+      "sourceFile": "lottiefiles-food-combo.json",
+      "outputFile": "lottiefiles-food-combo.json",
+      "originalFile": "Food.json",
+      "license": "Lottie Simple License (LottieFiles free animation)",
+      "status": "rejected",
+      "rejected": "frame 0 (the still frame the app shows) is empty: three items pop in"
+    },
+    {
+      "code": "LF_INDIA_MAP",
+      "title": "India Map",
+      "sourceFile": "lottiefiles-india-country-map.json",
+      "outputFile": "lottiefiles-india-country-map.json",
+      "originalFile": "india-country-map.json",
+      "license": "Lottie Simple License (LottieFiles free animation)",
+      "status": "integrated"
+    },
+    {
+      "code": "FLAG_UNITED_KINGDOM",
+      "title": "United Kingdom",
+      "sourceFile": "flag-of-united-kingdom.json",
+      "outputFile": "flag-of-united-kingdom.json",
+      "sourceUrl": "https://iconscout.com/lottie-animation-pack/country-flag-animation-pack_437278",
+      "restyle": {
+        "bounds": [
+          0.228,
+          0.352,
+          0.767,
+          0.65
+        ],
+        "fill": 0.86
+      },
+      "status": "integrated"
+    },
+    {
+      "code": "FLAG_SWITZERLAND",
+      "title": "Switzerland",
+      "sourceFile": "flag-of-switzerland.json",
+      "outputFile": "flag-of-switzerland.json",
+      "sourceUrl": "https://iconscout.com/lottie-animation-pack/country-flag-animation-pack_437278",
+      "restyle": {
+        "bounds": [
+          0.333,
+          0.33,
+          0.65,
+          0.672
+        ],
+        "fill": 0.86
+      },
+      "status": "integrated"
+    },
+    {
+      "code": "FLAG_TURKEY",
+      "title": "Turkey",
+      "sourceFile": "flag-of-turkey.json",
+      "outputFile": "flag-of-turkey.json",
+      "sourceUrl": "https://iconscout.com/lottie-animation-pack/country-flag-animation-pack_437278",
+      "restyle": {
+        "bounds": [
+          0.273,
+          0.342,
+          0.717,
+          0.662
+        ],
+        "fill": 0.86
+      },
+      "status": "integrated"
+    },
+    {
+      "code": "FLAG_VIETNAM",
+      "title": "Vietnam",
+      "sourceFile": "flag-of-vietnam.json",
+      "outputFile": "flag-of-vietnam.json",
+      "sourceUrl": "https://iconscout.com/lottie-animation-pack/country-flag-animation-pack_437278",
+      "restyle": {
+        "bounds": [
+          0.235,
+          0.312,
+          0.745,
+          0.682
+        ],
+        "fill": 0.86
+      },
+      "status": "integrated"
+    },
+    {
+      "code": "FLAG_SOUTH_KOREA",
+      "title": "South Korea",
+      "sourceFile": "flag-of-south-korea.json",
+      "outputFile": "flag-of-south-korea.json",
+      "sourceUrl": "https://iconscout.com/lottie-animation-pack/country-flag-animation-pack_437278",
+      "restyle": {
+        "bounds": [
+          0.265,
+          0.335,
+          0.708,
+          0.657
+        ],
+        "fill": 0.86
+      },
+      "status": "integrated"
+    },
+    {
+      "code": "FLAG_SCOTLAND",
+      "title": "Scotland",
+      "sourceFile": "flag-of-scotland.json",
+      "outputFile": "flag-of-scotland.json",
+      "sourceUrl": "https://iconscout.com/lottie-animation-pack/country-flag-animation-pack_437278",
+      "restyle": {
+        "bounds": [
+          0.277,
+          0.347,
+          0.722,
+          0.64
+        ],
+        "fill": 0.86
+      },
+      "status": "integrated"
+    },
+    {
+      "code": "FLAG_SWEDEN",
+      "title": "Sweden",
+      "sourceFile": "flag-of-sweden.json",
+      "outputFile": "flag-of-sweden.json",
+      "sourceUrl": "https://iconscout.com/lottie-animation-pack/country-flag-animation-pack_437278",
+      "restyle": {
+        "bounds": [
+          0.275,
+          0.343,
+          0.72,
+          0.65
+        ],
+        "fill": 0.86
+      },
+      "status": "integrated"
+    },
+    {
+      "code": "FLAG_UKRAINE",
+      "title": "Ukraine",
+      "sourceFile": "flag-of-ukraine.json",
+      "outputFile": "flag-of-ukraine.json",
+      "sourceUrl": "https://iconscout.com/lottie-animation-pack/country-flag-animation-pack_437278",
+      "restyle": {
+        "bounds": [
+          0.275,
+          0.338,
+          0.718,
+          0.66
+        ],
+        "fill": 0.86
+      },
+      "status": "integrated"
+    },
+    {
+      "code": "FLAG_SOUTH_AFRICA",
+      "title": "South Africa",
+      "sourceFile": "flag-of-south-africa.json",
+      "outputFile": "flag-of-south-africa.json",
+      "sourceUrl": "https://iconscout.com/lottie-animation-pack/country-flag-animation-pack_437278",
+      "restyle": {
+        "bounds": [
+          0.275,
+          0.342,
+          0.718,
+          0.662
+        ],
+        "fill": 0.86
+      },
+      "status": "integrated"
+    },
+    {
+      "code": "FLAG_TANZANIA",
+      "title": "Tanzania",
+      "sourceFile": "flag-of-tanzania.json",
+      "outputFile": "flag-of-tanzania.json",
+      "sourceUrl": "https://iconscout.com/lottie-animation-pack/country-flag-animation-pack_437278",
+      "restyle": {
+        "bounds": [
+          0.27,
+          0.34,
+          0.713,
+          0.662
+        ],
+        "fill": 0.86
+      },
+      "status": "integrated"
+    },
+    {
+      "code": "FLAG_TRINIDAD_AND_TOBAGO",
+      "title": "Trinidad and Tobago",
+      "sourceFile": "flag-of-trinidad-and-tobago.json",
+      "outputFile": "flag-of-trinidad-and-tobago.json",
+      "sourceUrl": "https://iconscout.com/lottie-animation-pack/country-flag-animation-pack_437278",
+      "restyle": {
+        "bounds": [
+          0.263,
+          0.35,
+          0.723,
+          0.653
+        ],
+        "fill": 0.86
+      },
+      "status": "integrated"
+    },
+    {
+      "code": "FLAG_SEYCHELLES",
+      "title": "Seychelles",
+      "sourceFile": "flag-of-seychelles.json",
+      "outputFile": "flag-of-seychelles.json",
+      "sourceUrl": "https://iconscout.com/lottie-animation-pack/country-flag-animation-pack_437278",
+      "restyle": {
+        "bounds": [
+          0.223,
+          0.345,
+          0.767,
+          0.647
+        ],
+        "fill": 0.86
+      },
+      "status": "integrated"
+    },
+    {
+      "code": "FLAG_SAINT_LUCIA",
+      "title": "Saint Lucia",
+      "sourceFile": "flag-of-saint-lucia.json",
+      "outputFile": "flag-of-saint-lucia.json",
+      "sourceUrl": "https://iconscout.com/lottie-animation-pack/country-flag-animation-pack_437278",
+      "restyle": {
+        "bounds": [
+          0.22,
+          0.347,
+          0.773,
+          0.657
+        ],
+        "fill": 0.86
+      },
+      "status": "integrated"
+    },
+    {
+      "code": "FLAG_SAMOA",
+      "title": "Samoa",
+      "sourceFile": "flag-of-samoa.json",
+      "outputFile": "flag-of-samoa.json",
+      "sourceUrl": "https://iconscout.com/lottie-animation-pack/country-flag-animation-pack_437278",
+      "restyle": {
+        "bounds": [
+          0.22,
+          0.345,
+          0.77,
+          0.65
+        ],
+        "fill": 0.86
+      },
+      "status": "integrated"
+    },
+    {
+      "code": "FLAG_UNITED_ARAB_EMIRATES",
+      "title": "United Arab Emirates",
+      "sourceFile": "flag-of-united-arab-emirates.json",
+      "outputFile": "flag-of-united-arab-emirates.json",
+      "sourceUrl": "https://iconscout.com/lottie-animation-pack/country-flag-animation-pack_437278",
+      "restyle": {
+        "bounds": [
+          0.227,
+          0.347,
+          0.767,
+          0.645
+        ],
+        "fill": 0.86
+      },
+      "status": "integrated"
+    },
+    {
+      "code": "FLAG_TOGO",
+      "title": "Togo",
+      "sourceFile": "flag-of-togo.json",
+      "outputFile": "flag-of-togo.json",
+      "sourceUrl": "https://iconscout.com/lottie-animation-pack/country-flag-animation-pack_437278",
+      "restyle": {
+        "bounds": [
+          0.273,
+          0.35,
+          0.715,
+          0.648
+        ],
+        "fill": 0.86
+      },
+      "status": "integrated"
+    },
+    {
+      "code": "FLAG_THAILAND",
+      "title": "Thailand",
+      "sourceFile": "flag-of-thailand.json",
+      "outputFile": "flag-of-thailand.json",
+      "sourceUrl": "https://iconscout.com/lottie-animation-pack/country-flag-animation-pack_437278",
+      "restyle": {
+        "bounds": [
+          0.267,
+          0.343,
+          0.71,
+          0.665
+        ],
+        "fill": 0.86
+      },
+      "status": "integrated"
+    },
+    {
+      "code": "FLAG_SIERRA_LEONE",
+      "title": "Sierra Leone",
+      "sourceFile": "flag-of-sierra-leone.json",
+      "outputFile": "flag-of-sierra-leone.json",
+      "sourceUrl": "https://iconscout.com/lottie-animation-pack/country-flag-animation-pack_437278",
+      "restyle": {
+        "bounds": [
+          0.277,
+          0.342,
+          0.72,
+          0.662
+        ],
+        "fill": 0.86
+      },
+      "status": "integrated"
+    },
+    {
+      "code": "FLAG_SURINAME",
+      "title": "Suriname",
+      "sourceFile": "flag-of-suriname.json",
+      "outputFile": "flag-of-suriname.json",
+      "sourceUrl": "https://iconscout.com/lottie-animation-pack/country-flag-animation-pack_437278",
+      "restyle": {
+        "bounds": [
+          0.272,
+          0.34,
+          0.715,
+          0.662
+        ],
+        "fill": 0.86
+      },
+      "status": "integrated"
+    },
+    {
+      "code": "FLAG_SINGAPORE",
+      "title": "Singapore",
+      "sourceFile": "flag-of-singapore.json",
+      "outputFile": "flag-of-singapore.json",
+      "sourceUrl": "https://iconscout.com/lottie-animation-pack/country-flag-animation-pack_437278",
+      "restyle": {
+        "bounds": [
+          0.275,
+          0.338,
+          0.717,
+          0.658
+        ],
+        "fill": 0.86
+      },
+      "status": "integrated"
+    },
+    {
+      "code": "FLAG_TUNISIA",
+      "title": "Tunisia",
+      "sourceFile": "flag-of-tunisia.json",
+      "outputFile": "flag-of-tunisia.json",
+      "sourceUrl": "https://iconscout.com/lottie-animation-pack/country-flag-animation-pack_437278",
+      "status": "rejected",
+      "rejected": "look-alike at 31 px: red field with a white crescent emblem, like FLAG_TURKEY"
+    },
+    {
+      "code": "FLAG_TONGA",
+      "title": "Tonga",
+      "sourceFile": "flag-of-tonga.json",
+      "outputFile": "flag-of-tonga.json",
+      "sourceUrl": "https://iconscout.com/lottie-animation-pack/country-flag-animation-pack_437278",
+      "status": "rejected",
+      "rejected": "look-alike at 31 px: red field with a small white corner patch, like FLAG_SWITZERLAND / FLAG_TURKEY"
+    },
+    {
+      "code": "FLAG_NORTHERN_CYPRUS",
+      "title": "Northern Cyprus",
+      "sourceFile": "flag-of-turkish-republic-of-northern-cyprus.json",
+      "outputFile": "flag-of-turkish-republic-of-northern-cyprus.json",
+      "sourceUrl": "https://iconscout.com/lottie-animation-pack/country-flag-animation-pack_437278",
+      "status": "rejected",
+      "rejected": "look-alike at 31 px: red crescent on white, the inverse of FLAG_TURKEY; white field like FLAG_SOUTH_KOREA"
+    },
+    {
+      "code": "FLAG_TAIWAN",
+      "title": "Taiwan",
+      "sourceFile": "flag-of-taiwan-republic-of-china.json",
+      "outputFile": "flag-of-taiwan-republic-of-china.json",
+      "sourceUrl": "https://iconscout.com/lottie-animation-pack/country-flag-animation-pack_437278",
+      "status": "rejected",
+      "rejected": "look-alike at 31 px: red field with a blue canton, same as FLAG_SAMOA"
+    },
+    {
+      "code": "FLAG_UNITED_STATES",
+      "title": "United States",
+      "sourceFile": "flag-of-united-states-of-america.json",
+      "outputFile": "flag-of-united-states-of-america.json",
+      "sourceUrl": "https://iconscout.com/lottie-animation-pack/country-flag-animation-pack_437278",
+      "status": "rejected",
+      "rejected": "584 KB (about 2x the 300 KB the pipeline warns at; mask-traced stripes), and red/white with a blue canton like FLAG_SAMOA at 31 px"
+    },
+    {
+      "code": "FLAG_SUDAN",
+      "title": "Sudan",
+      "sourceFile": "flag-of-sudan.json",
+      "outputFile": "flag-of-sudan.json",
+      "sourceUrl": "https://iconscout.com/lottie-animation-pack/country-flag-animation-pack_437278",
+      "status": "rejected",
+      "rejected": "look-alike at 31 px: red/white/black bands with a hoist triangle, like FLAG_UNITED_ARAB_EMIRATES and FLAG_YEMEN"
+    },
+    {
+      "code": "FLAG_YEMEN",
+      "title": "Yemen",
+      "sourceFile": "flag-of-yemen.json",
+      "outputFile": "flag-of-yemen.json",
+      "sourceUrl": "https://iconscout.com/lottie-animation-pack/country-flag-animation-pack_437278",
+      "status": "rejected",
+      "rejected": "look-alike at 31 px: red/white/black bands, same as FLAG_SYRIA and FLAG_SUDAN, close to FLAG_UNITED_ARAB_EMIRATES"
+    },
+    {
+      "code": "FLAG_SYRIA",
+      "title": "Syria",
+      "sourceFile": "flag-of-syria.json",
+      "outputFile": "flag-of-syria.json",
+      "sourceUrl": "https://iconscout.com/lottie-animation-pack/country-flag-animation-pack_437278",
+      "status": "rejected",
+      "rejected": "look-alike at 31 px: red/white/black bands like FLAG_YEMEN; the two stars vanish"
+    },
+    {
+      "code": "FLAG_SOUTH_SUDAN",
+      "title": "South Sudan",
+      "sourceFile": "flag-of-south-sudan.json",
+      "outputFile": "flag-of-south-sudan.json",
+      "sourceUrl": "https://iconscout.com/lottie-animation-pack/country-flag-animation-pack_437278",
+      "status": "rejected",
+      "rejected": "look-alike at 31 px: black/red/green bands with a hoist triangle, like FLAG_UNITED_ARAB_EMIRATES"
+    },
+    {
+      "code": "FLAG_SLOVAKIA",
+      "title": "Slovakia",
+      "sourceFile": "flag-of-slovakia.json",
+      "outputFile": "flag-of-slovakia.json",
+      "sourceUrl": "https://iconscout.com/lottie-animation-pack/country-flag-animation-pack_437278",
+      "status": "rejected",
+      "rejected": "look-alike at 31 px: white/blue/red bands, near-identical to FLAG_SLOVENIA (the pack art of the two looks swapped)"
+    },
+    {
+      "code": "FLAG_SLOVENIA",
+      "title": "Slovenia",
+      "sourceFile": "flag-of-slovenia.json",
+      "outputFile": "flag-of-slovenia.json",
+      "sourceUrl": "https://iconscout.com/lottie-animation-pack/country-flag-animation-pack_437278",
+      "status": "rejected",
+      "rejected": "look-alike at 31 px: white/blue/red bands, near-identical to FLAG_SLOVAKIA (the pack art of the two looks swapped)"
+    },
+    {
+      "code": "FLAG_UZBEKISTAN",
+      "title": "Uzbekistan",
+      "sourceFile": "flag-of-uzbekistan.json",
+      "outputFile": "flag-of-uzbekistan.json",
+      "sourceUrl": "https://iconscout.com/lottie-animation-pack/country-flag-animation-pack_437278",
+      "status": "rejected",
+      "rejected": "look-alike at 31 px: blue/white/green bands, FLAG_SIERRA_LEONE reversed"
+    },
+    {
+      "code": "FLAG_TAJIKISTAN",
+      "title": "Tajikistan",
+      "sourceFile": "flag-of-tajikistan.json",
+      "outputFile": "flag-of-tajikistan.json",
+      "sourceUrl": "https://iconscout.com/lottie-animation-pack/country-flag-animation-pack_437278",
+      "status": "rejected",
+      "rejected": "look-alike at 31 px: red/white/green bands like FLAG_SURINAME; the crown vanishes"
+    },
+    {
+      "code": "FLAG_SOUTH_OSSETIA",
+      "title": "South Ossetia",
+      "sourceFile": "flag-of-south-ossetia.json",
+      "outputFile": "flag-of-south-ossetia.json",
+      "sourceUrl": "https://iconscout.com/lottie-animation-pack/country-flag-animation-pack_437278",
+      "status": "rejected",
+      "rejected": "look-alike at 31 px: white/red/yellow bands, close to FLAG_SINGAPORE (red/white)"
+    },
+    {
+      "code": "FLAG_VENEZUELA",
+      "title": "Venezuela",
+      "sourceFile": "flag-of-venezuela.json",
+      "outputFile": "flag-of-venezuela.json",
+      "sourceUrl": "https://iconscout.com/lottie-animation-pack/country-flag-animation-pack_437278",
+      "status": "rejected",
+      "rejected": "look-alike at 31 px: yellow/blue/red bands like FLAG_UKRAINE; the stars vanish"
+    },
+    {
+      "code": "FLAG_SAO_TOME_AND_PRINCIPE",
+      "title": "Sao Tome and Principe",
+      "sourceFile": "flag-of-sao-tome-and-principe.json",
+      "outputFile": "flag-of-sao-tome-and-principe.json",
+      "sourceUrl": "https://iconscout.com/lottie-animation-pack/country-flag-animation-pack_437278",
+      "status": "rejected",
+      "rejected": "look-alike at 31 px: green/yellow bands with a red hoist mark, like FLAG_TOGO"
+    },
+    {
+      "code": "FLAG_SAINT_VINCENT",
+      "title": "Saint Vincent and the Grenadines",
+      "sourceFile": "flag-of-saint-vincent-and-the-grenadines.json",
+      "outputFile": "flag-of-saint-vincent-and-the-grenadines.json",
+      "sourceUrl": "https://iconscout.com/lottie-animation-pack/country-flag-animation-pack_437278",
+      "status": "rejected",
+      "rejected": "look-alike at 31 px: blue/yellow/green, like FLAG_SWEDEN / FLAG_UKRAINE; the diamonds vanish"
+    },
+    {
+      "code": "FLAG_SOLOMON_ISLANDS",
+      "title": "Solomon Islands",
+      "sourceFile": "flag-of-solomon-islands.json",
+      "outputFile": "flag-of-solomon-islands.json",
+      "sourceUrl": "https://iconscout.com/lottie-animation-pack/country-flag-animation-pack_437278",
+      "status": "rejected",
+      "rejected": "look-alike at 31 px: blue/green halves with a yellow diagonal, like FLAG_TANZANIA"
+    },
+    {
+      "code": "FLAG_VANUATU",
+      "title": "Vanuatu",
+      "sourceFile": "flag-of-vanuatu.json",
+      "outputFile": "flag-of-vanuatu.json",
+      "sourceUrl": "https://iconscout.com/lottie-animation-pack/country-flag-animation-pack_437278",
+      "status": "rejected",
+      "rejected": "look-alike at 31 px: black triangle and Y band, like FLAG_SOUTH_AFRICA"
+    },
+    {
+      "code": "FLAG_SOMALIA",
+      "title": "Somalia",
+      "sourceFile": "flag-of-somalia.json",
+      "outputFile": "flag-of-somalia.json",
+      "sourceUrl": "https://iconscout.com/lottie-animation-pack/country-flag-animation-pack_437278",
+      "status": "rejected",
+      "rejected": "look-alike at 31 px: plain blue with a tiny white star, like FLAG_SCOTLAND / FLAG_SAINT_LUCIA"
     }
   ]
 }

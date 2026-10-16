@@ -32,7 +32,7 @@ Set<String> integrated(String path) => {
 };
 
 /// Checks the published content without the generated tree (which is not in
-/// git): the committed starter pack carries the manifest (all 200 levels)
+/// git): the committed starter pack carries the manifest (every level)
 /// and the registry, and the campaign is regenerated from the catalog with
 /// the registry's symbols. Every regenerated level must hash to its manifest
 /// entry, so the checks below cover the exact published files.
@@ -68,16 +68,17 @@ void main() {
     }
   });
 
-  test('the manifest lists levels 1-200 in order with tier, size and tray', () {
-    expect(manifest.levels.map((e) => e.order), [for (var i = 1; i <= 200; i++) i]);
-    expect(manifest.levels.map((e) => e.levelId), [for (var i = 1; i <= 200; i++) 'level-${i.toString().padLeft(4, '0')}']);
+  test('the manifest lists every level in order with tier, size and tray', () {
+    final count = campaign.levelCount;
+    expect(manifest.levels.map((e) => e.order), [for (var i = 1; i <= count; i++) i]);
+    expect(manifest.levels.map((e) => e.levelId), [for (var i = 1; i <= count; i++) 'level-${i.toString().padLeft(4, '0')}']);
     for (final (i, entry) in manifest.levels.indexed) {
       expect(entry.difficulty, levels[i].difficulty);
       expect(entry.tileCount, levels[i].tiles.length);
       expect(entry.trayCapacity, levels[i].rules.trayCapacity, reason: 'lists never need the level file');
       expect(entry.title, levels[i].title);
     }
-    expect(manifest.minClientContentSchema, 2, reason: 'animated symbols need client content schema 2');
+    expect(manifest.minClientContentSchema, 3, reason: 'trays of 2-3 slots and numeric tiers need client content schema 3');
   });
 
   test('the starter pack: levels 1-5, exactly their art, and nothing else', () async {
@@ -126,18 +127,15 @@ void main() {
     expect(used, registry.symbols.keys.toSet(), reason: 'every integrated symbol appears in some level');
   });
 
-  test('tiers: 50 each, shuffled, level 1 easy, never three in a row, stored with labels', () {
+  test('difficulty 1-10: batch counts, shuffled, level 1 is 1, never three in a row, stored with labels', () {
     final order = [for (final level in levels) level.difficulty!];
     expect(order, scheduleTiers(campaign), reason: 'the seeded schedule');
-    expect(order.first, 'easy');
+    expect(order.first, '1');
     expect(longestRun(order), lessThanOrEqualTo(2));
     expect({for (final id in order) id: order.where((t) => t == id).length}, {
-      'easy': 50,
-      'medium': 50,
-      'hard': 50,
-      'veryHard': 50,
+      for (final t in campaign.tiers) t.id: campaign.batches.fold<int>(0, (n, b) => n + (b[t.id] ?? 0)),
     });
-    expect(order.toSet().map(difficultyLabel), {'Easy', 'Medium', 'Hard', 'Very Hard'});
+    expect(order.toSet().map(difficultyLabel), {for (var d = 1; d <= 10; d++) '$d/10'});
   });
 
   test('tiers differ in size, depth, symbols, free tiles and tray', () {
@@ -156,26 +154,24 @@ void main() {
     }
 
     double mean(Iterable<num> values) => values.fold(0.0, (a, b) => a + b) / values.length;
-    final ids = ['easy', 'medium', 'hard', 'veryHard'];
+    final ids = [for (final t in campaign.tiers) t.id];
     for (final id in ids) {
       final tier = campaign.tier(id);
       for (final level in byTier[id]!) {
         expect(level.tiles.length, inInclusiveRange(tier.minTiles, tier.maxTiles), reason: level.levelId);
         expect(layers(level), inInclusiveRange(tier.minLayers, tier.maxLayers), reason: level.levelId);
-        expect(level.rules.trayCapacity, id == 'easy' || id == 'medium' ? 4 : 5, reason: level.levelId);
+        expect(level.rules.trayCapacity, inInclusiveRange(tier.trayCapacity, tier.maxTrayCapacity), reason: level.levelId);
       }
     }
     for (var i = 1; i < ids.length; i++) {
       final easier = byTier[ids[i - 1]]!, harder = byTier[ids[i]]!;
-      expect(mean(harder.map((l) => l.tiles.length)), greaterThan(mean(easier.map((l) => l.tiles.length))));
-      expect(mean(harder.map(layers)), greaterThan(mean(easier.map(layers))));
-      expect(
-        mean(harder.map((l) => l.tiles.map((t) => t.symbolCode).toSet().length)),
-        greaterThan(mean(easier.map((l) => l.tiles.map((t) => t.symbolCode).toSet().length))),
-      );
+      expect(mean(harder.map((l) => l.tiles.length)), greaterThan(mean(easier.map((l) => l.tiles.length))), reason: ids[i]);
+      expect(mean(harder.map((l) => l.rules.trayCapacity)), lessThanOrEqualTo(mean(easier.map((l) => l.rules.trayCapacity))), reason: ids[i]);
     }
-    expect(mean(byTier['veryHard']!.map(freeShare)), lessThan(mean(byTier['easy']!.map(freeShare))));
-    expect(byTier['veryHard']!.map((l) => l.tiles.length).reduce((a, b) => a < b ? a : b), greaterThanOrEqualTo(144));
+    expect(mean(byTier['10']!.map(layers)), greaterThan(mean(byTier['5']!.map(layers))));
+    expect(mean(byTier['5']!.map(layers)), greaterThan(mean(byTier['1']!.map(layers))));
+    expect(mean(byTier['10']!.map(freeShare)), lessThan(mean(byTier['1']!.map(freeShare))));
+    expect(byTier['10']!.map((l) => l.tiles.length).reduce((a, b) => a < b ? a : b), greaterThanOrEqualTo(144));
   });
 
   test('the simulated tray player wins less from tier to tier', () {
@@ -189,20 +185,35 @@ void main() {
       (rates[level.difficulty!] ??= []).add(simulator.run(runs: 60, seed: 5).winRate);
     }
     double mean(String id) => rates[id]!.reduce((a, b) => a + b) / rates[id]!.length;
-    expect(mean('easy'), greaterThanOrEqualTo(0.6));
-    expect(mean('medium'), lessThan(mean('easy')));
-    expect(mean('hard'), lessThan(mean('medium')));
-    expect(mean('veryHard'), lessThan(mean('hard')));
-    expect(mean('veryHard'), lessThanOrEqualTo(0.05));
+    expect(mean('1'), greaterThanOrEqualTo(0.6));
+    for (var d = 2; d <= 10; d++) {
+      expect(mean('$d'), lessThanOrEqualTo(mean('${d - 1}') + 0.05), reason: 'difficulty $d');
+    }
+    expect(mean('10'), lessThan(mean('5')));
+    expect(mean('5'), lessThan(mean('1')));
+    expect(mean('10'), lessThanOrEqualTo(0.05));
   });
 
-  test('70/30 symbols: floor(30%) of pairs animated (at least one), at most 12 distinct animated', () {
+  test('85/15 symbols: floor(15%) of pairs animated (at least one), at most 12 distinct animated', () {
+    expect(campaign.animatedShare, 0.15);
     for (final level in levels) {
       final pairs = level.pairCount;
       final animatedTiles = level.tiles.where((t) => registry[t.symbolCode]!.isAnimated).toList();
-      expect(animatedTiles.length ~/ 2, (pairs * 0.3).floor().clamp(1, pairs), reason: level.levelId);
-      expect(animatedTiles.length / level.tiles.length, lessThanOrEqualTo(0.3), reason: level.levelId);
+      expect(animatedTiles.length ~/ 2, (pairs * 0.15).floor().clamp(1, pairs), reason: level.levelId);
       expect(animatedTiles.map((t) => t.symbolCode).toSet().length, lessThanOrEqualTo(campaign.maxDistinctAnimated));
+    }
+  });
+
+  test('no symbol has more than maxPairsPerSymbol pairs on a level', () {
+    expect(campaign.maxPairsPerSymbol, 2);
+    for (final level in levels) {
+      final counts = <String, int>{};
+      for (final tile in level.tiles) {
+        counts[tile.symbolCode] = (counts[tile.symbolCode] ?? 0) + 1;
+      }
+      for (final MapEntry(:key, :value) in counts.entries) {
+        expect(value, lessThanOrEqualTo(2 * campaign.maxPairsPerSymbol!), reason: '${level.levelId} $key');
+      }
     }
   });
 
@@ -237,7 +248,7 @@ void main() {
 
   test('pubspec bundles only the starter pack', () {
     final pubspec = File('pubspec.yaml').readAsStringSync();
-    for (final dir in ['manifest.json', 'registries/', 'levels/', 'symbols/v4/', 'animated-symbols/']) {
+    for (final dir in ['manifest.json', 'registries/', 'levels/', 'symbols/v1/', 'animated-symbols/']) {
       expect(pubspec, contains('- content/starter/$dir'));
     }
     expect(pubspec, isNot(contains('content/brain-train')), reason: 'the full tree lives on R2 only');

@@ -370,8 +370,8 @@ void main() {
     await tester.runAsync(() async {
       services = await _services(full: full);
       snapshot = services.content.snapshot;
-      // A medium level: 4-slot tray, enough distinct symbols to fill it.
-      meadow = snapshot.playableEntries.firstWhere((e) => e.difficulty == 'medium');
+      // A difficulty-4 level: 4-slot tray, enough distinct symbols to fill it.
+      meadow = snapshot.playableEntries.firstWhere((e) => e.difficulty == '4');
     });
   }
 
@@ -438,10 +438,10 @@ void main() {
     await _leave(tester);
   });
 
-  testWidgets('a x2 combo on a hard board (5 wells) at 360x640: Best shows above the tiles', (tester) async {
+  testWidgets('a x2 combo on a 5-well board at 360x640: Best shows above the tiles', (tester) async {
     await start(tester);
     final clock = FakeStopwatch();
-    final entry = snapshot.playableEntries.firstWhere((e) => e.difficulty == 'hard');
+    final entry = snapshot.playableEntries.firstWhere((e) => e.trayCapacity == 5 && e.difficulty == '2');
     final level = snapshot.levels[entry.levelId]!;
     await _pumpGame(tester, services: services, entry: entry, phone: _small, stopwatch: clock);
     final game = _gameOf(tester);
@@ -743,7 +743,7 @@ void main() {
   });
 
   // One board per tier, the largest of each, at both phone sizes.
-  for (final tier in ['easy', 'medium', 'hard', 'veryHard']) {
+  for (final tier in ['1', '4', '7', '10']) {
     for (final phone in [_small, _large]) {
       testWidgets('largest $tier board fits ${phone.name}', skip: !_hasFullTree /* needs content/brain-train/ */, (tester) async {
         await start(tester, full: true);
@@ -758,7 +758,8 @@ void main() {
         }
         expect(tester.takeException(), isNull);
         expect(find.text('0/${level.pairCount}'), findsOneWidget);
-        final capacity = tier == 'hard' || tier == 'veryHard' ? 5 : 4;
+        final capacity = level.rules.trayCapacity;
+        expect(capacity, inInclusiveRange(2, 5));
         expect(find.bySemanticsLabel('Tray, 0 of $capacity tiles'), findsOneWidget);
         _expectBottomHud(tester, phone);
         // Tiles stay big enough to tap.
@@ -776,11 +777,11 @@ void main() {
     }
   }
 
-  // The 5-slot tray of hard and very hard levels.
+  // The 5-slot tray of the easiest levels (the widest tray).
   for (final (phone, textScale) in [(_small, 1.3), (_large, 1.0)]) {
     testWidgets('5-slot tray ${phone.name}: empty, four held, full', (tester) async {
       await start(tester);
-      final entry = snapshot.playableEntries.firstWhere((e) => e.difficulty == 'hard');
+      final entry = snapshot.playableEntries.firstWhere((e) => e.trayCapacity == 5 && e.difficulty == '2');
       final level = snapshot.levels[entry.levelId]!;
       expect(level.rules.trayCapacity, 5);
 
@@ -862,11 +863,11 @@ void main() {
       return frames;
     }
 
-    testWidgets('a contact sheet per mix style, on hard and very hard boards', skip: !_hasFullTree /* needs content/brain-train/ */, (tester) async {
+    testWidgets('a contact sheet per mix style, on difficulty 7-10 boards', skip: !_hasFullTree /* needs content/brain-train/ */, (tester) async {
       await start(tester, full: true);
       for (final style in IntroStyle.values) {
         final entry = snapshot.playableEntries.firstWhere(
-          (e) => (e.difficulty == 'hard' || e.difficulty == 'veryHard') && IntroStyle.forLevel(e.levelId) == style,
+          (e) => int.parse(e.difficulty!) >= 7 && IntroStyle.forLevel(e.levelId) == style,
         );
         await _pumpGame(tester, services: services, entry: entry, phone: _large);
         expect(_introOf(tester).isRunning, isFalse);
@@ -876,19 +877,19 @@ void main() {
       }
     });
 
-    testWidgets('the clock starts after the tier\'s intro: 2.6 s on a hard board', (tester) async {
+    testWidgets('the clock starts after the tier\'s intro: 2.333 s on a difficulty-4 board', (tester) async {
       await start(tester);
-      final hard = firstOf('hard');
+      final hard = firstOf('4');
       await _pumpGame(tester, services: services, entry: hard, phone: _large);
       final game = _gameOf(tester);
       game.restart();
       await tester.pump();
       await tester.pump();
-      expect(_introOf(tester).intro!.choreography.total, 2.6);
-      await _introTo(tester, 2.5);
+      expect(_introOf(tester).intro!.choreography.total, closeTo(2.333, 1e-9));
+      await _introTo(tester, 2.25);
       expect(game.introPlaying, isTrue, reason: 'longer than an easy intro');
       expect(game.elapsed, Duration.zero);
-      await _introTo(tester, 2.6);
+      await _introTo(tester, 2.333);
       await tester.pump();
       expect(game.introPlaying, isFalse);
       // The clock is a real stopwatch: give it real time.
@@ -897,14 +898,14 @@ void main() {
       await _leave(tester);
     });
 
-    testWidgets('frame sequence at 411x914: a very hard level and an easy one', skip: !_hasFullTree /* needs content/brain-train/ */, (tester) async {
+    testWidgets('frame sequence at 411x914: a difficulty-10 level and a difficulty-1 one', skip: !_hasFullTree /* needs content/brain-train/ */, (tester) async {
       await start(tester, full: true);
-      final hard = firstOf('veryHard');
+      final hard = firstOf('10');
       await _pumpGame(tester, services: services, entry: hard, phone: _large);
       expect(snapshot.levels[hard.levelId]!.tiles.length, greaterThan(140));
       final hardFrames = await sequence(tester, 'intro_${hard.levelId}_411x914');
       await _leave(tester);
-      final easy = firstOf('easy');
+      final easy = firstOf('1');
       await _pumpGame(tester, services: services, entry: easy, phone: _large);
       final easyFrames = await sequence(tester, 'intro_${easy.levelId}_411x914');
       await _writeSheet(tester, 'intro_sheet', [hardFrames, easyFrames]);
@@ -968,7 +969,7 @@ void main() {
 
     testWidgets('leaving during the intro frees it cleanly', skip: !_hasFullTree /* needs content/brain-train/ */, (tester) async {
       await start(tester, full: true);
-      await _pumpGame(tester, services: services, entry: firstOf('veryHard'), phone: _large, intro: _IntroWait.start);
+      await _pumpGame(tester, services: services, entry: firstOf('10'), phone: _large, intro: _IntroWait.start);
       final intro = _introOf(tester).intro!;
       await _introTo(tester, 0.5);
       await _leave(tester);

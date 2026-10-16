@@ -69,11 +69,12 @@ class CampaignLevel {
 /// Reproducible: the same config and pools give the same levels, byte for
 /// byte. The board, title, backdrop, removal order, how many symbols a level
 /// has and which pairs share one depend only on the config and the level
-/// number; the symbol pools only decide which codes fill those slots, by
-/// rendezvous hashing (each level ranks every code by a hash of the level
-/// and the code and takes the best). A new symbol therefore changes only
-/// the levels that rank it high enough, and never a board's shape, its
-/// difficulty or its simulated win rate.
+/// number; the symbol pools only decide which codes fill those slots. Level
+/// by level, the codes used least so far come first (ties broken by a hash
+/// of the level and the code), so every symbol is on some level before any
+/// symbol is on many. A new symbol therefore changes codes (from the first
+/// level that picks it on), never a board's shape, its difficulty or its
+/// simulated win rate.
 class CampaignGenerator {
   CampaignGenerator({
     required this.config,
@@ -100,14 +101,26 @@ class CampaignGenerator {
     final decor = LevelDecor(config.seed);
     final recentFamilies = <String>[];
     final familyUses = <String, int>{};
-    final perTierIndex = <String, int>{};
     final levels = <CampaignLevel>[];
+    final uses = <String, int>{for (final code in [...staticPool, ...animatedPool]) code: 0};
+    // Board size grows through a tier's levels within each batch.
+    var batch = 0, batchStart = 0;
+    var perTierIndex = <String, int>{};
     for (var i = 0; i < tiers.length; i++) {
       final order = i + 1;
+      while (i - batchStart >= config.batches[batch].values.fold(0, (sum, n) => sum + n)) {
+        batchStart += config.batches[batch].values.fold(0, (sum, n) => sum + n);
+        batch++;
+        perTierIndex = {};
+      }
       final spec = config.tier(tiers[i]);
       final indexInTier = perTierIndex[spec.id] = (perTierIndex[spec.id] ?? -1) + 1;
-      final progress = spec.count <= 1 ? 0.5 : indexInTier / (spec.count - 1);
-      final level = _generateLevel(order, spec, progress, recentFamilies, familyUses, decor);
+      final count = config.countIn(batch, spec.id);
+      final progress = count <= 1 ? 0.5 : indexInTier / (count - 1);
+      final level = _generateLevel(order, spec, progress, recentFamilies, familyUses, decor, uses);
+      for (final code in [...level.staticSymbols, ...level.animatedSymbols]) {
+        uses[code] = uses[code]! + 1;
+      }
       recentFamilies.add(level.shape.family);
       familyUses[level.shape.family] = (familyUses[level.shape.family] ?? 0) + 1;
       levels.add(level);
@@ -138,8 +151,10 @@ class CampaignGenerator {
     List<String> recentFamilies,
     Map<String, int> familyUses,
     LevelDecor decor,
+    Map<String, int> uses,
   ) {
     final levelId = levelIdFor(order);
+    final trayCapacity = config.trayCapacityFor(order, spec);
     final shapes = _shapesFor(spec);
     if (shapes.isEmpty) throw StateError('tier ${spec.id}: no board fits its tile, layer, fit and free ranges');
     final random = SeededRandom.of(['board', config.seed, order]);
@@ -182,7 +197,7 @@ class CampaignGenerator {
       final shape = candidates[random.nextInt(math.min(4, candidates.length))];
       tried.add(shape);
       attempts++;
-      final built = _build(levelId, spec, shape, attempt);
+      final built = _build(levelId, spec, trayCapacity, shape, attempt);
       if (built == null) continue;
       final rate = built.simulation.winRate;
       final distance = rate < spec.minWinRate
@@ -200,8 +215,8 @@ class CampaignGenerator {
 
     final title = decor.title(order, best.shape.family);
     final backdrop = decor.backdrop(order);
-    final staticCodes = _rank('static', levelId, staticPool, best.distinctStatic);
-    final animatedCodes = _rank('animated', levelId, animatedPool, best.distinctAnimated);
+    final staticCodes = _rank('static', levelId, staticPool, best.distinctStatic, uses);
+    final animatedCodes = _rank('animated', levelId, animatedPool, best.distinctAnimated, uses);
     final codes = [
       for (final id in best.tileSymbols) id < best.distinctStatic ? staticCodes[id] : animatedCodes[id - best.distinctStatic],
     ];
@@ -211,7 +226,7 @@ class CampaignGenerator {
       title: title,
       difficulty: spec.id,
       board: const BoardConfig(),
-      rules: LevelRules(trayCapacity: spec.trayCapacity),
+      rules: LevelRules(trayCapacity: trayCapacity),
       backdrop: LevelBackdrop(colors: backdrop),
       tiles: [
         for (var i = 0; i < slots.length; i++)
@@ -234,7 +249,7 @@ class CampaignGenerator {
       pairSeekingSimulation: TraySimulator(
         geometry: best.geometry,
         keys: best.tileSymbols,
-        capacity: spec.trayCapacity,
+        capacity: trayCapacity,
       ).run(runs: config.simulationRuns, seed: stableHash([config.seed, levelId, 'pairs']), player: TrayPlayer.pairSeeking),
       staticPairs: best.staticPairs,
       animatedPairs: best.animatedPairs,
@@ -255,22 +270,23 @@ class CampaignGenerator {
     return options.last;
   }
 
-  /// The [count] codes of [pool] that rank highest for [levelId].
-  List<String> _rank(String kind, String levelId, List<String> pool, int count) {
+  /// The [count] codes of [pool] for [levelId]: the least used so far
+  /// ([uses]), ties by a hash of the level and the code.
+  List<String> _rank(String kind, String levelId, List<String> pool, int count, Map<String, int> uses) {
     if (count == 0) return const [];
-    final scored = [for (final code in pool) (stableHash([kind, config.seed, levelId, code]), code)]
-      ..sort((a, b) => a.$1 != b.$1 ? b.$1.compareTo(a.$1) : a.$2.compareTo(b.$2));
-    return [for (final (_, code) in scored.take(count)) code];
+    final scored = [for (final code in pool) (uses[code] ?? 0, stableHash([kind, config.seed, levelId, code]), code)]
+      ..sort((a, b) => a.$1 != b.$1 ? a.$1.compareTo(b.$1) : (a.$2 != b.$2 ? b.$2.compareTo(a.$2) : a.$3.compareTo(b.$3)));
+    return [for (final (_, _, code) in scored.take(count)) code];
   }
 
   /// Animated pairs for [pairs] pairs: floor(pairs * share), at least one
-  /// (when any animated symbol exists), never more than 30%.
+  /// (when any animated symbol exists); the share is at most 30%.
   int animatedPairsFor(int pairs) {
     if (animatedPool.isEmpty || config.animatedShare <= 0 || pairs < 2) return 0;
     return math.max(1, (pairs * config.animatedShare).floor());
   }
 
-  _Built? _build(String levelId, TierSpec spec, BoardShape shape, int attempt) {
+  _Built? _build(String levelId, TierSpec spec, int trayCapacity, BoardShape shape, int attempt) {
     final slots = shape.slots;
     final blank = LevelDefinition(
       levelId: levelId,
@@ -295,15 +311,21 @@ class CampaignGenerator {
     final pairs = order.length;
     final animatedPairs = animatedPairsFor(pairs);
     final staticPairs = pairs - animatedPairs;
+    // At least ceil(pairs / maxPairsPerSymbol) symbols, so none repeats more.
+    final cap = config.maxPairsPerSymbol;
+    int atLeast(int pairs) => cap == null ? 1 : (pairs / cap).ceil();
     final distinctStatic = staticPairs == 0
         ? 0
-        : (staticPairs / spec.pairsPerStaticSymbol).round().clamp(1, math.min(staticPairs, staticPool.length)).toInt();
+        : math
+              .max((staticPairs / spec.pairsPerStaticSymbol).round(), atLeast(staticPairs))
+              .clamp(1, math.min(staticPairs, staticPool.length))
+              .toInt();
     final distinctAnimated = animatedPairs == 0
         ? 0
-        : (animatedPairs / spec.pairsPerAnimatedSymbol).ceil().clamp(
-            1,
-            math.min(animatedPairs, math.min(config.maxDistinctAnimated, animatedPool.length)),
-          ).toInt();
+        : math
+              .max((animatedPairs / spec.pairsPerAnimatedSymbol).ceil(), atLeast(animatedPairs))
+              .clamp(1, math.min(animatedPairs, math.min(config.maxDistinctAnimated, animatedPool.length)))
+              .toInt();
     // Abstract symbols 0..distinctStatic-1 are static, the rest animated;
     // each spread as evenly as possible over its pairs.
     final bag = [
@@ -336,7 +358,7 @@ class CampaignGenerator {
     final simulation = TraySimulator(
       geometry: geometry,
       keys: tileSymbols,
-      capacity: spec.trayCapacity,
+      capacity: trayCapacity,
     ).run(runs: config.simulationRuns, seed: stableHash([config.seed, levelId, attempt]));
     return _Built(
       shape: shape,

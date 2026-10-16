@@ -1,9 +1,23 @@
 import '../models/json_reader.dart';
+import '../models/level_rules.dart';
+import 'seeded_random.dart';
 
-/// Display label for a difficulty id: known tiers by name, anything else
-/// split at its capitals (`veryHard` -> `Very Hard`), so a new tier in the
-/// content needs no app change.
+/// Highest difficulty of the numeric scale: tier ids `1`..`10`.
+const int kMaxDifficulty = 10;
+
+/// The numeric difficulty of a tier id (`1`..[kMaxDifficulty]), or null for
+/// a named tier (`easy`, `veryHard`, ...).
+int? numericDifficulty(String id) {
+  final value = int.tryParse(id);
+  return value != null && value >= 1 && value <= kMaxDifficulty && '$value' == id ? value : null;
+}
+
+/// Display label for a difficulty id: numeric tiers as `7/10`, named ones
+/// split at their capitals (`veryHard` -> `Very Hard`), so a new tier in
+/// the content needs no app change.
 String difficultyLabel(String id) {
+  final number = numericDifficulty(id);
+  if (number != null) return '$number/$kMaxDifficulty';
   final words = id
       .replaceAllMapped(RegExp('([a-z0-9])([A-Z])'), (m) => '${m[1]} ${m[2]}')
       .replaceAll(RegExp('[_-]+'), ' ')
@@ -26,6 +40,7 @@ class TierSpec {
     required this.minLayers,
     required this.maxLayers,
     this.trayCapacity = 4,
+    int? maxTrayCapacity,
     this.pairsPerStaticSymbol = 1,
     this.pairsPerAnimatedSymbol = 1,
     this.stalePairing = 0,
@@ -34,7 +49,7 @@ class TierSpec {
     this.minWinRate = 0,
     this.maxWinRate = 1,
     this.families = const [],
-  });
+  }) : maxTrayCapacity = maxTrayCapacity ?? trayCapacity;
 
   factory TierSpec.fromJson(JsonReader json) {
     List<int> range(String key) {
@@ -54,16 +69,28 @@ class TierSpec {
       return values;
     }
 
-    final tiles = range('tiles'), layers = range('layers');
+    // `trayCapacity`: one size, or [min, max] picked per level.
+    List<int> tray() {
+      if (!json.has('trayCapacity')) return [4, 4];
+      try {
+        final size = json.integer('trayCapacity');
+        return [size, size];
+      } on JsonFormatException {
+        return range('trayCapacity');
+      }
+    }
+
+    final tiles = range('tiles'), layers = range('layers'), trays = tray();
     final free = ratio('freeRatio', 0, 1), win = ratio('winRate', 0, 1);
     return TierSpec(
       id: json.string('id'),
-      count: json.integer('count'),
+      count: json.optInt('count') ?? 0,
       minTiles: tiles[0],
       maxTiles: tiles[1],
       minLayers: layers[0],
       maxLayers: layers[1],
-      trayCapacity: json.optInt('trayCapacity') ?? 4,
+      trayCapacity: trays[0],
+      maxTrayCapacity: trays[1],
       pairsPerStaticSymbol: json.numberOr('pairsPerStaticSymbol', 1),
       pairsPerAnimatedSymbol: json.numberOr('pairsPerAnimatedSymbol', 1),
       stalePairing: json.numberOr('stalePairing', 0),
@@ -75,8 +102,11 @@ class TierSpec {
     );
   }
 
-  /// Stored in levels and the manifest as `difficulty`, e.g. `veryHard`.
+  /// Stored in levels and the manifest as `difficulty`, e.g. `7` or
+  /// `veryHard`.
   final String id;
+
+  /// Levels of this tier when the campaign has no `batches`.
   final int count;
   final int minTiles;
   final int maxTiles;
@@ -85,8 +115,10 @@ class TierSpec {
   final int minLayers;
   final int maxLayers;
 
-  /// Tray slots for this tier's levels (`rules.trayCapacity`).
+  /// Tray slots for this tier's levels (`rules.trayCapacity`): each level
+  /// takes a seeded pick from [trayCapacity]..[maxTrayCapacity].
   final int trayCapacity;
+  final int maxTrayCapacity;
 
   /// Average pairs per distinct static / animated symbol: higher repeats
   /// symbols more (more ways to match, easier).
@@ -113,28 +145,41 @@ class TierSpec {
 
 /// Settings for the procedurally generated campaign (catalog `campaign`).
 class CampaignConfig {
-  const CampaignConfig({
+  CampaignConfig({
     required this.seed,
     required this.tiers,
+    List<Map<String, int>>? batches,
     this.firstTier = 'easy',
     this.maxTierRun = 2,
     this.animatedShare = 0.3,
     this.maxDistinctAnimated = 12,
+    this.maxPairsPerSymbol,
     this.simulationRuns = 200,
     this.minFaceWidth = 31,
     this.solverBudget = 500000,
     this.category = 'nature',
-  });
+  }) : batches = List.unmodifiable([
+         for (final batch in batches ?? [{for (final t in tiers) t.id: t.count}])
+           Map<String, int>.unmodifiable(batch),
+       ]);
 
   factory CampaignConfig.fromJson(Object? decoded) {
     final json = JsonReader(decoded);
+    final tiers = json.objectList('tiers').map(TierSpec.fromJson).toList();
     final config = CampaignConfig(
       seed: json.integer('seed'),
-      tiers: json.objectList('tiers').map(TierSpec.fromJson).toList(),
+      tiers: tiers,
+      batches: json.has('batches')
+          ? [
+              for (final batch in json.objectList('batches'))
+                {for (final t in tiers) t.id: batch.optInt(t.id) ?? 0},
+            ]
+          : null,
       firstTier: json.optString('firstTier') ?? 'easy',
       maxTierRun: json.optInt('maxTierRun') ?? 2,
       animatedShare: json.numberOr('animatedShare', 0.3),
       maxDistinctAnimated: json.optInt('maxDistinctAnimated') ?? 12,
+      maxPairsPerSymbol: json.optInt('maxPairsPerSymbol'),
       simulationRuns: json.optInt('simulationRuns') ?? 200,
       minFaceWidth: json.numberOr('minFaceWidth', 31),
       solverBudget: json.optInt('solverBudget') ?? 500000,
@@ -150,6 +195,12 @@ class CampaignConfig {
   /// Tiers in rising difficulty.
   final List<TierSpec> tiers;
 
+  /// Levels per tier id, batch by batch. Each batch is shuffled on its own
+  /// and follows the ones before it, so appending a batch never changes an
+  /// earlier level. Without `batches` in the catalog: one batch of the
+  /// tiers' `count`s.
+  final List<Map<String, int>> batches;
+
   /// Tier of level 1.
   final String firstTier;
 
@@ -163,6 +214,10 @@ class CampaignConfig {
   /// frame step into the board's `SymbolFrameAtlas`).
   final int maxDistinctAnimated;
 
+  /// Most pairs of one symbol on a level (2 = at most 4 tiles); null: only
+  /// the tiers' `pairsPer...Symbol` averages apply.
+  final int? maxPairsPerSymbol;
+
   /// Simulated tray games per level for calibration.
   final int simulationRuns;
 
@@ -174,7 +229,16 @@ class CampaignConfig {
   final int solverBudget;
   final String category;
 
-  int get levelCount => tiers.fold(0, (sum, t) => sum + t.count);
+  int get levelCount => batches.fold(0, (sum, b) => sum + b.values.fold(0, (s, n) => s + n));
+
+  /// Levels of [tierId] in batch [batch].
+  int countIn(int batch, String tierId) => batches[batch][tierId] ?? 0;
+
+  /// Tray slots of level [order] (1-based) of [tier]: a seeded pick from the
+  /// tier's range, independent of the board's random stream.
+  int trayCapacityFor(int order, TierSpec tier) => tier.trayCapacity == tier.maxTrayCapacity
+      ? tier.trayCapacity
+      : tier.trayCapacity + SeededRandom.of(['tray', seed, order]).nextInt(tier.maxTrayCapacity - tier.trayCapacity + 1);
 
   TierSpec tier(String id) => tiers.firstWhere((t) => t.id == id);
 
@@ -182,15 +246,25 @@ class CampaignConfig {
     if (tiers.isEmpty) 'no tiers',
     if (tiers.map((t) => t.id).toSet().length != tiers.length) 'duplicate tier ids',
     if (!tiers.any((t) => t.id == firstTier)) 'firstTier $firstTier is not a tier',
+    if (batches.isEmpty || levelCount < 1) 'no levels',
+    for (var b = 0; b < batches.length; b++)
+      for (final MapEntry(:key, :value) in batches[b].entries)
+        if (value < 0) 'batch ${b + 1}: $key count must not be negative',
+    if (batches.isNotEmpty && countIn(0, firstTier) < 1) 'firstTier $firstTier has no level in the first batch',
     if (maxTierRun < 1) 'maxTierRun must be at least 1',
     if (!(animatedShare >= 0 && animatedShare <= 0.3)) 'animatedShare must be within [0, 0.3]',
     if (maxDistinctAnimated < 1) 'maxDistinctAnimated must be at least 1',
+    if (maxPairsPerSymbol != null && maxPairsPerSymbol! < 1) 'maxPairsPerSymbol must be at least 1',
     for (final t in tiers) ...[
-      if (!RegExp(r'^[a-z][A-Za-z0-9]{0,31}$').hasMatch(t.id)) 'tier id ${t.id} must be camelCase letters',
-      if (t.count < 1) '${t.id}: count must be positive',
+      if (!RegExp(r'^[a-z][A-Za-z0-9]{0,31}$').hasMatch(t.id) && numericDifficulty(t.id) == null)
+        'tier id ${t.id} must be camelCase letters or 1-$kMaxDifficulty',
+      if (batches.every((batch) => (batch[t.id] ?? 0) < 1)) '${t.id}: count must be positive',
       if (t.minTiles < 2 || t.minTiles.isOdd || t.maxTiles.isOdd) '${t.id}: tile range must be even numbers',
       if (t.minLayers < 1) '${t.id}: layers start at 1',
-      if (t.trayCapacity < 2 || t.trayCapacity > 7) '${t.id}: trayCapacity must be 2-7',
+      if (!kAllowedTrayCapacities.contains(t.trayCapacity) ||
+          !kAllowedTrayCapacities.contains(t.maxTrayCapacity) ||
+          t.trayCapacity > t.maxTrayCapacity)
+        '${t.id}: trayCapacity must be within ${kAllowedTrayCapacities.join('/')}',
       if (t.pairsPerStaticSymbol < 1 || t.pairsPerAnimatedSymbol < 1) '${t.id}: pairs per symbol must be >= 1',
     ],
   ];

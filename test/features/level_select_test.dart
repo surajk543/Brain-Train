@@ -77,7 +77,10 @@ void main() {
     expect(LevelSelectScreen.focusIndex([LevelState.completed, LevelState.completed]), 1);
   });
 
-  test('difficulty styles: four tiers with their own colours, unknown ids still labelled', () {
+  test('difficulty styles: 1-10 read N/10 with their own colours; named and unknown ids still labelled', () {
+    final numeric = [for (var d = 1; d <= 10; d++) DifficultyStyle.of('$d')];
+    expect(numeric.map((s) => s.label), [for (var d = 1; d <= 10; d++) '$d/10']);
+    expect(numeric.map((s) => s.color).toSet(), hasLength(10));
     final styles = [for (final id in ['easy', 'medium', 'hard', 'veryHard']) DifficultyStyle.of(id)];
     expect(styles.map((s) => s.label), ['Easy', 'Medium', 'Hard', 'Very Hard']);
     expect(styles.map((s) => s.color).toSet(), hasLength(4));
@@ -89,13 +92,14 @@ void main() {
     testWidgets('nothing won yet: the next level on top, no grid of all levels at ${phone.name}', (tester) async {
       final services = await _start(tester);
       final entries = services.content.snapshot.playableEntries;
-      expect(entries, hasLength(200));
+      final total = entries.length;
+      expect(total, greaterThanOrEqualTo(100));
       await pumpLobby(tester, services: services, home: const LevelSelectScreen(), phone: phone);
       expect(tester.takeException(), isNull);
 
       expect(find.bySemanticsLabel(RegExp(r'^Play level 1, ')), findsOneWidget);
       expect(find.text(entries.first.title), findsOneWidget);
-      expect(find.text('0 of 200 won'), findsOneWidget);
+      expect(find.text('0 of $total won'), findsOneWidget);
       expect(find.text('Completed Levels'), findsOneWidget);
       expect(find.textContaining('No levels completed yet'), findsOneWidget);
       expect(find.byType(CompletedLevelRow), findsNothing, reason: 'only completed levels are listed');
@@ -115,10 +119,11 @@ void main() {
   testWidgets('midway: only the completed levels, in a lazy grid; the panel continues the next one', (tester) async {
     final services = await _start(tester, won: 56, resumeNext: true);
     final entries = services.content.snapshot.playableEntries;
+    final total = entries.length;
     await pumpLobby(tester, services: services, home: const LevelSelectScreen(), phone: smallPhone);
     expect(tester.takeException(), isNull);
     expect(find.bySemanticsLabel(RegExp(r'^Continue level 57, ')), findsOneWidget);
-    expect(find.text('56 of 200 won'), findsOneWidget);
+    expect(find.text('56 of $total won'), findsOneWidget);
     expect(find.text('Completed Levels'), findsOneWidget);
 
     // Completed levels from level 1, each flattened, never behind an opacity layer.
@@ -130,7 +135,7 @@ void main() {
     expect(find.descendant(of: find.byType(CompletedLevelRow), matching: find.byType(StaticLayer)), findsWidgets);
     expect(find.descendant(of: find.byType(ListView), matching: find.byType(Opacity)), findsNothing);
     expect(find.byType(BackdropFilter), findsNothing);
-    expect(find.text('EASY'), findsWidgets);
+    expect(find.text('1/10'), findsWidgets);
     await captureLobby(tester, 'levels-midway-360x640', smallPhone.dpr);
 
     // A completed level that is on the device (the starter pack) replays offline.
@@ -181,10 +186,11 @@ void main() {
   });
 
   testWidgets('every level won: a "new levels are coming soon" note instead of the next level', (tester) async {
-    final services = await _start(tester, won: 200);
+    final services = await _start(tester, won: 1 << 20);
+    final total = services.content.snapshot.playableEntries.length;
     await pumpLobby(tester, services: services, home: const LevelSelectScreen(), phone: smallPhone);
     expect(tester.takeException(), isNull);
-    expect(find.text('All 200 levels complete!'), findsOneWidget);
+    expect(find.text('All $total levels complete!'), findsOneWidget);
     expect(find.text('New levels are coming soon. Stay tuned!'), findsOneWidget);
     expect(find.bySemanticsLabel(RegExp(r'^(Play|Continue|Replay) level ')), findsNothing);
     expect(find.bySemanticsLabel(RegExp(r'^Level 1, .*, completed, ')), findsOneWidget);

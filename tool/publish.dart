@@ -35,7 +35,7 @@ Future<void> main(List<String> args) async {
     stderr.writeln('content is invalid; nothing published');
     exit(1);
   }
-  final env = _readEnv();
+  final env = readEnv();
   final r2 = R2Client(
     accountId: env['R2_ACCOUNT_ID']!,
     accessKeyId: env['R2_ACCESS_KEY_ID']!,
@@ -145,7 +145,8 @@ Future<T> _retry<T>(Future<T> Function() body, {int attempts = 3}) async {
   }
 }
 
-Map<String, String> _readEnv() {
+/// Key/value pairs from `.env` (R2 credentials; used only by tools).
+Map<String, String> readEnv() {
   final file = File('.env');
   if (!file.existsSync()) throw StateError('.env not found');
   return {
@@ -162,7 +163,7 @@ String _contentType(String path) => switch (path.split('.').last) {
   _ => 'application/octet-stream',
 };
 
-/// Minimal S3 SigV4 client for R2 (PUT and HEAD only).
+/// Minimal S3 SigV4 client for R2 (HEAD, PUT, LIST and DELETE).
 class R2Client {
   R2Client({required this.accountId, required this.accessKeyId, required this.secretAccessKey, required this.bucket});
 
@@ -190,11 +191,59 @@ class R2Client {
     }
   }
 
-  Future<http.Response> _send(String method, String key, Uint8List body, Map<String, String> extra) async {
+  /// Every object under [prefix] as (key, size), following continuation
+  /// tokens (ListObjectsV2, 1000 keys a page).
+  Future<List<(String, int)>> list(String prefix) async {
+    final objects = <(String, int)>[];
+    String? token;
+    do {
+      final response = await _send('GET', '', Uint8List(0), const {}, query: {
+        'list-type': '2',
+        'prefix': prefix,
+        'continuation-token': ?token,
+      });
+      if (response.statusCode != 200) throw HttpException('LIST $prefix -> ${response.statusCode}: ${response.body}');
+      String unescape(String text) => text
+          .replaceAll('&lt;', '<')
+          .replaceAll('&gt;', '>')
+          .replaceAll('&quot;', '"')
+          .replaceAll('&apos;', "'")
+          .replaceAll('&amp;', '&');
+      for (final match in RegExp(r'<Contents>(.*?)</Contents>', dotAll: true).allMatches(response.body)) {
+        final entry = match[1]!;
+        final key = RegExp(r'<Key>(.*?)</Key>', dotAll: true).firstMatch(entry)![1]!;
+        final size = int.parse(RegExp(r'<Size>(\d+)</Size>').firstMatch(entry)?[1] ?? '0');
+        objects.add((unescape(key), size));
+      }
+      final truncated = RegExp(r'<IsTruncated>true</IsTruncated>').hasMatch(response.body);
+      token = truncated ? unescape(RegExp(r'<NextContinuationToken>(.*?)</NextContinuationToken>').firstMatch(response.body)![1]!) : null;
+    } while (token != null);
+    return objects;
+  }
+
+  /// Permanently deletes [key] (R2 keeps no old versions).
+  Future<void> delete(String key) async {
+    final response = await _send('DELETE', key, Uint8List(0), const {});
+    if (response.statusCode != 204 && response.statusCode != 200) {
+      throw HttpException('DELETE $key -> ${response.statusCode}: ${response.body}');
+    }
+  }
+
+  Future<http.Response> _send(
+    String method,
+    String key,
+    Uint8List body,
+    Map<String, String> extra, {
+    Map<String, String> query = const {},
+  }) async {
     final now = DateTime.now().toUtc();
     final amzDate = '${now.toIso8601String().replaceAll(RegExp(r'[-:]'), '').split('.').first}Z';
     final date = amzDate.substring(0, 8);
-    final path = '/$bucket/${key.split('/').map(Uri.encodeComponent).join('/')}';
+    final path = key.isEmpty ? '/$bucket' : '/$bucket/${key.split('/').map(Uri.encodeComponent).join('/')}';
+    // SigV4 canonical query: names sorted, names and values percent-encoded.
+    final queryString = (query.keys.toList()..sort())
+        .map((name) => '${Uri.encodeComponent(name)}=${Uri.encodeComponent(query[name]!)}')
+        .join('&');
     final payloadHash = sha256.convert(body).toString();
     final headers = <String, String>{
       'host': _host,
@@ -206,7 +255,7 @@ class R2Client {
     final canonical = [
       method,
       path,
-      '',
+      queryString,
       for (final name in names) '$name:${headers[name]!.trim()}',
       '',
       names.join(';'),
@@ -220,7 +269,7 @@ class R2Client {
     signingKey = hmacOf(signingKey, 's3');
     signingKey = hmacOf(signingKey, 'aws4_request');
     final signature = Hmac(sha256, signingKey).convert(utf8.encode(toSign)).toString();
-    final request = http.Request(method, Uri.parse('https://$_host$path'))
+    final request = http.Request(method, Uri.parse('https://$_host$path${queryString.isEmpty ? '' : '?$queryString'}'))
       ..headers.addAll({
         ...headers..remove('host'),
         'authorization': 'AWS4-HMAC-SHA256 Credential=$accessKeyId/$scope, SignedHeaders=${names.join(';')}, Signature=$signature',

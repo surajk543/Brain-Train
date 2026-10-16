@@ -119,6 +119,16 @@ void main() {
       expect(IntroTiming.forLevel(difficulty: 'legendary', tileCount: 172), IntroTiming.veryHard);
     });
 
+    test('numeric tiers run from the easy length (1) to the very hard one (10)', () {
+      expect(IntroTiming.forLevel(difficulty: '1', tileCount: 172), IntroTiming.easy);
+      expect(IntroTiming.forLevel(difficulty: '10', tileCount: 24), IntroTiming.veryHard);
+      final lengths = [for (var d = 1; d <= 10; d++) IntroTiming.forLevel(difficulty: '$d', tileCount: 0)];
+      for (var i = 1; i < lengths.length; i++) {
+        expect(lengths[i], greaterThan(lengths[i - 1]));
+      }
+      expect(IntroTiming.forLevel(difficulty: '11', tileCount: 28), IntroTiming.easy, reason: 'off the scale: by tile count');
+    });
+
     test('longer intros keep the fly-in snappy and give the time to the mix and a calmer settle', () {
       final layers = [for (var i = 0; i < 170; i++) i % 4];
       final easy = IntroChoreography(layers: layers, seed: 1);

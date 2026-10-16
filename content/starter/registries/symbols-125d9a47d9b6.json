@@ -1,0 +1,2503 @@
+{
+  "schemaVersion": 1,
+  "registryVersion": "brain-train-symbols-e9826579",
+  "symbols": {
+    "COSMIC_CHESTNUT": {
+      "type": "image",
+      "assetPath": "symbols/v1/cosmic-chestnut.webp",
+      "matchGroup": "COSMIC_CHESTNUT",
+      "label": "Cosmic Chestnut",
+      "sha256": "56fa009a78dbd0c13029881d8fd7cb51875e02d102ff755013a2da3c48c9848e"
+    },
+    "ORB_BERRIES": {
+      "type": "image",
+      "assetPath": "symbols/v1/orb-berries.webp",
+      "matchGroup": "ORB_BERRIES",
+      "label": "Orb Berries",
+      "sha256": "2b095e811a23a323f1e97b289c218e46872a705be76f59ee672c483df4d71390"
+    },
+    "MANDALA_ORB": {
+      "type": "image",
+      "assetPath": "symbols/v1/mandala-orb.webp",
+      "matchGroup": "MANDALA_ORB",
+      "label": "Mandala Orb",
+      "sha256": "cc29ab1149f05cf29ac9593464cc02ace2450b5ef0548899c988a0481a3852f0"
+    },
+    "WINGED_APPLE": {
+      "type": "image",
+      "assetPath": "symbols/v1/winged-apple.webp",
+      "matchGroup": "WINGED_APPLE",
+      "label": "Winged Apple",
+      "sha256": "bf316d95a8e1ab0e62a46a484f49e24591aff5f5c08d15b1e715419e26f1544b"
+    },
+    "GALAXY_POMEGRANATE": {
+      "type": "image",
+      "assetPath": "symbols/v1/galaxy-pomegranate.webp",
+      "matchGroup": "GALAXY_POMEGRANATE",
+      "label": "Galaxy Pomegranate",
+      "sha256": "5ad168bb4ca5b538976a43c4c9d3cd215aa4ef07a6a03cba8588bcb1640a7164"
+    },
+    "AURORA_LEMON": {
+      "type": "image",
+      "assetPath": "symbols/v1/aurora-lemon.webp",
+      "matchGroup": "AURORA_LEMON",
+      "label": "Aurora Lemon",
+      "sha256": "7641b5a8bade73c78c574d86d805b0d6c317b9e95c53cf375824ab4cd3af133f"
+    },
+    "CRYSTAL_STAR": {
+      "type": "image",
+      "assetPath": "symbols/v1/crystal-star.webp",
+      "matchGroup": "CRYSTAL_STAR",
+      "label": "Crystal Star",
+      "sha256": "c77c8773d4b8042dde46ff660b7004620578acebebc90795cccfd3045a8c1d90"
+    },
+    "COSMIC_HEART": {
+      "type": "image",
+      "assetPath": "symbols/v1/cosmic-heart.webp",
+      "matchGroup": "COSMIC_HEART",
+      "label": "Cosmic Heart",
+      "sha256": "01ae921a01d84f01c441f8ea0001892b9fdd4dd72cc597ecc58b51adc5d206f9"
+    },
+    "EYE_SIGIL": {
+      "type": "image",
+      "assetPath": "symbols/v1/eye-sigil.webp",
+      "matchGroup": "EYE_SIGIL",
+      "label": "Eye Sigil",
+      "sha256": "75acac39cc6abe0c01451b5547470542bb09ce16f864bf6736a392599f64e444"
+    },
+    "FLAME_CROSS": {
+      "type": "image",
+      "assetPath": "symbols/v1/flame-cross.webp",
+      "matchGroup": "FLAME_CROSS",
+      "label": "Flame Cross",
+      "sha256": "a3921d8c476c5a60f77588fa89ab6e2fa39707bc035a12107a6fc30d4686e06c"
+    },
+    "GLASS_KNOT": {
+      "type": "image",
+      "assetPath": "symbols/v1/glass-knot.webp",
+      "matchGroup": "GLASS_KNOT",
+      "label": "Glass Knot",
+      "sha256": "6fffd7cff7e720e67c187dcb51a4dc1efbc14776141cd9d94d76f280fe9725c2"
+    },
+    "WINGED_EYE": {
+      "type": "image",
+      "assetPath": "symbols/v1/winged-eye.webp",
+      "matchGroup": "WINGED_EYE",
+      "label": "Winged Eye",
+      "sha256": "f36824dac2fbb15aefe87e29351cb0dc3f3dcd6e70bccaca5c395894ba5a5844"
+    },
+    "PRISM_TRIANGLE": {
+      "type": "image",
+      "assetPath": "symbols/v1/prism-triangle.webp",
+      "matchGroup": "PRISM_TRIANGLE",
+      "label": "Prism Triangle",
+      "sha256": "160f73ba44b23e632a421774479597150fb79d0d8af2fcec436020124b6955c0"
+    },
+    "MOLTEN_MERCURY": {
+      "type": "image",
+      "assetPath": "symbols/v1/molten-mercury.webp",
+      "matchGroup": "MOLTEN_MERCURY",
+      "label": "Molten Mercury",
+      "sha256": "5add6592d24f24661a6b8320a3f4a493afac71efef39479fcbdaa4a020bd149b"
+    },
+    "SPIRAL_COIN": {
+      "type": "image",
+      "assetPath": "symbols/v1/spiral-coin.webp",
+      "matchGroup": "SPIRAL_COIN",
+      "label": "Spiral Coin",
+      "sha256": "ef88556cd1b7a9801c2b72113cb2ef934ecd4f3ff142df19b1b02ef6d87edc5c"
+    },
+    "ICE_BANANA_SPLIT": {
+      "type": "image",
+      "assetPath": "symbols/v1/banana-split-ice-cream.webp",
+      "matchGroup": "ICE_BANANA_SPLIT",
+      "label": "Banana Split",
+      "sha256": "0983e4ef0bd799423ba8c633a68ecd3c3737514cdde6c84935820615851e10af",
+      "source": "https://iconscout.com/3d-illustration/banana-split-ice-cream_10109325"
+    },
+    "ICE_CREAM_BOWL": {
+      "type": "image",
+      "assetPath": "symbols/v1/ice-cream-bowl.webp",
+      "matchGroup": "ICE_CREAM_BOWL",
+      "label": "Ice Cream Bowl",
+      "sha256": "f567c142dc1fb4da2ada839c6ee3038038bdf25b0d1b44579a3a2afa08f3f482",
+      "source": "https://iconscout.com/3d-illustration/ice-cream-bowl_10109311"
+    },
+    "ICE_CREAM_SCOOPS": {
+      "type": "image",
+      "assetPath": "symbols/v1/ice-cream-scoops.webp",
+      "matchGroup": "ICE_CREAM_SCOOPS",
+      "label": "Ice Cream Scoops",
+      "sha256": "30982f0b695ca9bbefb5d42800a9003877e1e8d513b696138c8a8aa80ab3972b",
+      "source": "https://iconscout.com/3d-illustration/ice-cream_9350903"
+    },
+    "ICE_CREAM_CONE": {
+      "type": "image",
+      "assetPath": "symbols/v1/ice-cream-cone.webp",
+      "matchGroup": "ICE_CREAM_CONE",
+      "label": "Ice Cream Cone",
+      "sha256": "6c9f726b3564d7f7aba04713be3ca9b94b70a38b4f840233dbdf70d28d384c96",
+      "source": "https://iconscout.com/3d-illustration/ice-cream-cone_9466020"
+    },
+    "ICE_CREAM_SANDWICH": {
+      "type": "image",
+      "assetPath": "symbols/v1/sandwich-ice-cream.webp",
+      "matchGroup": "ICE_CREAM_SANDWICH",
+      "label": "Ice Cream Sandwich",
+      "sha256": "c0ab1f2c6a2a8b35ef7b94c8b1f6bdd362b7b06348a7d86546d38c8c131f35dd",
+      "source": "https://iconscout.com/3d-illustration/sandwich-ice-cream_10109317"
+    },
+    "ICE_WAFFLE_BOWL": {
+      "type": "image",
+      "assetPath": "symbols/v1/waffle-bowl-ice-cream.webp",
+      "matchGroup": "ICE_WAFFLE_BOWL",
+      "label": "Waffle Bowl Ice Cream",
+      "sha256": "55da5eb7c23f565babbc14e85b780ecd5ede540c71217c21c9a6a4d42cfc1bbf",
+      "source": "https://iconscout.com/3d-illustration/waffle-bowl-ice-cream_10109314"
+    },
+    "ICE_CREAM_TWIST": {
+      "type": "image",
+      "assetPath": "symbols/v1/ice-cream-twist.webp",
+      "matchGroup": "ICE_CREAM_TWIST",
+      "label": "Twin Scoop Cone",
+      "sha256": "d26787ee51baf49e9205ddd0354fca962a82b44804f484bac2edc61b1c800cd8",
+      "source": "https://iconscout.com/3d-illustration/ice-cream_11089854"
+    },
+    "PLANT_POT_A": {
+      "type": "image",
+      "assetPath": "symbols/v1/plant-pot-a.webp",
+      "matchGroup": "PLANT_POT_A",
+      "label": "Plant Pot",
+      "sha256": "e2c053366ee8639b384ceec4ee2c063f22c4d574016f2827ecb9955332d0388c",
+      "source": "https://iconscout.com/3d-illustration/plant-pot_9554747"
+    },
+    "PLANT_POT_B": {
+      "type": "image",
+      "assetPath": "symbols/v1/plant-pot-b.webp",
+      "matchGroup": "PLANT_POT_B",
+      "label": "Potted Plant",
+      "sha256": "42f4eb4d9ea425eae64f9a3705088b87eeae5ca58201fd719663dca9065eb6d9",
+      "source": "https://iconscout.com/3d-illustration/plant-pot_9554751"
+    },
+    "FLOWER_PANSY": {
+      "type": "image",
+      "assetPath": "symbols/v1/pansy.webp",
+      "matchGroup": "FLOWER_PANSY",
+      "label": "Pansy",
+      "sha256": "fd2120bb3496618886e5b0d974d1d287b86d9eb83afbee0de21bf309c9d091c0",
+      "source": "https://iconscout.com/3d-illustration/pansy_14289289"
+    },
+    "FLOWER_ZINNIA": {
+      "type": "image",
+      "assetPath": "symbols/v1/zinnia.webp",
+      "matchGroup": "FLOWER_ZINNIA",
+      "label": "Zinnia",
+      "sha256": "1ee0abb021664685d24ee1dbe3b2bc5be6adf2341b400dc9c693049f0ffba535",
+      "source": "https://iconscout.com/3d-illustration/zinnia_14289284"
+    },
+    "FLOWER_LAVENDER": {
+      "type": "image",
+      "assetPath": "symbols/v1/lavender.webp",
+      "matchGroup": "FLOWER_LAVENDER",
+      "label": "Lavender",
+      "sha256": "2f44029853d8015a6f430c55c630c57eeb2c673b97876e34b5d66ea375eccbf7",
+      "source": "https://iconscout.com/3d-illustration/lavender_14289276"
+    },
+    "FLOWER_SUNFLOWER": {
+      "type": "image",
+      "assetPath": "symbols/v1/sunflower.webp",
+      "matchGroup": "FLOWER_SUNFLOWER",
+      "label": "Sunflower",
+      "sha256": "d840a8f2feba68c916e6fe922b2fc7c1b68b1a12bd47982c25f4bbe7e5ffcd6e",
+      "source": "https://iconscout.com/3d-illustration/sunflower_14103705"
+    },
+    "CN_HANDFAN_A": {
+      "type": "image",
+      "assetPath": "symbols/v1/chinese-handfan-a.webp",
+      "matchGroup": "CN_HANDFAN_A",
+      "label": "Chinese Hand Fan",
+      "sha256": "8bdc1bad290dd3635ba1a6115a91f3b0ab4d37f8d77e5a3f7c5c07df80dbcb69",
+      "source": "https://iconscout.com/3d-illustration/chinese-handfan_8529701"
+    },
+    "CN_HANDFAN_B": {
+      "type": "image",
+      "assetPath": "symbols/v1/chinese-handfan-b.webp",
+      "matchGroup": "CN_HANDFAN_B",
+      "label": "Chinese Folding Fan",
+      "sha256": "2652296cfb460a30694566be6c0ad5a7ae6ed05827321442fd1ef9637eb1e042",
+      "source": "https://iconscout.com/3d-illustration/chinese-handfan_8529702"
+    },
+    "CN_TIGER_MASK": {
+      "type": "image",
+      "assetPath": "symbols/v1/tiger-mask.webp",
+      "matchGroup": "CN_TIGER_MASK",
+      "label": "Tiger Mask",
+      "sha256": "7b6a45abbf318b66ae6dca6e56df082174a92fe10280733148ebe37cfe41eca4",
+      "source": "https://iconscout.com/3d-illustration/tiger-mask_4012828"
+    },
+    "CN_FISH": {
+      "type": "image",
+      "assetPath": "symbols/v1/chinese-fish.webp",
+      "matchGroup": "CN_FISH",
+      "label": "Chinese Fish",
+      "sha256": "5075021e5c989a6936126cdd81ffbf8721e86eaa8687408655a3c58394b2fc32",
+      "source": "https://iconscout.com/3d-illustration/chinese-fish_8499539"
+    },
+    "CN_LION": {
+      "type": "image",
+      "assetPath": "symbols/v1/chinese-lion.webp",
+      "matchGroup": "CN_LION",
+      "label": "Chinese Lion",
+      "sha256": "0fefac487258a6f965d7af48303b0042aae967f48811d6e1195e5513ae7bc38a",
+      "source": "https://iconscout.com/3d-illustration/chinese-lion_8211233"
+    },
+    "CN_CHARM": {
+      "type": "image",
+      "assetPath": "symbols/v1/chinese-charm.webp",
+      "matchGroup": "CN_CHARM",
+      "label": "Chinese Charm",
+      "sha256": "cfc4225f4be97768b462f37210e1c684fe0a4a0df1c0ade0b3d62650d8e7e923",
+      "source": "https://iconscout.com/3d-illustration/chinese-charm_11009668"
+    },
+    "CN_LION_DANCE": {
+      "type": "image",
+      "assetPath": "symbols/v1/cn-lion-dance.webp",
+      "matchGroup": "CN_LION_DANCE",
+      "label": "Lion Dance",
+      "sha256": "f130b38437eed1ac696baaebe8ca0de8b0501050470f7c6d9d9eda7c8a8542cf",
+      "source": "https://iconscout.com/free-illustration/free-traditional-chinese-lion-in-dance-festival_2600771"
+    },
+    "CN_ZODIAC_TIGER": {
+      "type": "image",
+      "assetPath": "symbols/v1/cn-zodiac-tiger.webp",
+      "matchGroup": "CN_ZODIAC_TIGER",
+      "label": "Zodiac Tiger",
+      "sha256": "943716f8fb70e93489c891c1726f9affa2012c27c0e75058079ffdb3c9677b77",
+      "source": "https://iconscout.com/illustration/chinese-zodiac-tiger-with-chinese-girl_8666430"
+    },
+    "CN_ZODIAC_OX": {
+      "type": "image",
+      "assetPath": "symbols/v1/cn-zodiac-ox.webp",
+      "matchGroup": "CN_ZODIAC_OX",
+      "label": "Zodiac Ox",
+      "sha256": "81382827cde44315c7faf424983cd87908dba694f22473c3117a1064a00e0834",
+      "source": "https://iconscout.com/illustration/chinese-zodiac-ox-with-chinese-girl_8666426"
+    },
+    "CN_OX_SYMBOL": {
+      "type": "image",
+      "assetPath": "symbols/v1/cn-ox-symbol.webp",
+      "matchGroup": "CN_OX_SYMBOL",
+      "label": "Year of the Ox",
+      "sha256": "c29bafa386d951771e96ef3342894a9900e813542a56ef77ea16bb263add71c9",
+      "source": "https://iconscout.com/free-illustration/free-chinese-new-year-2021-year-of-the-ox-chinese-zodiac-symbol_2600762"
+    },
+    "CN_DRAGON": {
+      "type": "image",
+      "assetPath": "symbols/v1/cn-dragon.webp",
+      "matchGroup": "CN_DRAGON",
+      "label": "Dragon Badge",
+      "sha256": "0a063b15c36eb7c76d2d6c35a72a384905582b21aa7a18b3b9ca58a7f90112be",
+      "source": "https://iconscout.com/free-illustration/free-chinese-dragon_2600770"
+    },
+    "BIRD_WOODPECKER": {
+      "type": "image",
+      "assetPath": "symbols/v1/woodpecker.webp",
+      "matchGroup": "BIRD_WOODPECKER",
+      "label": "Woodpecker",
+      "sha256": "997c5e5cc3fdb2a3ae54954199c8ea641f06e3bfe5ab60c1a6f24516a7400901",
+      "source": "https://iconscout.com/3d-illustration/woodpecker_12192526"
+    },
+    "BIRD_PEACOCK": {
+      "type": "image",
+      "assetPath": "symbols/v1/peacock.webp",
+      "matchGroup": "BIRD_PEACOCK",
+      "label": "Peacock",
+      "sha256": "0a3532a830833318763ec635ebe3bed92b45f9e4ac1234c31ff7a7fbacc14c6e",
+      "source": "https://iconscout.com/3d-illustration/peacock-displaying-feathers_9882133"
+    },
+    "BIRD_HUMMINGBIRD": {
+      "type": "image",
+      "assetPath": "symbols/v1/hummingbird.webp",
+      "matchGroup": "BIRD_HUMMINGBIRD",
+      "label": "Hummingbird",
+      "sha256": "391f4b62e156b045c1bebcf09538dbcfd8ce74a3b4e5e4f883d00d469f8157bc",
+      "source": "https://iconscout.com/3d-illustration/hummingbird-hovering_9882132"
+    },
+    "BIRD_EAGLE": {
+      "type": "image",
+      "assetPath": "symbols/v1/eagle.webp",
+      "matchGroup": "BIRD_EAGLE",
+      "label": "Eagle",
+      "sha256": "4528bf2e9a281bf864f47951ff59ff6d8aa0ab22ee01ca08470e2ca7cdfdbd28",
+      "source": "https://iconscout.com/3d-illustration/eagle-soaring_9882136"
+    },
+    "DINO_PARASAUROLOPHUS": {
+      "type": "image",
+      "assetPath": "symbols/v1/parasaurolophus.webp",
+      "matchGroup": "DINO_PARASAUROLOPHUS",
+      "label": "Parasaurolophus",
+      "sha256": "ed0773ddfc3848dd39d2e45678a42509e072665603f0ee7b1d4291ed598433c7",
+      "source": "https://iconscout.com/3d-illustration/parasaurolophus-dinosaur_9828727"
+    },
+    "DINO_ANKYLOSAURUS": {
+      "type": "image",
+      "assetPath": "symbols/v1/ankylosaurus.webp",
+      "matchGroup": "DINO_ANKYLOSAURUS",
+      "label": "Ankylosaurus",
+      "sha256": "0687b1eed6940c171b06d2cafa1ad844597691988bc5fb3930136a6c36f28761",
+      "source": "https://iconscout.com/3d-illustration/ankylosaurus-dinosaur_9828729"
+    },
+    "DINO_TRICERATOPS": {
+      "type": "image",
+      "assetPath": "symbols/v1/triceratops.webp",
+      "matchGroup": "DINO_TRICERATOPS",
+      "label": "Triceratops",
+      "sha256": "0d54f24bac52be1140718582e8a2c103f4dcafe04b82068f29f50f3b7a843e25",
+      "source": "https://iconscout.com/3d-illustration/triceratops-dinosaur_9828730"
+    },
+    "DINO_BRONTOSAURUS": {
+      "type": "image",
+      "assetPath": "symbols/v1/brontosaurus.webp",
+      "matchGroup": "DINO_BRONTOSAURUS",
+      "label": "Brontosaurus",
+      "sha256": "59a7faaaa30592585857c64cf8842cba9dccc8e14c30d252b6c697e229decf10",
+      "source": "https://iconscout.com/3d-illustration/brontosaurus-dinosaur_9828734"
+    },
+    "LOVE_BE_MINE": {
+      "type": "image",
+      "assetPath": "symbols/v1/be-mine.webp",
+      "matchGroup": "LOVE_BE_MINE",
+      "label": "Be Mine",
+      "sha256": "49df20066d70cc13b7f61619abd44a244b8c9c55f527fa88a412357ff3b8d98d",
+      "source": "https://iconscout.com/3d-illustration/be-mine_5625871"
+    },
+    "LOVE_BROKEN_HEART": {
+      "type": "image",
+      "assetPath": "symbols/v1/broken-heart.webp",
+      "matchGroup": "LOVE_BROKEN_HEART",
+      "label": "Broken Heart",
+      "sha256": "1481d2689901d26ac68bdbfdb6efbbe0778de725521213b70e958c94edf3f628",
+      "source": "https://iconscout.com/3d-illustration/broken-heart_5625863"
+    },
+    "LOVE_HEART_BALLOONS": {
+      "type": "image",
+      "assetPath": "symbols/v1/heart-balloons.webp",
+      "matchGroup": "LOVE_HEART_BALLOONS",
+      "label": "Heart Balloons",
+      "sha256": "2b0696d203b7c60cbf0ea31c7dbabb7c685ac24ada95024fc459b31c14eb46fd",
+      "source": "https://iconscout.com/3d-illustration/heart-balloons_5625859"
+    },
+    "LOVE_I_LOVE_YOU": {
+      "type": "image",
+      "assetPath": "symbols/v1/i-love-you.webp",
+      "matchGroup": "LOVE_I_LOVE_YOU",
+      "label": "I Love You",
+      "sha256": "b0875c5ef06ad54257df548c6978b8ce9481ef0051276d247a572d83a87fe6f8",
+      "source": "https://iconscout.com/3d-illustration/i-love-you_5625867"
+    },
+    "LOVE_HEART": {
+      "type": "image",
+      "assetPath": "symbols/v1/love-heart.webp",
+      "matchGroup": "LOVE_HEART",
+      "label": "Love",
+      "sha256": "bfbb78dd55daca8fc7377217e5b2de30a5b9f890c8e7637479a57b11e0718420",
+      "source": "https://iconscout.com/3d-illustration/love_5625853"
+    },
+    "LOVE_BIRDS_COUPLE": {
+      "type": "image",
+      "assetPath": "symbols/v1/love-birds-couple.webp",
+      "matchGroup": "LOVE_BIRDS_COUPLE",
+      "label": "Love Birds Couple",
+      "sha256": "d29468bc6fdd50081368bddb913685e5ad80e993874194f9cc0982782b4ebeba",
+      "source": "https://iconscout.com/3d-illustration/love-birds-couple_5625857"
+    },
+    "LOVE_CHOCOLATE_BOX": {
+      "type": "image",
+      "assetPath": "symbols/v1/love-chocolate-box.webp",
+      "matchGroup": "LOVE_CHOCOLATE_BOX",
+      "label": "Chocolate Box",
+      "sha256": "beeee7e31791d5f49ff2356343665fbb18fd0cca58fd58e75fcf4c4532887ded",
+      "source": "https://iconscout.com/3d-illustration/love-chocolate-box_5625855"
+    },
+    "LOVE_COFFEE_CUP": {
+      "type": "image",
+      "assetPath": "symbols/v1/love-coffee-cup.webp",
+      "matchGroup": "LOVE_COFFEE_CUP",
+      "label": "Love Coffee Cup",
+      "sha256": "64ee8786c9497c09b1542bbedd0d93177894f7694bcbb8732e2bbbd7357977d3",
+      "source": "https://iconscout.com/3d-illustration/love-coffe-cup_5625860"
+    },
+    "LOVE_WEDDING_CAKE": {
+      "type": "image",
+      "assetPath": "symbols/v1/wedding-cake.webp",
+      "matchGroup": "LOVE_WEDDING_CAKE",
+      "label": "Wedding Cake",
+      "sha256": "23061d39b34a7afab4564d0c4cd1817dc78e96505ee566a7d4950b215455d23d",
+      "source": "https://iconscout.com/3d-illustration/wedding-cake_5625864"
+    },
+    "CN_SYMBOL_CLOUD": {
+      "type": "image",
+      "assetPath": "symbols/v1/cn-symbol-cloud.webp",
+      "matchGroup": "CN_SYMBOL_CLOUD",
+      "label": "New Year Cloud Symbol",
+      "sha256": "adce37368a07b9905af12158066e3bb2a2784e5980a0a81a3ea2d5547ae83907",
+      "source": "https://iconscout.com/3d-illustration/chinese-new-year-symbol-and-cloud_3997892"
+    },
+    "BIRD_LOVEBIRDS_A": {
+      "type": "image",
+      "assetPath": "symbols/v1/love-birds-a.webp",
+      "matchGroup": "BIRD_LOVEBIRDS_A",
+      "label": "Love Birds Heart",
+      "sha256": "7f32ae88bc5f7aef7f2c407d7a4a3a56bd1b167a941dfb5e107dd52048df6a30",
+      "source": "https://iconscout.com/3d-illustration/love-birds_8747258"
+    },
+    "BUG_LADYBUG": {
+      "type": "image",
+      "assetPath": "symbols/v1/ladybug.webp",
+      "matchGroup": "BUG_LADYBUG",
+      "label": "Ladybug",
+      "sha256": "f1aa0d8e1e203f6830fa9738a22ed9d5e173bb65c710a88611f0ee6c903dab94",
+      "source": "https://iconscout.com/3d-illustration/ladybug_13327129"
+    },
+    "BIRD_LOVEBIRDS_B": {
+      "type": "image",
+      "assetPath": "symbols/v1/love-birds-b.webp",
+      "matchGroup": "BIRD_LOVEBIRDS_B",
+      "label": "Love Birds on Branch",
+      "sha256": "b55e23f415d1f2eef1a6ba2abadbd51e6a8026dfe6e00f3e65d11781347b4aff",
+      "source": "https://iconscout.com/3d-illustration/love-birds_4094600"
+    },
+    "BIRD_LOVEBIRDS_C": {
+      "type": "image",
+      "assetPath": "symbols/v1/love-birds-c.webp",
+      "matchGroup": "BIRD_LOVEBIRDS_C",
+      "label": "Kissing Doves",
+      "sha256": "f93ef976dbfab442afdc80e89025850e4e4e5f9d2e64c360fa6a541d01ad8ce5",
+      "source": "https://iconscout.com/3d-illustration/love-birds_8715552"
+    },
+    "BIRD_CHICKEN": {
+      "type": "image",
+      "assetPath": "symbols/v1/cute-chicken.webp",
+      "matchGroup": "BIRD_CHICKEN",
+      "label": "Cute Chicken",
+      "sha256": "90a3810cc0d5000044284341746362a046bb18bd92401fdcf0904a0454e5fabf",
+      "source": "https://iconscout.com/3d-illustration/cute-chicken_12242724"
+    },
+    "FIT_WATER_BOTTLE": {
+      "type": "image",
+      "assetPath": "symbols/v1/fit-water-bottle.webp",
+      "matchGroup": "FIT_WATER_BOTTLE",
+      "label": "Gym Water Bottle",
+      "sha256": "8e91fd06d6eb8448f886b2ab38094312296b3a0746e6020e0b58b96f4fbc803d",
+      "source": "https://iconscout.com/3d-icon/gym-fitness-water-bottle-3d-icon_5559739"
+    },
+    "FIT_TRACKER_BAND": {
+      "type": "image",
+      "assetPath": "symbols/v1/fit-tracker-band.webp",
+      "matchGroup": "FIT_TRACKER_BAND",
+      "label": "Fitness Tracker Band",
+      "sha256": "e65bedd833ddf8aec19f57c981aa0bfcf360b92e7ceb034ed8b66e6929b2aea0",
+      "source": "https://iconscout.com/3d-icon/fitness-tracker-3d-icon_7766902"
+    },
+    "FIT_GYM_BALL": {
+      "type": "image",
+      "assetPath": "symbols/v1/fit-gym-ball.webp",
+      "matchGroup": "FIT_GYM_BALL",
+      "label": "Gym Ball",
+      "sha256": "e45c09a478b624255f7deecf6756ae1f4f6081ec27cfdfea428edc79d07e3d4b",
+      "source": "https://iconscout.com/3d-icon/gym-ball-3d-icon_14143255"
+    },
+    "FIT_GYM_CYCLE": {
+      "type": "image",
+      "assetPath": "symbols/v1/fit-gym-cycle.webp",
+      "matchGroup": "FIT_GYM_CYCLE",
+      "label": "Gym Cycle",
+      "sha256": "c9b1c185d85efefe4f22e1a01b074876b9334762b5562dcd9e0a8a1044251e8a",
+      "source": "https://iconscout.com/3d-icon/gym-cycle-3d-icon_14143243"
+    },
+    "FIT_HEART_WATCH": {
+      "type": "image",
+      "assetPath": "symbols/v1/fit-heart-watch.webp",
+      "matchGroup": "FIT_HEART_WATCH",
+      "label": "Fitness Watch",
+      "sha256": "f1c9f0a0e327f7ce50ff3cacbfd6fffa268ea0f903401627d2cc919379bc0a80",
+      "source": "https://iconscout.com/3d-icon/fitness-watch-3d-icon_9590365"
+    },
+    "FIT_SMARTWATCH": {
+      "type": "image",
+      "assetPath": "symbols/v1/fit-smartwatch.webp",
+      "matchGroup": "FIT_SMARTWATCH",
+      "label": "Fitness Smartwatch",
+      "sha256": "1e57156ece63e1caac28c99387ddee79619996c895d65dfa70c22b7af4368c53",
+      "source": "https://iconscout.com/3d-icon/fitness-tracker-3d-icon_12257484"
+    },
+    "JULY4_FLAG_BALLOONS": {
+      "type": "image",
+      "assetPath": "symbols/v1/july4-flag-balloons.webp",
+      "matchGroup": "JULY4_FLAG_BALLOONS",
+      "label": "American Flag Balloons",
+      "sha256": "23e2d8e4d0ad77ad82978df2a7311905463b67e1783a6463d31012e01b3dcda4",
+      "source": "https://iconscout.com/3d-icon/american-flag-balloons-3d-icon_7170581"
+    },
+    "JULY4_ROCKET_BOX": {
+      "type": "image",
+      "assetPath": "symbols/v1/july4-rocket-box.webp",
+      "matchGroup": "JULY4_ROCKET_BOX",
+      "label": "Independence Day Rockets",
+      "sha256": "ee24cdb7099fd83bff680b3fc97677589ac6a20d67493b58845869f56ddc79bf",
+      "source": "https://iconscout.com/3d-icon/american-independence-day-3d-icon_7170585"
+    },
+    "JULY4_WREATH": {
+      "type": "image",
+      "assetPath": "symbols/v1/july4-wreath.webp",
+      "matchGroup": "JULY4_WREATH",
+      "label": "Independence Day Wreath",
+      "sha256": "be265575d92fd9ff95318839754de4cf2b54bd5455c3e57de3e267252a219334",
+      "source": "https://iconscout.com/3d-icon/american-independence-day-3d-icon_7170586"
+    },
+    "JULY4_CALENDAR": {
+      "type": "image",
+      "assetPath": "symbols/v1/july4-calendar.webp",
+      "matchGroup": "JULY4_CALENDAR",
+      "label": "4th of July Calendar",
+      "sha256": "35294627cede5d113260d4a7dd1dd82483b8541933ca0d43cb8f10be4bcdd164",
+      "source": "https://iconscout.com/3d-icon/american-independence-day-3d-icon_7170587"
+    },
+    "JULY4_TWO_HATS": {
+      "type": "image",
+      "assetPath": "symbols/v1/july4-two-hats.webp",
+      "matchGroup": "JULY4_TWO_HATS",
+      "label": "Uncle Sam Hats",
+      "sha256": "8fd8f66d57a080c120b2799647e206ef7e0bb0ac99d0cbc1976981a816682ba9",
+      "source": "https://iconscout.com/3d-icon/american-independence-day-3d-icon_7170589"
+    },
+    "SPORT_BASKETBALL": {
+      "type": "image",
+      "assetPath": "symbols/v1/sport-basketball.webp",
+      "matchGroup": "SPORT_BASKETBALL",
+      "label": "Basketball Hoop",
+      "sha256": "c53725f24ffc4048fdf16a99fef840760b065d593a6e5e7f285bc8f685270404",
+      "source": "https://iconscout.com/3d-icon/basketball-3d-icon_12569474"
+    },
+    "SPORT_BOWLING": {
+      "type": "image",
+      "assetPath": "symbols/v1/sport-bowling.webp",
+      "matchGroup": "SPORT_BOWLING",
+      "label": "Bowling",
+      "sha256": "1cff534e215facee9b7cf95ecd3bcad11aa92102149ec1132e5d29e897c1053a",
+      "source": "https://iconscout.com/3d-icon/bowling-3d-icon_12569480"
+    },
+    "SPORT_CRICKET": {
+      "type": "image",
+      "assetPath": "symbols/v1/sport-cricket.webp",
+      "matchGroup": "SPORT_CRICKET",
+      "label": "Cricket Bats",
+      "sha256": "be3c22c79c54d580c9e992afddca4e75ea7608dce5cfe9f65343e59b0b75e144",
+      "source": "https://iconscout.com/3d-icon/cricket-3d-icon_12569481"
+    },
+    "SPORT_CROQUET": {
+      "type": "image",
+      "assetPath": "symbols/v1/sport-croquet.webp",
+      "matchGroup": "SPORT_CROQUET",
+      "label": "Croquet Mallet",
+      "sha256": "21fe592f86650e6eb9c469b54c89d5b5ef9a8fe375294968a41d967b4468550c",
+      "source": "https://iconscout.com/3d-icon/croquet-3d-icon_12569482"
+    },
+    "SPORT_CURLING": {
+      "type": "image",
+      "assetPath": "symbols/v1/sport-curling.webp",
+      "matchGroup": "SPORT_CURLING",
+      "label": "Curling Stone",
+      "sha256": "588a9e4baf80f7fac1df801c0226e6a4cd71895d9cf21ed668b89c7430c080ca",
+      "source": "https://iconscout.com/3d-icon/curling-3d-icon_12569483"
+    },
+    "SPORT_FENCING": {
+      "type": "image",
+      "assetPath": "symbols/v1/sport-fencing.webp",
+      "matchGroup": "SPORT_FENCING",
+      "label": "Fencing Foils",
+      "sha256": "b46c8e39da90c98f4202d8f49439ac6ad3820c683db4a17f7baf85187789cdbd",
+      "source": "https://iconscout.com/3d-icon/fencing-3d-icon_12569484"
+    },
+    "SPORT_FOOTBALL": {
+      "type": "image",
+      "assetPath": "symbols/v1/sport-football.webp",
+      "matchGroup": "SPORT_FOOTBALL",
+      "label": "Football",
+      "sha256": "782b8db2464b05065c457ee711a3ae5f53d186e890c042ea28d108504bdd9343",
+      "source": "https://iconscout.com/3d-icon/football-3d-icon_12569479"
+    },
+    "SPORT_FRISBEE": {
+      "type": "image",
+      "assetPath": "symbols/v1/sport-frisbee.webp",
+      "matchGroup": "SPORT_FRISBEE",
+      "label": "Frisbee",
+      "sha256": "be9ebd11ca4bd60dee780f7b053edf4cfe32fc63a63ba899e9b2ebbd0f4d5b9b",
+      "source": "https://iconscout.com/3d-icon/frisbee-3d-icon_12569485"
+    },
+    "SPORT_GOLF": {
+      "type": "image",
+      "assetPath": "symbols/v1/sport-golf.webp",
+      "matchGroup": "SPORT_GOLF",
+      "label": "Golf Green",
+      "sha256": "497fb20869a1b8211922a09b9b4bf1036edd329cf6f8f3803a7fd4dabafacce9",
+      "source": "https://iconscout.com/3d-icon/golf-3d-icon_12569492"
+    },
+    "SPORT_DUMBBELL": {
+      "type": "image",
+      "assetPath": "symbols/v1/sport-dumbbell.webp",
+      "matchGroup": "SPORT_DUMBBELL",
+      "label": "Dumbbell",
+      "sha256": "ac6aaa4dc8376a2dd5232adaefca2c2f3418fcf7b8b6a1b4e38771ada6712f51",
+      "source": "https://iconscout.com/3d-icon/gym-3d-icon_12569493"
+    },
+    "SPORT_HOCKEY": {
+      "type": "image",
+      "assetPath": "symbols/v1/sport-hockey.webp",
+      "matchGroup": "SPORT_HOCKEY",
+      "label": "Hockey Sticks",
+      "sha256": "2fd59261c1e5cb2ba5fe43c4ad0342a03ce482464abf3c291533c23330b50b8d",
+      "source": "https://iconscout.com/3d-icon/hockey-3d-icon_12569487"
+    },
+    "SPORT_TORCH": {
+      "type": "image",
+      "assetPath": "symbols/v1/sport-torch.webp",
+      "matchGroup": "SPORT_TORCH",
+      "label": "Olympic Torch",
+      "sha256": "7ac20266039a8afeeb5f126122684e715702e243830d8c8dc5be2725215fe63c",
+      "source": "https://iconscout.com/3d-icon/olympic-torch-3d-icon_12569486"
+    },
+    "SPORT_PING_PONG": {
+      "type": "image",
+      "assetPath": "symbols/v1/sport-ping-pong.webp",
+      "matchGroup": "SPORT_PING_PONG",
+      "label": "Ping Pong Paddle",
+      "sha256": "aa7fba88764831904cb8a7de81f2d02f7a967fc401f2b7c9387afcf9914e9b3d",
+      "source": "https://iconscout.com/3d-icon/ping-pong-3d-icon_12569477"
+    },
+    "SPORT_RUGBY": {
+      "type": "image",
+      "assetPath": "symbols/v1/sport-rugby.webp",
+      "matchGroup": "SPORT_RUGBY",
+      "label": "Rugby Ball",
+      "sha256": "17e2c5f1e1d8ba10dc869cc1a5784da4dcbc455abc46b73f681c7146cb9e5af4",
+      "source": "https://iconscout.com/3d-icon/rugby-3d-icon_12569491"
+    },
+    "SPORT_SKATEBOARD": {
+      "type": "image",
+      "assetPath": "symbols/v1/sport-skateboard.webp",
+      "matchGroup": "SPORT_SKATEBOARD",
+      "label": "Skateboard",
+      "sha256": "1f6b6b8ded7157dd963f7f1b1905efa557de25d43ef967c07eae9b9cf3269440",
+      "source": "https://iconscout.com/3d-icon/skateboard-3d-icon_12569475"
+    },
+    "SPORT_MEDAL": {
+      "type": "image",
+      "assetPath": "symbols/v1/sport-medal.webp",
+      "matchGroup": "SPORT_MEDAL",
+      "label": "Star Medal",
+      "sha256": "b39e6dbe81a5b48a0b9815d65be9a9b75512f658ce2f3c549c023b21158a6060",
+      "source": "https://iconscout.com/3d-icon/star-medal-3d-icon_12569490"
+    },
+    "SPORT_TROPHY": {
+      "type": "image",
+      "assetPath": "symbols/v1/sport-trophy.webp",
+      "matchGroup": "SPORT_TROPHY",
+      "label": "Star Trophy",
+      "sha256": "b9da19010db45d53d350de1f005a8b99ebd04a4381c1d2920e1241c82cd08e84",
+      "source": "https://iconscout.com/3d-icon/star-trophy-3d-icon_12569489"
+    },
+    "SPORT_TENNIS": {
+      "type": "image",
+      "assetPath": "symbols/v1/sport-tennis.webp",
+      "matchGroup": "SPORT_TENNIS",
+      "label": "Tennis Racket",
+      "sha256": "a53ec4915ccfe5de886b3c5ec9f4e843750c40d556fab2520321fbdcec55529d",
+      "source": "https://iconscout.com/3d-icon/tennis-3d-icon_12569488"
+    },
+    "SPORT_VOLLEYBALL": {
+      "type": "image",
+      "assetPath": "symbols/v1/sport-volleyball.webp",
+      "matchGroup": "SPORT_VOLLEYBALL",
+      "label": "Volleyball",
+      "sha256": "32bdd3b1007730ac8ba9e9062d1c4992840e8291c7050342e2f2a765963948c1",
+      "source": "https://iconscout.com/3d-icon/volly-ball-3d-icon_12569476"
+    },
+    "XMAS_CANDLES": {
+      "type": "image",
+      "assetPath": "symbols/v1/xmas-candles.webp",
+      "matchGroup": "XMAS_CANDLES",
+      "label": "Christmas Candles",
+      "sha256": "4f0a6c8badb1e7a4fc5c4d0e14087f5590df173164bf05eb1f30d941c6d18578",
+      "source": "https://iconscout.com/3d-icon/burning-candle-3d-icon_13367858"
+    },
+    "XMAS_CANDY_CANES": {
+      "type": "image",
+      "assetPath": "symbols/v1/xmas-candy-canes.webp",
+      "matchGroup": "XMAS_CANDY_CANES",
+      "label": "Candy Canes",
+      "sha256": "fd5b7fe1b1656c72e36373984754cd71149bb78dcb941108449202d751c81860",
+      "source": "https://iconscout.com/3d-icon/candy-cane-3d-icon_13367848"
+    },
+    "XMAS_BAUBLES": {
+      "type": "image",
+      "assetPath": "symbols/v1/xmas-baubles.webp",
+      "matchGroup": "XMAS_BAUBLES",
+      "label": "Christmas Baubles",
+      "sha256": "c995f7605c1d9300de2f4fcb8cb7e0d4b30992534d90cb05cf155802c7058fbf",
+      "source": "https://iconscout.com/3d-icon/christmas-balls-3d-icon_13367844"
+    },
+    "XMAS_BELLS": {
+      "type": "image",
+      "assetPath": "symbols/v1/xmas-bells.webp",
+      "matchGroup": "XMAS_BELLS",
+      "label": "Christmas Bells",
+      "sha256": "e314daf80c6e3269520f2f8d3b9a877d8ee6ba7667f79ee2e9a823c9dc94a909",
+      "source": "https://iconscout.com/3d-icon/christmas-bells-3d-icon_13367834"
+    },
+    "XMAS_CUPCAKE": {
+      "type": "image",
+      "assetPath": "symbols/v1/xmas-cupcake.webp",
+      "matchGroup": "XMAS_CUPCAKE",
+      "label": "Christmas Cupcake",
+      "sha256": "674e76d5bf6f44eeeda7113395056cfa15f80c52e8fec9fa4b21a048f797e958",
+      "source": "https://iconscout.com/3d-icon/christmas-cupcake-3d-icon_13367855"
+    },
+    "XMAS_FIREPLACE": {
+      "type": "image",
+      "assetPath": "symbols/v1/xmas-fireplace.webp",
+      "matchGroup": "XMAS_FIREPLACE",
+      "label": "Christmas Fireplace",
+      "sha256": "1b61a194682cd4658e11fc5e9d5e61af19f91b782b4db90a4cd623e2d2750d8d",
+      "source": "https://iconscout.com/3d-icon/christmas-fireplace-3d-icon_13367835"
+    },
+    "XMAS_GIFTS": {
+      "type": "image",
+      "assetPath": "symbols/v1/xmas-gifts.webp",
+      "matchGroup": "XMAS_GIFTS",
+      "label": "Christmas Gifts",
+      "sha256": "be66898431d2095f563f0da822ae994b7cc3d613da8f28084de7b1e3f36904de",
+      "source": "https://iconscout.com/3d-icon/christmas-gifts-3d-icon_13367863"
+    },
+    "XMAS_SANTA_HAT": {
+      "type": "image",
+      "assetPath": "symbols/v1/xmas-santa-hat.webp",
+      "matchGroup": "XMAS_SANTA_HAT",
+      "label": "Santa Hat",
+      "sha256": "95ae4ad63f13c1ef91047f60dee7b3388346e0bff609f5cc73109ee4490942d8",
+      "source": "https://iconscout.com/3d-icon/christmas-hat-3d-icon_13367846"
+    },
+    "XMAS_LANTERN": {
+      "type": "image",
+      "assetPath": "symbols/v1/xmas-lantern.webp",
+      "matchGroup": "XMAS_LANTERN",
+      "label": "Christmas Lantern",
+      "sha256": "542e9566b055cd4fa6532cc76a6fe93564f3385586121b123189f7d181c9c6f6",
+      "source": "https://iconscout.com/3d-icon/christmas-lantern-3d-icon_13367837"
+    },
+    "XMAS_SCARF": {
+      "type": "image",
+      "assetPath": "symbols/v1/xmas-scarf.webp",
+      "matchGroup": "XMAS_SCARF",
+      "label": "Christmas Scarf",
+      "sha256": "95ab75a41b82a938a664792bef664167f7b9c3b92bbbaf36bebba8244d186a73",
+      "source": "https://iconscout.com/3d-icon/christmas-scarf-3d-icon_13367842"
+    },
+    "XMAS_STOCKINGS": {
+      "type": "image",
+      "assetPath": "symbols/v1/xmas-stockings.webp",
+      "matchGroup": "XMAS_STOCKINGS",
+      "label": "Christmas Stockings",
+      "sha256": "72a613153a106efd2c3b1e1228103376851b375f1cac1467449dbc4559a15086",
+      "source": "https://iconscout.com/3d-icon/christmas-socks-3d-icon_13367862"
+    },
+    "XMAS_TREE": {
+      "type": "image",
+      "assetPath": "symbols/v1/xmas-tree.webp",
+      "matchGroup": "XMAS_TREE",
+      "label": "Christmas Tree",
+      "sha256": "d58b833859ca1831631f588d69ded995e7fc45423efbe3b2cd3f2d7ebdf6f545",
+      "source": "https://iconscout.com/3d-icon/christmas-tree-3d-icon_13367845"
+    },
+    "XMAS_COOKIES": {
+      "type": "image",
+      "assetPath": "symbols/v1/xmas-cookies.webp",
+      "matchGroup": "XMAS_COOKIES",
+      "label": "Cookie Dish",
+      "sha256": "30c8eee8a240d738e08859da16052436734e3b96d5573cf0ad3ac73bba0c03e0",
+      "source": "https://iconscout.com/3d-icon/cookie-dish-3d-icon_13367859"
+    },
+    "XMAS_ANTLER_HEADBAND": {
+      "type": "image",
+      "assetPath": "symbols/v1/xmas-antler-headband.webp",
+      "matchGroup": "XMAS_ANTLER_HEADBAND",
+      "label": "Antler Headband",
+      "sha256": "f17973a3c55d88439491cef698ee7476fbfebd6891aeb504580cc478ccd9c629",
+      "source": "https://iconscout.com/3d-icon/deer-headband-3d-icon_13367847"
+    },
+    "XMAS_EARMUFFS": {
+      "type": "image",
+      "assetPath": "symbols/v1/xmas-earmuffs.webp",
+      "matchGroup": "XMAS_EARMUFFS",
+      "label": "Earmuffs",
+      "sha256": "33869fec4eefb43f427ae645ce9079a3135b23e9f5a405f8655a362a5378474d",
+      "source": "https://iconscout.com/3d-icon/earmuffs-3d-icon_13367852"
+    },
+    "XMAS_SANTA_SACK": {
+      "type": "image",
+      "assetPath": "symbols/v1/xmas-santa-sack.webp",
+      "matchGroup": "XMAS_SANTA_SACK",
+      "label": "Santa Gift Sack",
+      "sha256": "0e31bb39c67270c0dfa526974df78bf0492c39648b52234993e256ff49aa4fba",
+      "source": "https://iconscout.com/3d-icon/gift-bag-3d-icon_13367853"
+    },
+    "XMAS_GINGERBREAD": {
+      "type": "image",
+      "assetPath": "symbols/v1/xmas-gingerbread.webp",
+      "matchGroup": "XMAS_GINGERBREAD",
+      "label": "Gingerbread Man",
+      "sha256": "4dc6f02883e03e6e456acaa73a0d07b291f340b814c69b9254b4d86078eefe36",
+      "source": "https://iconscout.com/3d-icon/gingerbread-man-3d-icon_13367843"
+    },
+    "XMAS_HOLLY": {
+      "type": "image",
+      "assetPath": "symbols/v1/xmas-holly.webp",
+      "matchGroup": "XMAS_HOLLY",
+      "label": "Mistletoe",
+      "sha256": "d5ea86204dbc09fe065886139f182cd4181a78bb5daa42c0871a363e9e3bb57e",
+      "source": "https://iconscout.com/3d-icon/mistletoe-3d-icon_13367850"
+    },
+    "XMAS_REINDEER": {
+      "type": "image",
+      "assetPath": "symbols/v1/xmas-reindeer.webp",
+      "matchGroup": "XMAS_REINDEER",
+      "label": "Reindeer",
+      "sha256": "13b3dd38101023046d82a689543ea72fa1f043e0037f6df67b0531b6ef275f12",
+      "source": "https://iconscout.com/3d-icon/reindeer-3d-icon_13367854"
+    },
+    "XMAS_SLEIGH": {
+      "type": "image",
+      "assetPath": "symbols/v1/xmas-sleigh.webp",
+      "matchGroup": "XMAS_SLEIGH",
+      "label": "Santa Sleigh",
+      "sha256": "24cea9f986a59a44102e81ee10b4412ac58a38aa2802254b579a198c9e008fbe",
+      "source": "https://iconscout.com/3d-icon/santa-sleigh-3d-icon_13367861"
+    },
+    "XMAS_SNOWMAN": {
+      "type": "image",
+      "assetPath": "symbols/v1/xmas-snowman.webp",
+      "matchGroup": "XMAS_SNOWMAN",
+      "label": "Snowman",
+      "sha256": "3c3a8f6dc3fe649d160304f5fd4eab78cbdd0636780019c412de2381f48d81ef",
+      "source": "https://iconscout.com/3d-icon/snowman-3d-icon_13367857"
+    },
+    "TECH_GEAR_CHECK": {
+      "type": "image",
+      "assetPath": "symbols/v1/tech-gear-check.webp",
+      "matchGroup": "TECH_GEAR_CHECK",
+      "label": "Gear Check",
+      "sha256": "54860afa7ee0ecfc94eca5fa61a40a528330bf504ac5dd341a967213a0ccf8b0",
+      "source": "https://iconscout.com/3d-icon/check-3d-icon_8841684"
+    },
+    "TECH_GLOBE_SHIELD": {
+      "type": "image",
+      "assetPath": "symbols/v1/tech-globe-shield.webp",
+      "matchGroup": "TECH_GLOBE_SHIELD",
+      "label": "Internet Security",
+      "sha256": "696a1c0d5979bcc3d90cdbc92d934cfc373f281839935ac3bdd3262a7fe8bb62",
+      "source": "https://iconscout.com/3d-icon/internet-security-3d-icon_8841685"
+    },
+    "TECH_WIFI": {
+      "type": "image",
+      "assetPath": "symbols/v1/tech-wifi.webp",
+      "matchGroup": "TECH_WIFI",
+      "label": "Wifi Signal",
+      "sha256": "3aa58e0ca17f93a0161b01866c2d0116016d713c689ea7793a96274fd3028865",
+      "source": "https://iconscout.com/3d-icon/wifi-signal-3d-icon_8841683"
+    },
+    "ROBOT_AI_CHIP": {
+      "type": "image",
+      "assetPath": "symbols/v1/robot-ai-chip.webp",
+      "matchGroup": "ROBOT_AI_CHIP",
+      "label": "AI Chip",
+      "sha256": "42c84579f8acd456db1a89c11a3c151b611e91fa679646d448451e72446a5412",
+      "source": "https://iconscout.com/3d-icon/ai-chip-3d-icon_7845297"
+    },
+    "ROBOT_AI_IDEA": {
+      "type": "image",
+      "assetPath": "symbols/v1/robot-ai-idea.webp",
+      "matchGroup": "ROBOT_AI_IDEA",
+      "label": "AI Idea",
+      "sha256": "1d458920bc153b4ec53ee39f5ef08849ceba0e5032e02071ea9c96e1fbfdff95",
+      "source": "https://iconscout.com/3d-icon/ai-idea-3d-icon_7845301"
+    },
+    "ROBOT_DRONE": {
+      "type": "image",
+      "assetPath": "symbols/v1/robot-drone.webp",
+      "matchGroup": "ROBOT_DRONE",
+      "label": "Autonomous Drone",
+      "sha256": "a5b6f57f6cc07fecefe8c220870844495eae56ae83b2123bb358d3b959d04036",
+      "source": "https://iconscout.com/3d-icon/autonomous-drone-3d-icon_7845293"
+    },
+    "ROBOT_CYBORG_EYE": {
+      "type": "image",
+      "assetPath": "symbols/v1/robot-cyborg-eye.webp",
+      "matchGroup": "ROBOT_CYBORG_EYE",
+      "label": "Cyborg Eye",
+      "sha256": "bbb234057d1aa5fa0a0dbcf908eb495449ba3ff4e6d8f78963428da6408e9b69",
+      "source": "https://iconscout.com/3d-icon/cyborg-eye-3d-icon_7845302"
+    },
+    "ROBOT_DATA_FOLDER": {
+      "type": "image",
+      "assetPath": "symbols/v1/robot-data-folder.webp",
+      "matchGroup": "ROBOT_DATA_FOLDER",
+      "label": "Data Visualization",
+      "sha256": "9992759e48f21de854f61ed8e697d9564675b8f283b9550e7f553a028669dbc9",
+      "source": "https://iconscout.com/3d-icon/data-visualization-3d-icon_7845295"
+    },
+    "ROBOT_DATABASE": {
+      "type": "image",
+      "assetPath": "symbols/v1/robot-database.webp",
+      "matchGroup": "ROBOT_DATABASE",
+      "label": "Database",
+      "sha256": "6cf85c9ba0373b61ccc8fe717f4a3cbbdd0a50e1e52d15544915d3bbeb98b8f1",
+      "source": "https://iconscout.com/3d-icon/database-3d-icon_7845305"
+    },
+    "ROBOT_ROBOT": {
+      "type": "image",
+      "assetPath": "symbols/v1/robot-robot.webp",
+      "matchGroup": "ROBOT_ROBOT",
+      "label": "Futuristic Robot",
+      "sha256": "518f640b831f99852176e1a06072d7bc16d1b27480da1c1fd7b28bfdaec8bffd",
+      "source": "https://iconscout.com/3d-icon/futuristic-robot-3d-icon_7845291"
+    },
+    "ROBOT_ARM": {
+      "type": "image",
+      "assetPath": "symbols/v1/robot-arm.webp",
+      "matchGroup": "ROBOT_ARM",
+      "label": "Robotic Arm",
+      "sha256": "8a535bcba9a1218d57eb29396987e2fccfc3f4ed460f7efe01257340d70d0ea6",
+      "source": "https://iconscout.com/3d-icon/robotic-arm-3d-icon_7845300"
+    },
+    "CINEMA_SEATS": {
+      "type": "image",
+      "assetPath": "symbols/v1/cinema-seats.webp",
+      "matchGroup": "CINEMA_SEATS",
+      "label": "Cinema Seats",
+      "sha256": "e24a4682f62d297c717deaa1f970414202d0ddda958571aa5564ba571d1e01a7",
+      "source": "https://iconscout.com/3d-icon/cinema-chair-3d-icon_6323920"
+    },
+    "CINEMA_PROJECTOR": {
+      "type": "image",
+      "assetPath": "symbols/v1/cinema-projector.webp",
+      "matchGroup": "CINEMA_PROJECTOR",
+      "label": "Cinema Projector",
+      "sha256": "540164d3af1a11d4e185168be11aa3c00bb3e21b5844e4d009ca33f36bfd140c",
+      "source": "https://iconscout.com/3d-icon/cinema-projector-3d-icon_6323921"
+    },
+    "CINEMA_CLAPPERBOARD": {
+      "type": "image",
+      "assetPath": "symbols/v1/cinema-clapperboard.webp",
+      "matchGroup": "CINEMA_CLAPPERBOARD",
+      "label": "Clapperboard",
+      "sha256": "8f41296f9efed56db2f3eb0658110de2c591e95ef1fef204a1335b4e18c74e2d",
+      "source": "https://iconscout.com/3d-icon/clapperboard-3d-icon_6323932"
+    },
+    "CINEMA_EXIT_DOOR": {
+      "type": "image",
+      "assetPath": "symbols/v1/cinema-exit-door.webp",
+      "matchGroup": "CINEMA_EXIT_DOOR",
+      "label": "Exit Door",
+      "sha256": "aea4275645fe30ab39227861870fff42d0b4dabcfd29fedf3363de8e05e3225f",
+      "source": "https://iconscout.com/3d-icon/exit-door-3d-icon_6323914"
+    },
+    "CINEMA_MEGAPHONE": {
+      "type": "image",
+      "assetPath": "symbols/v1/cinema-megaphone.webp",
+      "matchGroup": "CINEMA_MEGAPHONE",
+      "label": "Megaphone",
+      "sha256": "d407cabab744c63c2118e04a17c89f727e87e26e50536ec39fb8cd3c7fbc8b72",
+      "source": "https://iconscout.com/3d-icon/megaphone-3d-icon_6323919"
+    },
+    "CINEMA_NO_SMOKING": {
+      "type": "image",
+      "assetPath": "symbols/v1/cinema-no-smoking.webp",
+      "matchGroup": "CINEMA_NO_SMOKING",
+      "label": "No Smoking",
+      "sha256": "b6a7f589dffee5f67fab473b3eb18173740337625fb574fc835df5a887e8da43",
+      "source": "https://iconscout.com/3d-icon/no-smoking-3d-icon_6323922"
+    },
+    "CINEMA_POPCORN": {
+      "type": "image",
+      "assetPath": "symbols/v1/cinema-popcorn.webp",
+      "matchGroup": "CINEMA_POPCORN",
+      "label": "Popcorn Bucket",
+      "sha256": "ea3115c4c43a0aa46142f343250dfeacde231e8ffc052540d63f9df5d0c62770",
+      "source": "https://iconscout.com/3d-icon/popcorn-bucket-3d-icon_6323913"
+    },
+    "CINEMA_ROPE_BARRIER": {
+      "type": "image",
+      "assetPath": "symbols/v1/cinema-rope-barrier.webp",
+      "matchGroup": "CINEMA_ROPE_BARRIER",
+      "label": "Rope Barrier",
+      "sha256": "4a92eb050f81cf35de66a0c7eceda760752d1cb7825d1f4bb26576b4db1deae6",
+      "source": "https://iconscout.com/3d-icon/ribbon-barrier-3d-icon_6323925"
+    },
+    "CINEMA_UFO": {
+      "type": "image",
+      "assetPath": "symbols/v1/cinema-ufo.webp",
+      "matchGroup": "CINEMA_UFO",
+      "label": "Sci-Fi UFO",
+      "sha256": "ba7697468f95c0542d6a91029631a351d5beae9c5b33d226d3fce13d54290817",
+      "source": "https://iconscout.com/3d-icon/sci-fi-3d-icon_6323918"
+    },
+    "CINEMA_MAGIC_WAND": {
+      "type": "image",
+      "assetPath": "symbols/v1/cinema-magic-wand.webp",
+      "matchGroup": "CINEMA_MAGIC_WAND",
+      "label": "Special Effect",
+      "sha256": "64f46218f5b0a124e9673d5b711b4a5a8103372ebf023b113893e15ac7deba7b",
+      "source": "https://iconscout.com/3d-icon/special-effect-3d-icon_6323927"
+    },
+    "CINEMA_THEATER_MASKS": {
+      "type": "image",
+      "assetPath": "symbols/v1/cinema-theater-masks.webp",
+      "matchGroup": "CINEMA_THEATER_MASKS",
+      "label": "Theater Masks",
+      "sha256": "d448e86d1586e54f709e7e81ab9895d1068d549cf01982ec1ab505929532105b",
+      "source": "https://iconscout.com/3d-icon/theater-mask-3d-icon_6323931"
+    },
+    "CINEMA_STREAMING": {
+      "type": "image",
+      "assetPath": "symbols/v1/cinema-streaming.webp",
+      "matchGroup": "CINEMA_STREAMING",
+      "label": "Video Streaming",
+      "sha256": "a9e6e2eab585d016289009ba9ecad81f51f91ce5559a51cf6ec6d30ef7e2f910",
+      "source": "https://iconscout.com/3d-icon/video-streaming-3d-icon_6323916"
+    },
+    "TRIP_HOT_AIR_BALLOON": {
+      "type": "image",
+      "assetPath": "symbols/v1/trip-hot-air-balloon.webp",
+      "matchGroup": "TRIP_HOT_AIR_BALLOON",
+      "label": "Hot Air Balloon",
+      "sha256": "3bbabdfe0547182e12dc8b45c3f1a10478d8fde541585c5ae36a4e1673850b1d",
+      "source": "https://iconscout.com/3d-icon/air-baloon-3d-icon_14044565"
+    },
+    "TRIP_BACKPACK": {
+      "type": "image",
+      "assetPath": "symbols/v1/trip-backpack.webp",
+      "matchGroup": "TRIP_BACKPACK",
+      "label": "Backpack",
+      "sha256": "acba491f654e08eb6932ab2f08543721ee4f7f2f5bfa9b93d3de6a8a7d43b34f",
+      "source": "https://iconscout.com/3d-icon/backpack-3d-icon_14044570"
+    },
+    "TRIP_BEACH": {
+      "type": "image",
+      "assetPath": "symbols/v1/trip-beach.webp",
+      "matchGroup": "TRIP_BEACH",
+      "label": "Beach Island",
+      "sha256": "42883b5456a53556fc4fbb77c79166fa7b7db764efc1abf2227d245e81bab090",
+      "source": "https://iconscout.com/3d-icon/beach-3d-icon_14044575"
+    },
+    "TRIP_BED": {
+      "type": "image",
+      "assetPath": "symbols/v1/trip-bed.webp",
+      "matchGroup": "TRIP_BED",
+      "label": "Hotel Bed",
+      "sha256": "28ffee4a332e63fe70d6b783ee8a25507ed50e69a9900897b957cb0dee8d87c0",
+      "source": "https://iconscout.com/3d-icon/bed-3d-icon_14044577"
+    },
+    "TRIP_BOARDING_PASS": {
+      "type": "image",
+      "assetPath": "symbols/v1/trip-boarding-pass.webp",
+      "matchGroup": "TRIP_BOARDING_PASS",
+      "label": "Boarding Pass",
+      "sha256": "8ae4690f25cc2836b359587cf859e943f5ea320fb2776feb6a96fc4ee8095cb3",
+      "source": "https://iconscout.com/3d-icon/boarding-pass-3d-icon_14044563"
+    },
+    "TRIP_BREAKFAST": {
+      "type": "image",
+      "assetPath": "symbols/v1/trip-breakfast.webp",
+      "matchGroup": "TRIP_BREAKFAST",
+      "label": "Breakfast",
+      "sha256": "691b7bae3624c56ee49b8b3fd56cedeb65426bafa4a31933d57d304b812f0bda",
+      "source": "https://iconscout.com/3d-icon/breakfast-3d-icon_14044566"
+    },
+    "TRIP_CAMERA": {
+      "type": "image",
+      "assetPath": "symbols/v1/trip-camera.webp",
+      "matchGroup": "TRIP_CAMERA",
+      "label": "Instant Camera",
+      "sha256": "6e6ab9ed46b7254fcbafbe4e1efdbd6907cbb0abb8622a4e1c9be0e5e4be0f50",
+      "source": "https://iconscout.com/3d-icon/camera-3d-icon_14044574"
+    },
+    "TRIP_TENT": {
+      "type": "image",
+      "assetPath": "symbols/v1/trip-tent.webp",
+      "matchGroup": "TRIP_TENT",
+      "label": "Camp Tent",
+      "sha256": "b6714b98dc5adb5b3e681a6bea17c212abee3bc2bc2d276d73045348330a021f",
+      "source": "https://iconscout.com/3d-icon/camp-tent-3d-icon_14044567"
+    },
+    "TRIP_CAMPFIRE": {
+      "type": "image",
+      "assetPath": "symbols/v1/trip-campfire.webp",
+      "matchGroup": "TRIP_CAMPFIRE",
+      "label": "Campfire",
+      "sha256": "c37a514717ce59569db7b673ce04d64e30482ed587a2f279360514757e1c9d5d",
+      "source": "https://iconscout.com/3d-icon/campfire-3d-icon_14044571"
+    },
+    "TRIP_CARAVAN": {
+      "type": "image",
+      "assetPath": "symbols/v1/trip-caravan.webp",
+      "matchGroup": "TRIP_CARAVAN",
+      "label": "Caravan",
+      "sha256": "6ad97eb69e9268e9e8d2849f2d2388c1db9518820a60fca20f32af87469c9e6d",
+      "source": "https://iconscout.com/3d-icon/caravan-3d-icon_14044573"
+    },
+    "TRIP_CASH": {
+      "type": "image",
+      "assetPath": "symbols/v1/trip-cash.webp",
+      "matchGroup": "TRIP_CASH",
+      "label": "Cash",
+      "sha256": "b3b40c05c956842d7ba2a14018ec2f367e660ba2c91ded1b6fb3bf3550eab4dc",
+      "source": "https://iconscout.com/3d-icon/cash-3d-icon_14044576"
+    },
+    "TRIP_COCKTAIL": {
+      "type": "image",
+      "assetPath": "symbols/v1/trip-cocktail.webp",
+      "matchGroup": "TRIP_COCKTAIL",
+      "label": "Cocktail",
+      "sha256": "8c2c1f3c95915319a5ab6cee6e890a67e66831cf82c7b80ea4b691449aefcc48",
+      "source": "https://iconscout.com/3d-icon/cocktail-3d-icon_14044572"
+    },
+    "TRIP_COCONUT_DRINK": {
+      "type": "image",
+      "assetPath": "symbols/v1/trip-coconut-drink.webp",
+      "matchGroup": "TRIP_COCONUT_DRINK",
+      "label": "Coconut Drink",
+      "sha256": "3a3f38fe68d200acc78c0479d9b204378db150fbc5c70974cde13d7880d63c73",
+      "source": "https://iconscout.com/3d-icon/coconut-drink-3d-icon_14044564"
+    },
+    "TRIP_DESK_BELL": {
+      "type": "image",
+      "assetPath": "symbols/v1/trip-desk-bell.webp",
+      "matchGroup": "TRIP_DESK_BELL",
+      "label": "Desk Bell",
+      "sha256": "17f2de50131c82fe843c8ddfbc413f60bb656fd54256d3ef82e83ab40444072e",
+      "source": "https://iconscout.com/3d-icon/desk-bell-3d-icon_14044568"
+    },
+    "TRIP_HOTEL": {
+      "type": "image",
+      "assetPath": "symbols/v1/trip-hotel.webp",
+      "matchGroup": "TRIP_HOTEL",
+      "label": "Hotel",
+      "sha256": "5dca9a9626925e7b11a9c730aa823137ede387e927e2e556f0a23aac455993bc",
+      "source": "https://iconscout.com/3d-icon/hotel-3d-icon_14044561"
+    },
+    "TRIP_HOTEL_KEY": {
+      "type": "image",
+      "assetPath": "symbols/v1/trip-hotel-key.webp",
+      "matchGroup": "TRIP_HOTEL_KEY",
+      "label": "Hotel Key",
+      "sha256": "f94493de1aca4ec10c0d353b2919c12e97d53c9f29be00c6302c3be58168357d",
+      "source": "https://iconscout.com/3d-icon/hotel-key-3d-icon_14044556"
+    },
+    "TRIP_MAP_PHONE": {
+      "type": "image",
+      "assetPath": "symbols/v1/trip-map-phone.webp",
+      "matchGroup": "TRIP_MAP_PHONE",
+      "label": "Phone Map",
+      "sha256": "0c2d6f8be4958f0c4a72c2ed65ce7f749229c54a76c9c44d3efcf60ba21362df",
+      "source": "https://iconscout.com/3d-icon/maps-3d-icon_14044562"
+    },
+    "TRIP_MOUNTAIN": {
+      "type": "image",
+      "assetPath": "symbols/v1/trip-mountain.webp",
+      "matchGroup": "TRIP_MOUNTAIN",
+      "label": "Mountain",
+      "sha256": "9593b953b71ed190fad46d327624da890cddffdca737fe31d12351ca6c993c1c",
+      "source": "https://iconscout.com/3d-icon/mountain-3d-icon_14044557"
+    },
+    "TRIP_PASSPORT": {
+      "type": "image",
+      "assetPath": "symbols/v1/trip-passport.webp",
+      "matchGroup": "TRIP_PASSPORT",
+      "label": "Passport",
+      "sha256": "23ca5cb187cbb54410b07202d4dac2209598d20e74c1a288114b7a59e6c68fa5",
+      "source": "https://iconscout.com/3d-icon/passport-3d-icon_14044558"
+    },
+    "TRIP_SIGNPOST": {
+      "type": "image",
+      "assetPath": "symbols/v1/trip-signpost.webp",
+      "matchGroup": "TRIP_SIGNPOST",
+      "label": "Signpost",
+      "sha256": "1906a8c6278582985bdc3eb5507dc2485173264a4ce5dc73f2b9af6960694313",
+      "source": "https://iconscout.com/3d-icon/road-sign-3d-icon_14044555"
+    },
+    "TRIP_SUITCASE": {
+      "type": "image",
+      "assetPath": "symbols/v1/trip-suitcase.webp",
+      "matchGroup": "TRIP_SUITCASE",
+      "label": "Suitcase",
+      "sha256": "5f785fb0c154b591ebdc28188b72ceb7a1b3d7faf9da084150f56d28494b29b8",
+      "source": "https://iconscout.com/3d-icon/suitcase-3d-icon_14044559"
+    },
+    "TRIP_CAR": {
+      "type": "image",
+      "assetPath": "symbols/v1/trip-car.webp",
+      "matchGroup": "TRIP_CAR",
+      "label": "Travel Car",
+      "sha256": "76e43f59aab76e417d81ffe4cc646f28b3a433446ee0d58c3432329c7e948828",
+      "source": "https://iconscout.com/3d-icon/travel-car-3d-icon_14044554"
+    },
+    "ANIMAL_RED_PANDA": {
+      "type": "image",
+      "assetPath": "symbols/v1/red-panda.webp",
+      "matchGroup": "ANIMAL_RED_PANDA",
+      "label": "Red Panda",
+      "sha256": "be4139df3ddfaf2f46327bdd61ee20ea55a46cbb5e9d67c46f53e00346363dfa"
+    },
+    "ANIMAL_BEAR": {
+      "type": "image",
+      "assetPath": "symbols/v1/animal-bear.webp",
+      "matchGroup": "ANIMAL_BEAR",
+      "label": "Happy Bear",
+      "sha256": "baa953f40a6eec6ccdb242e6ae61570961221d23ad5b3b1ad300fb2263a61e37"
+    },
+    "FOOD_BREAD": {
+      "type": "image",
+      "assetPath": "symbols/v1/food-bread.webp",
+      "matchGroup": "FOOD_BREAD",
+      "label": "Happy Bread",
+      "sha256": "8b679c5945105a1867c110a3390d50ab68b740eb31a0bc23a61bc1bd62c5b301"
+    },
+    "ANIMAL_BULL": {
+      "type": "image",
+      "assetPath": "symbols/v1/animal-bull.webp",
+      "matchGroup": "ANIMAL_BULL",
+      "label": "Happy Bull",
+      "sha256": "e88a72f03ee2f0370bc0467a1a947a21bab1bf93c929acf3ea74ad789e1e2327"
+    },
+    "ANIMAL_TIGER_CUB": {
+      "type": "image",
+      "assetPath": "symbols/v1/animal-tiger-cub.webp",
+      "matchGroup": "ANIMAL_TIGER_CUB",
+      "label": "Tiger Cub",
+      "sha256": "70f0ac01561d4053493e10601fa28acde2987b6e01928dc6a8a9226aa87b1e86"
+    },
+    "JP_KANJI_RAKU": {
+      "type": "image",
+      "assetPath": "symbols/v1/jp-kanji-raku.webp",
+      "matchGroup": "JP_KANJI_RAKU",
+      "label": "Kanji Raku (Joy)",
+      "sha256": "495cfa7219ce2864437e57000187cbd39a9519dd84d78aef3542c79c2c71060d"
+    },
+    "LOVE_HEART_BUDDY": {
+      "type": "image",
+      "assetPath": "symbols/v1/love-heart-buddy.webp",
+      "matchGroup": "LOVE_HEART_BUDDY",
+      "label": "Dancing Heart",
+      "sha256": "b2f386866f98a43082bb3e9ac0211a06f93571f0ee52cb8a09204940745a3a72"
+    },
+    "FOOD_PIZZA": {
+      "type": "image",
+      "assetPath": "symbols/v1/food-pizza.webp",
+      "matchGroup": "FOOD_PIZZA",
+      "label": "Happy Pizza",
+      "sha256": "2dff5bf8ddd5f33cde988277400e6047da412492182125b12d50057c23acf0fc"
+    },
+    "SPACE_ROCKET": {
+      "type": "image",
+      "assetPath": "symbols/v1/space-rocket.webp",
+      "matchGroup": "SPACE_ROCKET",
+      "label": "Happy Rocket",
+      "sha256": "74e01e84cf3fcce967cab7b82db5328c22fe3760481a119b4b74b0560b15c4e6"
+    },
+    "FOOD_TEA_CUP": {
+      "type": "image",
+      "assetPath": "symbols/v1/food-tea-cup.webp",
+      "matchGroup": "FOOD_TEA_CUP",
+      "label": "Tea Cup",
+      "sha256": "e18ab208bbadda520ab9ef9bf8fb307edef9f752fd8b1f27f2323963479d6066"
+    },
+    "CN_FU_CHARACTER": {
+      "type": "image",
+      "assetPath": "symbols/v1/chinese-fu-character.webp",
+      "matchGroup": "CN_FU_CHARACTER",
+      "label": "Fu Character",
+      "sha256": "b0dc165fe5a9020ac4a570b5105bbb1a0a700ca0766edeef96fddd3a0d48666f"
+    },
+    "ANIMAL_FOX_SPIRIT": {
+      "type": "image",
+      "assetPath": "symbols/v1/animal-fox-spirit.webp",
+      "matchGroup": "ANIMAL_FOX_SPIRIT",
+      "label": "Fox Spirit",
+      "sha256": "a294c34106cb42f28a679b8431ca1e675fce56b8fec120dd0a0e5ecf3ed04151"
+    },
+    "LION_HEAD": {
+      "type": "image",
+      "assetPath": "symbols/v1/lion-head.webp",
+      "matchGroup": "LION_HEAD",
+      "label": "Lion",
+      "sha256": "bf0e545070ae910639307baf58c75a42b3bdc341b8cf450a322a3630c9ea795b"
+    },
+    "WEAPON_CRYSTAL_SWORD": {
+      "type": "image",
+      "assetPath": "symbols/v1/weapon-crystal-sword.webp",
+      "matchGroup": "WEAPON_CRYSTAL_SWORD",
+      "label": "Crystal Sword",
+      "sha256": "993b54d88feb56000e9a692b9372009dc6e15bff42da0b9637b956ca286baf25"
+    },
+    "WEAPON_CROSSED_SWORDS": {
+      "type": "image",
+      "assetPath": "symbols/v1/weapon-crossed-swords.webp",
+      "matchGroup": "WEAPON_CROSSED_SWORDS",
+      "label": "Crossed Swords",
+      "sha256": "edcc5bb1cc00e529381cfdf85c07f1f2ebe646e295c6dd76865cdc71767f90c8"
+    },
+    "WEAPON_RAY_GUN_ORANGE": {
+      "type": "image",
+      "assetPath": "symbols/v1/weapon-ray-gun-orange.webp",
+      "matchGroup": "WEAPON_RAY_GUN_ORANGE",
+      "label": "Orange Ray Gun",
+      "sha256": "1a2637d906dd89706e11f60a503c98f67ae55236ff5e3d8b43046b5f01497ce8"
+    },
+    "WEAPON_RAY_GUN_VIOLET": {
+      "type": "image",
+      "assetPath": "symbols/v1/weapon-ray-gun-violet.webp",
+      "matchGroup": "WEAPON_RAY_GUN_VIOLET",
+      "label": "Violet Ray Gun",
+      "sha256": "3e32ee398720746d773760cb82ad0b9a9a936d83d650069187f83e172bae55fc"
+    },
+    "WEAPON_SPIRAL_BLASTER": {
+      "type": "image",
+      "assetPath": "symbols/v1/weapon-spiral-blaster.webp",
+      "matchGroup": "WEAPON_SPIRAL_BLASTER",
+      "label": "Spiral Blaster",
+      "sha256": "15b7ca3f5113073187e8ba2f13a0251f0f3e5e7197f12aa895a84a71b09c02a7"
+    },
+    "WEAPON_WAR_HAMMER": {
+      "type": "image",
+      "assetPath": "symbols/v1/weapon-war-hammer.webp",
+      "matchGroup": "WEAPON_WAR_HAMMER",
+      "label": "Crystal War Hammer",
+      "sha256": "aba0db2df13300d6d0348aaf9cd969b306c206fae82e2f7774c672a50401d57d"
+    },
+    "HERO_SUPERHERO": {
+      "type": "image",
+      "assetPath": "symbols/v1/hero-superhero.webp",
+      "matchGroup": "HERO_SUPERHERO",
+      "label": "Superhero",
+      "sha256": "ad57f0e524753490fb1eb73a125abb6e1e95b7d03bfe2ee58dd58d5ae0a5d6cb"
+    },
+    "HERO_SUPERHEROINE": {
+      "type": "image",
+      "assetPath": "symbols/v1/hero-superheroine.webp",
+      "matchGroup": "HERO_SUPERHEROINE",
+      "label": "Superheroine",
+      "sha256": "cb4aea5c8c35b4e97a15fb700a983aad006e771e637dd899fc922eb9323061ab"
+    },
+    "SYMBOL_EXCLAMATION": {
+      "type": "image",
+      "assetPath": "symbols/v1/symbol-exclamation.webp",
+      "matchGroup": "SYMBOL_EXCLAMATION",
+      "label": "Happy Exclamation Mark",
+      "sha256": "ff3156cfd6363cb5d3a4672dea3f6280b79baf665d04e83425333cda7744e1a8"
+    },
+    "SYMBOL_STAR_BURST": {
+      "type": "image",
+      "assetPath": "symbols/v1/symbol-star-burst.webp",
+      "matchGroup": "SYMBOL_STAR_BURST",
+      "label": "Star Burst",
+      "sha256": "0b9e9179a99a11b4b0c1c5b46fb4111810ab3ef4c3c94703254d0f362f536c35"
+    },
+    "SPORT2_WHISTLE": {
+      "type": "image",
+      "assetPath": "symbols/v1/sport2-whistle.webp",
+      "matchGroup": "SPORT2_WHISTLE",
+      "label": "Coach Whistle",
+      "sha256": "1fa07ca7398c9b85e9208888fe3f3858fc98983f040a7a1304cd2fc32a5e6508",
+      "source": "https://iconscout.com/3d-icon/coach-whistle-3d-icon_9693469"
+    },
+    "SPORT2_DARTBOARD": {
+      "type": "image",
+      "assetPath": "symbols/v1/sport2-dartboard.webp",
+      "matchGroup": "SPORT2_DARTBOARD",
+      "label": "Dartboard",
+      "sha256": "099ac973e0de5a3022b60a74675312ef0f880cc321f9b17080ebf246c83b4116",
+      "source": "https://iconscout.com/3d-icon/dartboard-3d-icon_9693482"
+    },
+    "SPORT2_GO_BOARD": {
+      "type": "image",
+      "assetPath": "symbols/v1/sport2-go-board.webp",
+      "matchGroup": "SPORT2_GO_BOARD",
+      "label": "Go Board",
+      "sha256": "6d1563b92e054ec77521e1a51da6b6adc189a612168596cb61f92ec0d985c838",
+      "source": "https://iconscout.com/3d-icon/go-board-3d-icon_9693484"
+    },
+    "SPORT2_HORSESHOE": {
+      "type": "image",
+      "assetPath": "symbols/v1/sport2-horseshoe.webp",
+      "matchGroup": "SPORT2_HORSESHOE",
+      "label": "Horseshoe Pitching",
+      "sha256": "d1e7579141f6cfdd31b95a338e3994ac4cd747cf91eadc98221a3e89b8c16323",
+      "source": "https://iconscout.com/3d-icon/horseshoes-3d-icon_9693476"
+    },
+    "SPORT2_KARATE": {
+      "type": "image",
+      "assetPath": "symbols/v1/sport2-karate.webp",
+      "matchGroup": "SPORT2_KARATE",
+      "label": "Karate Gi",
+      "sha256": "ec5eeb242986e920d2626dca9b0f5885ae3fb8e36f4b1c25bf2f4f285f3edb7c",
+      "source": "https://iconscout.com/3d-icon/karate-3d-icon_9693493"
+    },
+    "SPORT2_GYM_RINGS": {
+      "type": "image",
+      "assetPath": "symbols/v1/sport2-gym-rings.webp",
+      "matchGroup": "SPORT2_GYM_RINGS",
+      "label": "Gymnastic Rings",
+      "sha256": "52fd9e390437f2bb5b028e0cec673d031537484ce09bc7f716334086a9b8a987",
+      "source": "https://iconscout.com/3d-icon/ring-gymnastic-3d-icon_9693468"
+    },
+    "SPORT2_RUNNING_SHOES": {
+      "type": "image",
+      "assetPath": "symbols/v1/sport2-running-shoes.webp",
+      "matchGroup": "SPORT2_RUNNING_SHOES",
+      "label": "Running Shoes",
+      "sha256": "a41a3e7379142641dcefd1740f26f4765ca4dbba3079444b5a5fbedda966b562",
+      "source": "https://iconscout.com/3d-icon/running-shoes-3d-icon_9693470"
+    },
+    "SPORT2_SWIM_GOGGLES": {
+      "type": "image",
+      "assetPath": "symbols/v1/sport2-swim-goggles.webp",
+      "matchGroup": "SPORT2_SWIM_GOGGLES",
+      "label": "Swimming Goggles",
+      "sha256": "a189c160bf1e932e5dce946f42c135d2d6436c39b299274479bc3cf7b5c70d8f",
+      "source": "https://iconscout.com/3d-icon/swimming-goggles-3d-icon_9693467"
+    },
+    "SPORTEQ_FOOTBALL_HELMET": {
+      "type": "image",
+      "assetPath": "symbols/v1/sporteq-football-helmet.webp",
+      "matchGroup": "SPORTEQ_FOOTBALL_HELMET",
+      "label": "American Football Helmet",
+      "sha256": "46c107c39eafd0d5e58215a78481a15b199ae75a36ca061351a36a9a88621fb9",
+      "source": "https://iconscout.com/3d-icon/american-football-helmet-3d-icon_11373191"
+    },
+    "SPORTEQ_BILLIARDS": {
+      "type": "image",
+      "assetPath": "symbols/v1/sporteq-billiards.webp",
+      "matchGroup": "SPORTEQ_BILLIARDS",
+      "label": "Billiard Balls",
+      "sha256": "4a82f230752570eedd974c0a13938cfb75d65260f7fbb3268e8a12fe0631f68e",
+      "source": "https://iconscout.com/3d-icon/billiards-3d-icon_11373206"
+    },
+    "SPORTEQ_BOXING_GLOVES": {
+      "type": "image",
+      "assetPath": "symbols/v1/sporteq-boxing-gloves.webp",
+      "matchGroup": "SPORTEQ_BOXING_GLOVES",
+      "label": "Boxing Gloves",
+      "sha256": "02597ec3ff4b3345cda5e13fed3c024775f2a9126fbb3eaa939732bdbb507839",
+      "source": "https://iconscout.com/3d-icon/boxing-gloves-3d-icon_11373198"
+    },
+    "SPORTEQ_SHUTTLECOCK": {
+      "type": "image",
+      "assetPath": "symbols/v1/sporteq-shuttlecock.webp",
+      "matchGroup": "SPORTEQ_SHUTTLECOCK",
+      "label": "Shuttlecock",
+      "sha256": "e8827db042eda24605bce159b1d82a9682282378cad98ac02489074cd0b2d531",
+      "source": "https://iconscout.com/3d-icon/shuttlecock-3d-icon_11373201"
+    },
+    "EQUIP_BOLT_CUTTER": {
+      "type": "image",
+      "assetPath": "symbols/v1/equip-bolt-cutter.webp",
+      "matchGroup": "EQUIP_BOLT_CUTTER",
+      "label": "Bolt Cutter",
+      "sha256": "a32b79a5a1a1f047b5ee65923703ddc6a63fa2430024d23243ba824661091094",
+      "source": "https://iconscout.com/3d-icon/bolt-cutter-3d-icon_11627141"
+    },
+    "EQUIP_CHAINSAW": {
+      "type": "image",
+      "assetPath": "symbols/v1/equip-chainsaw.webp",
+      "matchGroup": "EQUIP_CHAINSAW",
+      "label": "Chainsaw",
+      "sha256": "6f835a18df89d01796e6ec03e74b4ff3310fa89fe2f1dc783587ee556662f0e2",
+      "source": "https://iconscout.com/3d-icon/chainsaw-3d-icon_11627143"
+    },
+    "EQUIP_CHISEL": {
+      "type": "image",
+      "assetPath": "symbols/v1/equip-chisel.webp",
+      "matchGroup": "EQUIP_CHISEL",
+      "label": "Chisel",
+      "sha256": "ebcd36b12d58c372b6cb53304c0af32345c8160ba2a17faaabe2c91021d92c31",
+      "source": "https://iconscout.com/3d-icon/chisel-3d-icon_11627151"
+    },
+    "EQUIP_CUTTER": {
+      "type": "image",
+      "assetPath": "symbols/v1/equip-cutter.webp",
+      "matchGroup": "EQUIP_CUTTER",
+      "label": "Utility Knife",
+      "sha256": "5ddc24921767a9c58782bd0bbba2b1f2e3485f10e93159366a93e6c732220e33",
+      "source": "https://iconscout.com/3d-icon/cutter-3d-icon_11627150"
+    },
+    "EQUIP_DRILL": {
+      "type": "image",
+      "assetPath": "symbols/v1/equip-drill.webp",
+      "matchGroup": "EQUIP_DRILL",
+      "label": "Cordless Drill",
+      "sha256": "0558aad72c4f639657ce3d7f5ba0831176b5bcc56e1786b4304fae0ff7ea51ca",
+      "source": "https://iconscout.com/3d-icon/drill-3d-icon_11627152"
+    },
+    "EQUIP_LADDER": {
+      "type": "image",
+      "assetPath": "symbols/v1/equip-ladder.webp",
+      "matchGroup": "EQUIP_LADDER",
+      "label": "Step Ladder",
+      "sha256": "508c065f92c7689dc17d5d2fe48c9861b28aed5a9caa059a193a6afb1c661201",
+      "source": "https://iconscout.com/3d-icon/ladder-3d-icon_11627147"
+    },
+    "EQUIP_SAW": {
+      "type": "image",
+      "assetPath": "symbols/v1/equip-saw.webp",
+      "matchGroup": "EQUIP_SAW",
+      "label": "Hand Saw",
+      "sha256": "e93a7bc052ee47826ff4d571fb2876691e47130afd2f37ee686d58898ab5519f",
+      "source": "https://iconscout.com/3d-icon/saw-3d-icon_11627153"
+    },
+    "EQUIP_STAPLE_GUN": {
+      "type": "image",
+      "assetPath": "symbols/v1/equip-staple-gun.webp",
+      "matchGroup": "EQUIP_STAPLE_GUN",
+      "label": "Staple Gun",
+      "sha256": "a931b52435cb0d6770fbdce8d399079033ddcddb5d206dcf5e78dd9d32fb6932",
+      "source": "https://iconscout.com/3d-icon/staple-gun-3d-icon_11627142"
+    },
+    "EQUIP_TAPE_MEASURE": {
+      "type": "image",
+      "assetPath": "symbols/v1/equip-tape-measure.webp",
+      "matchGroup": "EQUIP_TAPE_MEASURE",
+      "label": "Tape Measure",
+      "sha256": "f5800de42b18b6ae39e16a5a96fa4a10d76f6a4add1caca09125113eb9922ad4",
+      "source": "https://iconscout.com/3d-icon/tape-measure-3d-icon_11627138"
+    },
+    "EQUIP_TROWEL": {
+      "type": "image",
+      "assetPath": "symbols/v1/equip-trowel.webp",
+      "matchGroup": "EQUIP_TROWEL",
+      "label": "Trowel",
+      "sha256": "2bb5c6073edd419e98c952bd7d398b20f6f2104e855e8e7cdaf8789bd6ebbce7",
+      "source": "https://iconscout.com/3d-icon/trowel-3d-icon_11627149"
+    },
+    "MED_CAPSULES": {
+      "type": "image",
+      "assetPath": "symbols/v1/med-capsules.webp",
+      "matchGroup": "MED_CAPSULES",
+      "label": "Medicine Capsules",
+      "sha256": "0a2c24a5174566b9561fc4bd71cf3d11ca92851462340109a04942d1a5a521b2",
+      "source": "https://iconscout.com/3d-icon/capsule-medicine-3d-icon_14221068"
+    },
+    "MED_PILL_BOTTLE": {
+      "type": "image",
+      "assetPath": "symbols/v1/med-pill-bottle.webp",
+      "matchGroup": "MED_PILL_BOTTLE",
+      "label": "Pill Bottle",
+      "sha256": "bfd9f6c04aca1651ea32d0eee1422b7e497d818f2cdffc4a57e45dac4f53cc73",
+      "source": "https://iconscout.com/3d-icon/medicine-bottle-with-capsule-medicine-3d-icon_14221063"
+    },
+    "EMOJI_FIRE": {
+      "type": "lottie",
+      "assetPath": "animated-symbols/fire-emoji.json",
+      "matchGroup": "EMOJI_FIRE",
+      "label": "Fire",
+      "sha256": "2b8e934fd37e2b126420e5d031ba39a4779617d0a9498cbc956ecfde46690d22",
+      "source": "https://iconscout.com/lottie-animation-pack/emoji-animation-pack_104656"
+    },
+    "DOG_TENNIS_BALL": {
+      "type": "lottie",
+      "assetPath": "animated-symbols/dog-playing-tennis-ball.json",
+      "matchGroup": "DOG_TENNIS_BALL",
+      "label": "Dog playing tennis ball",
+      "sha256": "a7d501b8fc5afae9c704aab8604be4ff51199dba5b7c2aeecf6155759cb845e5",
+      "source": "https://iconscout.com/lottie-animation-pack/dog-playing-tennis-ball-animation-pack_302504"
+    },
+    "VAL_LOVE_LETTER": {
+      "type": "lottie",
+      "assetPath": "animated-symbols/love-letter.json",
+      "matchGroup": "VAL_LOVE_LETTER",
+      "label": "Love letter",
+      "sha256": "59374e302a93642037319f9862be4d5f0dafc24a2906e860b2ab845d0133cf29",
+      "source": "https://iconscout.com/lottie-animation-pack/valentines-day-animation-pack_106682"
+    },
+    "DOG_WITH_BALL": {
+      "type": "lottie",
+      "assetPath": "animated-symbols/dog-playing-with-ball.json",
+      "matchGroup": "DOG_WITH_BALL",
+      "label": "Dog playing with ball",
+      "sha256": "7676f403cce82a481e5ae947ea65c5236b19c76613b446c041fe0b8a0daf5520",
+      "source": "https://iconscout.com/lottie-animation-pack/dog-playing-tennis-ball-animation-pack_302504"
+    },
+    "EMOJI_COLD_FACE": {
+      "type": "lottie",
+      "assetPath": "animated-symbols/cold-face-emoji.json",
+      "matchGroup": "EMOJI_COLD_FACE",
+      "label": "Cold face",
+      "sha256": "0ce1a1f7eb5a8d4692524e5232906d3cf66d2ebe79063cca7989a9c1358639bd",
+      "source": "https://iconscout.com/lottie-animation-pack/emoji-animation-pack_104656"
+    },
+    "VAL_BALLOON_HEART": {
+      "type": "lottie",
+      "assetPath": "animated-symbols/balloon-heart.json",
+      "matchGroup": "VAL_BALLOON_HEART",
+      "label": "Balloon heart",
+      "sha256": "f257e511374a5fc89cb6b51bc5f6cd6c61cb030cf03b5ff3677055e1a02e9605",
+      "source": "https://iconscout.com/lottie-animation-pack/valentines-day-animation-pack_106682"
+    },
+    "EMOJI_DEVIL_SMILE": {
+      "type": "lottie",
+      "assetPath": "animated-symbols/devil-smile-emoji.json",
+      "matchGroup": "EMOJI_DEVIL_SMILE",
+      "label": "Devil smile",
+      "sha256": "e3448064c40882f6abb4445f39d9080ca8b19c3bb4a7158d93ef5f16b5ae724c",
+      "source": "https://iconscout.com/lottie-animation-pack/emoji-animation-pack_104656"
+    },
+    "DOG_TENNIS_CATCH": {
+      "type": "lottie",
+      "assetPath": "animated-symbols/dog-playing-with-tennis-ball.json",
+      "matchGroup": "DOG_TENNIS_CATCH",
+      "label": "Dog with tennis ball",
+      "sha256": "c79ca2e98d3fbb1b23568c3c102bca68d46421f56b2dbd02bde6a337b7e3ef00",
+      "source": "https://iconscout.com/lottie-animation-pack/dog-playing-tennis-ball-animation-pack_302504"
+    },
+    "EMOJI_SKULL": {
+      "type": "lottie",
+      "assetPath": "animated-symbols/skull-emoji.json",
+      "matchGroup": "EMOJI_SKULL",
+      "label": "Skull",
+      "sha256": "d1b9daac168e45b79b80e38068b89b65f5274f7494a564f6ac27543d5fc9aca2",
+      "source": "https://iconscout.com/lottie-animation-pack/emoji-animation-pack_104656"
+    },
+    "VAL_BOUQUET_OF_FLOWERS": {
+      "type": "lottie",
+      "assetPath": "animated-symbols/bouquet-of-flowers.json",
+      "matchGroup": "VAL_BOUQUET_OF_FLOWERS",
+      "label": "Bouquet of flowers",
+      "sha256": "3683244fc224cfea9a40dc6ae6e2e7f0cb13f6f4f175601e285b500331026ccb",
+      "source": "https://iconscout.com/lottie-animation-pack/valentines-day-animation-pack_106682"
+    },
+    "EMOJI_SMILING_FACE_WITH_SUNGLASSES": {
+      "type": "lottie",
+      "assetPath": "animated-symbols/smiling-face-with-sunglasses-emoji.json",
+      "matchGroup": "EMOJI_SMILING_FACE_WITH_SUNGLASSES",
+      "label": "Smiling face with sunglasses",
+      "sha256": "fc3d83ead3dc38f5132efeb2b1c025df200e8b70e5a9812589f4bcbe5d290e9d",
+      "source": "https://iconscout.com/lottie-animation-pack/emoji-animation-pack_104656"
+    },
+    "VAL_WEDDING_RINGS": {
+      "type": "lottie",
+      "assetPath": "animated-symbols/wedding-rings.json",
+      "matchGroup": "VAL_WEDDING_RINGS",
+      "label": "Wedding rings",
+      "sha256": "91c8923e6b0e6470663c17f8c959e8629a9b5d12003b51bcae8c40581f1852bb",
+      "source": "https://iconscout.com/lottie-animation-pack/valentines-day-animation-pack_106682"
+    },
+    "EMOJI_RAINBOW": {
+      "type": "lottie",
+      "assetPath": "animated-symbols/rainbow-emoji.json",
+      "matchGroup": "EMOJI_RAINBOW",
+      "label": "Rainbow",
+      "sha256": "f737178f48aa983ebb3fc3f2166d57edf07b633ab2d6e98595de48117f84ae3b",
+      "source": "https://iconscout.com/lottie-animation-pack/emoji-animation-pack_104656"
+    },
+    "DOG_YARN_BALL": {
+      "type": "lottie",
+      "assetPath": "animated-symbols/dog-playing-yarn-ball.json",
+      "matchGroup": "DOG_YARN_BALL",
+      "label": "Dog playing yarn ball",
+      "sha256": "31afb002f531ada5712ddb4dc6d7624c030f09492d1a25cdfa1d54240e046711",
+      "source": "https://iconscout.com/lottie-animation-pack/dog-playing-tennis-ball-animation-pack_302504"
+    },
+    "EMOJI_FLEXED_BICEPS": {
+      "type": "lottie",
+      "assetPath": "animated-symbols/flexed-biceps-emoji.json",
+      "matchGroup": "EMOJI_FLEXED_BICEPS",
+      "label": "Flexed biceps",
+      "sha256": "7c953e82f53d9800f30593b6cb713961f7cb76ab330e6d2ce5889b95454c9ae3",
+      "source": "https://iconscout.com/lottie-animation-pack/emoji-animation-pack_104656"
+    },
+    "VAL_VALENTINE_PRESENT": {
+      "type": "lottie",
+      "assetPath": "animated-symbols/valentine-present.json",
+      "matchGroup": "VAL_VALENTINE_PRESENT",
+      "label": "Valentine present",
+      "sha256": "707d6499116b17d98c4b52d766bc5643d48461daf2676f7a659968bad71034e2",
+      "source": "https://iconscout.com/lottie-animation-pack/valentines-day-animation-pack_106682"
+    },
+    "EMOJI_STAR_STRUCK": {
+      "type": "lottie",
+      "assetPath": "animated-symbols/star-struck-emoji.json",
+      "matchGroup": "EMOJI_STAR_STRUCK",
+      "label": "Star-struck",
+      "sha256": "145a774ae02a2005be1ba05a366d95684a722b33293503fc9ce5d555dc606d07",
+      "source": "https://iconscout.com/lottie-animation-pack/emoji-animation-pack_104656"
+    },
+    "VAL_LOVE_LOCK": {
+      "type": "lottie",
+      "assetPath": "animated-symbols/love-lock.json",
+      "matchGroup": "VAL_LOVE_LOCK",
+      "label": "Love lock",
+      "sha256": "9401fc0133a0ee2f388a19414de6bc335ccee987ba23a514a855c7aa55c97ff6",
+      "source": "https://iconscout.com/lottie-animation-pack/valentines-day-animation-pack_106682"
+    },
+    "EMOJI_LOUDLY_CRYING": {
+      "type": "lottie",
+      "assetPath": "animated-symbols/loudly-crying-emoji.json",
+      "matchGroup": "EMOJI_LOUDLY_CRYING",
+      "label": "Loudly crying",
+      "sha256": "978f5f5b53b3d62ce2d68f6794676c1d581a63c528ab0cb2c53ed4733d8de0f8",
+      "source": "https://iconscout.com/lottie-animation-pack/emoji-animation-pack_104656"
+    },
+    "EMOJI_ENRAGED_FACE": {
+      "type": "lottie",
+      "assetPath": "animated-symbols/enraged-face-emoji.json",
+      "matchGroup": "EMOJI_ENRAGED_FACE",
+      "label": "Enraged face",
+      "sha256": "141683a6ecd12a71125b1c36efd625ae672701fdea58b965fe55aa8a0d2b7350",
+      "source": "https://iconscout.com/lottie-animation-pack/emoji-animation-pack_104656"
+    },
+    "EMOJI_THUNDERCLOUD_LIGHTNING": {
+      "type": "lottie",
+      "assetPath": "animated-symbols/thundercloud-lightning-emoji.json",
+      "matchGroup": "EMOJI_THUNDERCLOUD_LIGHTNING",
+      "label": "Thundercloud with lightning",
+      "sha256": "88af6f6099d86f46f3776bcfb749853ed5e3ac9cbceb33e33d822d46a92d87d3",
+      "source": "https://iconscout.com/lottie-animation-pack/emoji-animation-pack_104656"
+    },
+    "VAL_CHEERS": {
+      "type": "lottie",
+      "assetPath": "animated-symbols/cheers.json",
+      "matchGroup": "VAL_CHEERS",
+      "label": "Cheers",
+      "sha256": "7590c3eb227acc7ee4c28f76aa803203e9e41f6355094ebe707da791f9d7b58a",
+      "source": "https://iconscout.com/lottie-animation-pack/valentines-day-animation-pack_106682"
+    },
+    "EMOJI_KNIFE": {
+      "type": "lottie",
+      "assetPath": "animated-symbols/knife-emoji.json",
+      "matchGroup": "EMOJI_KNIFE",
+      "label": "Knife",
+      "sha256": "4a879571853054fd9d3ca8f556a7f0b7011250b82cefbc157750246a8dacb70a",
+      "source": "https://iconscout.com/lottie-animation-pack/emoji-animation-pack_104656"
+    },
+    "VAL_LOVE_ELIXIR": {
+      "type": "lottie",
+      "assetPath": "animated-symbols/love-elixir.json",
+      "matchGroup": "VAL_LOVE_ELIXIR",
+      "label": "Love elixir",
+      "sha256": "51445cf03214e831ea2cf5a6441aa6b429b2460cb9cde0daf3e9f6fe0a62bab6",
+      "source": "https://iconscout.com/lottie-animation-pack/valentines-day-animation-pack_106682"
+    },
+    "EMOJI_SMILING_FACE_WITH_HEARTS": {
+      "type": "lottie",
+      "assetPath": "animated-symbols/smiling-face-with-hearts-emoji.json",
+      "matchGroup": "EMOJI_SMILING_FACE_WITH_HEARTS",
+      "label": "Smiling face with hearts",
+      "sha256": "62e296351ffde10622ba09afd1dcd0ef81a1c0e3b51bdff5d2ba4433e56286c7",
+      "source": "https://iconscout.com/lottie-animation-pack/emoji-animation-pack_104656"
+    },
+    "EMOJI_NAUSEATED_FACE": {
+      "type": "lottie",
+      "assetPath": "animated-symbols/nauseated-face-emoji.json",
+      "matchGroup": "EMOJI_NAUSEATED_FACE",
+      "label": "Nauseated face",
+      "sha256": "861b2a91bddda155cf1ed08db792a038b3772c9137ed4e5d9584ba82bd116de0",
+      "source": "https://iconscout.com/lottie-animation-pack/emoji-animation-pack_104656"
+    },
+    "VAL_ANGELS_HEART": {
+      "type": "lottie",
+      "assetPath": "animated-symbols/angels-heart.json",
+      "matchGroup": "VAL_ANGELS_HEART",
+      "label": "Angel's heart",
+      "sha256": "d9f96d43c811c7a5b9f2c264535cd591e86205731d1383aa9461caf2ccd50819",
+      "source": "https://iconscout.com/lottie-animation-pack/valentines-day-animation-pack_106682"
+    },
+    "EMOJI_HOT": {
+      "type": "lottie",
+      "assetPath": "animated-symbols/hot-emoji.json",
+      "matchGroup": "EMOJI_HOT",
+      "label": "Hot",
+      "sha256": "e693874e8dd9a2f7ee15599d328e646aa6e009b7b1dc9fe91e02d84769f2e442",
+      "source": "https://iconscout.com/lottie-animation-pack/emoji-animation-pack_104656"
+    },
+    "EMOJI_SLEEPING_FACE": {
+      "type": "lottie",
+      "assetPath": "animated-symbols/sleeping-face-emoji.json",
+      "matchGroup": "EMOJI_SLEEPING_FACE",
+      "label": "Sleeping face",
+      "sha256": "dfa9c3517418239417f8a034e023ed983966718cdb88e597e73cf2ac4dde7056",
+      "source": "https://iconscout.com/lottie-animation-pack/emoji-animation-pack_104656"
+    },
+    "VAL_VALENTINE_CHOCOLATE": {
+      "type": "lottie",
+      "assetPath": "animated-symbols/valentine-chocolate.json",
+      "matchGroup": "VAL_VALENTINE_CHOCOLATE",
+      "label": "Valentine chocolate",
+      "sha256": "c88af3c4b64efe151230e16b6a1ff45c14b9af8df7f0c8ca987b59bc44b63ab7",
+      "source": "https://iconscout.com/lottie-animation-pack/valentines-day-animation-pack_106682"
+    },
+    "EMOJI_THUMBS_UP": {
+      "type": "lottie",
+      "assetPath": "animated-symbols/thumbs-up-emoji.json",
+      "matchGroup": "EMOJI_THUMBS_UP",
+      "label": "Thumbs up",
+      "sha256": "d9a1e37037d67fa9fdaf277079725caaae115ab55b5828503ed2679e5ed04a76",
+      "source": "https://iconscout.com/lottie-animation-pack/emoji-animation-pack_104656"
+    },
+    "VAL_LOVE_BOW": {
+      "type": "lottie",
+      "assetPath": "animated-symbols/love-bow.json",
+      "matchGroup": "VAL_LOVE_BOW",
+      "label": "Love bow",
+      "sha256": "717217d86608ce3f115d865cac11b7b8d21a347820e8ef182469ec41dc010180",
+      "source": "https://iconscout.com/lottie-animation-pack/valentines-day-animation-pack_106682"
+    },
+    "EMOJI_EXPLODING_HEAD": {
+      "type": "lottie",
+      "assetPath": "animated-symbols/exploding-head-emoji.json",
+      "matchGroup": "EMOJI_EXPLODING_HEAD",
+      "label": "Exploding head",
+      "sha256": "e250cdec6b03d8fb7a56cfa45be31e53e51b1fc5757da92fe45e9ee689afb1bf",
+      "source": "https://iconscout.com/lottie-animation-pack/emoji-animation-pack_104656"
+    },
+    "EMOJI_ZANY_FACE": {
+      "type": "lottie",
+      "assetPath": "animated-symbols/zany-face-emoji.json",
+      "matchGroup": "EMOJI_ZANY_FACE",
+      "label": "Zany face",
+      "sha256": "14d2ecde0ec9d9ba3a23ad83ea32494b1c6b2f3035b59a41f7c0682114a1e291",
+      "source": "https://iconscout.com/lottie-animation-pack/emoji-animation-pack_104656"
+    },
+    "VAL_PENDANT": {
+      "type": "lottie",
+      "assetPath": "animated-symbols/pendant.json",
+      "matchGroup": "VAL_PENDANT",
+      "label": "Pendant",
+      "sha256": "594de54b74cee54337e1efb0f9df4c57c3b2a7912043ca7fbf151176bd431176",
+      "source": "https://iconscout.com/lottie-animation-pack/valentines-day-animation-pack_106682"
+    },
+    "EMOJI_PLEADING_FACE": {
+      "type": "lottie",
+      "assetPath": "animated-symbols/pleading-face-emoji.json",
+      "matchGroup": "EMOJI_PLEADING_FACE",
+      "label": "Pleading face",
+      "sha256": "a82d5a3b85ac527718d418e091c35a8dee24f4541b042b912d7e6ab4583d25cb",
+      "source": "https://iconscout.com/lottie-animation-pack/emoji-animation-pack_104656"
+    },
+    "EMOJI_UPSIDE_DOWN_FACE": {
+      "type": "lottie",
+      "assetPath": "animated-symbols/upside-down-face-emoji.json",
+      "matchGroup": "EMOJI_UPSIDE_DOWN_FACE",
+      "label": "Upside-down face",
+      "sha256": "e54dd5209e18a6f2047a26a8d6849a6dcf53c2584e8cdf7d78fb5fe6fd03105e",
+      "source": "https://iconscout.com/lottie-animation-pack/emoji-animation-pack_104656"
+    },
+    "EMOJI_HAHAHA": {
+      "type": "lottie",
+      "assetPath": "animated-symbols/hahaha-emoji.json",
+      "matchGroup": "EMOJI_HAHAHA",
+      "label": "Hahaha",
+      "sha256": "5fff464bd5c71d40e02110d7ee04ed49f325c8ac2ae31bbd1c210e0470481c28",
+      "source": "https://iconscout.com/lottie-animation-pack/emoji-animation-pack_104656"
+    },
+    "EMOJI_SCREAMING_FACE": {
+      "type": "lottie",
+      "assetPath": "animated-symbols/screaming-face-emoji.json",
+      "matchGroup": "EMOJI_SCREAMING_FACE",
+      "label": "Screaming face",
+      "sha256": "e3b63a0d54a54b6d842627f544e732326672dcf4c0d82487bce285e2aaaf3295",
+      "source": "https://iconscout.com/lottie-animation-pack/emoji-animation-pack_104656"
+    },
+    "EMOJI_FACE_WITH_TEARS_OF_JOY": {
+      "type": "lottie",
+      "assetPath": "animated-symbols/face-with-tears-of-joy-emoji.json",
+      "matchGroup": "EMOJI_FACE_WITH_TEARS_OF_JOY",
+      "label": "Face with tears of joy",
+      "sha256": "1e8334db891db20b00b16b7bc76a6544da6d9d55b3770a1ce506fda837ec455d",
+      "source": "https://iconscout.com/lottie-animation-pack/emoji-animation-pack_104656"
+    },
+    "EMOJI_WINKING_FACE": {
+      "type": "lottie",
+      "assetPath": "animated-symbols/winking-face-emoji.json",
+      "matchGroup": "EMOJI_WINKING_FACE",
+      "label": "Winking face",
+      "sha256": "c3ec964f17bc1076f3fb64c1c32982428584c5e37bc9b5222698d974198ea771",
+      "source": "https://iconscout.com/lottie-animation-pack/emoji-animation-pack_104656"
+    },
+    "EMOJI_OK": {
+      "type": "lottie",
+      "assetPath": "animated-symbols/ok-emoji.json",
+      "matchGroup": "EMOJI_OK",
+      "label": "OK",
+      "sha256": "91d3744a32577926eb450ffb95fd03e934a2a8d7cbe2baf1657e6451ec5de1bb",
+      "source": "https://iconscout.com/lottie-animation-pack/emoji-animation-pack_104656"
+    },
+    "EMOJI_ANGRY": {
+      "type": "lottie",
+      "assetPath": "animated-symbols/angry-emoji.json",
+      "matchGroup": "EMOJI_ANGRY",
+      "label": "Angry",
+      "sha256": "d6f6c83fd996c8663ca410e184f94fda2500a2260f3d51d3f4389597d30a724a",
+      "source": "https://iconscout.com/lottie-animation-pack/emoji-animation-pack_104656"
+    },
+    "EMOJI_BEAMING_FACE": {
+      "type": "lottie",
+      "assetPath": "animated-symbols/beaming-face-emoji.json",
+      "matchGroup": "EMOJI_BEAMING_FACE",
+      "label": "Beaming face",
+      "sha256": "c1e92c08bf6cd69ea2fef33467dbaa71a6384a3e2c8b1a5cf0b6fc90e1883e4b",
+      "source": "https://iconscout.com/lottie-animation-pack/emoji-animation-pack_104656"
+    },
+    "EMOJI_GESTURING_NO": {
+      "type": "lottie",
+      "assetPath": "animated-symbols/gesturing-no-emoji.json",
+      "matchGroup": "EMOJI_GESTURING_NO",
+      "label": "Gesturing no",
+      "sha256": "c0340ab578353653d97615ee9197a324e52a13e7ee1f206970117dfb91b825f6",
+      "source": "https://iconscout.com/lottie-animation-pack/emoji-animation-pack_104656"
+    },
+    "EMOJI_LOUDLY_CRYING_FACE": {
+      "type": "lottie",
+      "assetPath": "animated-symbols/loudly-crying-face-emoji.json",
+      "matchGroup": "EMOJI_LOUDLY_CRYING_FACE",
+      "label": "Loudly crying face",
+      "sha256": "0187ddb365fd2a727156c44cc75fd6a424e81c33fad71274476c68fed64de443",
+      "source": "https://iconscout.com/lottie-animation-pack/emoji-animation-pack_104656"
+    },
+    "EMOJI_NEUTRAL_FACE": {
+      "type": "lottie",
+      "assetPath": "animated-symbols/neutral-face-emoji.json",
+      "matchGroup": "EMOJI_NEUTRAL_FACE",
+      "label": "Neutral face",
+      "sha256": "f0b1ccda212873ed5b2cbf718678a43aef22415f92b7516ff39102d8915afebd",
+      "source": "https://iconscout.com/lottie-animation-pack/emoji-animation-pack_104656"
+    },
+    "EMOJI_PHEW_WITH_SWEAT": {
+      "type": "lottie",
+      "assetPath": "animated-symbols/phew-with-sweat-emoji.json",
+      "matchGroup": "EMOJI_PHEW_WITH_SWEAT",
+      "label": "Phew with sweat",
+      "sha256": "f176ecac7960882a571412173e648fb270073d144e242e3761fb13988be5feeb",
+      "source": "https://iconscout.com/lottie-animation-pack/emoji-animation-pack_104656"
+    },
+    "EMOJI_SQUINTING_FACE_WITH_TONGUE": {
+      "type": "lottie",
+      "assetPath": "animated-symbols/squinting-face-with-tongue-emoji.json",
+      "matchGroup": "EMOJI_SQUINTING_FACE_WITH_TONGUE",
+      "label": "Squinting face with tongue",
+      "sha256": "7ce1a1940fa4a263e30acc3d3ea666d2e82731e61ad520a14340e9c06294bd2b",
+      "source": "https://iconscout.com/lottie-animation-pack/emoji-animation-pack_104656"
+    },
+    "EMOJI_UNAMUSED_FACE": {
+      "type": "lottie",
+      "assetPath": "animated-symbols/unamused-face-emoji.json",
+      "matchGroup": "EMOJI_UNAMUSED_FACE",
+      "label": "Unamused face",
+      "sha256": "39225c1dbcd1401c9b12c66d3d60996ce0df4d005b8eab5b6fc51a983ed8c67e",
+      "source": "https://iconscout.com/lottie-animation-pack/emoji-animation-pack_104656"
+    },
+    "MONSTER_APPLE": {
+      "type": "lottie",
+      "assetPath": "animated-symbols/cute-monster-apple.json",
+      "matchGroup": "MONSTER_APPLE",
+      "label": "Apple",
+      "sha256": "d3a5c60d743d77255d993b1e32f8b0853f3624b344bcfa556f85c97aeffe026f",
+      "source": "https://iconscout.com/lottie-animation-pack/cute-monster-animation-pack_141399"
+    },
+    "SHAPE_SEESAW": {
+      "type": "lottie",
+      "assetPath": "animated-symbols/shapes-loader-balance-shapes-bold.json",
+      "matchGroup": "SHAPE_SEESAW",
+      "label": "Balance shapes",
+      "sha256": "f5adf149fe32552d45081868985ae6e1078036ae0c6509e9a84a52d77e27ddfa",
+      "source": "https://iconscout.com/lottie-animation-pack/shapes-loader-animation-pack_110835"
+    },
+    "MONSTER_BASEBALL": {
+      "type": "lottie",
+      "assetPath": "animated-symbols/cute-monster-baseball.json",
+      "matchGroup": "MONSTER_BASEBALL",
+      "label": "Baseball",
+      "sha256": "8abe9ad9d02c4c49a4bcc4fff5a64c9ec5b0a3d80e2c845dc1fdcffcf92f2bce",
+      "source": "https://iconscout.com/lottie-animation-pack/cute-monster-animation-pack_141399"
+    },
+    "SHAPE_BALL_BOWL": {
+      "type": "lottie",
+      "assetPath": "animated-symbols/shapes-loader-ball-balance-bold.json",
+      "matchGroup": "SHAPE_BALL_BOWL",
+      "label": "Ball balance",
+      "sha256": "9396d9b426de3e264ce574522919ce39e5bd260d2e868ae9689a7c9c1386a1e3",
+      "source": "https://iconscout.com/lottie-animation-pack/shapes-loader-animation-pack_110835"
+    },
+    "MONSTER_BASKETBALL": {
+      "type": "lottie",
+      "assetPath": "animated-symbols/cute-monster-basketball.json",
+      "matchGroup": "MONSTER_BASKETBALL",
+      "label": "Basketball",
+      "sha256": "959d239bfd468d277c2919b7cfa037df70635d7508d5ef82fe97e7f92fbf4201",
+      "source": "https://iconscout.com/lottie-animation-pack/cute-monster-animation-pack_141399"
+    },
+    "MONSTER_BREAD": {
+      "type": "lottie",
+      "assetPath": "animated-symbols/cute-monster-bread.json",
+      "matchGroup": "MONSTER_BREAD",
+      "label": "Bread",
+      "sha256": "1168a37b402edd54ca9562ecc1e44e894dfa2dbe7d1d60c3484d7f75d86894d5",
+      "source": "https://iconscout.com/lottie-animation-pack/cute-monster-animation-pack_141399"
+    },
+    "SHAPE_SQUARE_ORBIT": {
+      "type": "lottie",
+      "assetPath": "animated-symbols/shapes-loader-circle-with-sides-borders-bold.json",
+      "matchGroup": "SHAPE_SQUARE_ORBIT",
+      "label": "Circle with sides borders",
+      "sha256": "400702670b7989a69ae38969a3042cbc9e73f7c2a98828744cc9246765f3cc34",
+      "source": "https://iconscout.com/lottie-animation-pack/shapes-loader-animation-pack_110835"
+    },
+    "MONSTER_CLOUD": {
+      "type": "lottie",
+      "assetPath": "animated-symbols/cute-monster-cloud.json",
+      "matchGroup": "MONSTER_CLOUD",
+      "label": "Cloud",
+      "sha256": "5bbc3f2e88ef7058c9e8f7b66e26b83eeb5f9ae975f59bb85e57b70864881137",
+      "source": "https://iconscout.com/lottie-animation-pack/cute-monster-animation-pack_141399"
+    },
+    "MONSTER_COOKIES": {
+      "type": "lottie",
+      "assetPath": "animated-symbols/cute-monster-cookies.json",
+      "matchGroup": "MONSTER_COOKIES",
+      "label": "Cookies",
+      "sha256": "34ab3e8b472c64081651edc70dcc6c9740f4ab203912cc143150feb0e7b09224",
+      "source": "https://iconscout.com/lottie-animation-pack/cute-monster-animation-pack_141399"
+    },
+    "MONSTER_DIAMOND": {
+      "type": "lottie",
+      "assetPath": "animated-symbols/cute-monster-diamond.json",
+      "matchGroup": "MONSTER_DIAMOND",
+      "label": "Diamond",
+      "sha256": "6155b8fd2ba0f0fe11dbbf93059e030fa39ed883daea8feeb5b6e5dd2e9d9e32",
+      "source": "https://iconscout.com/lottie-animation-pack/cute-monster-animation-pack_141399"
+    },
+    "SHAPE_HEXAGON": {
+      "type": "lottie",
+      "assetPath": "animated-symbols/shapes-loader-hezagon-rotate-bold.json",
+      "matchGroup": "SHAPE_HEXAGON",
+      "label": "Hexagon rotate",
+      "sha256": "d92fda515722bcbbe8e937841af41c1c43ab1f7e420f87e4f80fa1ce91e8f710",
+      "source": "https://iconscout.com/lottie-animation-pack/shapes-loader-animation-pack_110835"
+    },
+    "MONSTER_DOLLARS": {
+      "type": "lottie",
+      "assetPath": "animated-symbols/cute-monster-dollars.json",
+      "matchGroup": "MONSTER_DOLLARS",
+      "label": "Dollars",
+      "sha256": "223baac2f6200a37bf324602f03bf165a194891b3e9a75a8376a48ac0b105477",
+      "source": "https://iconscout.com/lottie-animation-pack/cute-monster-animation-pack_141399"
+    },
+    "SHAPE_PACMAN": {
+      "type": "lottie",
+      "assetPath": "animated-symbols/shapes-loader-pacman-bold.json",
+      "matchGroup": "SHAPE_PACMAN",
+      "label": "Pacman",
+      "sha256": "3874a0d4a058beb22ba329cb708b83a467e5fda8ab4ebaec89adbf99c4accb22",
+      "source": "https://iconscout.com/lottie-animation-pack/shapes-loader-animation-pack_110835"
+    },
+    "MONSTER_DONUTS": {
+      "type": "lottie",
+      "assetPath": "animated-symbols/cute-monster-donuts.json",
+      "matchGroup": "MONSTER_DONUTS",
+      "label": "Donuts",
+      "sha256": "909245ecf63296e2951bd17f002127ab017754120f753f604301e64a48025f63",
+      "source": "https://iconscout.com/lottie-animation-pack/cute-monster-animation-pack_141399"
+    },
+    "MONSTER_EGG": {
+      "type": "lottie",
+      "assetPath": "animated-symbols/cute-monster-egg.json",
+      "matchGroup": "MONSTER_EGG",
+      "label": "Egg",
+      "sha256": "e3322994a8d758e85a067f109887219fcd10430ec91612d42a07b3b86a337dbe",
+      "source": "https://iconscout.com/lottie-animation-pack/cute-monster-animation-pack_141399"
+    },
+    "SHAPE_SCALE": {
+      "type": "lottie",
+      "assetPath": "animated-symbols/shapes-loader-scale-in-and-out-bold.json",
+      "matchGroup": "SHAPE_SCALE",
+      "label": "Scale in and out",
+      "sha256": "29dce8afed733ffae917631b4a8304b3a5753ecfd545b907dd27cffac5fa0073",
+      "source": "https://iconscout.com/lottie-animation-pack/shapes-loader-animation-pack_110835"
+    },
+    "MONSTER_GHOST": {
+      "type": "lottie",
+      "assetPath": "animated-symbols/cute-monster-ghost.json",
+      "matchGroup": "MONSTER_GHOST",
+      "label": "Ghost",
+      "sha256": "27a8259a40252f53347dbff64145db3d76d18f1f8e6b2329616678bdc05cc27b",
+      "source": "https://iconscout.com/lottie-animation-pack/cute-monster-animation-pack_141399"
+    },
+    "SHAPE_STACK": {
+      "type": "lottie",
+      "assetPath": "animated-symbols/shapes-loader-shapes-balance-bold.json",
+      "matchGroup": "SHAPE_STACK",
+      "label": "Shapes balance",
+      "sha256": "7e10b7e8cbbf57c526fcc9a3883076e9127f3e0f32d38c087f98f0c5243f541a",
+      "source": "https://iconscout.com/lottie-animation-pack/shapes-loader-animation-pack_110835"
+    },
+    "MONSTER_GLASS": {
+      "type": "lottie",
+      "assetPath": "animated-symbols/cute-monster-glass.json",
+      "matchGroup": "MONSTER_GLASS",
+      "label": "Glass",
+      "sha256": "82ce678a3d6176e8e9c4ba9013d420158a54017d4a0db423415913633dceccf3",
+      "source": "https://iconscout.com/lottie-animation-pack/cute-monster-animation-pack_141399"
+    },
+    "SHAPE_TOTEM": {
+      "type": "lottie",
+      "assetPath": "animated-symbols/shapes-loader-shapes-bounce-bold.json",
+      "matchGroup": "SHAPE_TOTEM",
+      "label": "Shapes bounce",
+      "sha256": "45b208068e4b0719513bbdcb29726c35caf1cdceabcd9086fac1f222260ac202",
+      "source": "https://iconscout.com/lottie-animation-pack/shapes-loader-animation-pack_110835"
+    },
+    "MONSTER_HEART": {
+      "type": "lottie",
+      "assetPath": "animated-symbols/cute-monster-heart.json",
+      "matchGroup": "MONSTER_HEART",
+      "label": "Heart",
+      "sha256": "58106dd6502b7e43a744e4be3d7665028dafac3e0c644e5abd693e4f4f21c530",
+      "source": "https://iconscout.com/lottie-animation-pack/cute-monster-animation-pack_141399"
+    },
+    "SHAPE_ROW": {
+      "type": "lottie",
+      "assetPath": "animated-symbols/shapes-loader-shapes-horizontal-bold.json",
+      "matchGroup": "SHAPE_ROW",
+      "label": "Shapes horizontal",
+      "sha256": "ad82e8e93f29f73da2db18f932e2aca0b12f57448a16c9e25b4f8fe98a6226c7",
+      "source": "https://iconscout.com/lottie-animation-pack/shapes-loader-animation-pack_110835"
+    },
+    "MONSTER_ORANGE": {
+      "type": "lottie",
+      "assetPath": "animated-symbols/cute-monster-orange.json",
+      "matchGroup": "MONSTER_ORANGE",
+      "label": "Orange",
+      "sha256": "8d3dfca2429dcda635ff7c82577022497f2e0465387c08c66dbda1ce81d32bff",
+      "source": "https://iconscout.com/lottie-animation-pack/cute-monster-animation-pack_141399"
+    },
+    "SHAPE_GRID": {
+      "type": "lottie",
+      "assetPath": "animated-symbols/shapes-loader-shapes-bold.json",
+      "matchGroup": "SHAPE_GRID",
+      "label": "Shapes",
+      "sha256": "79d690e60b50d014ce4fc1351f44cc054fb7b42d5d234c5cd20ee90d85faff11",
+      "source": "https://iconscout.com/lottie-animation-pack/shapes-loader-animation-pack_110835"
+    },
+    "MONSTER_PHONOGRAPH_RECORD": {
+      "type": "lottie",
+      "assetPath": "animated-symbols/cute-monster-phonograph-record.json",
+      "matchGroup": "MONSTER_PHONOGRAPH_RECORD",
+      "label": "Phonograph record",
+      "sha256": "05c76c35b635ee4d6c1849718d956a47ffe950ba6007749b287080c97710411a",
+      "source": "https://iconscout.com/lottie-animation-pack/cute-monster-animation-pack_141399"
+    },
+    "SHAPE_DOT_RING": {
+      "type": "lottie",
+      "assetPath": "animated-symbols/shapes-loader-small-circles-bold.json",
+      "matchGroup": "SHAPE_DOT_RING",
+      "label": "Small circles",
+      "sha256": "58ca9b5ed11b6940c315d225927a7dff6f52dc4c5bcc00a181b7e5459f53f621",
+      "source": "https://iconscout.com/lottie-animation-pack/shapes-loader-animation-pack_110835"
+    },
+    "MONSTER_POOP": {
+      "type": "lottie",
+      "assetPath": "animated-symbols/cute-monster-poop.json",
+      "matchGroup": "MONSTER_POOP",
+      "label": "Poop",
+      "sha256": "2cbe05236e23ca27d75b512a139e49b616c3007245222febf8ee238adf2a8e5c",
+      "source": "https://iconscout.com/lottie-animation-pack/cute-monster-animation-pack_141399"
+    },
+    "SHAPE_SQUARE_CIRCLE": {
+      "type": "lottie",
+      "assetPath": "animated-symbols/shapes-loader-square-and-circle-bold.json",
+      "matchGroup": "SHAPE_SQUARE_CIRCLE",
+      "label": "Square and circle",
+      "sha256": "5cbeb2d63a55aaa2d41f1664f66616faa798f8b7687e87c964b93103a90b68d3",
+      "source": "https://iconscout.com/lottie-animation-pack/shapes-loader-animation-pack_110835"
+    },
+    "MONSTER_SAUSAGE": {
+      "type": "lottie",
+      "assetPath": "animated-symbols/cute-monster-sausage.json",
+      "matchGroup": "MONSTER_SAUSAGE",
+      "label": "Sausage",
+      "sha256": "05ecf14e8d78e89156caac72aec7aaa806fa8e9659f1a32953ef33e7ce27f463",
+      "source": "https://iconscout.com/lottie-animation-pack/cute-monster-animation-pack_141399"
+    },
+    "SHAPE_SQUARE_TABLE": {
+      "type": "lottie",
+      "assetPath": "animated-symbols/shapes-loader-square-rotate-bold.json",
+      "matchGroup": "SHAPE_SQUARE_TABLE",
+      "label": "Square rotate",
+      "sha256": "5dd23987c9cedd2e37b5cb25c878cbd0eee6c66c37372fd2a52c73a2e7688b7e",
+      "source": "https://iconscout.com/lottie-animation-pack/shapes-loader-animation-pack_110835"
+    },
+    "MONSTER_SUN": {
+      "type": "lottie",
+      "assetPath": "animated-symbols/cute-monster-sun.json",
+      "matchGroup": "MONSTER_SUN",
+      "label": "Sun",
+      "sha256": "82d3df1832554753a3fb631a18d86efa322306b012ab1a048d4a4b50931a9a18",
+      "source": "https://iconscout.com/lottie-animation-pack/cute-monster-animation-pack_141399"
+    },
+    "MONSTER_TELEVISION": {
+      "type": "lottie",
+      "assetPath": "animated-symbols/cute-monster-television.json",
+      "matchGroup": "MONSTER_TELEVISION",
+      "label": "Television",
+      "sha256": "ea60455267693b95c432a7a09532124a150239d4aba56c1f3a30f2253a6a3b10",
+      "source": "https://iconscout.com/lottie-animation-pack/cute-monster-animation-pack_141399"
+    },
+    "MONSTER_WATERMELON": {
+      "type": "lottie",
+      "assetPath": "animated-symbols/cute-monster-watermelon.json",
+      "matchGroup": "MONSTER_WATERMELON",
+      "label": "Watermelon",
+      "sha256": "7242abea5550938c6fb4e51881decb15cb3f66a7a9fa45b278a3c5e50aa894cc",
+      "source": "https://iconscout.com/lottie-animation-pack/cute-monster-animation-pack_141399"
+    },
+    "LF_BOXING_GLOVES": {
+      "type": "lottie",
+      "assetPath": "animated-symbols/lottiefiles-boxing-gloves-pow.json",
+      "matchGroup": "LF_BOXING_GLOVES",
+      "label": "Boxing Gloves Pow",
+      "sha256": "52b4ca9cff08e3c7543cf56267da10707c7e96ce19a3f48a15933c6b1f20e624",
+      "source": "https://lottiefiles.com/free-animation/boxing-kickboxing-fight-pow-animation-tRFvpNhNPf"
+    },
+    "LF_BUTTERFLY": {
+      "type": "lottie",
+      "assetPath": "animated-symbols/lottiefiles-butterfly.json",
+      "matchGroup": "LF_BUTTERFLY",
+      "label": "Butterfly",
+      "sha256": "740c4cc7a878953e3716d99991888f953f70e1ce25b6d5bd1f113d3ebcfa7df4"
+    },
+    "LF_BURGER": {
+      "type": "lottie",
+      "assetPath": "animated-symbols/lottiefiles-fast-food-burger.json",
+      "matchGroup": "LF_BURGER",
+      "label": "Burger",
+      "sha256": "c0413ebec471ee889ef4bfa95177175a3eb576dbbed3cf94441d410806ea4bd6"
+    },
+    "LF_FOOD_BOWL": {
+      "type": "lottie",
+      "assetPath": "animated-symbols/lottiefiles-food-bowl.json",
+      "matchGroup": "LF_FOOD_BOWL",
+      "label": "Rice Bowl, Bread and Water",
+      "sha256": "a4d25edaed48c76ab30ba55c51c5c8a5abb216ab69d95d5b5cae1a2eb3c7f6f5"
+    },
+    "LF_HEART_PLATE": {
+      "type": "lottie",
+      "assetPath": "animated-symbols/lottiefiles-food-heart-plate.json",
+      "matchGroup": "LF_HEART_PLATE",
+      "label": "Heart on a Plate",
+      "sha256": "9cf1983b1fe3a5a9bb510c8c64ece227933c82d71e1e520383de2c41d2b05114"
+    },
+    "LF_LOVE_BIRDS": {
+      "type": "lottie",
+      "assetPath": "animated-symbols/lottiefiles-love-birds.json",
+      "matchGroup": "LF_LOVE_BIRDS",
+      "label": "Love Birds",
+      "sha256": "20aa11a9c9c679e0d7910cac7eee3801c733df752157c7b2824b23d633d4777b"
+    },
+    "LF_PARROT": {
+      "type": "lottie",
+      "assetPath": "animated-symbols/lottiefiles-parrot.json",
+      "matchGroup": "LF_PARROT",
+      "label": "Parrot",
+      "sha256": "fb245e3bf050fa26071180213adc34393917d9099cdc9b94b4684bec53c17aec"
+    },
+    "LF_TOUCAN": {
+      "type": "lottie",
+      "assetPath": "animated-symbols/lottiefiles-toucan.json",
+      "matchGroup": "LF_TOUCAN",
+      "label": "Toucan",
+      "sha256": "2626f0cec973abd98a1a32bc968143cc26653909a1b230af6e52bf27179c7980"
+    },
+    "LF_PLATE_CLOCK": {
+      "type": "lottie",
+      "assetPath": "animated-symbols/lottiefiles-waiting-for-food.json",
+      "matchGroup": "LF_PLATE_CLOCK",
+      "label": "Waiting for Food",
+      "sha256": "e9969c4bb95033236803b6813cf1095b28dc6447a78f7f1961bcddd6906cf77c"
+    },
+    "LF_INDIA_MAP": {
+      "type": "lottie",
+      "assetPath": "animated-symbols/lottiefiles-india-country-map.json",
+      "matchGroup": "LF_INDIA_MAP",
+      "label": "India Map",
+      "sha256": "19cad796f45690c68d6b3fd845c6e9fced98ccbeb1b23c912e48dd4755a2d387"
+    },
+    "FLAG_UNITED_KINGDOM": {
+      "type": "lottie",
+      "assetPath": "animated-symbols/flag-of-united-kingdom.json",
+      "matchGroup": "FLAG_UNITED_KINGDOM",
+      "label": "United Kingdom",
+      "sha256": "c906e6075b0484be19a1eb8d0a1a040e5d1b6fe94c18559d389c1adec4285881",
+      "source": "https://iconscout.com/lottie-animation-pack/country-flag-animation-pack_437278"
+    },
+    "FLAG_SWITZERLAND": {
+      "type": "lottie",
+      "assetPath": "animated-symbols/flag-of-switzerland.json",
+      "matchGroup": "FLAG_SWITZERLAND",
+      "label": "Switzerland",
+      "sha256": "35d90b40e45d50e0c7b75ee1aa35c9568c7fba2ede71a0a21e869a181c726c64",
+      "source": "https://iconscout.com/lottie-animation-pack/country-flag-animation-pack_437278"
+    },
+    "FLAG_TURKEY": {
+      "type": "lottie",
+      "assetPath": "animated-symbols/flag-of-turkey.json",
+      "matchGroup": "FLAG_TURKEY",
+      "label": "Turkey",
+      "sha256": "62d918f3eec13ac60f8eae72f9fe8d517b149ebf762cb5234512531d2f63d5eb",
+      "source": "https://iconscout.com/lottie-animation-pack/country-flag-animation-pack_437278"
+    },
+    "FLAG_VIETNAM": {
+      "type": "lottie",
+      "assetPath": "animated-symbols/flag-of-vietnam.json",
+      "matchGroup": "FLAG_VIETNAM",
+      "label": "Vietnam",
+      "sha256": "96ea8eec7afdb0690037c5b37ccf851341e502a0bbbf6cae5fadc1f25716a5f7",
+      "source": "https://iconscout.com/lottie-animation-pack/country-flag-animation-pack_437278"
+    },
+    "FLAG_SOUTH_KOREA": {
+      "type": "lottie",
+      "assetPath": "animated-symbols/flag-of-south-korea.json",
+      "matchGroup": "FLAG_SOUTH_KOREA",
+      "label": "South Korea",
+      "sha256": "2aa05ea98103c5139110b65c3fdd0b59b34bf2908770e864a15b8fed20eac0a7",
+      "source": "https://iconscout.com/lottie-animation-pack/country-flag-animation-pack_437278"
+    },
+    "FLAG_SCOTLAND": {
+      "type": "lottie",
+      "assetPath": "animated-symbols/flag-of-scotland.json",
+      "matchGroup": "FLAG_SCOTLAND",
+      "label": "Scotland",
+      "sha256": "0fcc32f1305f81ddcb4ba8db43a5925ed5db0a4bb0f13cb543925d164e8a5ef3",
+      "source": "https://iconscout.com/lottie-animation-pack/country-flag-animation-pack_437278"
+    },
+    "FLAG_SWEDEN": {
+      "type": "lottie",
+      "assetPath": "animated-symbols/flag-of-sweden.json",
+      "matchGroup": "FLAG_SWEDEN",
+      "label": "Sweden",
+      "sha256": "94a2666e64bf100465103d91e5f2bc9611e9c89901d58c647f77cae2eecde492",
+      "source": "https://iconscout.com/lottie-animation-pack/country-flag-animation-pack_437278"
+    },
+    "FLAG_UKRAINE": {
+      "type": "lottie",
+      "assetPath": "animated-symbols/flag-of-ukraine.json",
+      "matchGroup": "FLAG_UKRAINE",
+      "label": "Ukraine",
+      "sha256": "b524b7e18fae7182ec8a014feb4a9ae8efc622ee32de756a79ae25c6e3c0b425",
+      "source": "https://iconscout.com/lottie-animation-pack/country-flag-animation-pack_437278"
+    },
+    "FLAG_SOUTH_AFRICA": {
+      "type": "lottie",
+      "assetPath": "animated-symbols/flag-of-south-africa.json",
+      "matchGroup": "FLAG_SOUTH_AFRICA",
+      "label": "South Africa",
+      "sha256": "dd909f916d9f74ab9c5db790ab75fe6959f34e5b597c824429905c65e8ac1659",
+      "source": "https://iconscout.com/lottie-animation-pack/country-flag-animation-pack_437278"
+    },
+    "FLAG_TANZANIA": {
+      "type": "lottie",
+      "assetPath": "animated-symbols/flag-of-tanzania.json",
+      "matchGroup": "FLAG_TANZANIA",
+      "label": "Tanzania",
+      "sha256": "f337cbdae7da0e820e31fcf3e8323d99a6ebb562039562ac615824dc0c6419e3",
+      "source": "https://iconscout.com/lottie-animation-pack/country-flag-animation-pack_437278"
+    },
+    "FLAG_TRINIDAD_AND_TOBAGO": {
+      "type": "lottie",
+      "assetPath": "animated-symbols/flag-of-trinidad-and-tobago.json",
+      "matchGroup": "FLAG_TRINIDAD_AND_TOBAGO",
+      "label": "Trinidad and Tobago",
+      "sha256": "5f1c0512d6b55efb46b93d6efda9cb44b7520b9b778e151c53f6df9933c5c8cb",
+      "source": "https://iconscout.com/lottie-animation-pack/country-flag-animation-pack_437278"
+    },
+    "FLAG_SEYCHELLES": {
+      "type": "lottie",
+      "assetPath": "animated-symbols/flag-of-seychelles.json",
+      "matchGroup": "FLAG_SEYCHELLES",
+      "label": "Seychelles",
+      "sha256": "67bdddf860b441f123197c8e8565e6a0de2aec0352b3defe633b31c58f255f0b",
+      "source": "https://iconscout.com/lottie-animation-pack/country-flag-animation-pack_437278"
+    },
+    "FLAG_SAINT_LUCIA": {
+      "type": "lottie",
+      "assetPath": "animated-symbols/flag-of-saint-lucia.json",
+      "matchGroup": "FLAG_SAINT_LUCIA",
+      "label": "Saint Lucia",
+      "sha256": "4073618d79c48a1d506d3572a82805ed8e694ed7785dfb4ecf9d994217742a31",
+      "source": "https://iconscout.com/lottie-animation-pack/country-flag-animation-pack_437278"
+    },
+    "FLAG_SAMOA": {
+      "type": "lottie",
+      "assetPath": "animated-symbols/flag-of-samoa.json",
+      "matchGroup": "FLAG_SAMOA",
+      "label": "Samoa",
+      "sha256": "a8b59945feaaed589b1becfa1212dbbe4b517fcdba2411c13e1beb87e3c05f32",
+      "source": "https://iconscout.com/lottie-animation-pack/country-flag-animation-pack_437278"
+    },
+    "FLAG_UNITED_ARAB_EMIRATES": {
+      "type": "lottie",
+      "assetPath": "animated-symbols/flag-of-united-arab-emirates.json",
+      "matchGroup": "FLAG_UNITED_ARAB_EMIRATES",
+      "label": "United Arab Emirates",
+      "sha256": "493f3ee81f731c43acaf6b811e34dc6e86d9a20b3303374a1c897dcde793599b",
+      "source": "https://iconscout.com/lottie-animation-pack/country-flag-animation-pack_437278"
+    },
+    "FLAG_TOGO": {
+      "type": "lottie",
+      "assetPath": "animated-symbols/flag-of-togo.json",
+      "matchGroup": "FLAG_TOGO",
+      "label": "Togo",
+      "sha256": "e096adc0bc50b0e014e4a320d88cf8f4264aadb6c27ef558b56e7069339e66cd",
+      "source": "https://iconscout.com/lottie-animation-pack/country-flag-animation-pack_437278"
+    },
+    "FLAG_THAILAND": {
+      "type": "lottie",
+      "assetPath": "animated-symbols/flag-of-thailand.json",
+      "matchGroup": "FLAG_THAILAND",
+      "label": "Thailand",
+      "sha256": "256ae36055cfaad1eb901d1c23dcaf024d40bdf075b8cf4266d9f7b29fbe2895",
+      "source": "https://iconscout.com/lottie-animation-pack/country-flag-animation-pack_437278"
+    },
+    "FLAG_SIERRA_LEONE": {
+      "type": "lottie",
+      "assetPath": "animated-symbols/flag-of-sierra-leone.json",
+      "matchGroup": "FLAG_SIERRA_LEONE",
+      "label": "Sierra Leone",
+      "sha256": "18c542a7ecc3f282cab56db566da0fb74bba93e3f772d90e81388b30a92f5501",
+      "source": "https://iconscout.com/lottie-animation-pack/country-flag-animation-pack_437278"
+    },
+    "FLAG_SURINAME": {
+      "type": "lottie",
+      "assetPath": "animated-symbols/flag-of-suriname.json",
+      "matchGroup": "FLAG_SURINAME",
+      "label": "Suriname",
+      "sha256": "7a7dd8e03dcea762a8c6ef4b913649dbb1a73bd942140561aaa9cf18d6003255",
+      "source": "https://iconscout.com/lottie-animation-pack/country-flag-animation-pack_437278"
+    },
+    "FLAG_SINGAPORE": {
+      "type": "lottie",
+      "assetPath": "animated-symbols/flag-of-singapore.json",
+      "matchGroup": "FLAG_SINGAPORE",
+      "label": "Singapore",
+      "sha256": "d3ddccf3b20c85b41e8af885d9b1aef2b2f2ec7b50384f161f0e68622217c678",
+      "source": "https://iconscout.com/lottie-animation-pack/country-flag-animation-pack_437278"
+    }
+  }
+}

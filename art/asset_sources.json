@@ -1,8 +1,8 @@
 {
-  "_comment": "Static symbol artwork for Brain Train, set v4. Two kinds of source: (1) owner-supplied images (Downloads/symbol, generated with Gemini 2.5 Flash Image) on light backgrounds, style \"cutout\": the background is removed by tool/assets/cutout.py; (2) IconScout premium 3D icons and illustrations downloaded with the owner's IconScout subscription: 3D icons are transparent PNGs (trimmed, centred, normalised); illustrations with a scene background use \"cutout\" too. Originals live in art/source/symbols-v4/ (gitignored). Process with `python3 tool/assets/prepare_symbols.py`. Each entry has a `status`: \"integrated\" (WebP written and reviewed; only these go into the registry), \"pending\" (source present, not yet reviewed), \"rejected\" (see its `rejected` reason; unreadable at a 31 px tile) or \"awaiting download\" (IconScout source not downloaded yet; the 3D download quota ran out). Pack items left out as duplicates are not listed.",
-  "provider": "Owner-supplied (Gemini 2.5 Flash Image) + IconScout (premium 3D icons and illustrations)",
-  "licenseNote": "Owner-supplied images: supplied by the owner for use in Brain Train. IconScout assets: downloaded under the owner's IconScout subscription license (commercial use, no attribution required); sourceUrl lists each asset page.",
-  "imageSet": "v4",
+  "_comment": "Static symbol artwork for Brain Train, set v1 (was v4 until 2026-10-16). Two kinds of source: (1) owner-supplied images (Downloads/symbol, generated with Gemini 2.5 Flash Image) on light backgrounds, style \"cutout\": the background is removed by tool/assets/cutout.py; (2) IconScout premium 3D icons and illustrations downloaded with the owner's IconScout subscription: 3D icons are transparent PNGs (trimmed, centred, normalised); illustrations with a scene background use \"cutout\" too. Originals live in art/source/symbols-v1/ (gitignored). Process with `python3 tool/assets/prepare_symbols.py`. Each entry has a `status`: \"integrated\" (WebP written and reviewed; only these go into the registry), \"pending\" (source present, not yet reviewed), \"rejected\" (see its `rejected` reason; unreadable at a 31 px tile) or \"awaiting download\" (IconScout source not downloaded yet; the 3D download quota ran out). Pack items left out as duplicates are not listed. (3) Owner-supplied nano-banana 2.1 renders (2026-10-16; originalFile is the downloaded name): the white, grey or dark backdrop was cut away beforehand (border flood fill, feathered edge), so their sources are transparent PNGs and the entries have no style; near-duplicate renders are not listed.",
+  "provider": "Owner-supplied (Gemini 2.5 Flash Image, nano-banana 2.1) + IconScout (premium 3D icons and illustrations)",
+  "licenseNote": "Owner-supplied images (AI renders the owner made with Gemini 2.5 Flash Image and nano-banana 2.1): supplied by the owner for use in Brain Train. IconScout assets: downloaded under the owner's IconScout subscription license (commercial use, no attribution required); sourceUrl lists each asset page.",
+  "imageSet": "v1",
   "symbols": [
     {
       "code": "COSMIC_CHESTNUT",
@@ -840,7 +840,7 @@
       "expectedSourceFile": "sport-dumbbell",
       "outputFile": "sport-dumbbell.webp",
       "sourceUrl": "https://iconscout.com/3d-icon/gym-3d-icon_12569493",
-      "status": "awaiting download"
+      "status": "integrated"
     },
     {
       "code": "SPORT_HOCKEY",
@@ -849,7 +849,7 @@
       "expectedSourceFile": "sport-hockey",
       "outputFile": "sport-hockey.webp",
       "sourceUrl": "https://iconscout.com/3d-icon/hockey-3d-icon_12569487",
-      "status": "awaiting download"
+      "status": "integrated"
     },
     {
       "code": "SPORT_TORCH",
@@ -858,7 +858,7 @@
       "expectedSourceFile": "sport-torch",
       "outputFile": "sport-torch.webp",
       "sourceUrl": "https://iconscout.com/3d-icon/olympic-torch-3d-icon_12569486",
-      "status": "awaiting download"
+      "status": "integrated"
     },
     {
       "code": "SPORT_PING_PONG",
@@ -867,7 +867,7 @@
       "expectedSourceFile": "sport-ping-pong",
       "outputFile": "sport-ping-pong.webp",
       "sourceUrl": "https://iconscout.com/3d-icon/ping-pong-3d-icon_12569477",
-      "status": "awaiting download"
+      "status": "integrated"
     },
     {
       "code": "SPORT_RUGBY",
@@ -876,7 +876,7 @@
       "expectedSourceFile": "sport-rugby",
       "outputFile": "sport-rugby.webp",
       "sourceUrl": "https://iconscout.com/3d-icon/rugby-3d-icon_12569491",
-      "status": "awaiting download"
+      "status": "integrated"
     },
     {
       "code": "SPORT_SKATEBOARD",
@@ -885,7 +885,7 @@
       "expectedSourceFile": "sport-skateboard",
       "outputFile": "sport-skateboard.webp",
       "sourceUrl": "https://iconscout.com/3d-icon/skateboard-3d-icon_12569475",
-      "status": "awaiting download"
+      "status": "integrated"
     },
     {
       "code": "SPORT_MEDAL",
@@ -894,7 +894,7 @@
       "expectedSourceFile": "sport-medal",
       "outputFile": "sport-medal.webp",
       "sourceUrl": "https://iconscout.com/3d-icon/star-medal-3d-icon_12569490",
-      "status": "awaiting download"
+      "status": "integrated"
     },
     {
       "code": "SPORT_TROPHY",
@@ -903,7 +903,7 @@
       "expectedSourceFile": "sport-trophy",
       "outputFile": "sport-trophy.webp",
       "sourceUrl": "https://iconscout.com/3d-icon/star-trophy-3d-icon_12569489",
-      "status": "awaiting download"
+      "status": "integrated"
     },
     {
       "code": "SPORT_TENNIS",
@@ -912,7 +912,7 @@
       "expectedSourceFile": "sport-tennis",
       "outputFile": "sport-tennis.webp",
       "sourceUrl": "https://iconscout.com/3d-icon/tennis-3d-icon_12569488",
-      "status": "awaiting download"
+      "status": "integrated"
     },
     {
       "code": "SPORT_VOLLEYBALL",
@@ -921,7 +921,7 @@
       "expectedSourceFile": "sport-volleyball",
       "outputFile": "sport-volleyball.webp",
       "sourceUrl": "https://iconscout.com/3d-icon/volly-ball-3d-icon_12569476",
-      "status": "awaiting download"
+      "status": "integrated"
     },
     {
       "code": "XMAS_CANDLES",
@@ -930,7 +930,7 @@
       "expectedSourceFile": "xmas-candles",
       "outputFile": "xmas-candles.webp",
       "sourceUrl": "https://iconscout.com/3d-icon/burning-candle-3d-icon_13367858",
-      "status": "awaiting download"
+      "status": "integrated"
     },
     {
       "code": "XMAS_CANDY_CANES",
@@ -939,7 +939,7 @@
       "expectedSourceFile": "xmas-candy-canes",
       "outputFile": "xmas-candy-canes.webp",
       "sourceUrl": "https://iconscout.com/3d-icon/candy-cane-3d-icon_13367848",
-      "status": "awaiting download"
+      "status": "integrated"
     },
     {
       "code": "XMAS_LOLLIPOPS",
@@ -948,7 +948,8 @@
       "expectedSourceFile": "xmas-lollipops",
       "outputFile": "xmas-lollipops.webp",
       "sourceUrl": "https://iconscout.com/3d-icon/candy-cane-3d-icon_13367856",
-      "status": "awaiting download"
+      "status": "rejected",
+      "rejected": "confusable at 31 px with XMAS_CANDY_CANES (red/white swirl candy)"
     },
     {
       "code": "XMAS_BAUBLES",
@@ -957,7 +958,7 @@
       "expectedSourceFile": "xmas-baubles",
       "outputFile": "xmas-baubles.webp",
       "sourceUrl": "https://iconscout.com/3d-icon/christmas-balls-3d-icon_13367844",
-      "status": "awaiting download"
+      "status": "integrated"
     },
     {
       "code": "XMAS_BELLS",
@@ -966,7 +967,7 @@
       "expectedSourceFile": "xmas-bells",
       "outputFile": "xmas-bells.webp",
       "sourceUrl": "https://iconscout.com/3d-icon/christmas-bells-3d-icon_13367834",
-      "status": "awaiting download"
+      "status": "integrated"
     },
     {
       "code": "XMAS_CUPCAKE",
@@ -975,7 +976,7 @@
       "expectedSourceFile": "xmas-cupcake",
       "outputFile": "xmas-cupcake.webp",
       "sourceUrl": "https://iconscout.com/3d-icon/christmas-cupcake-3d-icon_13367855",
-      "status": "awaiting download"
+      "status": "integrated"
     },
     {
       "code": "XMAS_CALENDAR",
@@ -984,7 +985,8 @@
       "expectedSourceFile": "xmas-calendar",
       "outputFile": "xmas-calendar.webp",
       "sourceUrl": "https://iconscout.com/3d-icon/christmas-day-3d-icon_13367836",
-      "status": "awaiting download"
+      "status": "rejected",
+      "rejected": "duplicate subject of JULY4_CALENDAR (calendar)"
     },
     {
       "code": "XMAS_FIREPLACE",
@@ -993,7 +995,7 @@
       "expectedSourceFile": "xmas-fireplace",
       "outputFile": "xmas-fireplace.webp",
       "sourceUrl": "https://iconscout.com/3d-icon/christmas-fireplace-3d-icon_13367835",
-      "status": "awaiting download"
+      "status": "integrated"
     },
     {
       "code": "XMAS_GIFTS",
@@ -1002,7 +1004,7 @@
       "expectedSourceFile": "xmas-gifts",
       "outputFile": "xmas-gifts.webp",
       "sourceUrl": "https://iconscout.com/3d-icon/christmas-gifts-3d-icon_13367863",
-      "status": "awaiting download"
+      "status": "integrated"
     },
     {
       "code": "XMAS_MITTENS",
@@ -1011,7 +1013,8 @@
       "expectedSourceFile": "xmas-mittens",
       "outputFile": "xmas-mittens.webp",
       "sourceUrl": "https://iconscout.com/3d-icon/christmas-glove-3d-icon_13367841",
-      "status": "awaiting download"
+      "status": "rejected",
+      "rejected": "confusable at 31 px with SPORTEQ_BOXING_GLOVES and XMAS_STOCKINGS (a pair of red mitts); gloves subject kept as SPORTEQ_BOXING_GLOVES"
     },
     {
       "code": "XMAS_SANTA_HAT",
@@ -1020,7 +1023,7 @@
       "expectedSourceFile": "xmas-santa-hat",
       "outputFile": "xmas-santa-hat.webp",
       "sourceUrl": "https://iconscout.com/3d-icon/christmas-hat-3d-icon_13367846",
-      "status": "awaiting download"
+      "status": "integrated"
     },
     {
       "code": "XMAS_LANTERN",
@@ -1029,7 +1032,7 @@
       "expectedSourceFile": "xmas-lantern",
       "outputFile": "xmas-lantern.webp",
       "sourceUrl": "https://iconscout.com/3d-icon/christmas-lantern-3d-icon_13367837",
-      "status": "awaiting download"
+      "status": "integrated"
     },
     {
       "code": "XMAS_SCARF",
@@ -1038,7 +1041,7 @@
       "expectedSourceFile": "xmas-scarf",
       "outputFile": "xmas-scarf.webp",
       "sourceUrl": "https://iconscout.com/3d-icon/christmas-scarf-3d-icon_13367842",
-      "status": "awaiting download"
+      "status": "integrated"
     },
     {
       "code": "XMAS_SHOPPING_BAG",
@@ -1047,7 +1050,8 @@
       "expectedSourceFile": "xmas-shopping-bag",
       "outputFile": "xmas-shopping-bag.webp",
       "sourceUrl": "https://iconscout.com/3d-icon/christmas-shopping-3d-icon_13367838",
-      "status": "awaiting download"
+      "status": "rejected",
+      "rejected": "duplicate subject of XMAS_SANTA_SACK (red gift bag), confusable at 31 px"
     },
     {
       "code": "XMAS_STOCKINGS",
@@ -1056,7 +1060,7 @@
       "expectedSourceFile": "xmas-stockings",
       "outputFile": "xmas-stockings.webp",
       "sourceUrl": "https://iconscout.com/3d-icon/christmas-socks-3d-icon_13367862",
-      "status": "awaiting download"
+      "status": "integrated"
     },
     {
       "code": "XMAS_TREE",
@@ -1065,7 +1069,7 @@
       "expectedSourceFile": "xmas-tree",
       "outputFile": "xmas-tree.webp",
       "sourceUrl": "https://iconscout.com/3d-icon/christmas-tree-3d-icon_13367845",
-      "status": "awaiting download"
+      "status": "integrated"
     },
     {
       "code": "XMAS_WREATH",
@@ -1074,7 +1078,8 @@
       "expectedSourceFile": "xmas-wreath",
       "outputFile": "xmas-wreath.webp",
       "sourceUrl": "https://iconscout.com/3d-icon/christmas-wreath-3d-icon_13367839",
-      "status": "awaiting download"
+      "status": "rejected",
+      "rejected": "duplicate subject of JULY4_WREATH (wreath)"
     },
     {
       "code": "XMAS_COOKIES",
@@ -1083,7 +1088,7 @@
       "expectedSourceFile": "xmas-cookies",
       "outputFile": "xmas-cookies.webp",
       "sourceUrl": "https://iconscout.com/3d-icon/cookie-dish-3d-icon_13367859",
-      "status": "awaiting download"
+      "status": "integrated"
     },
     {
       "code": "XMAS_ANTLER_HEADBAND",
@@ -1092,7 +1097,7 @@
       "expectedSourceFile": "xmas-antler-headband",
       "outputFile": "xmas-antler-headband.webp",
       "sourceUrl": "https://iconscout.com/3d-icon/deer-headband-3d-icon_13367847",
-      "status": "awaiting download"
+      "status": "integrated"
     },
     {
       "code": "XMAS_EARMUFFS",
@@ -1101,7 +1106,7 @@
       "expectedSourceFile": "xmas-earmuffs",
       "outputFile": "xmas-earmuffs.webp",
       "sourceUrl": "https://iconscout.com/3d-icon/earmuffs-3d-icon_13367852",
-      "status": "awaiting download"
+      "status": "integrated"
     },
     {
       "code": "XMAS_SANTA_SACK",
@@ -1110,7 +1115,7 @@
       "expectedSourceFile": "xmas-santa-sack",
       "outputFile": "xmas-santa-sack.webp",
       "sourceUrl": "https://iconscout.com/3d-icon/gift-bag-3d-icon_13367853",
-      "status": "awaiting download"
+      "status": "integrated"
     },
     {
       "code": "XMAS_GINGERBREAD",
@@ -1119,7 +1124,7 @@
       "expectedSourceFile": "xmas-gingerbread",
       "outputFile": "xmas-gingerbread.webp",
       "sourceUrl": "https://iconscout.com/3d-icon/gingerbread-man-3d-icon_13367843",
-      "status": "awaiting download"
+      "status": "integrated"
     },
     {
       "code": "XMAS_HOLLY",
@@ -1128,7 +1133,7 @@
       "expectedSourceFile": "xmas-holly",
       "outputFile": "xmas-holly.webp",
       "sourceUrl": "https://iconscout.com/3d-icon/mistletoe-3d-icon_13367850",
-      "status": "awaiting download"
+      "status": "integrated"
     },
     {
       "code": "XMAS_REINDEER",
@@ -1137,7 +1142,7 @@
       "expectedSourceFile": "xmas-reindeer",
       "outputFile": "xmas-reindeer.webp",
       "sourceUrl": "https://iconscout.com/3d-icon/reindeer-3d-icon_13367854",
-      "status": "awaiting download"
+      "status": "integrated"
     },
     {
       "code": "XMAS_SLEIGH",
@@ -1146,7 +1151,7 @@
       "expectedSourceFile": "xmas-sleigh",
       "outputFile": "xmas-sleigh.webp",
       "sourceUrl": "https://iconscout.com/3d-icon/santa-sleigh-3d-icon_13367861",
-      "status": "awaiting download"
+      "status": "integrated"
     },
     {
       "code": "XMAS_SNOW_GLOBE",
@@ -1155,7 +1160,8 @@
       "expectedSourceFile": "xmas-snow-globe",
       "outputFile": "xmas-snow-globe.webp",
       "sourceUrl": "https://iconscout.com/3d-icon/snow-globe-3d-icon_13367849",
-      "status": "awaiting download"
+      "status": "rejected",
+      "rejected": "confusable at 31 px with XMAS_TREE (the glass dome is invisible on the ivory face, only the tree reads)"
     },
     {
       "code": "XMAS_SNOWFLAKE",
@@ -1164,7 +1170,8 @@
       "expectedSourceFile": "xmas-snowflake",
       "outputFile": "xmas-snowflake.webp",
       "sourceUrl": "https://iconscout.com/3d-icon/snowflake-3d-icon_13367851",
-      "status": "awaiting download"
+      "status": "rejected",
+      "rejected": "unreadable at tile size: white snowflake on the ivory face, almost no contrast at 31 px"
     },
     {
       "code": "XMAS_SNOWMAN",
@@ -1173,7 +1180,7 @@
       "expectedSourceFile": "xmas-snowman",
       "outputFile": "xmas-snowman.webp",
       "sourceUrl": "https://iconscout.com/3d-icon/snowman-3d-icon_13367857",
-      "status": "awaiting download"
+      "status": "integrated"
     },
     {
       "code": "TECH_CERTIFICATE",
@@ -1182,7 +1189,8 @@
       "expectedSourceFile": "tech-certificate",
       "outputFile": "tech-certificate.webp",
       "sourceUrl": "https://iconscout.com/3d-icon/certificate-3d-icon_8841688",
-      "status": "awaiting download"
+      "status": "rejected",
+      "rejected": "confusable at 31 px with CINEMA_EXIT_DOOR (dark upright rectangle); text lines illegible"
     },
     {
       "code": "TECH_GEAR_CHECK",
@@ -1191,7 +1199,7 @@
       "expectedSourceFile": "tech-gear-check",
       "outputFile": "tech-gear-check.webp",
       "sourceUrl": "https://iconscout.com/3d-icon/check-3d-icon_8841684",
-      "status": "awaiting download"
+      "status": "integrated"
     },
     {
       "code": "TECH_GLOBE_SHIELD",
@@ -1200,7 +1208,7 @@
       "expectedSourceFile": "tech-globe-shield",
       "outputFile": "tech-globe-shield.webp",
       "sourceUrl": "https://iconscout.com/3d-icon/internet-security-3d-icon_8841685",
-      "status": "awaiting download"
+      "status": "integrated"
     },
     {
       "code": "TECH_PEOPLE_NETWORK",
@@ -1209,7 +1217,8 @@
       "expectedSourceFile": "tech-people-network",
       "outputFile": "tech-people-network.webp",
       "sourceUrl": "https://iconscout.com/3d-icon/people-network-3d-icon_8841691",
-      "status": "awaiting download"
+      "status": "rejected",
+      "rejected": "unreadable at tile size: thin lines and tiny figures, faint at 31 px"
     },
     {
       "code": "TECH_WIFI",
@@ -1218,7 +1227,7 @@
       "expectedSourceFile": "tech-wifi",
       "outputFile": "tech-wifi.webp",
       "sourceUrl": "https://iconscout.com/3d-icon/wifi-signal-3d-icon_8841683",
-      "status": "awaiting download"
+      "status": "integrated"
     },
     {
       "code": "TECH_WORLD_PEOPLE",
@@ -1227,7 +1236,8 @@
       "expectedSourceFile": "tech-world-people",
       "outputFile": "tech-world-people.webp",
       "sourceUrl": "https://iconscout.com/3d-icon/world-people-connection-3d-icon_8841687",
-      "status": "awaiting download"
+      "status": "rejected",
+      "rejected": "duplicate subject of TECH_GLOBE_SHIELD (globe); a dark ball with dots at 31 px"
     },
     {
       "code": "ROBOT_AI_ALGORITHM",
@@ -1236,7 +1246,8 @@
       "expectedSourceFile": "robot-ai-algorithm",
       "outputFile": "robot-ai-algorithm.webp",
       "sourceUrl": "https://iconscout.com/3d-icon/ai-algorithm-3d-icon_7845299",
-      "status": "awaiting download"
+      "status": "rejected",
+      "rejected": "confusable at 31 px with ROBOT_AI_CHIP (blue AI chip with pink circuit branches)"
     },
     {
       "code": "ROBOT_CHATBOT",
@@ -1245,7 +1256,8 @@
       "expectedSourceFile": "robot-chatbot",
       "outputFile": "robot-chatbot.webp",
       "sourceUrl": "https://iconscout.com/3d-icon/ai-chatbot-3d-icon_7845303",
-      "status": "awaiting download"
+      "status": "rejected",
+      "rejected": "duplicate subject of TRIP_MAP_PHONE (smartphone)"
     },
     {
       "code": "ROBOT_AI_CHIP",
@@ -1254,7 +1266,7 @@
       "expectedSourceFile": "robot-ai-chip",
       "outputFile": "robot-ai-chip.webp",
       "sourceUrl": "https://iconscout.com/3d-icon/ai-chip-3d-icon_7845297",
-      "status": "awaiting download"
+      "status": "integrated"
     },
     {
       "code": "ROBOT_AI_CLOUD",
@@ -1263,7 +1275,8 @@
       "expectedSourceFile": "robot-ai-cloud",
       "outputFile": "robot-ai-cloud.webp",
       "sourceUrl": "https://iconscout.com/3d-icon/ai-cloud-3d-icon_7845304",
-      "status": "awaiting download"
+      "status": "rejected",
+      "rejected": "confusable at 31 px with ROBOT_AI_CHIP (AI chip with circuit legs; the white cloud is faint on ivory)"
     },
     {
       "code": "ROBOT_AI_IDEA",
@@ -1272,7 +1285,7 @@
       "expectedSourceFile": "robot-ai-idea",
       "outputFile": "robot-ai-idea.webp",
       "sourceUrl": "https://iconscout.com/3d-icon/ai-idea-3d-icon_7845301",
-      "status": "awaiting download"
+      "status": "integrated"
     },
     {
       "code": "ROBOT_DRONE",
@@ -1281,7 +1294,7 @@
       "expectedSourceFile": "robot-drone",
       "outputFile": "robot-drone.webp",
       "sourceUrl": "https://iconscout.com/3d-icon/autonomous-drone-3d-icon_7845293",
-      "status": "awaiting download"
+      "status": "integrated"
     },
     {
       "code": "ROBOT_CYBORG_EYE",
@@ -1290,7 +1303,7 @@
       "expectedSourceFile": "robot-cyborg-eye",
       "outputFile": "robot-cyborg-eye.webp",
       "sourceUrl": "https://iconscout.com/3d-icon/cyborg-eye-3d-icon_7845302",
-      "status": "awaiting download"
+      "status": "integrated"
     },
     {
       "code": "ROBOT_DATA_FOLDER",
@@ -1299,7 +1312,7 @@
       "expectedSourceFile": "robot-data-folder",
       "outputFile": "robot-data-folder.webp",
       "sourceUrl": "https://iconscout.com/3d-icon/data-visualization-3d-icon_7845295",
-      "status": "awaiting download"
+      "status": "integrated"
     },
     {
       "code": "ROBOT_DATABASE",
@@ -1308,7 +1321,7 @@
       "expectedSourceFile": "robot-database",
       "outputFile": "robot-database.webp",
       "sourceUrl": "https://iconscout.com/3d-icon/database-3d-icon_7845305",
-      "status": "awaiting download"
+      "status": "integrated"
     },
     {
       "code": "ROBOT_ROBOT",
@@ -1317,7 +1330,7 @@
       "expectedSourceFile": "robot-robot",
       "outputFile": "robot-robot.webp",
       "sourceUrl": "https://iconscout.com/3d-icon/futuristic-robot-3d-icon_7845291",
-      "status": "awaiting download"
+      "status": "integrated"
     },
     {
       "code": "ROBOT_SCREEN",
@@ -1326,7 +1339,8 @@
       "expectedSourceFile": "robot-screen",
       "outputFile": "robot-screen.webp",
       "sourceUrl": "https://iconscout.com/3d-icon/robot-vision-3d-icon_7845298",
-      "status": "awaiting download"
+      "status": "rejected",
+      "rejected": "duplicate subject of CINEMA_STREAMING (computer screen); dark screen at 31 px"
     },
     {
       "code": "ROBOT_ARM",
@@ -1335,7 +1349,7 @@
       "expectedSourceFile": "robot-arm",
       "outputFile": "robot-arm.webp",
       "sourceUrl": "https://iconscout.com/3d-icon/robotic-arm-3d-icon_7845300",
-      "status": "awaiting download"
+      "status": "integrated"
     },
     {
       "code": "ROBOT_ENGINEER",
@@ -1344,7 +1358,8 @@
       "expectedSourceFile": "robot-engineer",
       "outputFile": "robot-engineer.webp",
       "sourceUrl": "https://iconscout.com/3d-icon/robotics-engineer-3d-icon_7845287",
-      "status": "awaiting download"
+      "status": "rejected",
+      "rejected": "busy at 31 px (window, chip, gear, document), confusable with ROBOT_AI_CHIP"
     },
     {
       "code": "CINEMA_SEATS",
@@ -1353,7 +1368,7 @@
       "expectedSourceFile": "cinema-seats",
       "outputFile": "cinema-seats.webp",
       "sourceUrl": "https://iconscout.com/3d-icon/cinema-chair-3d-icon_6323920",
-      "status": "awaiting download"
+      "status": "integrated"
     },
     {
       "code": "CINEMA_PROJECTOR",
@@ -1362,7 +1377,7 @@
       "expectedSourceFile": "cinema-projector",
       "outputFile": "cinema-projector.webp",
       "sourceUrl": "https://iconscout.com/3d-icon/cinema-projector-3d-icon_6323921",
-      "status": "awaiting download"
+      "status": "integrated"
     },
     {
       "code": "CINEMA_CLAPPERBOARD",
@@ -1371,7 +1386,7 @@
       "expectedSourceFile": "cinema-clapperboard",
       "outputFile": "cinema-clapperboard.webp",
       "sourceUrl": "https://iconscout.com/3d-icon/clapperboard-3d-icon_6323932",
-      "status": "awaiting download"
+      "status": "integrated"
     },
     {
       "code": "CINEMA_DIRECTOR_CHAIR",
@@ -1380,7 +1395,8 @@
       "expectedSourceFile": "cinema-director-chair",
       "outputFile": "cinema-director-chair.webp",
       "sourceUrl": "https://iconscout.com/3d-icon/director-chair-3d-icon_6323930",
-      "status": "awaiting download"
+      "status": "rejected",
+      "rejected": "duplicate subject of CINEMA_SEATS (chair); thin beige frame faint at 31 px"
     },
     {
       "code": "CINEMA_EXIT_DOOR",
@@ -1389,7 +1405,7 @@
       "expectedSourceFile": "cinema-exit-door",
       "outputFile": "cinema-exit-door.webp",
       "sourceUrl": "https://iconscout.com/3d-icon/exit-door-3d-icon_6323914",
-      "status": "awaiting download"
+      "status": "integrated"
     },
     {
       "code": "CINEMA_RATING",
@@ -1398,7 +1414,8 @@
       "expectedSourceFile": "cinema-rating",
       "outputFile": "cinema-rating.webp",
       "sourceUrl": "https://iconscout.com/3d-icon/film-rating-3d-icon_6323929",
-      "status": "awaiting download"
+      "status": "rejected",
+      "rejected": "confusable at 31 px with CINEMA_STREAMING (dark screen with a red play button), busy"
     },
     {
       "code": "CINEMA_MEGAPHONE",
@@ -1407,7 +1424,7 @@
       "expectedSourceFile": "cinema-megaphone",
       "outputFile": "cinema-megaphone.webp",
       "sourceUrl": "https://iconscout.com/3d-icon/megaphone-3d-icon_6323919",
-      "status": "awaiting download"
+      "status": "integrated"
     },
     {
       "code": "CINEMA_NO_CAMERA",
@@ -1416,7 +1433,8 @@
       "expectedSourceFile": "cinema-no-camera",
       "outputFile": "cinema-no-camera.webp",
       "sourceUrl": "https://iconscout.com/3d-icon/no-camera-3d-icon_6323915",
-      "status": "awaiting download"
+      "status": "rejected",
+      "rejected": "duplicate subject of TRIP_CAMERA (camera)"
     },
     {
       "code": "CINEMA_NO_PHONE",
@@ -1425,7 +1443,8 @@
       "expectedSourceFile": "cinema-no-phone",
       "outputFile": "cinema-no-phone.webp",
       "sourceUrl": "https://iconscout.com/3d-icon/no-phone-allow-3d-icon_6323917",
-      "status": "awaiting download"
+      "status": "rejected",
+      "rejected": "duplicate subject of TRIP_MAP_PHONE (smartphone)"
     },
     {
       "code": "CINEMA_NO_SMOKING",
@@ -1434,7 +1453,7 @@
       "expectedSourceFile": "cinema-no-smoking",
       "outputFile": "cinema-no-smoking.webp",
       "sourceUrl": "https://iconscout.com/3d-icon/no-smoking-3d-icon_6323922",
-      "status": "awaiting download"
+      "status": "integrated"
     },
     {
       "code": "CINEMA_POPCORN",
@@ -1443,7 +1462,7 @@
       "expectedSourceFile": "cinema-popcorn",
       "outputFile": "cinema-popcorn.webp",
       "sourceUrl": "https://iconscout.com/3d-icon/popcorn-bucket-3d-icon_6323913",
-      "status": "awaiting download"
+      "status": "integrated"
     },
     {
       "code": "CINEMA_ROPE_BARRIER",
@@ -1452,7 +1471,7 @@
       "expectedSourceFile": "cinema-rope-barrier",
       "outputFile": "cinema-rope-barrier.webp",
       "sourceUrl": "https://iconscout.com/3d-icon/ribbon-barrier-3d-icon_6323925",
-      "status": "awaiting download"
+      "status": "integrated"
     },
     {
       "code": "CINEMA_UFO",
@@ -1461,7 +1480,7 @@
       "expectedSourceFile": "cinema-ufo",
       "outputFile": "cinema-ufo.webp",
       "sourceUrl": "https://iconscout.com/3d-icon/sci-fi-3d-icon_6323918",
-      "status": "awaiting download"
+      "status": "integrated"
     },
     {
       "code": "CINEMA_MAGIC_WAND",
@@ -1470,7 +1489,7 @@
       "expectedSourceFile": "cinema-magic-wand",
       "outputFile": "cinema-magic-wand.webp",
       "sourceUrl": "https://iconscout.com/3d-icon/special-effect-3d-icon_6323927",
-      "status": "awaiting download"
+      "status": "integrated"
     },
     {
       "code": "CINEMA_SWORD",
@@ -1479,7 +1498,8 @@
       "expectedSourceFile": "cinema-sword",
       "outputFile": "cinema-sword.webp",
       "sourceUrl": "https://iconscout.com/3d-icon/sword-3d-icon_6323923",
-      "status": "awaiting download"
+      "status": "rejected",
+      "rejected": "duplicate subject of WEAPON_CRYSTAL_SWORD / WEAPON_CROSSED_SWORDS (sword)"
     },
     {
       "code": "CINEMA_THEATER_MASKS",
@@ -1488,7 +1508,7 @@
       "expectedSourceFile": "cinema-theater-masks",
       "outputFile": "cinema-theater-masks.webp",
       "sourceUrl": "https://iconscout.com/3d-icon/theater-mask-3d-icon_6323931",
-      "status": "awaiting download"
+      "status": "integrated"
     },
     {
       "code": "CINEMA_VIDEO_CAMERA",
@@ -1497,7 +1517,8 @@
       "expectedSourceFile": "cinema-video-camera",
       "outputFile": "cinema-video-camera.webp",
       "sourceUrl": "https://iconscout.com/3d-icon/video-camera-3d-icon_6323928",
-      "status": "awaiting download"
+      "status": "rejected",
+      "rejected": "duplicate subject of TRIP_CAMERA (camera); dark body and lens also confusable with CINEMA_PROJECTOR"
     },
     {
       "code": "CINEMA_FILM_EDITING",
@@ -1506,7 +1527,8 @@
       "expectedSourceFile": "cinema-film-editing",
       "outputFile": "cinema-film-editing.webp",
       "sourceUrl": "https://iconscout.com/3d-icon/video-editing-3d-icon_6323926",
-      "status": "awaiting download"
+      "status": "rejected",
+      "rejected": "confusable at 31 px with CINEMA_MAGIC_WAND (same dark film strip)"
     },
     {
       "code": "CINEMA_STREAMING",
@@ -1515,7 +1537,7 @@
       "expectedSourceFile": "cinema-streaming",
       "outputFile": "cinema-streaming.webp",
       "sourceUrl": "https://iconscout.com/3d-icon/video-streaming-3d-icon_6323916",
-      "status": "awaiting download"
+      "status": "integrated"
     },
     {
       "code": "TRIP_HOT_AIR_BALLOON",
@@ -1524,7 +1546,7 @@
       "expectedSourceFile": "trip-hot-air-balloon",
       "outputFile": "trip-hot-air-balloon.webp",
       "sourceUrl": "https://iconscout.com/3d-icon/air-baloon-3d-icon_14044565",
-      "status": "awaiting download"
+      "status": "integrated"
     },
     {
       "code": "TRIP_BACKPACK",
@@ -1533,7 +1555,7 @@
       "expectedSourceFile": "trip-backpack",
       "outputFile": "trip-backpack.webp",
       "sourceUrl": "https://iconscout.com/3d-icon/backpack-3d-icon_14044570",
-      "status": "awaiting download"
+      "status": "integrated"
     },
     {
       "code": "TRIP_BEACH",
@@ -1542,7 +1564,7 @@
       "expectedSourceFile": "trip-beach",
       "outputFile": "trip-beach.webp",
       "sourceUrl": "https://iconscout.com/3d-icon/beach-3d-icon_14044575",
-      "status": "awaiting download"
+      "status": "integrated"
     },
     {
       "code": "TRIP_BED",
@@ -1551,7 +1573,7 @@
       "expectedSourceFile": "trip-bed",
       "outputFile": "trip-bed.webp",
       "sourceUrl": "https://iconscout.com/3d-icon/bed-3d-icon_14044577",
-      "status": "awaiting download"
+      "status": "integrated"
     },
     {
       "code": "TRIP_BOARDING_PASS",
@@ -1560,7 +1582,7 @@
       "expectedSourceFile": "trip-boarding-pass",
       "outputFile": "trip-boarding-pass.webp",
       "sourceUrl": "https://iconscout.com/3d-icon/boarding-pass-3d-icon_14044563",
-      "status": "awaiting download"
+      "status": "integrated"
     },
     {
       "code": "TRIP_BREAKFAST",
@@ -1569,7 +1591,7 @@
       "expectedSourceFile": "trip-breakfast",
       "outputFile": "trip-breakfast.webp",
       "sourceUrl": "https://iconscout.com/3d-icon/breakfast-3d-icon_14044566",
-      "status": "awaiting download"
+      "status": "integrated"
     },
     {
       "code": "TRIP_CAMERA",
@@ -1578,7 +1600,7 @@
       "expectedSourceFile": "trip-camera",
       "outputFile": "trip-camera.webp",
       "sourceUrl": "https://iconscout.com/3d-icon/camera-3d-icon_14044574",
-      "status": "awaiting download"
+      "status": "integrated"
     },
     {
       "code": "TRIP_TENT",
@@ -1587,7 +1609,7 @@
       "expectedSourceFile": "trip-tent",
       "outputFile": "trip-tent.webp",
       "sourceUrl": "https://iconscout.com/3d-icon/camp-tent-3d-icon_14044567",
-      "status": "awaiting download"
+      "status": "integrated"
     },
     {
       "code": "TRIP_CAMPFIRE",
@@ -1596,7 +1618,7 @@
       "expectedSourceFile": "trip-campfire",
       "outputFile": "trip-campfire.webp",
       "sourceUrl": "https://iconscout.com/3d-icon/campfire-3d-icon_14044571",
-      "status": "awaiting download"
+      "status": "integrated"
     },
     {
       "code": "TRIP_CARAVAN",
@@ -1605,7 +1627,7 @@
       "expectedSourceFile": "trip-caravan",
       "outputFile": "trip-caravan.webp",
       "sourceUrl": "https://iconscout.com/3d-icon/caravan-3d-icon_14044573",
-      "status": "awaiting download"
+      "status": "integrated"
     },
     {
       "code": "TRIP_CASH",
@@ -1614,7 +1636,7 @@
       "expectedSourceFile": "trip-cash",
       "outputFile": "trip-cash.webp",
       "sourceUrl": "https://iconscout.com/3d-icon/cash-3d-icon_14044576",
-      "status": "awaiting download"
+      "status": "integrated"
     },
     {
       "code": "TRIP_COCKTAIL",
@@ -1623,7 +1645,7 @@
       "expectedSourceFile": "trip-cocktail",
       "outputFile": "trip-cocktail.webp",
       "sourceUrl": "https://iconscout.com/3d-icon/cocktail-3d-icon_14044572",
-      "status": "awaiting download"
+      "status": "integrated"
     },
     {
       "code": "TRIP_COCONUT_DRINK",
@@ -1632,7 +1654,7 @@
       "expectedSourceFile": "trip-coconut-drink",
       "outputFile": "trip-coconut-drink.webp",
       "sourceUrl": "https://iconscout.com/3d-icon/coconut-drink-3d-icon_14044564",
-      "status": "awaiting download"
+      "status": "integrated"
     },
     {
       "code": "TRIP_DESK_BELL",
@@ -1641,7 +1663,7 @@
       "expectedSourceFile": "trip-desk-bell",
       "outputFile": "trip-desk-bell.webp",
       "sourceUrl": "https://iconscout.com/3d-icon/desk-bell-3d-icon_14044568",
-      "status": "awaiting download"
+      "status": "integrated"
     },
     {
       "code": "TRIP_ROUTE",
@@ -1650,7 +1672,8 @@
       "expectedSourceFile": "trip-route",
       "outputFile": "trip-route.webp",
       "sourceUrl": "https://iconscout.com/3d-icon/distance-3d-icon_14044569",
-      "status": "awaiting download"
+      "status": "rejected",
+      "rejected": "unreadable at tile size: thin grey path, only two small pins visible at 31 px"
     },
     {
       "code": "TRIP_HOTEL",
@@ -1659,7 +1682,7 @@
       "expectedSourceFile": "trip-hotel",
       "outputFile": "trip-hotel.webp",
       "sourceUrl": "https://iconscout.com/3d-icon/hotel-3d-icon_14044561",
-      "status": "awaiting download"
+      "status": "integrated"
     },
     {
       "code": "TRIP_HOTEL_KEY",
@@ -1668,7 +1691,7 @@
       "expectedSourceFile": "trip-hotel-key",
       "outputFile": "trip-hotel-key.webp",
       "sourceUrl": "https://iconscout.com/3d-icon/hotel-key-3d-icon_14044556",
-      "status": "awaiting download"
+      "status": "integrated"
     },
     {
       "code": "TRIP_MAP_PHONE",
@@ -1677,7 +1700,7 @@
       "expectedSourceFile": "trip-map-phone",
       "outputFile": "trip-map-phone.webp",
       "sourceUrl": "https://iconscout.com/3d-icon/maps-3d-icon_14044562",
-      "status": "awaiting download"
+      "status": "integrated"
     },
     {
       "code": "TRIP_MOUNTAIN",
@@ -1686,7 +1709,7 @@
       "expectedSourceFile": "trip-mountain",
       "outputFile": "trip-mountain.webp",
       "sourceUrl": "https://iconscout.com/3d-icon/mountain-3d-icon_14044557",
-      "status": "awaiting download"
+      "status": "integrated"
     },
     {
       "code": "TRIP_PASSPORT",
@@ -1695,7 +1718,7 @@
       "expectedSourceFile": "trip-passport",
       "outputFile": "trip-passport.webp",
       "sourceUrl": "https://iconscout.com/3d-icon/passport-3d-icon_14044558",
-      "status": "awaiting download"
+      "status": "integrated"
     },
     {
       "code": "TRIP_PICNIC",
@@ -1704,7 +1727,8 @@
       "expectedSourceFile": "trip-picnic",
       "outputFile": "trip-picnic.webp",
       "sourceUrl": "https://iconscout.com/3d-icon/picnic-3d-icon_14044560",
-      "status": "awaiting download"
+      "status": "rejected",
+      "rejected": "unreadable at tile size: busy diorama on a round base, confusable with TRIP_BEACH"
     },
     {
       "code": "TRIP_SIGNPOST",
@@ -1713,7 +1737,7 @@
       "expectedSourceFile": "trip-signpost",
       "outputFile": "trip-signpost.webp",
       "sourceUrl": "https://iconscout.com/3d-icon/road-sign-3d-icon_14044555",
-      "status": "awaiting download"
+      "status": "integrated"
     },
     {
       "code": "TRIP_SUITCASE",
@@ -1722,7 +1746,7 @@
       "expectedSourceFile": "trip-suitcase",
       "outputFile": "trip-suitcase.webp",
       "sourceUrl": "https://iconscout.com/3d-icon/suitcase-3d-icon_14044559",
-      "status": "awaiting download"
+      "status": "integrated"
     },
     {
       "code": "TRIP_CAR",
@@ -1731,6 +1755,841 @@
       "expectedSourceFile": "trip-car",
       "outputFile": "trip-car.webp",
       "sourceUrl": "https://iconscout.com/3d-icon/travel-car-3d-icon_14044554",
+      "status": "integrated"
+    },
+    {
+      "code": "ANIMAL_RED_PANDA",
+      "title": "Red Panda",
+      "originalFile": "nano-banana-2.1_a_lush_3d_render_of_Animal_close_up_look_white_background_3D_model_excited_vibra-4.jpg",
+      "expectedSourceFile": "red-panda",
+      "outputFile": "red-panda.webp",
+      "status": "integrated"
+    },
+    {
+      "code": "ANIMAL_BEAR",
+      "title": "Happy Bear",
+      "originalFile": "nano-banana-2.1_a_lush_3d_render_of_Bear_no_background_3D_model_excited_vibrant_palette_exaggera-0.jpg",
+      "expectedSourceFile": "animal-bear",
+      "outputFile": "animal-bear.webp",
+      "status": "integrated"
+    },
+    {
+      "code": "FOOD_BREAD",
+      "title": "Happy Bread",
+      "originalFile": "nano-banana-2.1_a_lush_3d_render_of_Bread_no_background_3D_model_excited_vibrant_palette_exagger-0.jpg",
+      "expectedSourceFile": "food-bread",
+      "outputFile": "food-bread.webp",
+      "status": "integrated"
+    },
+    {
+      "code": "ANIMAL_BULL",
+      "title": "Happy Bull",
+      "originalFile": "nano-banana-2.1_a_lush_3d_render_of_Bullshit_no_background_3D_model_excited_vibrant_palette_exag-0.jpg",
+      "expectedSourceFile": "animal-bull",
+      "outputFile": "animal-bull.webp",
+      "status": "integrated"
+    },
+    {
+      "code": "ANIMAL_TIGER_CUB",
+      "title": "Tiger Cub",
+      "originalFile": "nano-banana-2.1_a_lush_3d_render_of_Different_Animal_close_up_look_white_background_3D_model_exc-3.jpg",
+      "expectedSourceFile": "animal-tiger-cub",
+      "outputFile": "animal-tiger-cub.webp",
+      "status": "integrated"
+    },
+    {
+      "code": "JP_KANJI_RAKU",
+      "title": "Kanji Raku (Joy)",
+      "originalFile": "nano-banana-2.1_a_lush_3d_render_of_Japnese_symbol_no_background_3D_model_excited_vibrant_palett-0.jpg",
+      "expectedSourceFile": "jp-kanji-raku",
+      "outputFile": "jp-kanji-raku.webp",
+      "status": "integrated"
+    },
+    {
+      "code": "LOVE_HEART_BUDDY",
+      "title": "Dancing Heart",
+      "originalFile": "nano-banana-2.1_a_lush_3d_render_of_Love_symbol_no_background_3D_model_excited_vibrant_palette_e-0.jpg",
+      "expectedSourceFile": "love-heart-buddy",
+      "outputFile": "love-heart-buddy.webp",
+      "status": "integrated"
+    },
+    {
+      "code": "FOOD_PIZZA",
+      "title": "Happy Pizza",
+      "originalFile": "nano-banana-2.1_a_lush_3d_render_of_Pizza_no_background_3D_model_excited_vibrant_palette_exagger-0.jpg",
+      "expectedSourceFile": "food-pizza",
+      "outputFile": "food-pizza.webp",
+      "status": "integrated"
+    },
+    {
+      "code": "SPACE_ROCKET",
+      "title": "Happy Rocket",
+      "originalFile": "nano-banana-2.1_a_lush_3d_render_of_Rocket_no_background_3D_model_excited_vibrant_palette_exagge-0.jpg",
+      "expectedSourceFile": "space-rocket",
+      "outputFile": "space-rocket.webp",
+      "status": "integrated"
+    },
+    {
+      "code": "FOOD_TEA_CUP",
+      "title": "Tea Cup",
+      "originalFile": "nano-banana-2.1_a_lush_3d_render_of_Tea_no_background_3D_model_excited_vibrant_palette_exaggerat-0.jpg",
+      "expectedSourceFile": "food-tea-cup",
+      "outputFile": "food-tea-cup.webp",
+      "status": "integrated"
+    },
+    {
+      "code": "CN_FU_CHARACTER",
+      "title": "Fu Character",
+      "originalFile": "nano-banana-2.1_a_lush_3d_render_of_chinese_symbol_no_background_3D_model_excited_vibrant_palett-0.jpg",
+      "expectedSourceFile": "chinese-fu-character",
+      "outputFile": "chinese-fu-character.webp",
+      "status": "integrated"
+    },
+    {
+      "code": "ANIMAL_FOX_SPIRIT",
+      "title": "Fox Spirit",
+      "originalFile": "nano-banana-2.1_a_lush_3d_render_of_single_Animal_close_up_look_white_background_3D_model_excite-5.jpg",
+      "expectedSourceFile": "animal-fox-spirit",
+      "outputFile": "animal-fox-spirit.webp",
+      "status": "integrated"
+    },
+    {
+      "code": "LION_HEAD",
+      "title": "Lion",
+      "originalFile": "nano-banana-2.1_a_lush_3d_render_of_single_Lion_close_up_look_white_background_3D_model_excited_-6.jpg",
+      "expectedSourceFile": "lion-head",
+      "outputFile": "lion-head.webp",
+      "status": "integrated"
+    },
+    {
+      "code": "WEAPON_CRYSTAL_SWORD",
+      "title": "Crystal Sword",
+      "originalFile": "nano-banana-2.1_a_lush_3d_render_of_single_weapon_close_up_look_white_background_3D_model_excite-1.jpg",
+      "expectedSourceFile": "weapon-crystal-sword",
+      "outputFile": "weapon-crystal-sword.webp",
+      "status": "integrated"
+    },
+    {
+      "code": "WEAPON_CROSSED_SWORDS",
+      "title": "Crossed Swords",
+      "originalFile": "nano-banana-2.1_a_lush_3d_render_of_single_weapon_close_up_look_white_background_3D_model_excite-2.jpg",
+      "expectedSourceFile": "weapon-crossed-swords",
+      "outputFile": "weapon-crossed-swords.webp",
+      "status": "integrated"
+    },
+    {
+      "code": "WEAPON_RAY_GUN_ORANGE",
+      "title": "Orange Ray Gun",
+      "originalFile": "nano-banana-2.1_a_lush_3d_render_of_single_weapon_close_up_look_white_background_3D_model_excite-3 (1).jpg",
+      "expectedSourceFile": "weapon-ray-gun-orange",
+      "outputFile": "weapon-ray-gun-orange.webp",
+      "status": "integrated"
+    },
+    {
+      "code": "WEAPON_RAY_GUN_VIOLET",
+      "title": "Violet Ray Gun",
+      "originalFile": "nano-banana-2.1_a_lush_3d_render_of_single_weapon_close_up_look_white_background_3D_model_excite-3.jpg",
+      "expectedSourceFile": "weapon-ray-gun-violet",
+      "outputFile": "weapon-ray-gun-violet.webp",
+      "status": "integrated"
+    },
+    {
+      "code": "WEAPON_SPIRAL_BLASTER",
+      "title": "Spiral Blaster",
+      "originalFile": "nano-banana-2.1_a_lush_3d_render_of_single_weapon_close_up_look_white_background_3D_model_excite-4.jpg",
+      "expectedSourceFile": "weapon-spiral-blaster",
+      "outputFile": "weapon-spiral-blaster.webp",
+      "status": "integrated"
+    },
+    {
+      "code": "WEAPON_WAR_HAMMER",
+      "title": "Crystal War Hammer",
+      "originalFile": "nano-banana-2.1_a_lush_3d_render_of_single_weapon_close_up_look_white_background_3D_model_excite-5.jpg",
+      "expectedSourceFile": "weapon-war-hammer",
+      "outputFile": "weapon-war-hammer.webp",
+      "status": "integrated"
+    },
+    {
+      "code": "HERO_SUPERHERO",
+      "title": "Superhero",
+      "originalFile": "nano-banana-2.1_a_lush_3d_render_of_super_hero_no_background_3D_model_excited_vibrant_palette_ex-1.jpg",
+      "expectedSourceFile": "hero-superhero",
+      "outputFile": "hero-superhero.webp",
+      "status": "integrated"
+    },
+    {
+      "code": "HERO_SUPERHEROINE",
+      "title": "Superheroine",
+      "originalFile": "nano-banana-2.1_a_lush_3d_render_of_super_heroine_no_background_3D_model_excited_vibrant_palette-0.jpg",
+      "expectedSourceFile": "hero-superheroine",
+      "outputFile": "hero-superheroine.webp",
+      "status": "integrated"
+    },
+    {
+      "code": "SYMBOL_EXCLAMATION",
+      "title": "Happy Exclamation Mark",
+      "originalFile": "nano-banana-2.1_a_lush_3d_render_of_symbol_no_background_3D_model_excited_vibrant_palette_exagge-0 (1).jpg",
+      "expectedSourceFile": "symbol-exclamation",
+      "outputFile": "symbol-exclamation.webp",
+      "status": "integrated"
+    },
+    {
+      "code": "SYMBOL_STAR_BURST",
+      "title": "Star Burst",
+      "originalFile": "nano-banana-2.1_a_lush_3d_render_of_symbol_no_background_3D_model_excited_vibrant_palette_exagge-0.jpg",
+      "expectedSourceFile": "symbol-star-burst",
+      "outputFile": "symbol-star-burst.webp",
+      "status": "integrated"
+    },
+    {
+      "code": "WORD_CRY",
+      "title": "Cry Word Art",
+      "originalFile": "nano-banana-2.1_a_lush_3d_render_of_Cry_symbol_no_background_3D_model_excited_vibrant_palette_ex-0.jpg",
+      "expectedSourceFile": "word-cry",
+      "outputFile": "word-cry.webp",
+      "status": "rejected",
+      "rejected": "unreadable at tile size: word art, the letters of \"CRY\" are illegible at 31 px"
+    },
+    {
+      "code": "ANIMAL_GROUP_A",
+      "title": "Animal Friends (lion, pandas, parrot)",
+      "originalFile": "nano-banana-2.1_a_lush_3d_render_of_Different_Animal_close_up_look_white_background_3D_model_exc-2.jpg",
+      "expectedSourceFile": "animal-group-a",
+      "outputFile": "animal-group-a.webp",
+      "status": "rejected",
+      "rejected": "several animals in one picture, not one symbol; unreadable at 31 px (no cut-out made)"
+    },
+    {
+      "code": "ANIMAL_GROUP_B",
+      "title": "Animal Friends (giraffe, panda, fox)",
+      "originalFile": "nano-banana-2.1_a_lush_3d_render_of_Different_Animal_close_up_look_white_background_3D_model_exc-5.jpg",
+      "expectedSourceFile": "animal-group-b",
+      "outputFile": "animal-group-b.webp",
+      "status": "rejected",
+      "rejected": "several animals in one picture, not one symbol; unreadable at 31 px (no cut-out made)"
+    },
+    {
+      "code": "ANIMAL_GROUP_C",
+      "title": "Animal Friends (lions, panda, monkey)",
+      "originalFile": "nano-banana-2.1_a_lush_3d_render_of_Different_Animal_close_up_look_white_background_3D_model_exc-7.jpg",
+      "expectedSourceFile": "animal-group-c",
+      "outputFile": "animal-group-c.webp",
+      "status": "rejected",
+      "rejected": "several animals in one picture, not one symbol; unreadable at 31 px (no cut-out made)"
+    },
+    {
+      "code": "NATURE_MUSHROOM_GROVE",
+      "title": "Mushroom Grove",
+      "originalFile": "nano-banana-2.1_a_lush_3d_render_of_Nature_close_up_look_white_background_3D_model_excited_vibra-0.jpg",
+      "expectedSourceFile": "nature-mushroom-grove",
+      "outputFile": "nature-mushroom-grove.webp",
+      "status": "rejected",
+      "rejected": "unreadable at tile size: busy diorama of flowers, mushrooms and ferns, a green/pink blob at 31 px, confusable with the other NATURE_ scenes"
+    },
+    {
+      "code": "NATURE_FLOWER_BURST",
+      "title": "Flower Burst",
+      "originalFile": "nano-banana-2.1_a_lush_3d_render_of_Nature_close_up_look_white_background_3D_model_excited_vibra-1.jpg",
+      "expectedSourceFile": "nature-flower-burst",
+      "outputFile": "nature-flower-burst.webp",
+      "status": "rejected",
+      "rejected": "unreadable at tile size: busy diorama of flowers, mushrooms and ferns, a green/pink blob at 31 px, confusable with the other NATURE_ scenes"
+    },
+    {
+      "code": "NATURE_SUCCULENT_BALL",
+      "title": "Succulent Bouquet",
+      "originalFile": "nano-banana-2.1_a_lush_3d_render_of_Nature_close_up_look_white_background_3D_model_excited_vibra-2.jpg",
+      "expectedSourceFile": "nature-succulent-ball",
+      "outputFile": "nature-succulent-ball.webp",
+      "status": "rejected",
+      "rejected": "unreadable at tile size: busy diorama of flowers, mushrooms and ferns, a green/pink blob at 31 px, confusable with the other NATURE_ scenes"
+    },
+    {
+      "code": "NATURE_CATERPILLAR_GARDEN",
+      "title": "Caterpillar Garden",
+      "originalFile": "nano-banana-2.1_a_lush_3d_render_of_Nature_close_up_look_white_background_3D_model_excited_vibra-4.jpg",
+      "expectedSourceFile": "nature-caterpillar-garden",
+      "outputFile": "nature-caterpillar-garden.webp",
+      "status": "rejected",
+      "rejected": "unreadable at tile size: busy diorama of flowers, mushrooms and ferns, a green/pink blob at 31 px, confusable with the other NATURE_ scenes"
+    },
+    {
+      "code": "NATURE_BEE_MEADOW",
+      "title": "Bee Meadow",
+      "originalFile": "nano-banana-2.1_a_lush_3d_render_of_Nature_close_up_look_white_background_3D_model_excited_vibra-7.jpg",
+      "expectedSourceFile": "nature-bee-meadow",
+      "outputFile": "nature-bee-meadow.webp",
+      "status": "rejected",
+      "rejected": "unreadable at tile size: busy diorama of flowers, mushrooms and ferns, a green/pink blob at 31 px, confusable with the other NATURE_ scenes"
+    },
+    {
+      "code": "NATURE_WATERFALL_ISLAND",
+      "title": "Waterfall Island",
+      "originalFile": "nano-banana-2.1_a_lush_3d_render_of_Nature_white_background_3D_model_excited_vibrant_palette_exa-0.jpg",
+      "expectedSourceFile": "nature-waterfall-island",
+      "outputFile": "nature-waterfall-island.webp",
+      "status": "rejected",
+      "rejected": "unreadable at tile size: busy diorama of flowers, mushrooms and ferns, a green/pink blob at 31 px, confusable with the other NATURE_ scenes"
+    },
+    {
+      "code": "NATURE_MOSS_MOUND",
+      "title": "Mossy Mound",
+      "originalFile": "nano-banana-2.1_a_lush_3d_render_of_Nature_white_background_3D_model_excited_vibrant_palette_exa-1.jpg",
+      "expectedSourceFile": "nature-moss-mound",
+      "outputFile": "nature-moss-mound.webp",
+      "status": "rejected",
+      "rejected": "unreadable at tile size: busy diorama of flowers, mushrooms and ferns, a green/pink blob at 31 px, confusable with the other NATURE_ scenes"
+    },
+    {
+      "code": "NATURE_FLOWER_NEST",
+      "title": "Flower Nest",
+      "originalFile": "nano-banana-2.1_a_lush_3d_render_of_Nature_white_background_3D_model_excited_vibrant_palette_exa-2.jpg",
+      "expectedSourceFile": "nature-flower-nest",
+      "outputFile": "nature-flower-nest.webp",
+      "status": "rejected",
+      "rejected": "unreadable at tile size: busy diorama of flowers, mushrooms and ferns, a green/pink blob at 31 px, confusable with the other NATURE_ scenes"
+    },
+    {
+      "code": "NATURE_FLOWER_PATCH",
+      "title": "Smiling Flower Patch",
+      "originalFile": "nano-banana-2.1_a_lush_3d_render_of_Nature_white_background_3D_model_excited_vibrant_palette_exa-3.jpg",
+      "expectedSourceFile": "nature-flower-patch",
+      "outputFile": "nature-flower-patch.webp",
+      "status": "rejected",
+      "rejected": "unreadable at tile size: busy diorama of flowers, mushrooms and ferns, a green/pink blob at 31 px, confusable with the other NATURE_ scenes"
+    },
+    {
+      "code": "NATURE_SQUIRREL_GLADE",
+      "title": "Squirrel Glade",
+      "originalFile": "nano-banana-2.1_a_lush_3d_render_of_Nature_white_background_3D_model_excited_vibrant_palette_exa-4.jpg",
+      "expectedSourceFile": "nature-squirrel-glade",
+      "outputFile": "nature-squirrel-glade.webp",
+      "status": "rejected",
+      "rejected": "unreadable at tile size: busy diorama of flowers, mushrooms and ferns, a green/pink blob at 31 px, confusable with the other NATURE_ scenes"
+    },
+    {
+      "code": "NATURE_RIVER_GROVE",
+      "title": "River Grove",
+      "originalFile": "nano-banana-2.1_a_lush_3d_render_of_Nature_white_background_3D_model_excited_vibrant_palette_exa-7.jpg",
+      "expectedSourceFile": "nature-river-grove",
+      "outputFile": "nature-river-grove.webp",
+      "status": "rejected",
+      "rejected": "unreadable at tile size: busy diorama of flowers, mushrooms and ferns, a green/pink blob at 31 px, confusable with the other NATURE_ scenes"
+    },
+    {
+      "code": "WEAPON_RAY_GUN_MAGENTA",
+      "title": "Magenta Ray Gun",
+      "originalFile": "nano-banana-2.1_a_lush_3d_render_of_single_weapon_close_up_look_white_background_3D_model_excite-0 (1).jpg",
+      "expectedSourceFile": "weapon-ray-gun-magenta",
+      "outputFile": "weapon-ray-gun-magenta.webp",
+      "status": "rejected",
+      "rejected": "confusable at 31 px with WEAPON_SPIRAL_BLASTER (teal/magenta ray gun, same silhouette); 6 ray guns in the batch, 3 kept"
+    },
+    {
+      "code": "WEAPON_WINGED_SWORD",
+      "title": "Winged Sword",
+      "originalFile": "nano-banana-2.1_a_lush_3d_render_of_single_weapon_close_up_look_white_background_3D_model_excite-0.jpg",
+      "expectedSourceFile": "weapon-winged-sword",
+      "outputFile": "weapon-winged-sword.webp",
+      "status": "rejected",
+      "rejected": "thin diagonal blade at 31 px, confusable with WEAPON_CRYSTAL_SWORD"
+    },
+    {
+      "code": "WEAPON_RAY_GUN_FACE",
+      "title": "Ray Gun with a Face",
+      "originalFile": "nano-banana-2.1_a_lush_3d_render_of_single_weapon_close_up_look_white_background_3D_model_excite-1 (1).jpg",
+      "expectedSourceFile": "weapon-ray-gun-face",
+      "outputFile": "weapon-ray-gun-face.webp",
+      "status": "rejected",
+      "rejected": "busy at 31 px, confusable with WEAPON_RAY_GUN_ORANGE (orange ray gun)"
+    },
+    {
+      "code": "WEAPON_BUBBLE_BLASTER",
+      "title": "Bubble Blaster",
+      "originalFile": "nano-banana-2.1_a_lush_3d_render_of_single_weapon_close_up_look_white_background_3D_model_excite-7.jpg",
+      "expectedSourceFile": "weapon-bubble-blaster",
+      "outputFile": "weapon-bubble-blaster.webp",
+      "status": "rejected",
+      "rejected": "confusable at 31 px with WEAPON_SPIRAL_BLASTER (teal/pink ray gun, same silhouette)"
+    },
+    {
+      "code": "SPORT2_CANOE",
+      "title": "Canoe and Paddles",
+      "originalFile": "canoe-sprint-3d-icon_9693472.png",
+      "expectedSourceFile": "sport2-canoe",
+      "outputFile": "sport2-canoe.webp",
+      "sourceUrl": "https://iconscout.com/3d-icon/canoe-sprint-3d-icon_9693472",
+      "status": "rejected",
+      "rejected": "unreadable at tile size: pale white/yellow canoe on the ivory face, a smudge at 31 px"
+    },
+    {
+      "code": "SPORT2_WHISTLE",
+      "title": "Coach Whistle",
+      "originalFile": "coach-whistle-3d-icon_9693469.png",
+      "expectedSourceFile": "sport2-whistle",
+      "outputFile": "sport2-whistle.webp",
+      "sourceUrl": "https://iconscout.com/3d-icon/coach-whistle-3d-icon_9693469",
+      "status": "integrated"
+    },
+    {
+      "code": "SPORT2_DARTBOARD",
+      "title": "Dartboard",
+      "originalFile": "dartboard-3d-icon_9693482.png",
+      "expectedSourceFile": "sport2-dartboard",
+      "outputFile": "sport2-dartboard.webp",
+      "sourceUrl": "https://iconscout.com/3d-icon/dartboard-3d-icon_9693482",
+      "status": "integrated"
+    },
+    {
+      "code": "SPORT2_GO_BOARD",
+      "title": "Go Board",
+      "originalFile": "go-board-3d-icon_9693484.png",
+      "expectedSourceFile": "sport2-go-board",
+      "outputFile": "sport2-go-board.webp",
+      "sourceUrl": "https://iconscout.com/3d-icon/go-board-3d-icon_9693484",
+      "status": "integrated"
+    },
+    {
+      "code": "SPORT2_HORSESHOE",
+      "title": "Horseshoe Pitching",
+      "originalFile": "horseshoes-3d-icon_9693476.png",
+      "expectedSourceFile": "sport2-horseshoe",
+      "outputFile": "sport2-horseshoe.webp",
+      "sourceUrl": "https://iconscout.com/3d-icon/horseshoes-3d-icon_9693476",
+      "status": "integrated"
+    },
+    {
+      "code": "SPORT2_KARATE",
+      "title": "Karate Gi",
+      "originalFile": "karate-3d-icon_9693493.png",
+      "expectedSourceFile": "sport2-karate",
+      "outputFile": "sport2-karate.webp",
+      "sourceUrl": "https://iconscout.com/3d-icon/karate-3d-icon_9693493",
+      "status": "integrated"
+    },
+    {
+      "code": "SPORT2_KETTLEBELL",
+      "title": "Kettlebells",
+      "originalFile": "kettlebell-3d-icon_9693478.png",
+      "expectedSourceFile": "sport2-kettlebell",
+      "outputFile": "sport2-kettlebell.webp",
+      "sourceUrl": "https://iconscout.com/3d-icon/kettlebell-3d-icon_9693478",
+      "status": "rejected",
+      "rejected": "duplicate subject of SPORT_DUMBBELL (free weights); blue balls also confusable with FIT_GYM_BALL at 31 px"
+    },
+    {
+      "code": "SPORT2_GYM_RINGS",
+      "title": "Gymnastic Rings",
+      "originalFile": "ring-gymnastic-3d-icon_9693468.png",
+      "expectedSourceFile": "sport2-gym-rings",
+      "outputFile": "sport2-gym-rings.webp",
+      "sourceUrl": "https://iconscout.com/3d-icon/ring-gymnastic-3d-icon_9693468",
+      "status": "integrated"
+    },
+    {
+      "code": "SPORT2_RUNNING_SHOES",
+      "title": "Running Shoes",
+      "originalFile": "running-shoes-3d-icon_9693470.png",
+      "expectedSourceFile": "sport2-running-shoes",
+      "outputFile": "sport2-running-shoes.webp",
+      "sourceUrl": "https://iconscout.com/3d-icon/running-shoes-3d-icon_9693470",
+      "status": "integrated"
+    },
+    {
+      "code": "SPORT2_SWIM_GOGGLES",
+      "title": "Swimming Goggles",
+      "originalFile": "swimming-goggles-3d-icon_9693467.png",
+      "expectedSourceFile": "sport2-swim-goggles",
+      "outputFile": "sport2-swim-goggles.webp",
+      "sourceUrl": "https://iconscout.com/3d-icon/swimming-goggles-3d-icon_9693467",
+      "status": "integrated"
+    },
+    {
+      "code": "SPORTEQ_FOOTBALL_HELMET",
+      "title": "American Football Helmet",
+      "originalFile": "american-football-helmet-3d-icon_11373191.png",
+      "expectedSourceFile": "sporteq-football-helmet",
+      "outputFile": "sporteq-football-helmet.webp",
+      "sourceUrl": "https://iconscout.com/3d-icon/american-football-helmet-3d-icon_11373191",
+      "status": "integrated"
+    },
+    {
+      "code": "SPORTEQ_BASEBALL_BAT",
+      "title": "Baseball Bat",
+      "originalFile": "baseball-3d-icon_11373208.png",
+      "expectedSourceFile": "sporteq-baseball-bat",
+      "outputFile": "sporteq-baseball-bat.webp",
+      "sourceUrl": "https://iconscout.com/3d-icon/baseball-3d-icon_11373208",
+      "status": "rejected",
+      "rejected": "duplicate subject of SPORT_CRICKET (bat and ball)"
+    },
+    {
+      "code": "SPORTEQ_BASEBALL",
+      "title": "Baseball",
+      "originalFile": "baseball-ball-3d-icon_11373197.png",
+      "expectedSourceFile": "sporteq-baseball",
+      "outputFile": "sporteq-baseball.webp",
+      "sourceUrl": "https://iconscout.com/3d-icon/baseball-ball-3d-icon_11373197",
+      "status": "rejected",
+      "rejected": "confusable at 31 px with SPORT_FOOTBALL (plain white ball on the ivory face)"
+    },
+    {
+      "code": "SPORTEQ_BICYCLE",
+      "title": "Bicycle",
+      "originalFile": "bicycle-3d-icon_11373209.png",
+      "expectedSourceFile": "sporteq-bicycle",
+      "outputFile": "sporteq-bicycle.webp",
+      "sourceUrl": "https://iconscout.com/3d-icon/bicycle-3d-icon_11373209",
+      "status": "rejected",
+      "rejected": "duplicate subject of FIT_GYM_CYCLE (cycle; blue frame and black wheels)"
+    },
+    {
+      "code": "SPORTEQ_BILLIARDS",
+      "title": "Billiard Balls",
+      "originalFile": "billiards-3d-icon_11373206.png",
+      "expectedSourceFile": "sporteq-billiards",
+      "outputFile": "sporteq-billiards.webp",
+      "sourceUrl": "https://iconscout.com/3d-icon/billiards-3d-icon_11373206",
+      "status": "integrated"
+    },
+    {
+      "code": "SPORTEQ_BOXING_GLOVES",
+      "title": "Boxing Gloves",
+      "originalFile": "boxing-gloves-3d-icon_11373198.png",
+      "expectedSourceFile": "sporteq-boxing-gloves",
+      "outputFile": "sporteq-boxing-gloves.webp",
+      "sourceUrl": "https://iconscout.com/3d-icon/boxing-gloves-3d-icon_11373198",
+      "status": "integrated"
+    },
+    {
+      "code": "SPORTEQ_GOALKEEPER_GLOVES",
+      "title": "Goalkeeper Gloves",
+      "originalFile": "goalkeeper-gloves-3d-icon_11373192.png",
+      "expectedSourceFile": "sporteq-goalkeeper-gloves",
+      "outputFile": "sporteq-goalkeeper-gloves.webp",
+      "sourceUrl": "https://iconscout.com/3d-icon/goalkeeper-gloves-3d-icon_11373192",
+      "status": "rejected",
+      "rejected": "duplicate subject of SPORTEQ_BOXING_GLOVES (gloves)"
+    },
+    {
+      "code": "SPORTEQ_ROLLER_SKATE",
+      "title": "Inline Skates",
+      "originalFile": "roller-skating-3d-icon_11373195.png",
+      "expectedSourceFile": "sporteq-roller-skate",
+      "outputFile": "sporteq-roller-skate.webp",
+      "sourceUrl": "https://iconscout.com/3d-icon/roller-skating-3d-icon_11373195",
+      "status": "rejected",
+      "rejected": "confusable at 31 px with SPORT2_RUNNING_SHOES (pair of blue/white footwear)"
+    },
+    {
+      "code": "SPORTEQ_SHUTTLECOCK",
+      "title": "Shuttlecock",
+      "originalFile": "shuttlecock-3d-icon_11373201.png",
+      "expectedSourceFile": "sporteq-shuttlecock",
+      "outputFile": "sporteq-shuttlecock.webp",
+      "sourceUrl": "https://iconscout.com/3d-icon/shuttlecock-3d-icon_11373201",
+      "status": "integrated"
+    },
+    {
+      "code": "EQUIP_ALLEN_WRENCH",
+      "title": "Allen Wrench Set",
+      "originalFile": "allen-wrench-3d-icon_11627140.png",
+      "expectedSourceFile": "equip-allen-wrench",
+      "outputFile": "equip-allen-wrench.webp",
+      "sourceUrl": "https://iconscout.com/3d-icon/allen-wrench-3d-icon_11627140",
+      "status": "rejected",
+      "rejected": "unreadable at tile size: black/yellow block, keys illegible; confusable with EQUIP_STAPLE_GUN"
+    },
+    {
+      "code": "EQUIP_ANGLE_GRINDER",
+      "title": "Angle Grinder",
+      "originalFile": "angle-grinder-3d-icon_11627137.png",
+      "expectedSourceFile": "equip-angle-grinder",
+      "outputFile": "equip-angle-grinder.webp",
+      "sourceUrl": "https://iconscout.com/3d-icon/angle-grinder-3d-icon_11627137",
+      "status": "rejected",
+      "rejected": "unreadable at tile size: small black/yellow blob, confusable with EQUIP_DRILL"
+    },
+    {
+      "code": "EQUIP_BOLT_CUTTER",
+      "title": "Bolt Cutter",
+      "originalFile": "bolt-cutter-3d-icon_11627141.png",
+      "expectedSourceFile": "equip-bolt-cutter",
+      "outputFile": "equip-bolt-cutter.webp",
+      "sourceUrl": "https://iconscout.com/3d-icon/bolt-cutter-3d-icon_11627141",
+      "status": "integrated"
+    },
+    {
+      "code": "EQUIP_CHAINSAW",
+      "title": "Chainsaw",
+      "originalFile": "chainsaw-3d-icon_11627143.png",
+      "expectedSourceFile": "equip-chainsaw",
+      "outputFile": "equip-chainsaw.webp",
+      "sourceUrl": "https://iconscout.com/3d-icon/chainsaw-3d-icon_11627143",
+      "status": "integrated"
+    },
+    {
+      "code": "EQUIP_CHISEL",
+      "title": "Chisel",
+      "originalFile": "chisel-3d-icon_11627151.png",
+      "expectedSourceFile": "equip-chisel",
+      "outputFile": "equip-chisel.webp",
+      "sourceUrl": "https://iconscout.com/3d-icon/chisel-3d-icon_11627151",
+      "status": "integrated"
+    },
+    {
+      "code": "EQUIP_CROWBAR",
+      "title": "Crowbar",
+      "originalFile": "crowbar-3d-icon_11627145.png",
+      "expectedSourceFile": "equip-crowbar",
+      "outputFile": "equip-crowbar.webp",
+      "sourceUrl": "https://iconscout.com/3d-icon/crowbar-3d-icon_11627145",
+      "status": "rejected",
+      "rejected": "confusable at 31 px with EQUIP_CHISEL (thin black/yellow handle with a metal tip)"
+    },
+    {
+      "code": "EQUIP_CUTTER",
+      "title": "Utility Knife",
+      "originalFile": "cutter-3d-icon_11627150.png",
+      "expectedSourceFile": "equip-cutter",
+      "outputFile": "equip-cutter.webp",
+      "sourceUrl": "https://iconscout.com/3d-icon/cutter-3d-icon_11627150",
+      "status": "integrated"
+    },
+    {
+      "code": "EQUIP_DRILL",
+      "title": "Cordless Drill",
+      "originalFile": "drill-3d-icon_11627152.png",
+      "expectedSourceFile": "equip-drill",
+      "outputFile": "equip-drill.webp",
+      "sourceUrl": "https://iconscout.com/3d-icon/drill-3d-icon_11627152",
+      "status": "integrated"
+    },
+    {
+      "code": "EQUIP_LADDER",
+      "title": "Step Ladder",
+      "originalFile": "ladder-3d-icon_11627147.png",
+      "expectedSourceFile": "equip-ladder",
+      "outputFile": "equip-ladder.webp",
+      "sourceUrl": "https://iconscout.com/3d-icon/ladder-3d-icon_11627147",
+      "status": "integrated"
+    },
+    {
+      "code": "EQUIP_SAW",
+      "title": "Hand Saw",
+      "originalFile": "saw-3d-icon_11627153.png",
+      "expectedSourceFile": "equip-saw",
+      "outputFile": "equip-saw.webp",
+      "sourceUrl": "https://iconscout.com/3d-icon/saw-3d-icon_11627153",
+      "status": "integrated"
+    },
+    {
+      "code": "EQUIP_STAPLE_GUN",
+      "title": "Staple Gun",
+      "originalFile": "staple-gun-3d-icon_11627142.png",
+      "expectedSourceFile": "equip-staple-gun",
+      "outputFile": "equip-staple-gun.webp",
+      "sourceUrl": "https://iconscout.com/3d-icon/staple-gun-3d-icon_11627142",
+      "status": "integrated"
+    },
+    {
+      "code": "EQUIP_TAPE_MEASURE",
+      "title": "Tape Measure",
+      "originalFile": "tape-measure-3d-icon_11627138.png",
+      "expectedSourceFile": "equip-tape-measure",
+      "outputFile": "equip-tape-measure.webp",
+      "sourceUrl": "https://iconscout.com/3d-icon/tape-measure-3d-icon_11627138",
+      "status": "integrated"
+    },
+    {
+      "code": "EQUIP_TROWEL",
+      "title": "Trowel",
+      "originalFile": "trowel-3d-icon_11627149.png",
+      "expectedSourceFile": "equip-trowel",
+      "outputFile": "equip-trowel.webp",
+      "sourceUrl": "https://iconscout.com/3d-icon/trowel-3d-icon_11627149",
+      "status": "integrated"
+    },
+    {
+      "code": "EQUIP_WIRE_STRIPPER",
+      "title": "Wire Stripper",
+      "originalFile": "wire-stripper-3d-icon_11627136.png",
+      "expectedSourceFile": "equip-wire-stripper",
+      "outputFile": "equip-wire-stripper.webp",
+      "sourceUrl": "https://iconscout.com/3d-icon/wire-stripper-3d-icon_11627136",
+      "status": "rejected",
+      "rejected": "confusable at 31 px with EQUIP_BOLT_CUTTER (black-handled pliers)"
+    },
+    {
+      "code": "MED_CAPSULES",
+      "title": "Medicine Capsules",
+      "originalFile": "capsule-medicine-3d-icon_14221068.png",
+      "expectedSourceFile": "med-capsules",
+      "outputFile": "med-capsules.webp",
+      "sourceUrl": "https://iconscout.com/3d-icon/capsule-medicine-3d-icon_14221068",
+      "status": "integrated"
+    },
+    {
+      "code": "MED_PILL_BOTTLE",
+      "title": "Pill Bottle",
+      "originalFile": "medicine-bottle-with-capsule-medicine-3d-icon_14221063.png",
+      "expectedSourceFile": "med-pill-bottle",
+      "outputFile": "med-pill-bottle.webp",
+      "sourceUrl": "https://iconscout.com/3d-icon/medicine-bottle-with-capsule-medicine-3d-icon_14221063",
+      "status": "integrated"
+    },
+    {
+      "code": "MED_BLISTER_PACK",
+      "title": "Blister Packs",
+      "originalFile": "medicine-capsule-3d-icon_14221065.png",
+      "expectedSourceFile": "med-blister-pack",
+      "outputFile": "med-blister-pack.webp",
+      "sourceUrl": "https://iconscout.com/3d-icon/medicine-capsule-3d-icon_14221065",
+      "status": "rejected",
+      "rejected": "confusable at 31 px with MED_CAPSULES (same red/blue/yellow capsules; the white blister is faint on ivory)"
+    },
+    {
+      "code": "MED_VIRUS",
+      "title": "Red Virus",
+      "originalFile": "red-virus-3d-icon_14221070.png",
+      "expectedSourceFile": "med-virus",
+      "outputFile": "med-virus.webp",
+      "sourceUrl": "https://iconscout.com/3d-icon/red-virus-3d-icon_14221070",
+      "status": "awaiting download"
+    },
+    {
+      "code": "SCI_PLANET",
+      "title": "Ringed Planet",
+      "originalFile": "astronomy-3d-icon_13511065.png",
+      "expectedSourceFile": "sci-planet",
+      "outputFile": "sci-planet.webp",
+      "sourceUrl": "https://iconscout.com/3d-icon/astronomy-3d-icon_13511065",
+      "status": "awaiting download"
+    },
+    {
+      "code": "SCI_ATOM",
+      "title": "Atom",
+      "originalFile": "atom-3d-icon_13511068.png",
+      "expectedSourceFile": "sci-atom",
+      "outputFile": "sci-atom.webp",
+      "sourceUrl": "https://iconscout.com/3d-icon/atom-3d-icon_13511068",
+      "status": "awaiting download"
+    },
+    {
+      "code": "SCI_BEAKER",
+      "title": "Beaker",
+      "originalFile": "beaker-3d-icon_13511067.png",
+      "expectedSourceFile": "sci-beaker",
+      "outputFile": "sci-beaker.webp",
+      "sourceUrl": "https://iconscout.com/3d-icon/beaker-3d-icon_13511067",
+      "status": "awaiting download"
+    },
+    {
+      "code": "SCI_BIOHAZARD",
+      "title": "Biohazard Sign",
+      "originalFile": "biohazard-3d-icon_13511064.png",
+      "expectedSourceFile": "sci-biohazard",
+      "outputFile": "sci-biohazard.webp",
+      "sourceUrl": "https://iconscout.com/3d-icon/biohazard-3d-icon_13511064",
+      "status": "awaiting download"
+    },
+    {
+      "code": "SCI_BUNSEN_BURNER",
+      "title": "Bunsen Burner",
+      "originalFile": "bunsen-burner-3d-icon_13511069.png",
+      "expectedSourceFile": "sci-bunsen-burner",
+      "outputFile": "sci-bunsen-burner.webp",
+      "sourceUrl": "https://iconscout.com/3d-icon/bunsen-burner-3d-icon_13511069",
+      "status": "awaiting download"
+    },
+    {
+      "code": "SCI_FLASK",
+      "title": "Conical Flask",
+      "originalFile": "chemical-reaction-3d-icon_13511072.png",
+      "expectedSourceFile": "sci-flask",
+      "outputFile": "sci-flask.webp",
+      "sourceUrl": "https://iconscout.com/3d-icon/chemical-reaction-3d-icon_13511072",
+      "status": "awaiting download"
+    },
+    {
+      "code": "SCI_MICROSCOPE",
+      "title": "Microscope",
+      "originalFile": "dna-3d-icon_13511070.png",
+      "expectedSourceFile": "sci-microscope",
+      "outputFile": "sci-microscope.webp",
+      "sourceUrl": "https://iconscout.com/3d-icon/dna-3d-icon_13511070",
+      "status": "awaiting download"
+    },
+    {
+      "code": "SCI_DNA",
+      "title": "DNA Helix",
+      "originalFile": "dna-3d-icon_13511076.png",
+      "expectedSourceFile": "sci-dna",
+      "outputFile": "sci-dna.webp",
+      "sourceUrl": "https://iconscout.com/3d-icon/dna-3d-icon_13511076",
+      "status": "awaiting download"
+    },
+    {
+      "code": "SCI_DROPPER",
+      "title": "Dropper",
+      "originalFile": "dropper-3d-icon_13511075.png",
+      "expectedSourceFile": "sci-dropper",
+      "outputFile": "sci-dropper.webp",
+      "sourceUrl": "https://iconscout.com/3d-icon/dropper-3d-icon_13511075",
+      "status": "awaiting download"
+    },
+    {
+      "code": "SCI_MAGNET",
+      "title": "Magnet",
+      "originalFile": "magnet-3d-icon_13511082.png",
+      "expectedSourceFile": "sci-magnet",
+      "outputFile": "sci-magnet.webp",
+      "sourceUrl": "https://iconscout.com/3d-icon/magnet-3d-icon_13511082",
+      "status": "awaiting download"
+    },
+    {
+      "code": "SCI_MOLECULE",
+      "title": "Molecule",
+      "originalFile": "molecule-3d-icon_13511081.png",
+      "expectedSourceFile": "sci-molecule",
+      "outputFile": "sci-molecule.webp",
+      "sourceUrl": "https://iconscout.com/3d-icon/molecule-3d-icon_13511081",
+      "status": "awaiting download"
+    },
+    {
+      "code": "SCI_MORTAR",
+      "title": "Mortar and Pestle",
+      "originalFile": "pharmacy-3d-icon_13511084.png",
+      "expectedSourceFile": "sci-mortar",
+      "outputFile": "sci-mortar.webp",
+      "sourceUrl": "https://iconscout.com/3d-icon/pharmacy-3d-icon_13511084",
+      "status": "awaiting download"
+    },
+    {
+      "code": "SCI_BOOK",
+      "title": "Science Book",
+      "originalFile": "science-book-3d-icon_13511083.png",
+      "expectedSourceFile": "sci-book",
+      "outputFile": "sci-book.webp",
+      "sourceUrl": "https://iconscout.com/3d-icon/science-book-3d-icon_13511083",
+      "status": "awaiting download"
+    },
+    {
+      "code": "SCI_TELESCOPE",
+      "title": "Telescope",
+      "originalFile": "telescope-3d-icon_13511087.png",
+      "expectedSourceFile": "sci-telescope",
+      "outputFile": "sci-telescope.webp",
+      "sourceUrl": "https://iconscout.com/3d-icon/telescope-3d-icon_13511087",
+      "status": "awaiting download"
+    },
+    {
+      "code": "SCI_TEST_TUBES",
+      "title": "Test Tube Rack",
+      "originalFile": "test-tube-3d-icon_13511088.png",
+      "expectedSourceFile": "sci-test-tubes",
+      "outputFile": "sci-test-tubes.webp",
+      "sourceUrl": "https://iconscout.com/3d-icon/test-tube-3d-icon_13511088",
       "status": "awaiting download"
     }
   ]
