@@ -29,9 +29,9 @@ records.
 | Value | Default |
 |---|---|
 | `basePoints` | 100 |
-| `comboWindow` | 3 s |
+| `comboWindow` | 4 s (owner, 2026-10-16; was 3 s) |
 | `maxMultiplier` | 5 |
-| speed tiers | gap < 1 s → +50; 1 s ≤ gap < 2 s → +25; 2 s ≤ gap ≤ 3 s → +10 |
+| speed tiers | gap < 1 s → +50; 1 s ≤ gap < 2 s → +25; 2 s ≤ gap ≤ 4 s → +10 |
 | `blockedTapPenalty` | 1 |
 
 `ScoreKeeper` (`lib/game_engine/scoring/score_keeper.dart`) holds `score`, `currentCombo`, `bestCombo`,
@@ -42,14 +42,15 @@ records.
 
 1. `gap = t − lastSuccessfulMatchTime` (none for the first match).
 2. If there is no previous match, or `gap > comboWindow`: the streak restarts — `currentCombo = 1`, `speedBonus = 0`.
-3. Else (`gap ≤ comboWindow`, 3.000 s included): `currentCombo += 1`, `speedBonus` from the tier of `gap`.
+3. Else (`gap ≤ comboWindow`, 4.000 s included): `currentCombo += 1`, `speedBonus` from the tier of `gap`.
 4. `currentMultiplier = min(currentCombo, maxMultiplier)` — the visible streak may exceed 5, the multiplier does not.
 5. `earned = basePoints × currentMultiplier + speedBonus`; `score += earned`; `bestCombo = max(bestCombo,
    currentCombo)`; `totalPairsMatched += 1`; `lastSuccessfulMatchTime = t`; `comboExpiresAt = t + comboWindow`.
 6. Returns `MatchScore(earned, multiplier, combo, speedBonus)` for feedback.
 
-Example: matches at 0 s (+100 ×1), 0.8 s (×2 +50 = +250), 2.3 s (gap 1.5 s: ×3 +25 = +325), 6.0 s (gap 3.7 s: reset,
-+100 ×1).
+Example: matches at 0 s (+100 ×1), 0.8 s (×2 +50 = +250), 2.3 s (gap 1.5 s: ×3 +25 = +325), 6.0 s (gap 3.7 s: ×4 +10
+= +410), 10.5 s (gap 4.5 s: reset, +100 ×1). Every match restarts the window from that match (owner), so a combo can
+run for any length of time as long as no gap exceeds 4 s.
 
 `int onBlockedTap()` — called once per `TapOutcome.blocked` (a covered or side-blocked tile): `score = max(0, score −
 blockedTapPenalty)`, and the active combo ends (as `endCombo`), so the next match starts at ×1. `bestCombo` and
@@ -103,7 +104,7 @@ over ~300 ms after a change, then stops. Moves leave the bar.
 
 **Combo badge** (new widget, between the tray and the board, centred, `IgnorePointer`): a gold glass pill
 **"COMBO ×N"** from ×2 up, with a thin ring that shrinks over the remaining window (animates only while a combo is
-active, ≤ 3 s at a time, frozen while the clock is paused). Under it, small muted **"Best ×N"** (this game's best
+active, ≤ 4 s at a time, frozen while the clock is paused). Under it, small muted **"Best ×N"** (this game's best
 combo); with no active combo only that line shows. Intensity by level, each effect played once when reached:
 ×2 soft gold; ×3 brighter rim + faint glow; ×4 a 6–8-spark gold burst; ×5+ one shimmer sweep.
 
@@ -132,7 +133,8 @@ passes; static parts of the badge in `StaticLayer`; nothing ticks when no combo,
 
 `test/game_engine/score_keeper_test.dart` (pure Dart, times as arguments):
 first match (+100, ×1, no bonus); consecutive matches inside the window (×2, ×3 with bonuses); boundaries — gap
-3.000 s continues (+10), 3.001 s resets; 0.999 s → +50, 1.000 s → +25, 2.000 s → +10; expiry → next match ×1, score
+4.000 s continues (+10), 4.001 s resets; 0.999 s → +50, 1.000 s → +25, 2.000 s and 3.5 s → +10; a long chain
+(matches at 0, 2.5, 5, 7.5, 10 s) keeps the combo (×5, expires at 14 s); expiry → next match ×1, score
 and best kept; max multiplier — 6th/7th fast matches stay ×5 with streak 6/7; best combo across streaks;
 `endCombo` (Revive) and `reset` (Restart); blocked tap → −1 and combo ends, best combo kept; blocked tap at score 0
 stays 0 (and at score 1 → 0, never negative); repeated blocked taps each cost 1; `toJson`/`fromJson` round trip incl.
