@@ -46,6 +46,13 @@ class BundledContentSource implements ContentSource {
   }
 }
 
+/// Everything the app bundles, read through [loader] (asset key to bytes,
+/// null when missing): the starter pack, then the lobby hero's art.
+ContentSource bundledContent(Future<Uint8List?> Function(String assetKey) loader) => FallbackContentSource(
+  BundledContentSource(loader, prefix: kStarterContentPrefix),
+  BundledContentSource(loader, prefix: kHeroArtPrefix),
+);
+
 /// Tries [primary], then [secondary]. Used for artwork: downloaded copy
 /// first, bundled copy second, renderer fallback face last.
 class FallbackContentSource implements ContentSource {

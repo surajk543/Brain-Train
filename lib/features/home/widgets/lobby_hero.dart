@@ -18,8 +18,9 @@ import '../../common/static_layer.dart';
 ///
 /// The tiles are real registry symbols drawn by [PremiumMahjongTile] (the
 /// board's renderer). Each slot takes the first symbol of its list whose
-/// artwork is on the device (downloaded or in the starter pack), so the
-/// lobby never waits for the network; see [slots].
+/// artwork is on the device (downloaded, or bundled: the starter pack and the
+/// hero's own three symbols, `kHeroArtPrefix`), so the lobby never waits for
+/// the network; see [slots].
 ///
 /// Static once drawn: tiles, ledge and title are one [StaticLayer] image.
 /// They fade and rise in once when the lobby first appears (not with reduced
@@ -49,9 +50,10 @@ class LobbyHero extends StatefulWidget {
   final double titleSize;
 
   /// Symbol codes for the left, middle and right tiles, best first: the
-  /// reference's leaf, sunflower and purple flower, then the closest symbols
-  /// of the starter pack (always on the device). If none of a list is
-  /// available, any image symbol on the device is used.
+  /// reference's leaf, sunflower and purple flower (their art is bundled,
+  /// `assets/lobby/hero/`), then the closest symbols of the starter pack, for
+  /// a registry whose art for the first ones changed and is not cached yet.
+  /// If none of a list is available, any image symbol on the device is used.
   static const List<List<String>> slots = [
     ['PLANT_POT_B', 'PLANT_POT_A', 'XMAS_HOLLY', 'XMAS_TREE'],
     ['FLOWER_SUNFLOWER', 'FLOWER_ZINNIA', 'BIRD_PEACOCK'],
