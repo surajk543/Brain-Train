@@ -35,7 +35,8 @@ dart run tool/smoke_remote.dart         # live check: app's content client vs pr
 - `lib/game_engine/` — pure Dart, no Flutter imports (tools import it). Models, geometry
   (`BoardGeometry`, `TileAvailabilityCalculator`, `BoardProjection`, `TileHitTester`), rules
   (`MatchRules`), `GameEngine`, `MahjongSolver`, `LevelValidator`, `LevelGenerator` (hand layouts),
-  `TraySimulator` (simulated tray player). `scoring/`: `ScoringRules`, `ScoreKeeper`, `formatScore` (pure Dart). `campaign/`: `CampaignConfig` (tiers from the catalog),
+  `TraySimulator` (simulated tray player), `TraySolver` (tray-aware tap solver: hints, shuffle proofs); `state/`:
+  `game_actions.dart` (Undo/Hint/Shuffle types, `kStartingCharges`), `HintFinder`, `ShufflePlanner`. `scoring/`: `ScoringRules`, `ScoreKeeper`, `formatScore` (pure Dart). `campaign/`: `CampaignConfig` (tiers from the catalog),
   `scheduleTiers`, `board_shapes.dart` (22 symmetric shape families + stacking programs),
   `CampaignGenerator`, `LevelDecor` (titles, backdrops), `SeededRandom`/`stableHash` (pinned PRNG).
 - `lib/content/` — pure Dart except `file_content_store.dart` (dart:io). Manifest, registry and
@@ -101,14 +102,20 @@ dart run tool/smoke_remote.dart         # live check: app's content client vs pr
   and `GameEngine`/`GameController`/`TrayController` take it from the level (2/3 slots need content schema 3). A tapped free tile leaves the board for the tray; if it matches a tray tile both clear;
   `capacity` tiles without a match lose (`GameStatus.trayFull`) and show a Revive / Restart card. Revive
   (`GameEngine.revive`, unlimited, not a move) puts all the tray tiles back in their board places, only after a
-  rewarded ad's reward (see Ads below). Saves store the tap sequence plus `GameEngine.reviveMarker` entries
-  (`progress.current.v2`); a tray-full game is saved so it can be revived later. Only the first level not won is saved:
+  rewarded ad's reward (see Ads below). Saves (`progress.current.v3` since 1.1.0; `ProgressRepository.open` moves a
+  1.0 `progress.current.v2` save over, and reads one while no v3 exists) store the tap sequence plus markers:
+  `!revive`, `!undo`, `!hint`, `!shuffle:1:<seed>` (planner version 1, pinned), `!grant:<action>`; replaying them
+  (`GameEngine.replay`) restores board, tray, shuffled symbols and action uses, and `SavedGame.scoring` keeps the
+  score with its undo checkpoints; a tray-full game is saved so it can be revived later. Only the first level not won is saved:
   `saveGame` skips already-won levels (replays), `clearSavedGame(levelId:)` clears only that level's save, so a replay
   never wipes the highest level's game (an unfinished replay is dropped). Solver/generator still prove
   pair-removal orders, which are valid tray orders (tap a, then b). Screen: tray at the top, board, HUD at the
   bottom. The board drops a tile at the tap; `TileFlightOverlay` draws it until it lands (ticks only during
   flights); revived tiles fly back one by one, slowly (owner: 700 ms each, 300 ms apart, lower tiles first) and
-  stay hidden on the board until they land. A matched pair
+  stay hidden on the board until they land; an undone tile flies back the same way (`kTileUndoDuration`, 450 ms) from
+  its slot or from mid-air, an undone pair's strike is cancelled and its twin stays in the tray
+  (`TrayController.takeBack`), and `GameController.pairImpact(a, b)` ignores strikes of pairs that no longer exist
+  (undone, or from before a restart). A matched pair
   strikes and shatters in `TileShatterOverlay` (tiles rasterized once via `TrayViewState.snapshot`, shards
   drawn with `drawVertices` + `ImageShader`, ticks only while running); match/win sound plays at impact
   (`GameController.pairImpact`). The tray draws animated symbols through its own `SymbolFrameAtlas`; result
@@ -212,7 +219,26 @@ dart run tool/smoke_remote.dart         # live check: app's content client vs pr
   starts after the studio intro, pauses in background and while a rewarded ad shows, and follows the Sound switch
   (no separate music toggle).
 - Sounds: `assets/sounds/tap.wav` (one tap cut from the owner's Tap.mp3) on every playable tap; `assets/sounds/strike.wav` (one hit cut from the owner's strike.mp3, 0.95 s) is `Sfx.match`, played when a matched pair strikes in the tray; the last pair's strike is followed by `Sfx.win` 450 ms later.
-- No Undo and no Hint in the game; Restart is the only action (the engine has no undo). Reachable from the round HUD
+- Game actions (owner, 2026-10-17, 1.1.0; replaces "no Undo and no Hint"): Undo, Hint and Shuffle, 3 / 3 / 1 uses
+  per level (`kStartingCharges`), back to 3/3/1 on Restart, unchanged by Revive; with none left the player can watch a
+  rewarded ad for +1 of that action (`GameController.grant`, saved as `!grant:<action>`). The engine and controller
+  API is in place (`GameController.isAvailable` / `canUse` / `usesLeft`, `undo`, `useHint`, `shuffle`, `grant`;
+  events `MoveUndone`, `TileHinted`, `BoardShuffled`; `winSummary` counts the uses); buttons, the ad flow, hint
+  highlights and drawing a shuffled board (`GameController.boardLevel`, `symbolsSerial`) are the next phase.
+  Undo (`GameEngine.undo`) takes back the last tap: the tile goes back to its board place; a tap that cleared a pair
+  also puts the twin back in its tray slot and takes that match's score, combo and best combo back from the
+  `ScoreKeeper` checkpoint (blocked-tap penalties since stay); not before a tap, after a win, with a full tray, during
+  the intro or the tutorial, or across a Revive or a Shuffle; the clock runs on; scoring values are unchanged.
+  Hint (`HintFinder`, pure, never scores) returns a tap: the last board tile of a tray tile's symbol, else a safe pair
+  (all of a symbol's board tiles free) when the tray has room, else the first tap of `TraySolver` (20k nodes; after a
+  shuffle, the order the shuffle was built along), else any tray match, else any free tile the tray has room for;
+  none when every tap would fill the tray. A tray twin whose symbol has more board tiles goes to the solver: taking
+  the first one found loses often with 2-slot trays. Shuffle (`GameEngine.shuffle`, `ShufflePlanner`) re-deals the
+  board's symbols over the same tiles (places, ids, counts and the tray stay) along a seeded random winning tap order
+  (twins for the tray first, then pairs), proved with `TraySolver.check`; uniform shuffles of the 2-slot boards are
+  mostly unwinnable, so it is built, not drawn. It ends the combo, seals undo, keeps the score; nothing to shuffle
+  (one symbol left) or no passing seed spends no use.
+- Restart stays: reachable from the round HUD
   icon (`PremiumRoundIconButton`, right end; only while playing, not during the intro or result cards) with a confirm
   card "Restart this level?" / "Your score and time start over." (Restart / Keep playing; clock paused, Android back
   closes it), from the Tray full card and from the win card (Replay).
