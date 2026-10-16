@@ -11,6 +11,7 @@ flutter pub get
 flutter analyze                         # must be clean
 flutter test                            # unit + widget tests, no network
 flutter run -d emulator-5554            # AVDs (this Mac): Pixel_9 (Play Store), TP_API36/TP_Small/TP_Tall
+flutter run --dart-define=BRAIN_TRAIN_APPEARANCE=day   # debug only: force day|night|system over the setting
 flutter build appbundle                 # Play upload; needs android/key.properties (+ play_games.properties for Play Games,
                                         #   admob.properties for real ads: warns while it uses AdMob test IDs)
 dart run tool/content.dart build        # content-src/ -> content/brain-train/ (campaign: generate + solve + simulate + hash)
@@ -25,6 +26,7 @@ python3 tool/assets/make_foliage.py     # gameplay edge foliage -> assets/decor/
 python3 tool/assets/make_lobby_art.py   # lobby night art -> assets/lobby/
 python3 tool/assets/make_sounds.py      # sound effects -> assets/sounds/
 CAPTURE_DIR=/tmp/x flutter test test/visual/   # write screenshots of lobby/gameplay at phone sizes
+CAPTURE_DIR=/tmp/x flutter test test/visual/theme_capture_test.dart   # the same screens in Day and Night
 STORE_DIR=art/store flutter test test/visual/store_screenshots_test.dart   # 6 store scenes -> phone/, ios/iphone-6.9/, ios/ipad-13/
 python3 tool/store/make_store_shots.py  # framed marketing shots (headline, gold rim) -> art/store/styled/<target>/
 dart run tool/smoke_remote.dart         # live check: app's content client vs production R2 (+ first/middle/last level)
@@ -56,11 +58,14 @@ dart run tool/smoke_remote.dart         # live check: app's content client vs pr
   `widgets/first_play_tutorial.dart` first-play coach marks); `common/` shared lobby chrome, `glass_painters.dart` (`GlassRimPainter`/`GlassShadowPainter`), `PremiumMahjongTile`,
   lobby background + fireflies; `intro/` studio video + logo screen + `age_screen.dart` (neutral age screen).
 - `lib/app/` — `AppServices` (wiring), `AppScope` (above `MaterialApp`), `theme.dart`
-  (`BrainTrainPalette.night`, `LobbyTheme.night`), `brand.dart` (serif display font, gold),
+  (`BrainTrainPalette.day/night`, `LobbyTheme.day/night`, `FeltFoliage`, `buildBrainTrainTheme(brightness)`,
+  `AppAppearance.themeMode`), `typography.dart` (`BrainTrainFonts`, `BrainTrainType` builders,
+  `BrainTrainTypography` theme extension, `registerFontLicenses`), `brand.dart` (`kDisplayFont` = Playfair, gold),
   `sound_effects.dart`, `play_games_controller.dart` (lobby Play Games state), `rewarded_ads_controller.dart`
   (`AppServices.ads`: Revive's ad state, show with music/SFX held, privacy options), `app_update_controller.dart`
   (`AppServices.updates`: the lobby's update card, its check, kept notice, Update / Later).
-- `lib/data/` — `ProgressRepository`, `SettingsRepository` (also the stored `AgeGroup`), `age_group.dart`,
+- `lib/data/` — `ProgressRepository`, `SettingsRepository` (also the stored `AgeGroup` and `AppAppearance`),
+  `age_group.dart`, `appearance.dart`,
   `app_update_cache.dart` (last good update notice).
 - `lib/platform/` — `play_games.dart` (`PlayGames` interface, statuses, `UnavailablePlayGames`, pure Dart);
   `games_services_play_games.dart` (the only file importing `games_services`; `createPlayGames()`);
@@ -201,7 +206,26 @@ dart run tool/smoke_remote.dart         # live check: app's content client vs pr
 
 ## Product decisions (from the owner)
 
-- Night look only: no day mode, no theme setting. `MaterialApp` is always dark.
+- Day, Night and System looks (owner, 2026-10-17, redesign 1.1.0; replaces "Night look only"). Setting
+  `SettingsRepository.appearance` (`settings.appearance` = `system` | `day` | `night`, default `system` for new
+  installs, `setAppearance` notifies). The game's `MaterialApp` (`lib/app/app.dart`) has `theme` = Day, `darkTheme` =
+  Night and `themeMode` from the setting (System follows the platform brightness), rebuilt by `_AppearanceBuilder` only
+  when the appearance changes: no restart. No flash: that `MaterialApp` is built only once `AppServices` (and the stored
+  setting) are loaded and reads the platform brightness on its first frame; the studio video and white logo screens stay
+  fixed. The Settings choice comes in the settings phase (until then Settings has no Appearance row; debug builds can
+  force a look with `--dart-define=BRAIN_TRAIN_APPEARANCE=day|night|system`).
+- Design tokens (redesign 1.1.0): screens take every colour from `BrainTrainPalette.of(context)` (felt, background,
+  panels `panelFill/panelRim/panelSheen/panelHighlight/panelShadows`, HUD `hudFill/hudSeparator/hudLabel/hudValue`,
+  buttons `primaryButton*`/`secondaryButton*`/`quietButtonText`, text `text/textMuted/textOnGold`, golds
+  `accent/accentLight/accentDeep`, `textShadow/shadow/overlayScrim`, `feltFoliage` assets) and the lobby scene from
+  `LobbyTheme.of(context)` (art assets, lights, Day's `sceneWash`, glass, buttons, panels); text from
+  `BrainTrainTypography.of(context)` (`title`, `levelName`, `heading`, `button`, `scoreValue`, `combo`, `hudLabel`,
+  `body`, `bodyMuted`) or `BrainTrainType.*(size:, color:)`. Both looks keep dark translucent green panels with fine
+  gold rims and ivory text (reference board); dark green text (`textOnGold`) only on gold or ivory, never gold on ivory.
+  Day is garden green (#1D6B43 / #104B34, gold #F2C96B, ivory #FFF6DF); Night keeps the 1.0 look (#062C25 / #0A4433,
+  panel #08392F, gold #F4CB72, ivory #FFF3D8). Tiles are the same in both. Day art does not exist yet: `LobbyTheme.day`
+  and `FeltFoliage.day` reuse the night images (TODO for the lobby phase). `test/app/appearance_test.dart` checks the
+  setting, the app following it and WCAG contrast of the tokens.
 - Settings contains only Sound, Vibration and the app version. Do not add other options. One exception (owner):
   a "Privacy choices" row (Google's UMP privacy options form) shown only when UMP says the entry point is required
   (EEA/UK); hidden everywhere else.
@@ -250,12 +274,15 @@ dart run tool/smoke_remote.dart         # live check: app's content client vs pr
 - App icon = the round emblem of the official logo (`art/branding/brain-train-logo.jpg`), adaptive on
   Android 8+. Regenerate with `python3 tool/assets/make_app_icon.py`.
 - No "Mahjong Solitaire" subtitle on the lobby.
-- Look: emerald felt + botanical foliage, dark-green panels with fine gold borders, serif display
-  type (`brand.dart`), warm ivory tiles with olive-green underside. Lobby buttons are frosted glass with fine gold
-  rims (`FrostedGlass` + `StaticLayer`): Play/Continue warm gold with dark green label and soft gold glow
-  (`LobbyTheme.primaryGlass*`), Completed Levels / Settings / round Play Games buttons clear (`secondaryGlass*`);
-  `primaryFill/Edge/Text` stay for the Completed Levels panel button. Level `backdrop.colors` only tints
-  the gameplay ambient light. Tune tiles in `TileStyle`, never the art.
+- Look: emerald felt + botanical foliage, dark-green panels with fine gold borders, warm ivory tiles with olive-green
+  underside. Fonts (bundled, redesign 1.1.0): Playfair Display (title, level names, headings; `kDisplayFont`,
+  `displayText`) and Manrope (buttons, HUD, numbers, body; the theme's default text), the official variable TTFs from
+  google/fonts in `assets/fonts/` (unmodified, OFL 1.1 with `OFL.txt` next to each; Playfair has a Reserved Font Name,
+  so never make modified instances). Flutter sets the `wght` axis from `fontWeight`; no runtime download. Lobby buttons
+  are frosted glass with fine gold rims (`FrostedGlass` + `StaticLayer`): Play/Continue warm gold with dark green label
+  and soft gold glow (`LobbyTheme.primaryGlass*`), Completed Levels / Settings / round Play Games buttons clear
+  (`secondaryGlass*`); `primaryFill/Edge/Text` stay for the Completed Levels panel button. Level `backdrop.colors` only
+  tints the gameplay ambient light. Tune tiles in `TileStyle`, never the art.
 - Every tile everywhere (board, lobby hero) uses `MahjongTileRenderer`; no second tile renderer.
 - Tablets (owner, 2026-10-17): `TabletScale` (`lib/app/tablet_scale.dart`, the `MaterialApp` builder) lays the whole UI out
   on a canvas whose shortest side is 600 and scales it to the screen (at most 1.75x) when the shortest side is 600+;
@@ -268,6 +295,10 @@ dart run tool/smoke_remote.dart         # live check: app's content client vs pr
   Google Play; the home-screen name stays "Brain Train".
 
 ## Current state (2026-10-16)
+
+- Redesign 1.1.0 in progress on `feat/redesign-1.1` (ships later as version 1.1.0): phase 1 design system (tokens,
+  fonts, Day/Night/System setting) on `redesign/design-system`; later phases redo the lobby, gameplay HUD, result cards
+  and settings on top of the tokens.
 
 - Published content 2026.10.17.1 on `braintrain-public` (manifest `minClientContentSchema: 3`): a fresh
   campaign of 100 levels, one batch of 10 per difficulty 1–10 (`catalog.json` `campaign`, seed 20261641, chosen so
@@ -335,7 +366,8 @@ dart run tool/smoke_remote.dart         # live check: app's content client vs pr
   `/opt/homebrew/share/android-commandlinetools`, AVD `Pixel_9` = Play Store image (use for Play Games), `TP_*` AVDs
   have no Play Store, `Pixel_6_API_34` does not exist. Python 3 + Pillow for `tool/assets/*.py`, ffmpeg for audio.
 - `flutter analyze` and `flutter test` work on a fresh clone (tests use fixtures and `content/starter/`); on the Linux
-  machine 567 pass, 26 skip without the full content tree (2026-10-17); on the Mac 6 failed before (see Open work).
+  machine 591 pass, 26 skip without the full content tree (2026-10-17, design system); on the Mac 6 failed before
+  (see Open work).
 - Run on a Mac (iPhone simulator) or any machine with no secrets: `flutter pub get && flutter run`. Debug builds read
   content from the public host, use Google's test AdMob IDs, skip Play Games (Android only) and use debug signing;
   `.env` and the `android/*.properties` files are only for publishing and release builds.
