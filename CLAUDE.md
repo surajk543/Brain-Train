@@ -221,8 +221,9 @@ dart run tool/smoke_remote.dart         # live check: app's content client vs pr
 
 ## Working on another machine
 
-- Code: branch `feat/brain-train-game` (PR #1, repo private).
-  `git clone https://github.com/surajk543/Brain-Train.git && cd Brain-Train && git switch feat/brain-train-game && flutter pub get`.
+- Code: `master` (repo private; PR #1 `feat/brain-train-game` and PR #2 `feat/play-games` are merged).
+  `git clone https://github.com/surajk543/Brain-Train.git && cd Brain-Train && flutter pub get`. Branch from `master`
+  for new work. Latest handoff notes: `docs/superpowers/handoff-2026-10-16.md`.
   Flutter 3.44.7 / Dart 3.12.2. Android SDK + AVD (`Pixel_6_API_34` on the old machine;
   `emulator -avd Pixel_6_API_34 -gpu host -no-snapshot-load`). This Mac: Flutter `~/flutter`, SDK
   `/opt/homebrew/share/android-commandlinetools`, AVD `Pixel_9` = Play Store image (use for Play Games), `TP_*` AVDs
@@ -242,7 +243,9 @@ dart run tool/smoke_remote.dart         # live check: app's content client vs pr
   `adb logcat | grep app_time_stats`, app restart resets it) is not explained yet.
 - Open work: Play Console setup (docs/PLAY_GAMES.md) and Play Games pieces 2–3 (piece 2 builds on
   `bestScore`/`bestCombo`). Scoring + combo is implemented (4 s window).
-- Open work: 6 tests fail on this Mac (predate `feat/play-games`): RenderFlex overflow of 4.4 px at
+- Open work: Play Games / scoring follow-ups after the PR #2 merge: run an iOS build on a Mac with full Xcode (iOS min
+  14.0, never built yet); check the combo pill on a phone (its top overlaps the tray wells by ~5 px at 360×640).
+- Open work: 5–6 tests fail on this Mac (predate PR #2): RenderFlex overflow of 4.4 px at
   `lib/features/levels/level_select_screen.dart:232` (Completed Levels row) — level_select_test (2), level_loader_test (1),
   lobby_capture_test (2, per-phone "home, levels, settings"), gameplay_capture_test ("tray-full overlay 360x640 at 1.3x
   text"). Owner to decide.
