@@ -358,12 +358,16 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
                                 : switch (controller.state.status) {
                                     GameStatus.won => _Overlay(
                                       topInset: topInset,
-                                      child: _CompletionCard(
-                                        controller: controller,
-                                        hasNext: _nextEntry != null,
-                                        onNext: _openNext,
-                                        onReplay: controller.restart,
-                                        onLevels: () => Navigator.of(context).pop(),
+                                      // Rebuilds when the async win record lands.
+                                      child: ListenableBuilder(
+                                        listenable: controller,
+                                        builder: (context, _) => _CompletionCard(
+                                          controller: controller,
+                                          hasNext: _nextEntry != null,
+                                          onNext: _openNext,
+                                          onReplay: controller.restart,
+                                          onLevels: () => Navigator.of(context).pop(),
+                                        ),
                                       ),
                                     ),
                                     GameStatus.trayFull => _Overlay(
@@ -418,7 +422,7 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
                 child: const SizedBox.shrink(),
               ),
             ),
-            // The combo badge straddles the tray's bottom edge, above the board
+            // The combo badge is centred on the tray frame's bottom border, above the board
             // (a later sibling would hide it) and below the flights, shatters and
             // popups. It takes no space (the board keeps its size: the 31-px face
             // guarantee) and is hidden behind a result or restart card.
@@ -433,8 +437,7 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
                         link: _trayLink,
                         showWhenUnlinked: false,
                         targetAnchor: Alignment.bottomCenter,
-                        followerAnchor: Alignment.bottomCenter,
-                        offset: const Offset(0, 16),
+                        followerAnchor: Alignment.center,
                         child: IgnorePointer(
                           child: ComboBadge(controller: controller, reduceMotion: reduceMotion),
                         ),
@@ -755,7 +758,7 @@ class _CompletionCard extends StatelessWidget {
         ),
         const SizedBox(height: 4),
         Text(
-          'Best combo ×${controller.scoring.bestCombo}  ·  Pairs ${controller.scoring.totalPairsMatched}/${controller.state.totalPairs}',
+          'Best combo ×${controller.scoring.bestCombo}  ·  Pairs ${controller.state.matchedPairs}/${controller.state.totalPairs}',
           textAlign: TextAlign.center,
           style: displayText(15, color: BrainTrainColors.ivory.withValues(alpha: 0.85), weight: FontWeight.w500),
         ),
@@ -849,7 +852,7 @@ class _RestartConfirmCard extends StatelessWidget {
       ),
       const SizedBox(height: 10),
       Text(
-        'Your moves and time start over.',
+        'Your score and time start over.',
         textAlign: TextAlign.center,
         style: displayText(
           16,

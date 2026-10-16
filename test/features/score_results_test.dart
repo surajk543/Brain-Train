@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:brain_train/app/app_services.dart';
 import 'package:brain_train/content/content_snapshot.dart';
 import 'package:brain_train/content/level_manifest.dart';
@@ -18,6 +20,20 @@ import 'package:package_info_plus/package_info_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'lobby_support.dart';
+
+/// A progress store whose win write waits until [gate] completes.
+class _SlowProgress extends ProgressRepository {
+  _SlowProgress(super.prefs);
+
+  Completer<void>? gate;
+
+  @override
+  Future<LevelRecord> recordWin(String levelId, {required int moves, required int timeMs, int? score, int? bestCombo}) async {
+    final wait = gate;
+    if (wait != null) await wait.future;
+    return super.recordWin(levelId, moves: moves, timeMs: timeMs, score: score, bestCombo: bestCombo);
+  }
+}
 
 /// Solver pair order of [entry]'s level, as tile ids.
 List<(String, String)> _pairs(ContentSnapshot snapshot, LevelManifestEntry entry) {
@@ -153,6 +169,30 @@ void main() {
     expect(find.text('New best!'), findsOneWidget);
     expect(find.textContaining('Best: ${formatScore(controller.score)} · '), findsOneWidget);
     expect(tester.takeException(), isNull);
+    await _leave(tester);
+  });
+
+  testWidgets('with reduced motion the win card still gets New best! and the Best line when the record lands late', (tester) async {
+    tester.platformDispatcher.accessibilityFeaturesTestValue = const FakeAccessibilityFeatures(disableAnimations: true);
+    addTearDown(tester.platformDispatcher.clearAccessibilityFeaturesTestValue);
+    final base = await start(tester);
+    late _SlowProgress slow;
+    await tester.runAsync(() async => slow = _SlowProgress(await SharedPreferences.getInstance()));
+    final services = AppServices(content: base.content, progress: slow, settings: base.settings, symbolArt: base.symbolArt);
+    final entry = services.content.snapshot.playableEntries.first;
+    await tester.runAsync(() => slow.recordWin(entry.levelId, moves: 40, timeMs: 90000, score: 1));
+    final gate = slow.gate = Completer<void>();
+    final controller = await _winLevel(tester, services, entry);
+    expect(find.text('New best!'), findsNothing, reason: 'the record is still being written');
+    expect(find.textContaining('Best: '), findsNothing);
+    gate.complete();
+    for (var i = 0; i < 10; i++) {
+      await tester.runAsync(() => Future<void>.delayed(const Duration(milliseconds: 20)));
+      await tester.pump(const Duration(milliseconds: 50));
+    }
+    expect(controller.newBestScore, isTrue);
+    expect(find.text('New best!'), findsOneWidget);
+    expect(find.textContaining('Best: ${formatScore(controller.score)} · '), findsOneWidget);
     await _leave(tester);
   });
 

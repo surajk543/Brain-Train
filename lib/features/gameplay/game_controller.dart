@@ -151,10 +151,13 @@ class GameController extends ChangeNotifier {
     if (json != null) {
       try {
         final saved = ScoreKeeper.fromJson(json, rules: scoring.rules);
-        scoring
-          ..reset()
-          ..restoreFrom(saved);
-        return;
+        if (saved.totalPairsMatched == state.matchedPairs) {
+          scoring
+            ..reset()
+            ..restoreFrom(saved);
+          return;
+        }
+        debugPrint('Saved score disagrees with the board, rebuilt from the board');
       } on FormatException catch (error) {
         debugPrint('Saved score unreadable, rebuilt from the board ($error)');
       }

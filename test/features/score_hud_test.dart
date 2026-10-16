@@ -169,12 +169,12 @@ void main() {
     clock.advance(const Duration(milliseconds: 500));
     _match(tester, pairs[1]);
     await tester.pump();
-    expect(find.text('COMBO ×2'), findsOneWidget);
+    expect(find.text('COMBO ×2 · Best ×2'), findsOneWidget);
     expect(find.textContaining('Best ×2'), findsOneWidget);
     clock.advance(const Duration(seconds: 5));
     await tester.pump(const Duration(seconds: 5)); // the window's timer fires
-    expect(find.text('COMBO ×2'), findsNothing);
-    expect(find.textContaining('Best ×2'), findsOneWidget);
+    expect(find.text('COMBO ×2 · Best ×2'), findsNothing);
+    expect(find.text('Best ×2'), findsOneWidget, reason: 'the chip alone once the combo ended');
     await tester.pumpWidget(const SizedBox());
   });
 
@@ -190,13 +190,13 @@ void main() {
     await tester.pump(const Duration(milliseconds: 100));
     clock.advance(const Duration(milliseconds: 100));
     await tester.pump(const Duration(milliseconds: 100));
-    expect(find.text('COMBO ×2'), findsOneWidget);
+    expect(find.text('COMBO ×2 · Best ×2'), findsOneWidget);
     expect(tester.widgetList<CustomPaint>(find.descendant(of: find.byType(ComboBadge), matching: find.byType(CustomPaint))), isNotEmpty);
     clock.advance(const Duration(seconds: 5));
     await tester.pump(const Duration(seconds: 5));
     await _watchPopups(tester, frames: 40);
     await tester.pump(const Duration(milliseconds: 100));
-    expect(find.text('COMBO ×2'), findsNothing);
+    expect(find.text('COMBO ×2 · Best ×2'), findsNothing);
     await tester.pumpWidget(const SizedBox());
   });
 
@@ -243,7 +243,7 @@ void main() {
     clock.advance(const Duration(milliseconds: 500));
     _match(tester, pairs[1]);
     await tester.pump();
-    expect(find.text('COMBO ×2'), findsOneWidget, reason: 'the badge still shows, without effects');
+    expect(find.text('COMBO ×2 · Best ×2'), findsOneWidget, reason: 'the badge still shows, without effects');
     await tester.pumpWidget(const SizedBox());
   });
 
@@ -256,7 +256,7 @@ void main() {
     clock.advance(const Duration(milliseconds: 500));
     _match(tester, pairs[1]);
     await _watchPopups(tester, frames: 60);
-    expect(find.text('COMBO ×2'), findsOneWidget);
+    expect(find.text('COMBO ×2 · Best ×2'), findsOneWidget);
     expect(_popupsOf(tester).popupCount, 0);
     final running = tester.binding.transientCallbackCount;
     expect(running, greaterThan(idle), reason: 'the ring ticks during a combo');
@@ -264,7 +264,7 @@ void main() {
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 100));
     expect(_gameOf(tester).clockRunning, isFalse);
-    expect(find.text('COMBO ×2'), findsOneWidget, reason: 'the badge stays while paused');
+    expect(find.text('COMBO ×2 · Best ×2'), findsOneWidget, reason: 'the badge stays while paused');
     expect(tester.binding.transientCallbackCount, idle, reason: 'the ring stopped with the clock');
     _gameOf(tester).resumeClock();
     await tester.pump();
@@ -301,7 +301,7 @@ void main() {
     await tester.pump(const Duration(milliseconds: 600));
     expect(find.text('SCORE'), findsOneWidget);
     expect(find.byTooltip('Restart'), findsOneWidget);
-    expect(find.text('COMBO ×2'), findsOneWidget);
+    expect(find.text('COMBO ×2 · Best ×2'), findsOneWidget);
     expect(tester.takeException(), isNull);
     await _watchPopups(tester, frames: 30);
     expect(tester.takeException(), isNull);

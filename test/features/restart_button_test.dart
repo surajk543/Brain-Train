@@ -141,7 +141,7 @@ void main() {
     final game = _gameOf(tester);
     expect(game.state.moveCount, 4);
     await _openConfirm(tester);
-    expect(find.text('Your moves and time start over.'), findsOneWidget);
+    expect(find.text('Your score and time start over.'), findsOneWidget);
     expect(find.text('Keep playing'), findsOneWidget);
     final frozen = game.elapsed;
     await _real(tester, 300);

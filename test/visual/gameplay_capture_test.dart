@@ -640,7 +640,7 @@ void main() {
       await tester.pump();
       await _settle(tester);
       expect(find.text('Restart this level?'), findsOneWidget);
-      expect(find.text('Your moves and time start over.'), findsOneWidget);
+      expect(find.text('Your score and time start over.'), findsOneWidget);
       expect(find.text('Keep playing'), findsOneWidget);
       _expectBottomHud(tester, phone);
       expect(tester.takeException(), isNull);

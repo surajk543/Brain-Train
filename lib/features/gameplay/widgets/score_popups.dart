@@ -12,7 +12,7 @@ const Duration _popIn = Duration(milliseconds: 120);
 const double _rise = 28;
 const Color _penaltyColor = Color(0xFFE59A9A);
 
-/// "+250 / ×2 · +50 fast" under the tray slot where a pair struck, and a
+/// "+250 / ×2 · +50 fast" rising from the tray slot where a pair struck, and a
 /// small "−1" over a blocked tile. Each popup pops in (scale 0.6 to 1), then
 /// rises and fades. Drawn by one painter with [TextPainter]s whose colours
 /// carry the alpha; the ticker runs only while a popup lives. Wrap it in
@@ -49,15 +49,24 @@ class _PopupLine {
   final bool shadow;
   final TextPainter painter;
 
-  /// Lays the line out in [alpha] of its colours.
+  /// The alpha step (of 32) the painter is laid out for, -1 before the first layout.
+  int _step = -1;
+
+  /// Lays the line out in [alpha] of its colours, only when the alpha moved by
+  /// a 1/32 step since the last layout. The shadow is a hard 1-px offset (no
+  /// blur), so a layout is cheap and the paint has no blur pass.
   void layout(double alpha) {
+    final step = (alpha * 32).round();
+    if (step == _step) return;
+    _step = step;
+    alpha = step / 32;
     final color = (style.color ?? const Color(0xFFFFFFFF)).withValues(alpha: alpha);
     painter
       ..text = TextSpan(
         text: text,
         style: style.copyWith(
           color: color,
-          shadows: shadow ? [Shadow(color: const Color(0xFF000000).withValues(alpha: 0.7 * alpha), blurRadius: 3, offset: const Offset(0, 1))] : null,
+          shadows: shadow ? [Shadow(color: const Color(0xFF000000).withValues(alpha: 0.7 * alpha), blurRadius: 0, offset: const Offset(0, 1))] : null,
         ),
       )
       ..layout();
@@ -67,8 +76,8 @@ class _PopupLine {
 class _Popup {
   _Popup({required this.origin, required this.lines, required this.start, required this.life, required this.direction});
 
-  /// Local anchor: the centre-bottom of a slot (awards) or the centre of a
-  /// tile (penalties).
+  /// Local anchor: just above the centre of a slot (awards) or the centre of
+  /// a tile (penalties).
   final Offset origin;
   final List<_PopupLine> lines;
   final Duration start;
@@ -76,7 +85,7 @@ class _Popup {
   /// The fade-and-rise time after the pop-in.
   final Duration life;
 
-  /// 1 rises downward (awards into the tray-board gap), -1 upward.
+  /// -1: rises upward (awards over the tray frame, penalties over the board).
   final double direction;
 
   Duration get total => _popIn + life;
@@ -116,24 +125,24 @@ class ScorePopupOverlayState extends State<ScorePopupOverlay> with SingleTickerP
     if (widget.reduceMotion) _clear();
   }
 
-  Offset? _toLocal(Rect? global, {required bool bottom}) {
+  Offset? _toLocal(Rect? global, {required Offset Function(Rect) anchor}) {
     final box = context.findRenderObject() as RenderBox?;
     if (global == null || box == null || !box.hasSize || !box.attached) return null;
-    return box.globalToLocal(bottom ? global.bottomCenter : global.center);
+    return box.globalToLocal(anchor(global));
   }
 
   void _onEvent(ScoreEvent event) {
     if (widget.reduceMotion || !mounted) return;
     switch (event) {
       case ScoreAwarded(:final score, :final traySlot):
-        final origin = _toLocal(widget.traySlotRect(traySlot), bottom: true);
+        final origin = _toLocal(widget.traySlotRect(traySlot), anchor: (r) => r.center - const Offset(0, 6));
         if (origin == null) return;
         _add(
           _Popup(
             origin: origin,
             start: _now,
             life: const Duration(milliseconds: 700),
-            direction: 1,
+            direction: -1,
             lines: [
               _PopupLine('+${formatScore(score.points)}', displayText(20, color: BrandGold.light, weight: FontWeight.w800), true),
               _PopupLine(
@@ -145,7 +154,7 @@ class ScorePopupOverlayState extends State<ScorePopupOverlay> with SingleTickerP
           ),
         );
       case ScorePenalty(:final tileId, :final points):
-        final origin = _toLocal(widget.tileRect(tileId), bottom: false);
+        final origin = _toLocal(widget.tileRect(tileId), anchor: (r) => r.center);
         if (origin == null) return;
         _add(
           _Popup(
@@ -229,8 +238,8 @@ class _PopupPainter extends CustomPainter {
         line.layout(alpha);
         height += line.painter.height;
       }
-      // Awards hang from their anchor; penalties are centred on theirs.
-      final top = popup.direction > 0 ? 0.0 : -height / 2;
+      // Centred on the anchor, rising.
+      final top = -height / 2;
       final dy = popup.direction * _rise * Curves.easeOut.transform(t);
       canvas.save();
       canvas.translate(popup.origin.dx, popup.origin.dy + dy);

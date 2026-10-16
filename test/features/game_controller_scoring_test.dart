@@ -43,7 +43,7 @@ void main() {
     clock = FakeStopwatch();
   });
 
-  GameController controllerFor({SavedGame? resume, bool onImpact = false, LevelDefinition? on}) => GameController(
+  GameController controllerFor({SavedGame? resume, bool onImpact = false, LevelDefinition? on, bool playIntro = false}) => GameController(
     entry: entry,
     level: on ?? board,
     registry: reg,
@@ -52,6 +52,7 @@ void main() {
     resume: resume,
     stopwatch: clock,
     matchFeedbackOnImpact: onImpact,
+    playIntro: playIntro,
   );
 
   Future<void> settle() => Future<void>.delayed(Duration.zero);
@@ -236,6 +237,48 @@ void main() {
     final c2 = controllerFor(resume: corrupt);
     expect(c2.score, 100);
     c2.dispose();
+  });
+
+  test('taps refused during the intro change nothing: no score, no penalty event, no save', () async {
+    final saved = SavedGame(
+      levelId: 'test-level',
+      levelUrl: entry.ref.url,
+      history: const ['a1', 'a2'],
+      elapsedMs: 4000,
+      scoring: const {'score': 100, 'combo': 0, 'bestCombo': 1, 'pairs': 1, 'lastMatchAtMs': null},
+    );
+    final c = controllerFor(resume: saved, playIntro: true);
+    expect(c.introPlaying, isTrue);
+    final events = <ScoreEvent>[];
+    final sub = c.scoreEvents.listen(events.add);
+    c.tapTile('x1'); // blocked tile: would cost a point
+    c.tapTile('b1');
+    c.tapTile('b2'); // would match
+    await settle();
+    expect(c.score, 100);
+    expect(c.state.matchedPairs, 1);
+    expect(events, isEmpty);
+    expect(progress.savedGame(), isNull);
+    c.endIntro();
+    c.tapTile('x1');
+    await settle();
+    expect(c.score, 99, reason: 'taps count once the intro is over');
+    await sub.cancel();
+    c.dispose();
+  });
+
+  test('a save whose scoring disagrees with the board falls back to base points per pair', () async {
+    final saved = SavedGame(
+      levelId: 'test-level',
+      levelUrl: entry.ref.url,
+      history: const ['a1', 'a2'],
+      elapsedMs: 4000,
+      scoring: const {'score': 5000, 'combo': 0, 'bestCombo': 3, 'pairs': 5, 'lastMatchAtMs': null},
+    );
+    final c = controllerFor(resume: saved);
+    expect(c.state.matchedPairs, 1);
+    expect((c.score, c.scoring.bestCombo, c.scoring.totalPairsMatched), (100, 1, 1));
+    c.dispose();
   });
 
   test('a win records best score and combo; a worse replay never lowers them; a better one says new best', () async {

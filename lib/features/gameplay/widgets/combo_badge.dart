@@ -11,8 +11,9 @@ import '../game_controller.dart';
 const Color _ink = Color(0xFF183D2D);
 const double _pillHeight = 28;
 
-/// "COMBO ×N" pill (from ×2) with a ring that drains with the combo window,
-/// and "Best ×N" under it once a combo of 2 or more has happened.
+/// "COMBO ×N · Best ×M" pill (from ×2) with a ring that drains with the combo
+/// window; with no combo running, a small "Best ×M" chip once a combo of 2 or
+/// more has happened. Hidden during the board intro.
 ///
 /// Nothing ticks without a combo: the ring ticker runs only while a combo is
 /// active, the clock runs and motion is allowed; the glow (×3) is static, the
@@ -117,28 +118,20 @@ class _ComboBadgeState extends State<ComboBadge> with TickerProviderStateMixin {
   Widget build(BuildContext context) {
     final combo = widget.controller.activeCombo;
     final best = widget.controller.scoring.bestCombo;
-    final children = <Widget>[
-      if (combo >= 2) _pill(combo),
-      if (best >= 2)
-        Padding(
-          padding: EdgeInsets.only(top: combo >= 2 ? 3 : 0),
-          // A dark chip, so it reads over ivory tiles as well as felt.
-          child: DecoratedBox(
-            decoration: const ShapeDecoration(color: Color(0xCC12372A), shape: StadiumBorder()),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 1),
-              child: Text('Best ×$best', style: displayText(11, color: BrandGold.light, weight: FontWeight.w600)),
-            ),
-          ),
-        ),
-    ];
-    if (children.isEmpty) return const SizedBox.shrink();
-    return IgnorePointer(
-      child: Column(mainAxisSize: MainAxisSize.min, children: children),
-    );
+    if (widget.controller.introPlaying || (combo < 2 && best < 2)) return const SizedBox.shrink();
+    return IgnorePointer(child: combo >= 2 ? _pill(combo, best) : _bestChip(best));
   }
 
-  Widget _pill(int combo) {
+  /// A dark chip, so it reads over ivory tiles as well as felt.
+  Widget _bestChip(int best) => DecoratedBox(
+    decoration: const ShapeDecoration(color: Color(0xCC12372A), shape: StadiumBorder()),
+    child: Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 1),
+      child: Text('Best ×$best', style: displayText(11, color: BrandGold.light, weight: FontWeight.w600)),
+    ),
+  );
+
+  Widget _pill(int combo, int best) {
     final warm = combo >= 3;
     final rim = warm ? BrandGold.warm : BrandGold.light;
     return Semantics(
@@ -164,8 +157,8 @@ class _ComboBadgeState extends State<ComboBadge> with TickerProviderStateMixin {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Text(
-                    'COMBO ×$combo',
-                    style: displayText(13, color: _ink, weight: FontWeight.w800, spacing: 1.2),
+                    'COMBO ×$combo · Best ×${math.max(best, combo)}',
+                    style: displayText(12, color: _ink, weight: FontWeight.w800, spacing: 1.2),
                   ),
                   const SizedBox(width: 8),
                   const SizedBox(width: 18, height: 18),

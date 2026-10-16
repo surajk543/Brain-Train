@@ -151,7 +151,7 @@ dart run tool/smoke_remote.dart         # live check: app's content client vs pr
 - Sounds: `assets/sounds/tap.wav` (one tap cut from the owner's Tap.mp3) on every playable tap; `assets/sounds/strike.wav` (one hit cut from the owner's strike.mp3, 0.95 s) is `Sfx.match`, played when a matched pair strikes in the tray; the last pair's strike is followed by `Sfx.win` 450 ms later.
 - No Undo and no Hint in the game; Restart is the only action (the engine has no undo). Reachable from the round HUD
   icon (`PremiumRoundIconButton`, right end; only while playing, not during the intro or result cards) with a confirm
-  card "Restart this level?" / "Your moves and time start over." (Restart / Keep playing; clock paused, Android back
+  card "Restart this level?" / "Your score and time start over." (Restart / Keep playing; clock paused, Android back
   closes it), from the Tray full card and from the win card (Replay).
 - HUD shows SCORE where Moves was (owner); the win card and Completed Levels show score, best score and best combo.
 - Win card ("Level complete!"): `assets/lottie/trophy_cup_rays.json` (LottieFiles, owner's premium licence) via `WinTrophy`, looping while the card is open
