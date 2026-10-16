@@ -8,6 +8,7 @@ import 'package:flutter/widgets.dart';
 import 'package:http/http.dart' as http;
 import 'package:path_provider/path_provider.dart';
 
+import '../content/app_update_config.dart';
 import '../content/asset_download_manager.dart';
 import '../content/content_cache.dart';
 import '../content/content_config.dart';
@@ -20,13 +21,17 @@ import '../content/content_sources.dart';
 import '../content/file_content_store.dart';
 import '../content/level_manifest.dart';
 import '../content/remote_asset_resolver.dart';
+import '../data/app_update_cache.dart';
 import '../data/progress_repository.dart';
 import '../data/settings_repository.dart';
+import '../platform/app_updates.dart';
 import '../platform/games_services_play_games.dart';
 import '../platform/google_mobile_ads_rewarded.dart';
 import '../platform/play_games.dart';
+import '../platform/play_in_app_update.dart';
 import '../platform/rewarded_ads.dart';
 import '../rendering/symbol_art.dart';
+import 'app_update_controller.dart';
 import 'background_music.dart';
 import 'play_games_controller.dart';
 import 'rewarded_ads_controller.dart';
@@ -176,8 +181,10 @@ class AppServices {
     this.music,
     PlayGamesController? playGames,
     RewardedAdsController? ads,
+    AppUpdateController? updates,
   }) : playGames = playGames ?? PlayGamesController(const UnavailablePlayGames()),
-       ads = ads ?? RewardedAdsController(const UnavailableRewardedAds()) {
+       ads = ads ?? RewardedAdsController(const UnavailableRewardedAds()),
+       updates = updates ?? AppUpdateController(updater: const UnavailableAppUpdater()) {
     // The level window follows this player's progress.
     content.attachProgress(progress);
   }
@@ -198,6 +205,9 @@ class AppServices {
 
   /// Rewarded ads for Revive (Android and iOS); off elsewhere (no ad needed).
   final RewardedAdsController ads;
+
+  /// The lobby's update card (Android and iOS); never asks elsewhere.
+  final AppUpdateController updates;
 
   static Future<AppServices> create({ContentConfig? config}) async {
     final contentConfig = config ?? ContentConfig.production;
@@ -231,6 +241,12 @@ class AppServices {
       playGames: PlayGamesController(await createPlayGames()),
       // Nothing runs yet: the lobby starts ads after its first frame.
       ads: RewardedAdsController(createRewardedAds(), music: music, sounds: sounds),
+      // Nothing runs yet: the lobby checks for an update after its first frame.
+      updates: AppUpdateController(
+        updater: createAppUpdater(),
+        fetch: AppUpdateConfigService(fetcher: fetcher, resolver: resolver).fetch,
+        cache: await AppUpdateCache.open(),
+      ),
     );
   }
 

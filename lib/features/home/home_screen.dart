@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 
 import '../../app/app_services.dart';
 import '../../app/theme.dart';
+import '../../content/app_update_config.dart';
 import '../../content/level_manifest.dart';
 import '../../data/progress_repository.dart';
 import '../common/all_levels_complete_note.dart';
@@ -15,9 +16,11 @@ import 'widgets/lobby_buttons.dart';
 import 'widgets/lobby_footer.dart';
 import 'widgets/lobby_play_games.dart';
 import 'widgets/lobby_tagline.dart';
+import 'widgets/lobby_update_card.dart';
 
 /// The lobby: "Train your brain" on frosted glass, Play/Continue, Levels
-/// and Settings, and the content status, over the night garden.
+/// and Settings, and the content status, over the night garden. An update
+/// card ([LobbyUpdateCard]) covers it when a new app version is out.
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
@@ -65,7 +68,7 @@ class _HomeScreenState extends State<HomeScreen> {
   /// open a screen twice.
   bool _navigating = false;
 
-  /// Play Games and ads start once, after the first frame.
+  /// Play Games, ads and the update check start once, after the first frame.
   bool _servicesScheduled = false;
 
   Future<void> _open(WidgetBuilder builder) async {
@@ -93,11 +96,12 @@ class _HomeScreenState extends State<HomeScreen> {
     if (_servicesScheduled) return;
     _servicesScheduled = true;
     final services = AppScope.of(context);
-    // After the first frame: the lobby never waits for Play Games or ads
-    // (SDK start, consent, the first rewarded ad).
+    // After the first frame: the lobby never waits for Play Games, ads (SDK
+    // start, consent, the first rewarded ad) or the app update notice.
     WidgetsBinding.instance.addPostFrameCallback((_) {
       services.playGames.start();
       services.ads.start(services.settings.ageGroup);
+      services.updates.start();
     });
   }
 
@@ -108,12 +112,28 @@ class _HomeScreenState extends State<HomeScreen> {
     return Scaffold(
       backgroundColor: lobby.baseFallback.last,
       body: LobbyBackground(
-        child: SafeArea(
-          minimum: EdgeInsets.only(top: MediaQuery.viewPaddingOf(context).top),
-          child: LayoutBuilder(
-            builder: (context, constraints) => ListenableBuilder(
-              listenable: Listenable.merge([services.content, services.progress, services.playGames]),
-              builder: (context, _) => _layout(context, services, constraints.biggest),
+        // The update card covers the lobby (inside the background, for its
+        // frost); this route is under any game, so it never shows over one.
+        child: ListenableBuilder(
+          listenable: services.updates,
+          builder: (context, lobby) {
+            final prompt = services.updates.prompt;
+            final card = prompt.need != AppUpdateNeed.none;
+            return Stack(
+              fit: StackFit.expand,
+              children: [
+                ExcludeFocus(excluding: card, child: lobby!),
+                if (card) LobbyUpdateCard(controller: services.updates, prompt: prompt),
+              ],
+            );
+          },
+          child: SafeArea(
+            minimum: EdgeInsets.only(top: MediaQuery.viewPaddingOf(context).top),
+            child: LayoutBuilder(
+              builder: (context, constraints) => ListenableBuilder(
+                listenable: Listenable.merge([services.content, services.progress, services.playGames]),
+                builder: (context, _) => _layout(context, services, constraints.biggest),
+              ),
             ),
           ),
         ),

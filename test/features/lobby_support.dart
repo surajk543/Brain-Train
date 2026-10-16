@@ -5,6 +5,7 @@ import 'dart:io';
 import 'dart:ui' as ui;
 
 import 'package:brain_train/app/app_services.dart';
+import 'package:brain_train/app/app_update_controller.dart';
 import 'package:brain_train/app/play_games_controller.dart';
 import 'package:brain_train/app/rewarded_ads_controller.dart';
 import 'package:brain_train/app/theme.dart';
@@ -28,7 +29,11 @@ import 'package:http/testing.dart';
 import '../helpers.dart';
 
 /// Services on the bundled content with the network unreachable.
-Future<AppServices> testServices({PlayGamesController? playGames, RewardedAdsController? ads}) async {
+Future<AppServices> testServices({
+  PlayGamesController? playGames,
+  RewardedAdsController? ads,
+  AppUpdateController? updates,
+}) async {
   final config = ContentConfig(baseUrl: Uri.parse('https://content.test/'), allowedHosts: const {'content.test'});
   final offline = MockClient((r) async => throw http.ClientException('offline', r.url));
   final fetcher = ContentFetcher(client: offline, config: config, delay: (_) async {});
@@ -50,6 +55,7 @@ Future<AppServices> testServices({PlayGamesController? playGames, RewardedAdsCon
     symbolArt: SymbolArtCache(),
     playGames: playGames,
     ads: ads,
+    updates: updates,
   );
 }
 
