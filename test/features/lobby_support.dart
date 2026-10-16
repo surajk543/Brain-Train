@@ -27,6 +27,7 @@ import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
 
 import '../helpers.dart';
+import 'package:brain_train/app/tablet_scale.dart';
 
 /// Services on the bundled content with the network unreachable (or
 /// answered by [client]).
@@ -131,7 +132,13 @@ Future<void> pumpLobby(
       key: lobbyBoundary,
       child: AppScope(
         services: services,
-        child: MaterialApp(debugShowCheckedModeBanner: false, theme: buildBrainTrainTheme(), home: home),
+        child: MaterialApp(
+          debugShowCheckedModeBanner: false,
+          theme: buildBrainTrainTheme(),
+          // Like the app: tablets scale the UI from a 600-px canvas.
+          builder: (context, child) => TabletScale(child: child!),
+          home: home,
+        ),
       ),
     ),
   );

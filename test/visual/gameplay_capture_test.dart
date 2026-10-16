@@ -48,6 +48,7 @@ import '../helpers.dart';
 import '../helpers/fake_stopwatch.dart';
 import '../platform/fake_rewarded_ads.dart';
 import 'gameplay_support.dart';
+import 'package:brain_train/app/tablet_scale.dart';
 
 final String? _captureDir = Platform.environment['CAPTURE_DIR'];
 
@@ -150,6 +151,7 @@ Future<void> _pumpGame(
         child: MaterialApp(
           debugShowCheckedModeBanner: false,
           theme: buildBrainTrainTheme(Brightness.dark),
+          builder: (context, child) => TabletScale(child: child!),
           home: GameScreen(snapshot: services.content.snapshot, entry: entry, resume: resume, stopwatch: stopwatch),
         ),
       ),
