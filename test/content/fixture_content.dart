@@ -137,8 +137,15 @@ class FixtureContent {
   /// Serves this tree under `/brain-train/`. [online] false makes every
   /// request fail like a dropped connection; [overrides] replace responses
   /// by content path. Every requested content path is added to [log].
-  MockClient server({List<String>? log, Map<String, http.Response> overrides = const {}, bool Function()? online}) =>
+  /// [before] runs first for every request (e.g. to hold responses).
+  MockClient server({
+    List<String>? log,
+    Map<String, http.Response> overrides = const {},
+    bool Function()? online,
+    Future<void> Function()? before,
+  }) =>
       MockClient((request) async {
+        await before?.call();
         if (online != null && !online()) throw http.ClientException('offline', request.url);
         final path = Uri.decodeComponent(request.url.path).replaceFirst('/brain-train/', '');
         log?.add(path);

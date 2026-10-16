@@ -25,6 +25,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:brain_train/content/content_exception.dart';
+import 'package:brain_train/content/content_files.dart';
 import 'package:brain_train/content/content_repositories.dart';
 import 'package:brain_train/content/content_sources.dart';
 import 'package:brain_train/content/content_validator.dart';
@@ -93,18 +94,9 @@ void writeImmutable(String relative, String text, {required bool force}) {
   file.writeAsStringSync(text);
 }
 
-/// Level JSON with one compact line per tile (about half the size of fully
-/// indented JSON; it is bundled in the app).
-String encodeLevel(LevelDefinition level) {
-  const marker = '__TILES__';
-  final json = level.toJson()..['tiles'] = marker;
-  final tiles = [for (final tile in level.tiles) '    ${jsonEncode(tile.toJson())}'].join(',\n');
-  return '${pretty.convert(json).replaceFirst('"$marker"', '[\n$tiles\n  ]')}\n';
-}
+String encodeLevel(LevelDefinition level) => encodeLevelFile(level);
 
-/// `levels/level-0001-<first 12 hex of sha256>.json`.
-String contentAddressed(String directory, String stem, String text) =>
-    '$directory/$stem-${sha(utf8.encode(text)).substring(0, 12)}.json';
+String contentAddressed(String directory, String stem, String text) => contentAddressedPath(directory, stem, text);
 
 Future<void> build({required bool force}) async {
   final catalog = readJson('content-src/catalog.json')! as Map<String, Object?>;

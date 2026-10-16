@@ -1,7 +1,8 @@
 # Brain Train — notes for Claude
 
 Flutter Mahjong Solitaire game. Android + iOS. App ID `com.sungamestudio.braintrain` (do not change).
-Levels, symbols and artwork are data, served from Cloudflare R2 and bundled as an offline fallback.
+Levels, symbols and artwork are data. Cloudflare R2 is the source of truth: the app downloads level files and
+the art they use on demand (the next 5 levels are kept on the phone) and bundles only a starter pack (levels 1–5).
 
 ## Commands (run from repo root)
 
@@ -32,10 +33,13 @@ dart run tool/smoke_remote.dart         # live check: app's content client vs pr
   `scheduleTiers`, `board_shapes.dart` (22 symmetric shape families + stacking programs),
   `CampaignGenerator`, `LevelDecor` (titles, backdrops), `SeededRandom`/`stableHash` (pinned PRNG).
 - `lib/content/` — pure Dart except `file_content_store.dart` (dart:io). Manifest, registry and
-  level loading; cache; `ContentCoordinator` (known-good / bundled / background refresh).
+  level loading; permanent disk cache (`ContentCache`, with the ready-level index); `ContentCoordinator`
+  (known-good / starter pack, gated version switch, 5-level window, on-demand `ensureLevel`, offline fallback to
+  older cached level files); `content_files.dart` (level file encoding, content-addressed keys).
 - `lib/rendering/` — tile body rasterizer, symbol art cache, board painter, effects.
-- `lib/features/` — screens. `levels/` lazy level grid (`LevelSelectScreen`, `LevelCell`, `DifficultyStyle`
-  badge colours); `home/` lobby (hero tiles, title, buttons, footer widgets);
+- `lib/features/` — screens. `levels/` Completed Levels (`LevelSelectScreen`), `LevelLoaderScreen`
+  (`level_loader.dart`: every game opens through it — the game at once when the level is on the device, else
+  "Downloading level…", or offline "Connect to the internet to download this level"), `DifficultyStyle`; `home/` lobby (hero tiles, title, buttons, footer widgets);
   `gameplay/` (`game_controller.dart` glues engine + UI; `widgets/premium_chrome.dart` HUD, felt
   backdrop, dialogs; `widgets/tray_view.dart` tray + `TrayController`; `widgets/tile_flight_overlay.dart`
   board↔tray flights + `TrayFlightDirector`; `widgets/tile_shatter.dart` match strike + shards;
@@ -46,7 +50,10 @@ dart run tool/smoke_remote.dart         # live check: app's content client vs pr
   `sound_effects.dart`.
 - `content-src/` — authoring: `catalog.json` (`campaign`: seed, tiers, counts, bands). `layouts/*.layout.json`
   are the old hand layouts (not in the catalog; the tool still accepts catalog `levels` entries).
-- `content/brain-train/` — generated, published tree. Mirrors R2 keys `brain-train/...`. Bundled via pubspec.
+- `content/brain-train/` — generated, published tree (not in git; local output of `tool/content.dart build`,
+  uploaded by `tool/publish.dart`). Mirrors R2 keys `brain-train/...`.
+- `content/starter/` — the starter pack, committed and the only content in pubspec: the full manifest and the
+  registry (metadata of all levels), levels 1–5 and only their art (~2 MB). Written by `tool/content.dart build`.
 - `art/` — `asset_sources.json` (IconScout attribution + status), masters, review sheets.
   `art/source/` (licensed originals) is gitignored.
 - `infra/cloudflare/braintrain-assets/worker.js` — the deployed Worker's source of truth.
@@ -103,10 +110,15 @@ dart run tool/smoke_remote.dart         # live check: app's content client vs pr
 - Tiers are data (`campaign.tiers`): `easy`, `medium`, `hard`, `veryHard`, 50 levels each, seeded shuffle,
   level 1 easy, never 3 of a tier in a row; stored as `difficulty` in levels and manifest. The app labels any
   id (`difficultyLabel`: "Very Hard") and colours the badge (`DifficultyStyle`).
-- Startup never waits for the network: `ContentCoordinator.loadInitial` builds only the newer of known-good and
-  bundled; `refresh` runs in the background, copies objects the bundle already has into the cache
-  (`AssetDownloadManager.seed`, SHA-256 checked) and downloads the rest 8 at a time; cached objects are never
-  downloaded again.
+- Content delivery (owner): R2 is the source of truth; static and animated symbol files live only there (plus the
+  starter pack's). The app downloads the manifest (every level's title, tier, tile count and `trayCapacity`, so
+  lists and panels never need level files) and the registry in the background, and keeps a rolling window of the
+  next 5 levels (first level not won + the 4 after it) on disk: level file + only the art it uses, a symbol shared
+  by several levels once. Top-ups: at start, after every win, on app resume, and on a backoff timer while offline
+  (`ContentController`). Nothing is ever evicted; a level that was ever ready replays offline, after a content
+  update too (from its older cached file, `CachedLevel` index, until the new file is cached). Other levels download
+  on demand when opened. A newer manifest becomes active only once its registry and its window are cached; never a
+  downgrade. Startup never waits for the network (`loadInitial` + `warmUp` read only cache and bundle).
 - The app never holds R2 keys or `ASSET_TOKEN_SECRET`. `.env` is gitignored and used only by tools.
 - R2 bucket `braintrain` is private. Worker `braintrain-assets` serves `brain-train/*` publicly (GET/HEAD);
   all other keys need an HMAC token (`aud: "bt-assets"`, max 10 min).
@@ -134,7 +146,8 @@ dart run tool/smoke_remote.dart         # live check: app's content client vs pr
 
 ## Current state (2026-10-16)
 
-- Published content 2026.10.16.9 (manifest `minClientContentSchema: 2`): a generated campaign of 200 levels
+- Published content 2026.10.16.10 (manifest `minClientContentSchema: 2`; .10 = .9 plus `trayCapacity` per manifest
+  entry, no other object changed): a generated campaign of 200 levels
   (`catalog.json` `campaign`, seed 20261039, chosen so levels 2–4 are easy/medium), content-addressed keys.
   The registry (`registries/symbols-b932cfbdc9d6.json`) holds every integrated symbol: 82 static (set v4: owner
   cut-outs + IconScout 3D/illustration packs) and 83 animated (IconScout Lottie: Emoji, Valentine, Dog, Cute
@@ -147,7 +160,10 @@ dart run tool/smoke_remote.dart         # live check: app's content client vs pr
 - Rebuild after new symbols: bump `contentVersion`, `dart run tool/content.dart build` (the registry key and the
   levels that rank a new code change by themselves), `validate`, `flutter test`, `publish --dry-run`, `publish`,
   `smoke_remote`.
-- The app bundles all 200 level files (~1.4 MB raw, ~0.22 MB compressed), the registry and all art.
+- The app bundles only `content/starter/` (54 files, ~2.0 MB raw / ~1.0 MB compressed; the full tree was 11.2 MB /
+  ~3.4 MB). A fresh install downloads only the manifest at first launch (its window is the starter pack); each win
+  then fetches about one level file and its new symbols. With no starter pack, the window 1–5 is 5 level files +
+  47 symbol files (~1.8 MB).
 - Lobby menu: Play/Continue, "Completed Levels", Settings. No "N levels ready" footer (owner); the footer only
   shows a content notice (offline / update skipped / new content installed).
 - "Completed Levels" screen (`level_select_screen.dart`, owner): a panel with the next level to play (title, tier,

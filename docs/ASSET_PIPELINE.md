@@ -41,8 +41,8 @@ shows the count). They are not IconScout art.
    and bump `contentVersion`. Levels do not change: they reference symbol codes.
 4. Set each `status` in `art/asset_sources.json` to `integrated`.
 5. `dart run tool/content.dart build`, `flutter test`, `dart run tool/publish.dart`.
-6. In `pubspec.yaml` replace `content/brain-train/symbols/placeholder-v1/` with
-   `content/brain-train/symbols/v1/`, so new installs have the real art offline.
+6. (Historical: the app now bundles only `content/starter/`, written by `tool/content.dart build`;
+   no pubspec change is needed for new art.)
 7. `python3 tool/assets/make_app_icon.py --symbol art/masters/v1/sunflower.png` to rebuild the
    launcher icon from the licensed sunflower.
 
@@ -66,6 +66,15 @@ Optional keys per entry, applied in this order:
 
 Colours on the board are boosted at paint time (`TileStyle.symbolSaturation`/`symbolContrast`);
 the WebP files keep the original colours.
+
+## Where symbol files go
+
+Processed static WebP and animated Lottie files are written to `content/brain-train/symbols/<set>/`
+and `content/brain-train/animated-symbols/`. That tree is not in git and not in the app: it is
+uploaded to R2 by `tool/publish.dart`, and the app downloads a symbol's file only when a level it
+needs (the next 5 levels, or a level being opened) uses it, then keeps it on disk. Only the art of
+the starter pack (levels 1–5) is copied into `content/starter/` by `tool/content.dart build` and
+bundled. Builds use only entries with `"status": "integrated"` whose processed file exists.
 
 ## Requirements the pipeline enforces
 
