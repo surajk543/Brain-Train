@@ -11,6 +11,12 @@ class MatchRules {
   MatchRules({required LevelDefinition level, required SymbolRegistry registry})
     : _keys = _buildKeys(level, registry);
 
+  /// [base]'s keys after a shuffle: tile `i` shows the symbol tile
+  /// `source[i]` had in the level.
+  MatchRules.permuted(MatchRules base, List<int> source)
+    : assert(source.length == base._keys.length, 'one source per tile'),
+      _keys = List.unmodifiable([for (final from in source) base._keys[from]]);
+
   final List<String> _keys;
 
   static List<String> _buildKeys(LevelDefinition level, SymbolRegistry registry) {
