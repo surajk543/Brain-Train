@@ -3,7 +3,7 @@
 class ScoringRules {
   const ScoringRules({
     this.basePoints = 100,
-    this.comboWindow = const Duration(seconds: 3),
+    this.comboWindow = const Duration(seconds: 4),
     this.maxMultiplier = 5,
     this.speedTiers = const [
       (under: Duration(seconds: 1), bonus: 50),

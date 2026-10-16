@@ -171,8 +171,8 @@ void main() {
     await tester.pump();
     expect(find.text('COMBO ×2'), findsOneWidget);
     expect(find.textContaining('Best ×2'), findsOneWidget);
-    clock.advance(const Duration(seconds: 4));
-    await tester.pump(const Duration(seconds: 4)); // the window's timer fires
+    clock.advance(const Duration(seconds: 5));
+    await tester.pump(const Duration(seconds: 5)); // the window's timer fires
     expect(find.text('COMBO ×2'), findsNothing);
     expect(find.textContaining('Best ×2'), findsOneWidget);
     await tester.pumpWidget(const SizedBox());
@@ -192,8 +192,8 @@ void main() {
     await tester.pump(const Duration(milliseconds: 100));
     expect(find.text('COMBO ×2'), findsOneWidget);
     expect(tester.widgetList<CustomPaint>(find.descendant(of: find.byType(ComboBadge), matching: find.byType(CustomPaint))), isNotEmpty);
-    clock.advance(const Duration(seconds: 4));
-    await tester.pump(const Duration(seconds: 4));
+    clock.advance(const Duration(seconds: 5));
+    await tester.pump(const Duration(seconds: 5));
     await _watchPopups(tester, frames: 40);
     await tester.pump(const Duration(milliseconds: 100));
     expect(find.text('COMBO ×2'), findsNothing);

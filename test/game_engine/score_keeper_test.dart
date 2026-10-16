@@ -23,9 +23,9 @@ void main() {
     final m = keeper.onMatch(s(5));
     expect((m.points, m.multiplier, m.combo, m.speedBonus), (100, 1, 1, 0));
     expect(keeper.score, 100);
-    expect(keeper.comboExpiresAt, s(8));
-    expect(keeper.isComboActive(s(8)), isTrue);
-    expect(keeper.isComboActive(s(8.001)), isFalse);
+    expect(keeper.comboExpiresAt, s(9));
+    expect(keeper.isComboActive(s(9)), isTrue);
+    expect(keeper.isComboActive(s(9.001)), isFalse);
   });
 
   test('consecutive matches inside the window build the combo with speed bonuses', () {
@@ -45,11 +45,13 @@ void main() {
     expect(rules.speedBonusFor(s(1.999)), 25);
     expect(rules.speedBonusFor(s(2)), 10);
     expect(rules.speedBonusFor(s(3)), 10);
-    expect(rules.speedBonusFor(s(3.001)), 0);
+    expect(rules.speedBonusFor(s(3.5)), 10);
+    expect(rules.speedBonusFor(s(4)), 10);
+    expect(rules.speedBonusFor(s(4.001)), 0);
     keeper.onMatch(s(0));
-    final atWindow = keeper.onMatch(s(3));
+    final atWindow = keeper.onMatch(s(4));
     expect((atWindow.combo, atWindow.speedBonus, atWindow.points), (2, 10, 210));
-    final past = keeper.onMatch(s(6.001));
+    final past = keeper.onMatch(s(8.001));
     expect((past.combo, past.speedBonus, past.points), (1, 0, 100));
   });
 
@@ -60,6 +62,17 @@ void main() {
     expect((after.combo, after.multiplier, after.points), (1, 1, 100));
     expect(keeper.bestCombo, 2);
     expect(keeper.score, 100 + 225 + 100);
+  });
+
+  test('every match restarts the window: a long chain of 2.5 s gaps keeps going', () {
+    for (final t in [0, 2.5, 5, 7.5, 10]) {
+      keeper.onMatch(s(t));
+    }
+    expect(keeper.currentCombo, 5);
+    expect(keeper.currentMultiplier, 5);
+    expect(keeper.comboExpiresAt, s(14));
+    expect(keeper.isComboActive(s(13.9)), isTrue);
+    expect(keeper.isComboActive(s(15)), isFalse);
   });
 
   test('the multiplier caps at ×5 while the streak keeps counting', () {

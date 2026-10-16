@@ -131,11 +131,30 @@ void main() {
     c.pauseClock();
     clock.advance(s(10)); // paused: no time passes
     c.resumeClock();
-    expect(c.comboTimeLeft, s(2));
+    expect(c.comboTimeLeft, s(3));
     clock.advance(s(1.5));
     c.tapTile('b1');
     c.tapTile('b2'); // t=2.5 → continues
     expect(c.activeCombo, 2);
+    c.dispose();
+  });
+
+  test('every match in a chain restarts the full 4 s window', () async {
+    final c = controllerFor();
+    c.tapTile('a1');
+    c.tapTile('a2');
+    expect(c.comboTimeLeft, s(4));
+    clock.advance(s(2.5));
+    expect(c.comboTimeLeft, s(1.5));
+    c.tapTile('b1');
+    c.tapTile('b2');
+    expect(c.activeCombo, 2);
+    expect(c.comboTimeLeft, s(4));
+    clock.advance(s(2.5));
+    c.tapTile('c1');
+    c.tapTile('c2');
+    expect(c.activeCombo, 3);
+    expect(c.comboTimeLeft, s(4));
     c.dispose();
   });
 
@@ -175,7 +194,7 @@ void main() {
     clock = FakeStopwatch();
     final resumed = controllerFor(resume: saved);
     expect(resumed.score, 100);
-    expect(resumed.comboTimeLeft, s(2));
+    expect(resumed.comboTimeLeft, s(3));
     clock.advance(s(1));
     resumed.tapTile('b2'); // t=4: gap 2 s → ×2 +10
     expect(resumed.score, 100 + 210);
@@ -183,7 +202,7 @@ void main() {
   });
 
   testWidgets('a resumed active combo without an intro gets an expiry timer that notifies', (tester) async {
-    final keeper = ScoreKeeper(rules: const ScoringRules())..onMatch(s(2)); // match at t=2: the combo runs until t=5
+    final keeper = ScoreKeeper(rules: const ScoringRules())..onMatch(s(2)); // match at t=2: the combo runs until t=6
     final saved = SavedGame(
       levelId: 'test-level',
       levelUrl: entry.ref.url,
@@ -195,8 +214,8 @@ void main() {
     var notified = 0;
     resumed.addListener(() => notified++);
     expect(resumed.activeCombo, 1);
-    clock.advance(s(2.5));
-    await tester.pump(s(2.5));
+    clock.advance(s(3.5));
+    await tester.pump(s(3.5));
     expect(notified, 1, reason: 'the timer fired at the end of the window');
     expect(resumed.activeCombo, 0);
     resumed.dispose();
