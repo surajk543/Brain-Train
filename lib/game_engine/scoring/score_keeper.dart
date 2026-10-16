@@ -103,6 +103,16 @@ class ScoreKeeper {
     endCombo();
   }
 
+  /// Takes over [other]'s state (resume).
+  void restoreFrom(ScoreKeeper other) {
+    _score = other._score;
+    _combo = other._combo;
+    _bestCombo = other._bestCombo;
+    _pairs = other._pairs;
+    _speedBonus = other._speedBonus;
+    _lastMatchAt = other._lastMatchAt;
+  }
+
   /// A save from before scoring: base points per matched pair, no combo.
   void restoreLegacy(int matchedPairs) {
     reset();
