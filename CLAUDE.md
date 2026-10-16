@@ -244,7 +244,7 @@ dart run tool/smoke_remote.dart         # live check: app's content client vs pr
 - Rewarded ads on Revive (owner, 2026-10-16): every Revive plays an AdMob rewarded ad (Revive stays unlimited); no
   ad, no revive. The audience includes children under 13 (Play Families policy, mixed audience): neutral age screen,
   child-directed ads for under 13. No other ads anywhere.
-- Background music `assets/music/water_flowing.mp3` loops at volume 0.6 (`lib/app/background_music.dart`),
+- Background music `assets/music/water_flowing.mp3` loops at volume 0.4 (owner, 2026-10-17; was 0.6) (`lib/app/background_music.dart`),
   starts after the studio intro, pauses in background and while a rewarded ad shows, and follows the Music switch
   (redesign 1.1.0: `SettingsRepository.music`, `settings.music`; until set it reads the stored Sound value, and the
   first Sound change pins it, so players who muted Sound before 1.1.0 stay silent). Sound Effects (`settings.sound`)

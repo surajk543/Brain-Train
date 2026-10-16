@@ -111,7 +111,7 @@ void main() {
       expect(player.playing, isFalse, reason: 'nothing before start (after the studio intro)');
       await music.start();
       expect(player.asset, 'music/water_flowing.mp3');
-      expect(player.volume, 0.6);
+      expect(player.volume, 0.4);
       expect(player.playing, isTrue);
     });
 

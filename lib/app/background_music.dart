@@ -51,7 +51,7 @@ class BackgroundMusic with WidgetsBindingObserver {
   BackgroundMusic(
     this.settings, {
     this.asset = 'music/water_flowing.mp3',
-    this.volume = 0.6,
+    this.volume = 0.4,
     MusicPlayer Function()? player,
   }) : _createPlayer = player ?? _AudioplayersMusic.new;
 
