@@ -43,6 +43,8 @@ dependencies:
   package_info_plus: ^10.2.2
   lottie: ^3.6.1
   vibration: ^3.2.1
+  # Google Play Games Services (Android only; see docs/PLAY_GAMES.md).
+  games_services: ^5.3.0
 
 dev_dependencies:
   flutter_test:
