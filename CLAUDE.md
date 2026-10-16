@@ -148,7 +148,7 @@ dart run tool/smoke_remote.dart         # live check: app's content client vs pr
   icon (`PremiumRoundIconButton`, right end; only while playing, not during the intro or result cards) with a confirm
   card "Restart this level?" / "Your moves and time start over." (Restart / Keep playing; clock paused, Android back
   closes it), from the Tray full card and from the win card (Replay).
-- Win card ("Level complete!"): `assets/lottie/trophy_cup_rays.json` via `WinTrophy`, looping while the card is open
+- Win card ("Level complete!"): `assets/lottie/trophy_cup_rays.json` (LottieFiles, owner's premium licence) via `WinTrophy`, looping while the card is open
   (owner), last frame with reduce motion, `PremiumEmblem` fallback if it fails to load.
 - Google Play Games (owner, 2026-10-16): Android only; silent sign-in; two round lobby buttons top-right
   (Achievements, Leaderboards) open Google's screens, signing in first when needed; no Settings entry.
@@ -235,7 +235,7 @@ dart run tool/smoke_remote.dart         # live check: app's content client vs pr
   contentVersion, publish); a frame-time slowdown after hours of play on the emulator (Impeller GLES; watch
   `adb logcat | grep app_time_stats`, app restart resets it) is not explained yet.
 - Open work: Play Console setup (docs/PLAY_GAMES.md) and Play Games pieces 2–3; scoring + combo system is in design
-  (spec pending); `assets/lottie/trophy_cup_rays.json` is owner-supplied, source/license not yet recorded.
+  (spec pending).
 - Open work: 6 tests fail on this Mac (predate `feat/play-games`): RenderFlex overflow of 4.4 px at
   `lib/features/levels/level_select_screen.dart:232` (Completed Levels row) — level_select_test (2), level_loader_test (1),
   lobby_capture_test (2, per-phone "home, levels, settings"), gameplay_capture_test ("tray-full overlay 360x640 at 1.3x
