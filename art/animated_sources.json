@@ -1,0 +1,891 @@
+{
+  "_comment": "Animated (Lottie) tile symbols, downloaded by the owner with their IconScout subscription into art/source/animated-symbols/ (gitignored; tools never download from IconScout). `python3 tool/assets/prepare_animated.py` validates + minifies each sourceFile into content/brain-train/animated-symbols/<outputFile>; `dart run tool/content.dart build` adds them to the registry as `lottie` symbols and gives ~20% of each level's pairs to them. Order matters: levels take the next unused symbols in this order (level 1 the first 2, level 2 the next 3, ...), so emoji, Valentine and dog items alternate and look-alikes are kept apart. Codes and outputFile names are published and immutable. Only entries with \"status\": \"integrated\" go into the registry; \"rejected\" ones (reason in `rejected`) are kept as a record so they are not downloaded again. `restyle` (prepare_animated.py) thickens, recolours and zooms thin line-art loaders so they read on a 31 px tile; it writes a new outputFile, never over a published one.",
+  "provider": "IconScout",
+  "packs": [
+    {
+      "title": "Emoji Animation Pack",
+      "author": "Bit Motion",
+      "url": "https://iconscout.com/lottie-animation-pack/emoji-animation-pack_104656",
+      "codePrefix": "EMOJI_"
+    },
+    {
+      "title": "Valentine's Day Animation Pack",
+      "author": "Andrey Popov",
+      "url": "https://iconscout.com/lottie-animation-pack/valentines-day-animation-pack_106682",
+      "codePrefix": "VAL_"
+    },
+    {
+      "title": "Dog Playing Tennis Ball Animation Pack",
+      "author": "Haris Amrullah",
+      "url": "https://iconscout.com/lottie-animation-pack/dog-playing-tennis-ball-animation-pack_302504",
+      "codePrefix": "DOG_"
+    },
+    {
+      "title": "Shapes Loader Animation Pack",
+      "author": "IconScout Store",
+      "url": "https://iconscout.com/lottie-animation-pack/shapes-loader-animation-pack_110835",
+      "codePrefix": "SHAPE_"
+    },
+    {
+      "title": "Cute Monster Animation Pack",
+      "author": "Graphiqa Studio",
+      "url": "https://iconscout.com/lottie-animation-pack/cute-monster-animation-pack_141399",
+      "codePrefix": "MONSTER_"
+    }
+  ],
+  "licenseNote": "Premium IconScout packs under the owner's subscription license; no attribution required. Keep the original JSON files out of git (art/source/ is gitignored).",
+  "symbols": [
+    {
+      "code": "EMOJI_FIRE",
+      "title": "Fire",
+      "sourceFile": "fire-emoji.json",
+      "outputFile": "fire-emoji.json",
+      "sourceUrl": "https://iconscout.com/lottie-animation-pack/emoji-animation-pack_104656",
+      "status": "integrated"
+    },
+    {
+      "code": "DOG_TENNIS_BALL",
+      "title": "Dog playing tennis ball",
+      "sourceFile": "dog-playing-tennis-ball.json",
+      "outputFile": "dog-playing-tennis-ball.json",
+      "sourceUrl": "https://iconscout.com/lottie-animation-pack/dog-playing-tennis-ball-animation-pack_302504",
+      "status": "integrated"
+    },
+    {
+      "code": "VAL_LOVE_LETTER",
+      "title": "Love letter",
+      "sourceFile": "love-letter.json",
+      "outputFile": "love-letter.json",
+      "sourceUrl": "https://iconscout.com/lottie-animation-pack/valentines-day-animation-pack_106682",
+      "status": "integrated"
+    },
+    {
+      "code": "DOG_WITH_BALL",
+      "title": "Dog playing with ball",
+      "sourceFile": "dog-playing-with-ball.json",
+      "outputFile": "dog-playing-with-ball.json",
+      "sourceUrl": "https://iconscout.com/lottie-animation-pack/dog-playing-tennis-ball-animation-pack_302504",
+      "status": "integrated"
+    },
+    {
+      "code": "EMOJI_COLD_FACE",
+      "title": "Cold face",
+      "sourceFile": "cold-face-emoji.json",
+      "outputFile": "cold-face-emoji.json",
+      "sourceUrl": "https://iconscout.com/lottie-animation-pack/emoji-animation-pack_104656",
+      "status": "integrated"
+    },
+    {
+      "code": "VAL_BALLOON_HEART",
+      "title": "Balloon heart",
+      "sourceFile": "balloon-heart.json",
+      "outputFile": "balloon-heart.json",
+      "sourceUrl": "https://iconscout.com/lottie-animation-pack/valentines-day-animation-pack_106682",
+      "status": "integrated"
+    },
+    {
+      "code": "EMOJI_DEVIL_SMILE",
+      "title": "Devil smile",
+      "sourceFile": "devil-smile-emoji.json",
+      "outputFile": "devil-smile-emoji.json",
+      "sourceUrl": "https://iconscout.com/lottie-animation-pack/emoji-animation-pack_104656",
+      "status": "integrated"
+    },
+    {
+      "code": "DOG_TENNIS_CATCH",
+      "title": "Dog with tennis ball",
+      "sourceFile": "dog-playing-with-tennis-ball.json",
+      "outputFile": "dog-playing-with-tennis-ball.json",
+      "sourceUrl": "https://iconscout.com/lottie-animation-pack/dog-playing-tennis-ball-animation-pack_302504",
+      "status": "integrated"
+    },
+    {
+      "code": "EMOJI_SKULL",
+      "title": "Skull",
+      "sourceFile": "skull-emoji.json",
+      "outputFile": "skull-emoji.json",
+      "sourceUrl": "https://iconscout.com/lottie-animation-pack/emoji-animation-pack_104656",
+      "status": "integrated"
+    },
+    {
+      "code": "VAL_BOUQUET_OF_FLOWERS",
+      "title": "Bouquet of flowers",
+      "sourceFile": "bouquet-of-flowers.json",
+      "outputFile": "bouquet-of-flowers.json",
+      "sourceUrl": "https://iconscout.com/lottie-animation-pack/valentines-day-animation-pack_106682",
+      "status": "integrated"
+    },
+    {
+      "code": "EMOJI_SMILING_FACE_WITH_SUNGLASSES",
+      "title": "Smiling face with sunglasses",
+      "sourceFile": "smiling-face-with-sunglasses-emoji.json",
+      "outputFile": "smiling-face-with-sunglasses-emoji.json",
+      "sourceUrl": "https://iconscout.com/lottie-animation-pack/emoji-animation-pack_104656",
+      "status": "integrated"
+    },
+    {
+      "code": "VAL_WEDDING_RINGS",
+      "title": "Wedding rings",
+      "sourceFile": "wedding-rings.json",
+      "outputFile": "wedding-rings.json",
+      "sourceUrl": "https://iconscout.com/lottie-animation-pack/valentines-day-animation-pack_106682",
+      "status": "integrated"
+    },
+    {
+      "code": "EMOJI_RAINBOW",
+      "title": "Rainbow",
+      "sourceFile": "rainbow-emoji.json",
+      "outputFile": "rainbow-emoji.json",
+      "sourceUrl": "https://iconscout.com/lottie-animation-pack/emoji-animation-pack_104656",
+      "status": "integrated"
+    },
+    {
+      "code": "DOG_YARN_BALL",
+      "title": "Dog playing yarn ball",
+      "sourceFile": "dog-playing-yarn-ball.json",
+      "outputFile": "dog-playing-yarn-ball.json",
+      "sourceUrl": "https://iconscout.com/lottie-animation-pack/dog-playing-tennis-ball-animation-pack_302504",
+      "status": "integrated"
+    },
+    {
+      "code": "EMOJI_FLEXED_BICEPS",
+      "title": "Flexed biceps",
+      "sourceFile": "flexed-biceps-emoji.json",
+      "outputFile": "flexed-biceps-emoji.json",
+      "sourceUrl": "https://iconscout.com/lottie-animation-pack/emoji-animation-pack_104656",
+      "status": "integrated"
+    },
+    {
+      "code": "VAL_VALENTINE_PRESENT",
+      "title": "Valentine present",
+      "sourceFile": "valentine-present.json",
+      "outputFile": "valentine-present.json",
+      "sourceUrl": "https://iconscout.com/lottie-animation-pack/valentines-day-animation-pack_106682",
+      "status": "integrated"
+    },
+    {
+      "code": "EMOJI_STAR_STRUCK",
+      "title": "Star-struck",
+      "sourceFile": "star-struck-emoji.json",
+      "outputFile": "star-struck-emoji.json",
+      "sourceUrl": "https://iconscout.com/lottie-animation-pack/emoji-animation-pack_104656",
+      "status": "integrated"
+    },
+    {
+      "code": "VAL_LOVE_LOCK",
+      "title": "Love lock",
+      "sourceFile": "love-lock.json",
+      "outputFile": "love-lock.json",
+      "sourceUrl": "https://iconscout.com/lottie-animation-pack/valentines-day-animation-pack_106682",
+      "status": "integrated"
+    },
+    {
+      "code": "EMOJI_LOUDLY_CRYING",
+      "title": "Loudly crying",
+      "sourceFile": "loudly-crying-emoji.json",
+      "outputFile": "loudly-crying-emoji.json",
+      "sourceUrl": "https://iconscout.com/lottie-animation-pack/emoji-animation-pack_104656",
+      "status": "integrated"
+    },
+    {
+      "code": "EMOJI_ENRAGED_FACE",
+      "title": "Enraged face",
+      "sourceFile": "enraged-face-emoji.json",
+      "outputFile": "enraged-face-emoji.json",
+      "sourceUrl": "https://iconscout.com/lottie-animation-pack/emoji-animation-pack_104656",
+      "status": "integrated"
+    },
+    {
+      "code": "EMOJI_THUNDERCLOUD_LIGHTNING",
+      "title": "Thundercloud with lightning",
+      "sourceFile": "thundercloud-lightning-emoji.json",
+      "outputFile": "thundercloud-lightning-emoji.json",
+      "sourceUrl": "https://iconscout.com/lottie-animation-pack/emoji-animation-pack_104656",
+      "status": "integrated"
+    },
+    {
+      "code": "VAL_CHEERS",
+      "title": "Cheers",
+      "sourceFile": "cheers.json",
+      "outputFile": "cheers.json",
+      "sourceUrl": "https://iconscout.com/lottie-animation-pack/valentines-day-animation-pack_106682",
+      "status": "integrated"
+    },
+    {
+      "code": "EMOJI_KNIFE",
+      "title": "Knife",
+      "sourceFile": "knife-emoji.json",
+      "outputFile": "knife-emoji.json",
+      "sourceUrl": "https://iconscout.com/lottie-animation-pack/emoji-animation-pack_104656",
+      "status": "integrated"
+    },
+    {
+      "code": "VAL_LOVE_ELIXIR",
+      "title": "Love elixir",
+      "sourceFile": "love-elixir.json",
+      "outputFile": "love-elixir.json",
+      "sourceUrl": "https://iconscout.com/lottie-animation-pack/valentines-day-animation-pack_106682",
+      "status": "integrated"
+    },
+    {
+      "code": "EMOJI_SMILING_FACE_WITH_HEARTS",
+      "title": "Smiling face with hearts",
+      "sourceFile": "smiling-face-with-hearts-emoji.json",
+      "outputFile": "smiling-face-with-hearts-emoji.json",
+      "sourceUrl": "https://iconscout.com/lottie-animation-pack/emoji-animation-pack_104656",
+      "status": "integrated"
+    },
+    {
+      "code": "EMOJI_NAUSEATED_FACE",
+      "title": "Nauseated face",
+      "sourceFile": "nauseated-face-emoji.json",
+      "outputFile": "nauseated-face-emoji.json",
+      "sourceUrl": "https://iconscout.com/lottie-animation-pack/emoji-animation-pack_104656",
+      "status": "integrated"
+    },
+    {
+      "code": "VAL_ANGELS_HEART",
+      "title": "Angel's heart",
+      "sourceFile": "angels-heart.json",
+      "outputFile": "angels-heart.json",
+      "sourceUrl": "https://iconscout.com/lottie-animation-pack/valentines-day-animation-pack_106682",
+      "status": "integrated"
+    },
+    {
+      "code": "EMOJI_HOT",
+      "title": "Hot",
+      "sourceFile": "hot-emoji.json",
+      "outputFile": "hot-emoji.json",
+      "sourceUrl": "https://iconscout.com/lottie-animation-pack/emoji-animation-pack_104656",
+      "status": "integrated"
+    },
+    {
+      "code": "EMOJI_SLEEPING_FACE",
+      "title": "Sleeping face",
+      "sourceFile": "sleeping-face-emoji.json",
+      "outputFile": "sleeping-face-emoji.json",
+      "sourceUrl": "https://iconscout.com/lottie-animation-pack/emoji-animation-pack_104656",
+      "status": "integrated"
+    },
+    {
+      "code": "VAL_VALENTINE_CHOCOLATE",
+      "title": "Valentine chocolate",
+      "sourceFile": "valentine-chocolate.json",
+      "outputFile": "valentine-chocolate.json",
+      "sourceUrl": "https://iconscout.com/lottie-animation-pack/valentines-day-animation-pack_106682",
+      "status": "integrated"
+    },
+    {
+      "code": "EMOJI_THUMBS_UP",
+      "title": "Thumbs up",
+      "sourceFile": "thumbs-up-emoji.json",
+      "outputFile": "thumbs-up-emoji.json",
+      "sourceUrl": "https://iconscout.com/lottie-animation-pack/emoji-animation-pack_104656",
+      "status": "integrated"
+    },
+    {
+      "code": "VAL_LOVE_BOW",
+      "title": "Love bow",
+      "sourceFile": "love-bow.json",
+      "outputFile": "love-bow.json",
+      "sourceUrl": "https://iconscout.com/lottie-animation-pack/valentines-day-animation-pack_106682",
+      "status": "integrated"
+    },
+    {
+      "code": "EMOJI_EXPLODING_HEAD",
+      "title": "Exploding head",
+      "sourceFile": "exploding-head-emoji.json",
+      "outputFile": "exploding-head-emoji.json",
+      "sourceUrl": "https://iconscout.com/lottie-animation-pack/emoji-animation-pack_104656",
+      "status": "integrated"
+    },
+    {
+      "code": "EMOJI_ZANY_FACE",
+      "title": "Zany face",
+      "sourceFile": "zany-face-emoji.json",
+      "outputFile": "zany-face-emoji.json",
+      "sourceUrl": "https://iconscout.com/lottie-animation-pack/emoji-animation-pack_104656",
+      "status": "integrated"
+    },
+    {
+      "code": "VAL_PENDANT",
+      "title": "Pendant",
+      "sourceFile": "pendant.json",
+      "outputFile": "pendant.json",
+      "sourceUrl": "https://iconscout.com/lottie-animation-pack/valentines-day-animation-pack_106682",
+      "status": "integrated"
+    },
+    {
+      "code": "EMOJI_PLEADING_FACE",
+      "title": "Pleading face",
+      "sourceFile": "pleading-face-emoji.json",
+      "outputFile": "pleading-face-emoji.json",
+      "sourceUrl": "https://iconscout.com/lottie-animation-pack/emoji-animation-pack_104656",
+      "status": "integrated"
+    },
+    {
+      "code": "EMOJI_UPSIDE_DOWN_FACE",
+      "title": "Upside-down face",
+      "sourceFile": "upside-down-face-emoji.json",
+      "outputFile": "upside-down-face-emoji.json",
+      "sourceUrl": "https://iconscout.com/lottie-animation-pack/emoji-animation-pack_104656",
+      "status": "integrated"
+    },
+    {
+      "code": "EMOJI_HAHAHA",
+      "title": "Hahaha",
+      "sourceFile": "hahaha-emoji.json",
+      "outputFile": "hahaha-emoji.json",
+      "sourceUrl": "https://iconscout.com/lottie-animation-pack/emoji-animation-pack_104656",
+      "status": "integrated"
+    },
+    {
+      "code": "EMOJI_SCREAMING_FACE",
+      "title": "Screaming face",
+      "sourceFile": "screaming-face-emoji.json",
+      "outputFile": "screaming-face-emoji.json",
+      "sourceUrl": "https://iconscout.com/lottie-animation-pack/emoji-animation-pack_104656",
+      "status": "integrated"
+    },
+    {
+      "code": "EMOJI_FACE_WITH_TEARS_OF_JOY",
+      "title": "Face with tears of joy",
+      "sourceFile": "face-with-tears-of-joy-emoji.json",
+      "outputFile": "face-with-tears-of-joy-emoji.json",
+      "sourceUrl": "https://iconscout.com/lottie-animation-pack/emoji-animation-pack_104656",
+      "status": "integrated"
+    },
+    {
+      "code": "EMOJI_WINKING_FACE",
+      "title": "Winking face",
+      "sourceFile": "winking-face-emoji.json",
+      "outputFile": "winking-face-emoji.json",
+      "sourceUrl": "https://iconscout.com/lottie-animation-pack/emoji-animation-pack_104656",
+      "status": "integrated"
+    },
+    {
+      "code": "EMOJI_OK",
+      "title": "OK",
+      "sourceFile": "ok-emoji.json",
+      "outputFile": "ok-emoji.json",
+      "sourceUrl": "https://iconscout.com/lottie-animation-pack/emoji-animation-pack_104656",
+      "status": "integrated"
+    },
+    {
+      "code": "EMOJI_ANGRY",
+      "title": "Angry",
+      "sourceFile": "angry-emoji.json",
+      "outputFile": "angry-emoji.json",
+      "sourceUrl": "https://iconscout.com/lottie-animation-pack/emoji-animation-pack_104656",
+      "status": "integrated"
+    },
+    {
+      "code": "EMOJI_BEAMING_FACE",
+      "title": "Beaming face",
+      "sourceFile": "beaming-face-emoji.json",
+      "outputFile": "beaming-face-emoji.json",
+      "sourceUrl": "https://iconscout.com/lottie-animation-pack/emoji-animation-pack_104656",
+      "status": "integrated"
+    },
+    {
+      "code": "EMOJI_GESTURING_NO",
+      "title": "Gesturing no",
+      "sourceFile": "gesturing-no-emoji.json",
+      "outputFile": "gesturing-no-emoji.json",
+      "sourceUrl": "https://iconscout.com/lottie-animation-pack/emoji-animation-pack_104656",
+      "status": "integrated"
+    },
+    {
+      "code": "EMOJI_LOUDLY_CRYING_FACE",
+      "title": "Loudly crying face",
+      "sourceFile": "loudly-crying-face-emoji.json",
+      "outputFile": "loudly-crying-face-emoji.json",
+      "sourceUrl": "https://iconscout.com/lottie-animation-pack/emoji-animation-pack_104656",
+      "status": "integrated"
+    },
+    {
+      "code": "EMOJI_NEUTRAL_FACE",
+      "title": "Neutral face",
+      "sourceFile": "neutral-face-emoji.json",
+      "outputFile": "neutral-face-emoji.json",
+      "sourceUrl": "https://iconscout.com/lottie-animation-pack/emoji-animation-pack_104656",
+      "status": "integrated"
+    },
+    {
+      "code": "EMOJI_PHEW_WITH_SWEAT",
+      "title": "Phew with sweat",
+      "sourceFile": "phew-with-sweat-emoji.json",
+      "outputFile": "phew-with-sweat-emoji.json",
+      "sourceUrl": "https://iconscout.com/lottie-animation-pack/emoji-animation-pack_104656",
+      "status": "integrated"
+    },
+    {
+      "code": "EMOJI_SQUINTING_FACE_WITH_TONGUE",
+      "title": "Squinting face with tongue",
+      "sourceFile": "squinting-face-with-tongue-emoji.json",
+      "outputFile": "squinting-face-with-tongue-emoji.json",
+      "sourceUrl": "https://iconscout.com/lottie-animation-pack/emoji-animation-pack_104656",
+      "status": "integrated"
+    },
+    {
+      "code": "EMOJI_UNAMUSED_FACE",
+      "title": "Unamused face",
+      "sourceFile": "unamused-face-emoji.json",
+      "outputFile": "unamused-face-emoji.json",
+      "sourceUrl": "https://iconscout.com/lottie-animation-pack/emoji-animation-pack_104656",
+      "status": "integrated"
+    },
+    {
+      "code": "MONSTER_APPLE",
+      "title": "Apple",
+      "sourceFile": "cute-monster-apple.json",
+      "outputFile": "cute-monster-apple.json",
+      "sourceUrl": "https://iconscout.com/lottie-animation-pack/cute-monster-animation-pack_141399",
+      "status": "integrated"
+    },
+    {
+      "code": "SHAPE_SEESAW",
+      "title": "Balance shapes",
+      "sourceFile": "shapes-loader-balance-shapes.json",
+      "outputFile": "shapes-loader-balance-shapes-bold.json",
+      "sourceUrl": "https://iconscout.com/lottie-animation-pack/shapes-loader-animation-pack_110835",
+      "restyle": {
+        "bounds": [
+          0.172,
+          0.25,
+          0.809,
+          0.781
+        ],
+        "fill": 0.8,
+        "strokeScale": 2,
+        "colour": "#E63946"
+      },
+      "status": "integrated"
+    },
+    {
+      "code": "MONSTER_BASEBALL",
+      "title": "Baseball",
+      "sourceFile": "cute-monster-baseball.json",
+      "outputFile": "cute-monster-baseball.json",
+      "sourceUrl": "https://iconscout.com/lottie-animation-pack/cute-monster-animation-pack_141399",
+      "status": "integrated"
+    },
+    {
+      "code": "SHAPE_BALL_BOWL",
+      "title": "Ball balance",
+      "sourceFile": "shapes-loader-ball-balance.json",
+      "outputFile": "shapes-loader-ball-balance-bold.json",
+      "sourceUrl": "https://iconscout.com/lottie-animation-pack/shapes-loader-animation-pack_110835",
+      "restyle": {
+        "bounds": [
+          0.047,
+          0.227,
+          0.941,
+          0.816
+        ],
+        "fill": 0.8,
+        "strokeScale": 3,
+        "colour": "#1D8A99"
+      },
+      "status": "integrated"
+    },
+    {
+      "code": "MONSTER_BASKETBALL",
+      "title": "Basketball",
+      "sourceFile": "cute-monster-basketball.json",
+      "outputFile": "cute-monster-basketball.json",
+      "sourceUrl": "https://iconscout.com/lottie-animation-pack/cute-monster-animation-pack_141399",
+      "status": "integrated"
+    },
+    {
+      "code": "SHAPE_CASINO",
+      "title": "Casino shapes",
+      "sourceFile": "shapes-loader-casino-shapes.json",
+      "outputFile": "shapes-loader-casino-shapes.json",
+      "sourceUrl": "https://iconscout.com/lottie-animation-pack/shapes-loader-animation-pack_110835",
+      "status": "rejected",
+      "rejected": "unreadable at tile size: a row of four tiny glyphs"
+    },
+    {
+      "code": "MONSTER_BREAD",
+      "title": "Bread",
+      "sourceFile": "cute-monster-bread.json",
+      "outputFile": "cute-monster-bread.json",
+      "sourceUrl": "https://iconscout.com/lottie-animation-pack/cute-monster-animation-pack_141399",
+      "status": "integrated"
+    },
+    {
+      "code": "SHAPE_SQUARE_ORBIT",
+      "title": "Circle with sides borders",
+      "sourceFile": "shapes-loader-circle-with-sides-borders.json",
+      "outputFile": "shapes-loader-circle-with-sides-borders-bold.json",
+      "sourceUrl": "https://iconscout.com/lottie-animation-pack/shapes-loader-animation-pack_110835",
+      "restyle": {
+        "bounds": [
+          0.125,
+          0.125,
+          0.91,
+          0.91
+        ],
+        "fill": 0.8,
+        "strokeScale": 3,
+        "colour": "#2A6FDB"
+      },
+      "status": "integrated"
+    },
+    {
+      "code": "MONSTER_CLOUD",
+      "title": "Cloud",
+      "sourceFile": "cute-monster-cloud.json",
+      "outputFile": "cute-monster-cloud.json",
+      "sourceUrl": "https://iconscout.com/lottie-animation-pack/cute-monster-animation-pack_141399",
+      "status": "integrated"
+    },
+    {
+      "code": "SHAPE_DOTS_SWAP",
+      "title": "Circles left and right",
+      "sourceFile": "shapes-loader-circles-left-and-right.json",
+      "outputFile": "shapes-loader-circles-left-and-right.json",
+      "sourceUrl": "https://iconscout.com/lottie-animation-pack/shapes-loader-animation-pack_110835",
+      "status": "rejected",
+      "rejected": "unreadable at tile size: one or two tiny dots"
+    },
+    {
+      "code": "MONSTER_COOKIES",
+      "title": "Cookies",
+      "sourceFile": "cute-monster-cookies.json",
+      "outputFile": "cute-monster-cookies.json",
+      "sourceUrl": "https://iconscout.com/lottie-animation-pack/cute-monster-animation-pack_141399",
+      "status": "integrated"
+    },
+    {
+      "code": "SHAPE_TWO_CIRCLES",
+      "title": "Circles",
+      "sourceFile": "shapes-loader-circles.json",
+      "outputFile": "shapes-loader-circles.json",
+      "sourceUrl": "https://iconscout.com/lottie-animation-pack/shapes-loader-animation-pack_110835",
+      "status": "rejected",
+      "rejected": "unreadable at tile size: a thin row of five dots"
+    },
+    {
+      "code": "MONSTER_DIAMOND",
+      "title": "Diamond",
+      "sourceFile": "cute-monster-diamond.json",
+      "outputFile": "cute-monster-diamond.json",
+      "sourceUrl": "https://iconscout.com/lottie-animation-pack/cute-monster-animation-pack_141399",
+      "status": "integrated"
+    },
+    {
+      "code": "SHAPE_HEXAGON",
+      "title": "Hexagon rotate",
+      "sourceFile": "shapes-loader-hezagon-rotate.json",
+      "outputFile": "shapes-loader-hezagon-rotate-bold.json",
+      "sourceUrl": "https://iconscout.com/lottie-animation-pack/shapes-loader-animation-pack_110835",
+      "restyle": {
+        "bounds": [
+          0.113,
+          0.051,
+          0.887,
+          0.949
+        ],
+        "fill": 0.8,
+        "strokeScale": 3,
+        "colour": "#D62F8C"
+      },
+      "status": "integrated"
+    },
+    {
+      "code": "MONSTER_DOLLARS",
+      "title": "Dollars",
+      "sourceFile": "cute-monster-dollars.json",
+      "outputFile": "cute-monster-dollars.json",
+      "sourceUrl": "https://iconscout.com/lottie-animation-pack/cute-monster-animation-pack_141399",
+      "status": "integrated"
+    },
+    {
+      "code": "SHAPE_PACMAN",
+      "title": "Pacman",
+      "sourceFile": "shapes-loader-pacman.json",
+      "outputFile": "shapes-loader-pacman-bold.json",
+      "sourceUrl": "https://iconscout.com/lottie-animation-pack/shapes-loader-animation-pack_110835",
+      "restyle": {
+        "bounds": [
+          0.051,
+          0.332,
+          1.0,
+          0.699
+        ],
+        "fill": 0.8,
+        "strokeScale": 3,
+        "colour": "#E07A00"
+      },
+      "status": "integrated"
+    },
+    {
+      "code": "MONSTER_DONUTS",
+      "title": "Donuts",
+      "sourceFile": "cute-monster-donuts.json",
+      "outputFile": "cute-monster-donuts.json",
+      "sourceUrl": "https://iconscout.com/lottie-animation-pack/cute-monster-animation-pack_141399",
+      "status": "integrated"
+    },
+    {
+      "code": "SHAPE_ROLLING",
+      "title": "Rolling shapes",
+      "sourceFile": "shapes-loader-rolling-shapes.json",
+      "outputFile": "shapes-loader-rolling-shapes.json",
+      "sourceUrl": "https://iconscout.com/lottie-animation-pack/shapes-loader-animation-pack_110835",
+      "status": "rejected",
+      "rejected": "unreadable at tile size: a thin line, shapes too small (first frame is only the line)"
+    },
+    {
+      "code": "MONSTER_EGG",
+      "title": "Egg",
+      "sourceFile": "cute-monster-egg.json",
+      "outputFile": "cute-monster-egg.json",
+      "sourceUrl": "https://iconscout.com/lottie-animation-pack/cute-monster-animation-pack_141399",
+      "status": "integrated"
+    },
+    {
+      "code": "SHAPE_SCALE",
+      "title": "Scale in and out",
+      "sourceFile": "shapes-loader-scale-in-and-out.json",
+      "outputFile": "shapes-loader-scale-in-and-out-bold.json",
+      "sourceUrl": "https://iconscout.com/lottie-animation-pack/shapes-loader-animation-pack_110835",
+      "restyle": {
+        "bounds": [
+          0.156,
+          0.102,
+          0.812,
+          0.953
+        ],
+        "fill": 0.8,
+        "strokeScale": 3,
+        "colour": "#C1121F"
+      },
+      "status": "integrated"
+    },
+    {
+      "code": "MONSTER_GHOST",
+      "title": "Ghost",
+      "sourceFile": "cute-monster-ghost.json",
+      "outputFile": "cute-monster-ghost.json",
+      "sourceUrl": "https://iconscout.com/lottie-animation-pack/cute-monster-animation-pack_141399",
+      "status": "integrated"
+    },
+    {
+      "code": "SHAPE_STACK",
+      "title": "Shapes balance",
+      "sourceFile": "shapes-loader-shapes-balance.json",
+      "outputFile": "shapes-loader-shapes-balance-bold.json",
+      "sourceUrl": "https://iconscout.com/lottie-animation-pack/shapes-loader-animation-pack_110835",
+      "restyle": {
+        "bounds": [
+          0.281,
+          0.0,
+          0.688,
+          0.938
+        ],
+        "fill": 0.8,
+        "strokeScale": 3,
+        "colour": "#0B7A75"
+      },
+      "status": "integrated"
+    },
+    {
+      "code": "MONSTER_GLASS",
+      "title": "Glass",
+      "sourceFile": "cute-monster-glass.json",
+      "outputFile": "cute-monster-glass.json",
+      "sourceUrl": "https://iconscout.com/lottie-animation-pack/cute-monster-animation-pack_141399",
+      "status": "integrated"
+    },
+    {
+      "code": "SHAPE_TOTEM",
+      "title": "Shapes bounce",
+      "sourceFile": "shapes-loader-shapes-bounce.json",
+      "outputFile": "shapes-loader-shapes-bounce-bold.json",
+      "sourceUrl": "https://iconscout.com/lottie-animation-pack/shapes-loader-animation-pack_110835",
+      "restyle": {
+        "bounds": [
+          0.105,
+          0.0,
+          0.902,
+          0.938
+        ],
+        "fill": 0.8,
+        "strokeScale": 3,
+        "colour": "#9C27B0"
+      },
+      "status": "integrated"
+    },
+    {
+      "code": "MONSTER_HEART",
+      "title": "Heart",
+      "sourceFile": "cute-monster-heart.json",
+      "outputFile": "cute-monster-heart.json",
+      "sourceUrl": "https://iconscout.com/lottie-animation-pack/cute-monster-animation-pack_141399",
+      "status": "integrated"
+    },
+    {
+      "code": "SHAPE_ROW",
+      "title": "Shapes horizontal",
+      "sourceFile": "shapes-loader-shapes-horizontal.json",
+      "outputFile": "shapes-loader-shapes-horizontal-bold.json",
+      "sourceUrl": "https://iconscout.com/lottie-animation-pack/shapes-loader-animation-pack_110835",
+      "restyle": {
+        "bounds": [
+          0.129,
+          0.168,
+          0.898,
+          0.633
+        ],
+        "fill": 0.8,
+        "strokeScale": 3,
+        "colour": "#FF5D8F"
+      },
+      "status": "integrated"
+    },
+    {
+      "code": "MONSTER_ORANGE",
+      "title": "Orange",
+      "sourceFile": "cute-monster-orange.json",
+      "outputFile": "cute-monster-orange.json",
+      "sourceUrl": "https://iconscout.com/lottie-animation-pack/cute-monster-animation-pack_141399",
+      "status": "integrated"
+    },
+    {
+      "code": "SHAPE_GRID",
+      "title": "Shapes",
+      "sourceFile": "shapes-loader-shapes.json",
+      "outputFile": "shapes-loader-shapes-bold.json",
+      "sourceUrl": "https://iconscout.com/lottie-animation-pack/shapes-loader-animation-pack_110835",
+      "restyle": {
+        "bounds": [
+          0.215,
+          0.215,
+          0.844,
+          0.812
+        ],
+        "fill": 0.8,
+        "strokeScale": 3,
+        "colour": "#2D6A4F"
+      },
+      "status": "integrated"
+    },
+    {
+      "code": "MONSTER_PHONOGRAPH_RECORD",
+      "title": "Phonograph record",
+      "sourceFile": "cute-monster-phonograph-record.json",
+      "outputFile": "cute-monster-phonograph-record.json",
+      "sourceUrl": "https://iconscout.com/lottie-animation-pack/cute-monster-animation-pack_141399",
+      "status": "integrated"
+    },
+    {
+      "code": "SHAPE_DOT_RING",
+      "title": "Small circles",
+      "sourceFile": "shapes-loader-small-circles.json",
+      "outputFile": "shapes-loader-small-circles-bold.json",
+      "sourceUrl": "https://iconscout.com/lottie-animation-pack/shapes-loader-animation-pack_110835",
+      "restyle": {
+        "bounds": [
+          0.094,
+          0.094,
+          0.906,
+          0.906
+        ],
+        "fill": 0.8,
+        "strokeScale": 3,
+        "colour": "#F15BB5"
+      },
+      "status": "integrated"
+    },
+    {
+      "code": "MONSTER_POOP",
+      "title": "Poop",
+      "sourceFile": "cute-monster-poop.json",
+      "outputFile": "cute-monster-poop.json",
+      "sourceUrl": "https://iconscout.com/lottie-animation-pack/cute-monster-animation-pack_141399",
+      "status": "integrated"
+    },
+    {
+      "code": "SHAPE_SQUARE_CIRCLE",
+      "title": "Square and circle",
+      "sourceFile": "shapes-loader-square-and-circle.json",
+      "outputFile": "shapes-loader-square-and-circle-bold.json",
+      "sourceUrl": "https://iconscout.com/lottie-animation-pack/shapes-loader-animation-pack_110835",
+      "restyle": {
+        "bounds": [
+          0.043,
+          0.043,
+          0.957,
+          0.957
+        ],
+        "fill": 0.8,
+        "strokeScale": 3,
+        "colour": "#1565C0"
+      },
+      "status": "integrated"
+    },
+    {
+      "code": "MONSTER_SAUSAGE",
+      "title": "Sausage",
+      "sourceFile": "cute-monster-sausage.json",
+      "outputFile": "cute-monster-sausage.json",
+      "sourceUrl": "https://iconscout.com/lottie-animation-pack/cute-monster-animation-pack_141399",
+      "status": "integrated"
+    },
+    {
+      "code": "SHAPE_SQUARE_TABLE",
+      "title": "Square rotate",
+      "sourceFile": "shapes-loader-square-rotate.json",
+      "outputFile": "shapes-loader-square-rotate-bold.json",
+      "sourceUrl": "https://iconscout.com/lottie-animation-pack/shapes-loader-animation-pack_110835",
+      "restyle": {
+        "bounds": [
+          0.0,
+          0.012,
+          1.0,
+          0.879
+        ],
+        "fill": 0.8,
+        "strokeScale": 3,
+        "colour": "#EF6C00"
+      },
+      "status": "integrated"
+    },
+    {
+      "code": "MONSTER_SUN",
+      "title": "Sun",
+      "sourceFile": "cute-monster-sun.json",
+      "outputFile": "cute-monster-sun.json",
+      "sourceUrl": "https://iconscout.com/lottie-animation-pack/cute-monster-animation-pack_141399",
+      "status": "integrated"
+    },
+    {
+      "code": "SHAPE_TRAMPOLINE",
+      "title": "Trampoline",
+      "sourceFile": "shapes-loader-trampoline.json",
+      "outputFile": "shapes-loader-trampoline.json",
+      "sourceUrl": "https://iconscout.com/lottie-animation-pack/shapes-loader-animation-pack_110835",
+      "status": "rejected",
+      "rejected": "unreadable at tile size: a small bar and dot"
+    },
+    {
+      "code": "MONSTER_TELEVISION",
+      "title": "Television",
+      "sourceFile": "cute-monster-television.json",
+      "outputFile": "cute-monster-television.json",
+      "sourceUrl": "https://iconscout.com/lottie-animation-pack/cute-monster-animation-pack_141399",
+      "status": "integrated"
+    },
+    {
+      "code": "MONSTER_WATERMELON",
+      "title": "Watermelon",
+      "sourceFile": "cute-monster-watermelon.json",
+      "outputFile": "cute-monster-watermelon.json",
+      "sourceUrl": "https://iconscout.com/lottie-animation-pack/cute-monster-animation-pack_141399",
+      "status": "integrated"
+    }
+  ]
+}

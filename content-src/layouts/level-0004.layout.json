@@ -1,0 +1,134 @@
+{
+  "levelId": "level-0004",
+  "title": "Sunflower Wings",
+  "difficulty": "hard",
+  "seed": 404,
+  "symbols": [
+    "GALAXY_POMEGRANATE",
+    "WINGED_APPLE",
+    "MANDALA_ORB",
+    "COSMIC_HEART",
+    "EYE_SIGIL",
+    "GLASS_KNOT",
+    "AURORA_LEMON",
+    "FLAME_CROSS",
+    "PRISM_TRIANGLE",
+    "COSMIC_CHESTNUT",
+    "MOLTEN_MERCURY",
+    "CRYSTAL_STAR",
+    "FLOWER_PANSY",
+    "LOVE_BIRDS_COUPLE",
+    "CN_LION",
+    "ICE_CREAM_SCOOPS",
+    "DINO_BRONTOSAURUS",
+    "CN_DRAGON",
+    "BIRD_PEACOCK",
+    "ICE_BANANA_SPLIT",
+    "PLANT_POT_A",
+    "CN_ZODIAC_OX",
+    "LOVE_BROKEN_HEART"
+  ],
+  "board": {
+    "tileWidth": 2,
+    "tileHeight": 2,
+    "layerOffsetX": -0.07,
+    "layerOffsetY": -0.07
+  },
+  "rules": {
+    "matchingMode": "same_symbol",
+    "requireSolvable": true
+  },
+  "backdrop": {
+    "colors": [
+      "#F2A93B",
+      "#F6D743",
+      "#4BA3C7"
+    ]
+  },
+  "blocks": [
+    {
+      "layer": 0,
+      "x": 0,
+      "y": 0,
+      "columns": 2,
+      "rows": 1
+    },
+    {
+      "layer": 0,
+      "x": 8,
+      "y": 0,
+      "columns": 2,
+      "rows": 1
+    },
+    {
+      "layer": 0,
+      "x": 0,
+      "y": 2,
+      "columns": 6,
+      "rows": 1
+    },
+    {
+      "layer": 0,
+      "x": 1,
+      "y": 4,
+      "columns": 5,
+      "rows": 1
+    },
+    {
+      "layer": 0,
+      "x": 0,
+      "y": 6,
+      "columns": 6,
+      "rows": 1
+    },
+    {
+      "layer": 0,
+      "x": 1,
+      "y": 8,
+      "columns": 5,
+      "rows": 1
+    },
+    {
+      "layer": 0,
+      "x": 0,
+      "y": 10,
+      "columns": 6,
+      "rows": 1
+    },
+    {
+      "layer": 0,
+      "x": 0,
+      "y": 12,
+      "columns": 2,
+      "rows": 1
+    },
+    {
+      "layer": 0,
+      "x": 8,
+      "y": 12,
+      "columns": 2,
+      "rows": 1
+    },
+    {
+      "layer": 1,
+      "x": 2,
+      "y": 3,
+      "columns": 4,
+      "rows": 4
+    },
+    {
+      "layer": 2,
+      "x": 3,
+      "y": 5,
+      "columns": 3,
+      "rows": 2
+    },
+    {
+      "layer": 3,
+      "x": 4,
+      "y": 6,
+      "columns": 2,
+      "rows": 1
+    }
+  ]
+}

@@ -1,0 +1,78 @@
+{
+  "levelId": "level-0002",
+  "title": "Meadow Path",
+  "difficulty": "easy",
+  "seed": 202,
+  "symbols": [
+    "GALAXY_POMEGRANATE",
+    "WINGED_APPLE",
+    "MANDALA_ORB",
+    "COSMIC_HEART",
+    "EYE_SIGIL",
+    "GLASS_KNOT",
+    "CN_HANDFAN_A",
+    "LOVE_HEART",
+    "BIRD_LOVEBIRDS_C"
+  ],
+  "board": {
+    "tileWidth": 2,
+    "tileHeight": 2,
+    "layerOffsetX": -0.07,
+    "layerOffsetY": -0.07
+  },
+  "rules": {
+    "matchingMode": "same_symbol",
+    "requireSolvable": true
+  },
+  "backdrop": {
+    "colors": [
+      "#2E9E9A",
+      "#8FD3E8",
+      "#F6D365"
+    ]
+  },
+  "blocks": [
+    {
+      "layer": 0,
+      "x": 4,
+      "y": 0,
+      "columns": 2,
+      "rows": 1
+    },
+    {
+      "layer": 0,
+      "x": 2,
+      "y": 2,
+      "columns": 4,
+      "rows": 1
+    },
+    {
+      "layer": 0,
+      "x": 0,
+      "y": 4,
+      "columns": 6,
+      "rows": 2
+    },
+    {
+      "layer": 0,
+      "x": 2,
+      "y": 8,
+      "columns": 4,
+      "rows": 1
+    },
+    {
+      "layer": 0,
+      "x": 4,
+      "y": 10,
+      "columns": 2,
+      "rows": 1
+    },
+    {
+      "layer": 1,
+      "x": 3,
+      "y": 3,
+      "columns": 3,
+      "rows": 2
+    }
+  ]
+}

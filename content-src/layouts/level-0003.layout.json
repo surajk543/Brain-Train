@@ -1,0 +1,75 @@
+{
+  "levelId": "level-0003",
+  "title": "Acorn Grove",
+  "difficulty": "medium",
+  "seed": 303,
+  "symbols": [
+    "GALAXY_POMEGRANATE",
+    "WINGED_APPLE",
+    "MANDALA_ORB",
+    "COSMIC_HEART",
+    "EYE_SIGIL",
+    "GLASS_KNOT",
+    "AURORA_LEMON",
+    "FLAME_CROSS",
+    "PRISM_TRIANGLE",
+    "LOVE_I_LOVE_YOU",
+    "ICE_CREAM_CONE",
+    "CN_TIGER_MASK",
+    "DINO_TRICERATOPS",
+    "ICE_CREAM_BOWL",
+    "BIRD_LOVEBIRDS_A"
+  ],
+  "board": {
+    "tileWidth": 2,
+    "tileHeight": 2,
+    "layerOffsetX": -0.07,
+    "layerOffsetY": -0.07
+  },
+  "rules": {
+    "matchingMode": "same_symbol",
+    "requireSolvable": true
+  },
+  "backdrop": {
+    "colors": [
+      "#8C5A2B",
+      "#D9A441",
+      "#6B8E3D"
+    ]
+  },
+  "blocks": [
+    {
+      "layer": 0,
+      "x": 0,
+      "y": 0,
+      "columns": 6,
+      "rows": 5
+    },
+    {
+      "layer": 1,
+      "x": 2,
+      "y": 2,
+      "columns": 4,
+      "rows": 3
+    },
+    {
+      "layer": 2,
+      "x": 4,
+      "y": 3,
+      "columns": 2,
+      "rows": 2
+    }
+  ],
+  "slots": [
+    {
+      "x": -2,
+      "y": 4,
+      "layer": 0
+    },
+    {
+      "x": 12,
+      "y": 4,
+      "layer": 0
+    }
+  ]
+}
