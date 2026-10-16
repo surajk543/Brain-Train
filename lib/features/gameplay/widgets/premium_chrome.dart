@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 
 import '../../../app/brand.dart';
 import '../../../app/theme.dart';
+import '../../../app/typography.dart';
 import '../../common/flowing_leaves.dart';
 import '../../common/frosted_glass.dart';
 import '../../common/static_layer.dart';
@@ -280,27 +281,6 @@ class _GoldBorderPainter extends CustomPainter {
   bool shouldRepaint(_GoldBorderPainter old) => old.radius != radius || old.palette != palette;
 }
 
-/// The HUD's panel with small gold sprigs touching its corners.
-///
-/// The HUD is a bottom bar, so the sprigs are mirrored top-to-bottom: the
-/// larger one hugs the bottom-left corner, the smaller one the top-right.
-class PremiumHudFrame extends StatelessWidget {
-  const PremiumHudFrame({super.key, required this.child, this.radius = 28});
-
-  final Widget child;
-  final double radius;
-
-  @override
-  Widget build(BuildContext context) => Stack(
-    clipBehavior: Clip.none,
-    children: [
-      PremiumPanel(radius: radius, child: child),
-      Positioned(left: -9, bottom: -9, child: Transform.flip(flipY: true, child: const GoldSprig(size: 58))),
-      Positioned(right: -9, top: -9, child: Transform.flip(flipY: true, child: const GoldSprig(size: 50, turns: 2))),
-    ],
-  );
-}
-
 /// A small gold vine sprig that curls around a corner. Purely decorative.
 class GoldSprig extends StatelessWidget {
   const GoldSprig({super.key, this.size = 56, this.turns = 0});
@@ -417,76 +397,10 @@ class _SprigPainter extends CustomPainter {
   bool shouldRepaint(_SprigPainter old) => false;
 }
 
-/// Circular outlined icon button (48 px): the HUD's Back and Restart.
-/// [onPressed] null = disabled (dimmed, not tappable).
-class PremiumRoundIconButton extends StatelessWidget {
-  const PremiumRoundIconButton({super.key, required this.icon, required this.label, required this.onPressed, this.tooltip, this.iconSize = 32});
-
-  final IconData icon;
-
-  /// The accessibility label.
-  final String label;
-
-  /// Long-press text; [label] when null.
-  final String? tooltip;
-  final double iconSize;
-  final VoidCallback? onPressed;
-
-  @override
-  Widget build(BuildContext context) {
-    final enabled = onPressed != null;
-    final text = BrainTrainPalette.of(context).text;
-    // A dimmer colour rather than an Opacity layer.
-    final ink = text.withValues(alpha: enabled ? 1 : 0.35);
-    return Semantics(
-      button: true,
-      enabled: enabled,
-      label: label,
-      excludeSemantics: true,
-      onTap: onPressed,
-      child: Tooltip(
-        message: tooltip ?? label,
-        excludeFromSemantics: true,
-        child: Material(
-          type: MaterialType.transparency,
-          shape: const CircleBorder(),
-          clipBehavior: Clip.antiAlias,
-          child: InkWell(
-            onTap: onPressed,
-            customBorder: const CircleBorder(),
-            child: Container(
-              width: 48,
-              height: 48,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                border: Border.all(color: text.withValues(alpha: enabled ? 0.7 : 0.25), width: 1.3),
-                gradient: RadialGradient(
-                  colors: [Colors.white.withValues(alpha: 0.1), Colors.white.withValues(alpha: 0.02)],
-                ),
-              ),
-              child: Icon(icon, color: ink, size: iconSize),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-/// Circular outlined back button.
-class PremiumBackButton extends StatelessWidget {
-  const PremiumBackButton({super.key, required this.onPressed});
-
-  final VoidCallback onPressed;
-
-  @override
-  Widget build(BuildContext context) =>
-      PremiumRoundIconButton(icon: Icons.chevron_left_rounded, label: 'Back', onPressed: onPressed);
-}
-
-/// Serif text button in three weights: gold-filled [primary], gold-outlined
-/// (default) and borderless [quiet]. [onPressed] null = disabled (dimmer
-/// colours rather than an Opacity layer, not tappable).
+/// Text button (Manrope Bold, redesign 1.1.0) in three weights: gold-filled
+/// [primary], gold-outlined (default) and borderless [quiet]. [onPressed]
+/// null = disabled (dimmer colours rather than an Opacity layer, not
+/// tappable).
 class PremiumButton extends StatelessWidget {
   const PremiumButton({
     super.key,
@@ -496,6 +410,7 @@ class PremiumButton extends StatelessWidget {
     this.quiet = false,
     this.expand = false,
     this.icon,
+    this.trailingIcon,
   });
 
   final String label;
@@ -508,6 +423,9 @@ class PremiumButton extends StatelessWidget {
 
   /// Shown before the label.
   final IconData? icon;
+
+  /// Shown at the right end (e.g. a chevron), the label staying centred.
+  final IconData? trailingIcon;
 
   @override
   Widget build(BuildContext context) {
@@ -545,14 +463,18 @@ class PremiumButton extends StatelessWidget {
             color: palette.secondaryButtonFill,
             border: Border.all(color: border.withValues(alpha: border.a * (enabled ? 0.85 : 0.35)), width: 1.1),
           );
-    final fontSize = quiet ? 17.0 : 19.0;
+    final fontSize = quiet ? 16.0 : 17.0;
     final text = Text(
       label,
       textAlign: TextAlign.center,
       maxLines: 1,
       overflow: TextOverflow.ellipsis,
-      style: displayText(fontSize, color: textColor, weight: FontWeight.w600, spacing: 0.3),
+      style: BrainTrainType.button(size: fontSize, color: textColor).copyWith(
+        fontWeight: quiet ? FontWeight.w600 : FontWeight.w700,
+        letterSpacing: 0.3,
+      ),
     );
+    final trailing = trailingIcon;
     return Semantics(
       button: true,
       enabled: enabled,
@@ -567,22 +489,29 @@ class PremiumButton extends StatelessWidget {
             child: InkWell(
               onTap: onPressed,
               splashColor: (primary ? palette.primaryButtonText : border).withValues(alpha: 0.16),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
-                child: Center(
-                  widthFactor: 1,
-                  heightFactor: 1,
-                  child: icon == null
-                      ? text
-                      : Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(icon, size: fontSize * 1.15, color: textColor),
-                            const SizedBox(width: 8),
-                            Flexible(child: text),
-                          ],
-                        ),
-                ),
+              child: Stack(
+                alignment: Alignment.center,
+                children: [
+                  Padding(
+                    padding: EdgeInsets.symmetric(horizontal: trailing == null ? 18 : 40, vertical: 12),
+                    child: Center(
+                      widthFactor: 1,
+                      heightFactor: 1,
+                      child: icon == null
+                          ? text
+                          : Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(icon, size: fontSize * 1.2, color: textColor),
+                                const SizedBox(width: 8),
+                                Flexible(child: text),
+                              ],
+                            ),
+                    ),
+                  ),
+                  if (trailing != null)
+                    Positioned(right: 16, child: Icon(trailing, size: fontSize * 1.3, color: textColor)),
+                ],
               ),
             ),
           ),
@@ -615,37 +544,6 @@ class PremiumEmblem extends StatelessWidget {
       child: Icon(icon, color: BrandGold.light, size: size * 0.5),
     ),
   );
-}
-
-/// A small caps label over a large tabular value, for HUD statistics.
-class PremiumStat extends StatelessWidget {
-  const PremiumStat({super.key, required this.label, required this.value});
-
-  final String label;
-  final String value;
-
-  @override
-  Widget build(BuildContext context) {
-    final palette = BrainTrainPalette.of(context);
-    return Semantics(
-      label: '$label $value',
-      excludeSemantics: true,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 8),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              label.toUpperCase(),
-              style: displayText(10.5, color: palette.hudLabel, weight: FontWeight.w500, spacing: 1.5),
-            ),
-            const SizedBox(height: 5),
-            Text(value, style: displayText(22, color: palette.hudValue, weight: FontWeight.w500)),
-          ],
-        ),
-      ),
-    );
-  }
 }
 
 /// Thin gold divider: vertical between HUD statistics, or [horizontal].
