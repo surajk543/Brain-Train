@@ -211,11 +211,13 @@ dart run tool/smoke_remote.dart         # live check: app's content client vs pr
 
 ## Current state (2026-10-16)
 
-- Published content 2026.10.16.11 (manifest `minClientContentSchema: 3`, from branch `feat/campaign-v2`): a fresh
+- Published content 2026.10.16.12 (manifest `minClientContentSchema: 3`, from branch `feat/campaign-v2`): a fresh
   campaign of 100 levels, one batch of 10 per difficulty 1–10 (`catalog.json` `campaign`, seed 20261641, chosen so
   levels 1–10 open 1 2 1 4 4 5 2 6 1 1), trays 2–5, 85/15 symbols, at most 2 pairs per symbol; rules in
-  docs/level-design-rules.md. The registry (`registries/symbols-125d9a47d9b6.json`) holds 318 symbols: 205 static
-  (set v1) and 113 animated, every one on some level (static 10–11 levels each, animated 3–4). Apps built before
+  docs/level-design-rules.md. The registry (`registries/symbols-c49aee2044e5.json`) holds 314 symbols: 203 static
+  (set v1) and 111 animated, every one on some level (static 10–11 levels each, animated 3–4). .12 = .11 minus 4 tiles
+  unsuitable for a 6+ audience (CINEMA_NO_SMOKING, TRIP_COCKTAIL, MONSTER_POOP, EMOJI_KNIFE: tobacco, alcohol, crude
+  humour, weapon; IARC rating). Apps built before
   schema 3 (master, Play versionCode 1/2) reject this manifest and keep their known-good content, whose old level files
   are still on R2 until `tool/r2_prune.dart --delete` runs (455 unreferenced objects: 345 old levels, 7 registries,
   85 `symbols/v4/`, 18 old `shapes-loader-*` animations).
@@ -244,17 +246,24 @@ dart run tool/smoke_remote.dart         # live check: app's content client vs pr
   (image set renamed v4 → v1 on 2026-10-16: `art/source/symbols-v1/`, `art/masters/v1/`, `art/review/v1-contact-sheet.png`).
   Animated: `art/animated_sources.json` → `python3 tool/assets/prepare_animated.py` → `content/brain-train/animated-symbols/`.
   Originals live in `art/source/` (gitignored). IconScout downloads use the owner's subscription via the iconscout MCP.
-- Art sources: each entry has a `status`; builds take only `integrated` ones. Static: 205 integrated (82 earlier +
+- Art sources: each entry has a `status`; builds take only `integrated` ones. Static: 203 integrated (82 earlier +
   23 owner nano-banana cut-outs + 76 IconScout 3D Sport/Christmas/Tech/Robot/Cinema/Trip + 24 from the Sport, Sport
-  Equipment, Equipment and Medicine packs), 58 `rejected` (unreadable at 31 px, look-alikes, duplicates; each has a
-  reason), 16 `awaiting download`. Duplicate subjects are never added (owner). Animated: 113 integrated (83 earlier +
+  Equipment, Equipment and Medicine packs, minus 2 rejected for 6+), 60 `rejected` (unreadable at 31 px, look-alikes, duplicates; each has a
+  reason), 16 `awaiting download`. Duplicate subjects are never added (owner). Animated: 111 integrated (2 rejected for 6+; 83 earlier +
   9 owner LottieFiles `LF_*` + India map + 20 country flags `FLAG_*` restyled with a zoom), rejected ones have a
   reason. Check new art at 31 px and 64 px tile width.
 - Not yet integrated: 4 IconScout AI images (spring rolls ×2, salad, nachos) — not reachable via the IconScout API.
 - Tray mechanic is integrated (tray at the top, flights, strike-and-shatter matches, Tray full card with
   Revive / Restart), with 2 to 5 slots per level.
-- App version 1.0.0+4 (branch `feat/rewarded-ads`): rewarded ads on Revive, age screen, Privacy choices row, built
-  with Google's AdMob test IDs (`google_mobile_ads` 9.1.0).
+- App version 1.0.0+4 (`feat/rewarded-ads`, merged into `feat/campaign-v2`): rewarded ads on Revive, age screen,
+  Privacy choices row, built with Google's AdMob test IDs (`google_mobile_ads` 9.1.0). This bundle (66.7 MB AAB,
+  19.2 MB install) is the Closed testing - Alpha release in the Play Console.
+- Play Store listing (owner-approved): texts in `art/store/listing-en-US.md`, `art/store/icon-512.png`,
+  `art/store/feature-graphic.png` (1024x500), 6 phone screenshots in `art/store/phone/` (1080x1920, from
+  `test/visual/` captures, taken before ads). AI asset declaration: "Don't label assets" (owner).
+- Studio website sungamestudio.com (static, nginx on game-server-01): Brain Train page `/brain-train`, privacy policy
+  `/brain-train/privacy/` (source `website/brain-train/privacy/index.html`, same text as the deployed page); the
+  premium night redesign was deployed on 2026-10-16 (source repo `~/Project/sungamestudio-site` on the Linux machine).
 
 ## Working on another machine
 
@@ -265,8 +274,8 @@ dart run tool/smoke_remote.dart         # live check: app's content client vs pr
   `emulator -avd Pixel_6_API_34 -gpu host -no-snapshot-load`). This Mac: Flutter `~/flutter`, SDK
   `/opt/homebrew/share/android-commandlinetools`, AVD `Pixel_9` = Play Store image (use for Play Games), `TP_*` AVDs
   have no Play Store, `Pixel_6_API_34` does not exist. Python 3 + Pillow for `tool/assets/*.py`, ffmpeg for audio.
-- `flutter analyze` and `flutter test` work on a fresh clone (tests use fixtures and `content/starter/`); on this Mac 6
-  tests currently fail (see Open work).
+- `flutter analyze` and `flutter test` work on a fresh clone (tests use fixtures and `content/starter/`); on the Linux
+  machine all 512 pass (2026-10-16); on the Mac 6 tests failed before (see Open work).
 - Content tree: `content/brain-train/` is not in git. Before `tool/content.dart build|validate` or `tool/publish.dart`
   on a new machine, mirror the live tree: `dart run tool/fetch_content.dart` (public prefix, no keys, sha256-checked).
 - Secrets: copy `.env` by a secure channel (password manager), never git/chat/email, likewise `android/key.properties`,
@@ -285,6 +294,12 @@ dart run tool/smoke_remote.dart         # live check: app's content client vs pr
   this Linux machine's debug key — another machine's debug key needs its own credential). Upload keystore:
   `~/keys/brain-train-upload-keystore.jks` on the Linux machine (password only in `android/key.properties`).
   Internal testing release draft exists (versionCode 1 was built before the app ID existed: replace with a newer build).
+- Play Console release state (2026-10-16): every App content declaration is done (privacy policy, ads = yes,
+  Advertising ID, content rating, target audience 6+ incl. under 13 (Families), Data safety, Health/Financial/
+  Government); category Puzzle; store listing saved. Closed testing - Alpha: versionCode 4 (1.0.0), all countries,
+  testers = Google Group sungamestudiotesters@googlegroups.com, feedback contact@sungamestudio.com. Its 16 changes sit
+  in Publishing overview, not yet sent for review (owner decides; Google Play Games on PC is opted in by default).
+  Production needs 12+ opted-in testers for 14 days, then real AdMob IDs.
 - Open work (ads, docs/ADS.md "Owner setup"): AdMob account, app and "Revive" rewarded unit → real IDs in
   `android/admob.properties` and `ios/Runner/Info.plist`; app-ads.txt on sungamestudio.com; AdMob Families /
   mixed-audience settings and a published GDPR consent message; Play Console Ads, Advertising ID, Target audience and
