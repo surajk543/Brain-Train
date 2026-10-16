@@ -37,7 +37,8 @@ Future<AppServices> testServices({
   RewardedAdsController? ads,
   AppUpdateController? updates,
   http.Client? client,
-  AgeGroup? ageGroup = AgeGroup.thirteenPlus,
+  /// The answered age group; null leaves the age screen unanswered.
+  AgeGroup? ageGroup,
 }) async {
   final config = ContentConfig(baseUrl: Uri.parse('https://content.test/'), allowedHosts: const {'content.test'});
   final offline = MockClient((r) async => throw http.ClientException('offline', r.url));
