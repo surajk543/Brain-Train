@@ -1,5 +1,9 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <uses-permission android:name="android.permission.VIBRATE" />
+    <!-- Advertising ID, for rewarded ads to players 13+ (the ads SDK declares
+         it too). Under 13 every ad request is tagged child-directed
+         (docs/ADS.md); the app itself never reads the ID. -->
+    <uses-permission android:name="com.google.android.gms.permission.AD_ID" />
     <application
         android:label="Brain Train"
         android:name="${applicationName}"
@@ -42,6 +46,16 @@
             android:authorities="${applicationId}.playgamesinitprovider"
             android:exported="false"
             android:enabled="${playGamesEnabled}" />
+        <!-- AdMob (docs/ADS.md): the app ID from android/admob.properties
+             (Google's test app ID without it). The SDK starts only after the
+             lobby's first frame, after the age screen and consent; app
+             measurement waits for that start too. -->
+        <meta-data
+            android:name="com.google.android.gms.ads.APPLICATION_ID"
+            android:value="@string/admob_app_id" />
+        <meta-data
+            android:name="com.google.android.gms.ads.DELAY_APP_MEASUREMENT_INIT"
+            android:value="true" />
     </application>
     <!-- Required to query activities that can process text, see:
          https://developer.android.com/training/package-visibility and

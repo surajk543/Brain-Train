@@ -23,10 +23,13 @@ import '../content/remote_asset_resolver.dart';
 import '../data/progress_repository.dart';
 import '../data/settings_repository.dart';
 import '../platform/games_services_play_games.dart';
+import '../platform/google_mobile_ads_rewarded.dart';
 import '../platform/play_games.dart';
+import '../platform/rewarded_ads.dart';
 import '../rendering/symbol_art.dart';
 import 'background_music.dart';
 import 'play_games_controller.dart';
+import 'rewarded_ads_controller.dart';
 import 'sound_effects.dart';
 
 /// Observable wrapper around [ContentCoordinator] for the widget tree, and
@@ -172,7 +175,9 @@ class AppServices {
     this.sounds,
     this.music,
     PlayGamesController? playGames,
-  }) : playGames = playGames ?? PlayGamesController(const UnavailablePlayGames()) {
+    RewardedAdsController? ads,
+  }) : playGames = playGames ?? PlayGamesController(const UnavailablePlayGames()),
+       ads = ads ?? RewardedAdsController(const UnavailableRewardedAds()) {
     // The level window follows this player's progress.
     content.attachProgress(progress);
   }
@@ -190,6 +195,9 @@ class AppServices {
 
   /// Google Play Games (Android builds with an app ID); unavailable elsewhere.
   final PlayGamesController playGames;
+
+  /// Rewarded ads for Revive (Android and iOS); off elsewhere (no ad needed).
+  final RewardedAdsController ads;
 
   static Future<AppServices> create({ContentConfig? config}) async {
     final contentConfig = config ?? ContentConfig.production;
@@ -211,15 +219,18 @@ class AppServices {
     await content.start();
     final sounds = SoundEffects(settings);
     await sounds.preload();
+    final music = BackgroundMusic(settings);
     return AppServices(
       content: content,
       progress: progress,
       settings: settings,
       symbolArt: SymbolArtCache(),
       sounds: sounds,
-      music: BackgroundMusic(settings),
+      music: music,
       // A local check only; sign-in starts from the lobby.
       playGames: PlayGamesController(await createPlayGames()),
+      // Nothing runs yet: the lobby starts ads after its first frame.
+      ads: RewardedAdsController(createRewardedAds(), music: music, sounds: sounds),
     );
   }
 

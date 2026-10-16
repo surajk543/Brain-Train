@@ -12,5 +12,18 @@ import UIKit
 
   func didInitializeImplicitFlutterEngine(_ engineBridge: FlutterImplicitEngineBridge) {
     GeneratedPluginRegistrant.register(with: engineBridge.pluginRegistry)
+    // Tells Dart this build's rewarded ad unit (Info.plist BrainTrainRewardedAdUnitId;
+    // docs/ADS.md). Dart falls back to Google's test unit without an answer.
+    if let registrar = engineBridge.pluginRegistry.registrar(forPlugin: "BrainTrainPlatform") {
+      let channel = FlutterMethodChannel(name: "brain_train/platform", binaryMessenger: registrar.messenger())
+      channel.setMethodCallHandler { call, result in
+        switch call.method {
+        case "rewardedAdUnitId":
+          result(Bundle.main.object(forInfoDictionaryKey: "BrainTrainRewardedAdUnitId") as? String)
+        default:
+          result(FlutterMethodNotImplemented)
+        }
+      }
+    }
   }
 }

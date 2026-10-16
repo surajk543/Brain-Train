@@ -25,6 +25,18 @@ class BackgroundMusic with WidgetsBindingObserver {
   AudioPlayer? _player;
   bool _wanted = false;
   bool _foreground = true;
+  bool _interrupted = false;
+
+  /// True while something else plays full screen (a rewarded ad): the music
+  /// pauses, and plays again once it is false (Sound and the app's
+  /// foreground permitting). On iOS an ad does not take the app out of the
+  /// foreground, so this is what silences the music there.
+  bool get interrupted => _interrupted;
+  set interrupted(bool value) {
+    if (value == _interrupted) return;
+    _interrupted = value;
+    unawaited(_sync());
+  }
 
   /// Starts looping (if Sound is on) and keeps following the Sound setting
   /// and the app lifecycle until [dispose].
@@ -51,7 +63,7 @@ class BackgroundMusic with WidgetsBindingObserver {
     final player = _player;
     if (player == null) return;
     try {
-      if (_wanted && _foreground && settings.sound) {
+      if (_wanted && _foreground && !_interrupted && settings.sound) {
         if (player.state != PlayerState.playing) await player.resume();
       } else if (player.state == PlayerState.playing) {
         await player.pause();

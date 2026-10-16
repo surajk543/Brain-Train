@@ -65,8 +65,8 @@ class _HomeScreenState extends State<HomeScreen> {
   /// open a screen twice.
   bool _navigating = false;
 
-  /// Play Games start is scheduled once, after the first frame.
-  bool _playGamesScheduled = false;
+  /// Play Games and ads start once, after the first frame.
+  bool _servicesScheduled = false;
 
   Future<void> _open(WidgetBuilder builder) async {
     if (_navigating) return;
@@ -90,11 +90,15 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    if (_playGamesScheduled) return;
-    _playGamesScheduled = true;
-    final playGames = AppScope.of(context).playGames;
-    // After the first frame: the lobby never waits for Play Games.
-    WidgetsBinding.instance.addPostFrameCallback((_) => playGames.start());
+    if (_servicesScheduled) return;
+    _servicesScheduled = true;
+    final services = AppScope.of(context);
+    // After the first frame: the lobby never waits for Play Games or ads
+    // (SDK start, consent, the first rewarded ad).
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      services.playGames.start();
+      services.ads.start(services.settings.ageGroup);
+    });
   }
 
   @override
