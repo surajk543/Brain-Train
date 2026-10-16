@@ -17,6 +17,10 @@ class PlayGamesBackend {
 
   Future<void> signIn() => GameAuth.signIn();
 
+  /// Starts the Play Games SDK (MainActivity; it no longer starts by itself at
+  /// launch, so it never signs in a player who was not allowed).
+  Future<void> initialize() => const MethodChannel('brain_train/platform').invokeMethod<bool>('initPlayGames');
+
   Future<void> showAchievements() => Achievements.showAchievements();
 
   Future<void> showLeaderboards() => Leaderboards.showLeaderboards();
@@ -42,6 +46,7 @@ class GamesServicesPlayGames implements PlayGames {
   final _status = StreamController<PlayGamesStatus>.broadcast();
   PlayGamesStatus _current = const PlayGamesSignedOut();
   StreamSubscription<String?>? _players;
+  Future<void>? _initialized;
   bool _disposed = false;
 
   @override
@@ -51,7 +56,17 @@ class GamesServicesPlayGames implements PlayGames {
   PlayGamesStatus get current => _current;
 
   @override
-  void refresh() {
+  void refresh() => unawaited(_refresh());
+
+  Future<void> _refresh() async {
+    if (_disposed) return;
+    try {
+      await _start();
+    } on Object catch (error) {
+      debugPrint('Play Games: could not start ($error)');
+      _set(const PlayGamesSignedOut());
+      return;
+    }
     if (_disposed) return;
     // The plugin checks once per subscription: listen again to check again.
     unawaited(_players?.cancel());
@@ -69,6 +84,16 @@ class GamesServicesPlayGames implements PlayGames {
     }
   }
 
+  /// Starts the SDK once; a failed start is tried again next time.
+  Future<void> _start() async {
+    try {
+      await (_initialized ??= backend.initialize().timeout(callTimeout));
+    } on Object {
+      _initialized = null;
+      rethrow;
+    }
+  }
+
   void _set(PlayGamesStatus status) {
     if (_disposed || status == _current) return;
     _current = status;
@@ -78,6 +103,7 @@ class GamesServicesPlayGames implements PlayGames {
   @override
   Future<PlayGamesSignIn> signIn() async {
     try {
+      await _start();
       await backend.signIn().timeout(signInTimeout);
       refresh();
       return PlayGamesSignIn.signedIn;

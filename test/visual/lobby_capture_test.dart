@@ -22,6 +22,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../features/lobby_support.dart';
 import '../platform/fake_play_games.dart';
 import '../platform/fake_rewarded_ads.dart';
+import 'package:brain_train/data/age_group.dart';
 
 /// Level 1 won and level 2 in progress, as in the reference ("Continue · Level 2").
 Future<void> _midway(AppServices services) async {
@@ -82,6 +83,7 @@ void main() {
       await tester.runAsync(() async {
         services = await testServices(
           playGames: PlayGamesController(FakePlayGames(const PlayGamesSignedIn('Tester'))),
+          ageGroup: AgeGroup.thirteenPlus,
         );
         await _midway(services);
       });

@@ -99,7 +99,7 @@ class _HomeScreenState extends State<HomeScreen> {
     // After the first frame: the lobby never waits for Play Games, ads (SDK
     // start, consent, the first rewarded ad) or the app update notice.
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      services.playGames.start();
+      services.playGames.start(services.settings.ageGroup);
       services.ads.start(services.settings.ageGroup);
       services.updates.start();
     });

@@ -154,8 +154,10 @@ dart run tool/smoke_remote.dart         # live check: app's content client vs pr
 - Play Games (Android only, docs/PLAY_GAMES.md): optional and never on the startup path (a local channel check in
   `AppServices.create`; sign-in starts after the lobby's first frame). Only `games_services_play_games.dart`
   imports the plugin; every call is caught and timed out. The app ID comes from gitignored
-  `android/play_games.properties`; without it `PlayGamesInitProvider` is disabled and Dart sees
-  `UnavailablePlayGames`. Release signing reads gitignored `android/key.properties`. iOS min is 14.0 (plugin).
+  `android/play_games.properties`; without it Dart sees `UnavailablePlayGames`. 13+ only (Play Families policy,
+  owner 2026-10-17): `PlayGamesController.start(ageGroup)` never starts Play Games for under 13 (or no answer) and hides
+  the lobby buttons; the library's `PlayGamesInitProvider` is always disabled, and `MainActivity` starts the SDK
+  (`initPlayGames` on `brain_train/platform`) only when Dart asks, so nobody is signed in at launch. Release signing reads gitignored `android/key.properties`. iOS min is 14.0 (plugin).
 - Ads (owner, docs/ADS.md): Revive shows an AdMob rewarded ad (`GameScreen._revive`); the revive runs only once the
   ad has closed with its reward earned (and the app is in the foreground). Closed early / failed → no revive, the card
   stays. No ad loaded (loading, no fill, errors) → Revive off with "Loading an ad…"; offline → off with "Connect to the

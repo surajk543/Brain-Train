@@ -6,6 +6,7 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../platform/fake_play_games.dart';
+import 'package:brain_train/data/age_group.dart';
 
 Future<void> _settle() => Future<void>.delayed(Duration.zero);
 
@@ -25,7 +26,7 @@ void main() {
   test('unavailable: not available, start does nothing', () {
     final none = PlayGamesController(const UnavailablePlayGames());
     expect(none.available, isFalse);
-    none.start();
+    none.start(AgeGroup.thirteenPlus);
     none.dispose();
   });
 
@@ -33,8 +34,8 @@ void main() {
     var notified = 0;
     controller.addListener(() => notified++);
     controller
-      ..start()
-      ..start();
+      ..start(AgeGroup.thirteenPlus)
+      ..start(AgeGroup.thirteenPlus);
     expect(fake.refreshes, 1);
     fake.emit(const PlayGamesSignedIn('Ann'));
     await _settle();
@@ -42,8 +43,23 @@ void main() {
     expect(notified, 1);
   });
 
+  test('under 13 (or no answer yet): never started, no buttons, no sign-in on tap', () async {
+    for (final age in [AgeGroup.under13, null]) {
+      final local = FakePlayGames();
+      final child = PlayGamesController(local);
+      child.start(age);
+      expect(child.available, isFalse, reason: '$age');
+      expect(local.refreshes, 0, reason: '$age: no silent sign-in check');
+      await child.openAchievements();
+      expect(local.calls, isEmpty, reason: '$age: no sign-in dialog');
+      child.didChangeAppLifecycleState(AppLifecycleState.resumed);
+      expect(local.refreshes, 0);
+      child.dispose();
+    }
+  });
+
   test('resume checks again', () {
-    controller.start();
+    controller.start(AgeGroup.thirteenPlus);
     controller.didChangeAppLifecycleState(AppLifecycleState.resumed);
     controller.didChangeAppLifecycleState(AppLifecycleState.paused);
     expect(fake.refreshes, 2);
@@ -103,7 +119,7 @@ void main() {
   });
 
   test('a resume during sign-in still opens one screen', () async {
-    controller.start();
+    controller.start(AgeGroup.thirteenPlus);
     fake.gate = Completer<void>();
     final open = controller.openAchievements();
     await _settle();
