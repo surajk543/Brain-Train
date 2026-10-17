@@ -34,6 +34,7 @@ CAPTURE_DIR=/tmp/x flutter test test/visual/tile_closeup_capture_test.dart   # t
 CAPTURE_DIR=/tmp/x flutter test test/visual/gameplay_redesign_capture_test.dart   # gameplay 1.1.0: combo+hint, hint hand, cards, Level Complete, spent action
 STORE_DIR=art/store flutter test test/visual/store_screenshots_test.dart   # 6 store scenes -> phone/, ios/iphone-6.9/, ios/ipad-13/
 python3 tool/store/make_store_shots.py  # framed marketing shots (headline, gold rim) -> art/store/styled/<target>/
+python3 -I tool/store/make_pgs_icons.py # achievement + leaderboard icons (512 px) -> art/play-games/ (Play Games + Game Center)
 dart run tool/smoke_remote.dart         # live check: app's content client vs production R2 (+ first/middle/last level)
 ```
 
