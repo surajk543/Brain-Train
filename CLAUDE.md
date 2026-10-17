@@ -34,6 +34,7 @@ CAPTURE_DIR=/tmp/x flutter test test/visual/tile_closeup_capture_test.dart   # t
 CAPTURE_DIR=/tmp/x flutter test test/visual/gameplay_redesign_capture_test.dart   # gameplay 1.1.0: combo+hint, hint hand, cards, Level Complete, spent action
 STORE_DIR=art/store flutter test test/visual/store_screenshots_test.dart   # 6 store scenes -> phone/, ios/iphone-6.9/, ios/ipad-13/
 python3 tool/store/make_store_shots.py  # framed marketing shots (headline, gold rim) -> art/store/styled/<target>/
+python3 -I tool/store/make_pgs_icons.py # achievement + leaderboard icons (512 px) -> art/play-games/ (Play Games + Game Center)
 dart run tool/smoke_remote.dart         # live check: app's content client vs production R2 (+ first/middle/last level)
 ```
 
@@ -71,7 +72,8 @@ dart run tool/smoke_remote.dart         # live check: app's content client vs pr
   (`BrainTrainPalette.day/night`, `LobbyTheme.day/night`, `FeltFoliage`, `buildBrainTrainTheme(brightness)`,
   `AppAppearance.themeMode`), `typography.dart` (`BrainTrainFonts`, `BrainTrainType` builders,
   `BrainTrainTypography` theme extension, `registerFontLicenses`), `brand.dart` (`kDisplayFont` = Playfair, gold),
-  `sound_effects.dart`, `play_games_controller.dart` (lobby Play Games state), `rewarded_ads_controller.dart`
+  `sound_effects.dart`, `play_games_controller.dart` (lobby Play Games / Game Center state, win reports, catch-up),
+  `play_games_reports.dart` (`WonGame`, `reportForWin`, `reportForProgress`, `leaderboardTime`), `rewarded_ads_controller.dart`
   (`AppServices.ads`: Revive's ad state, show with music/SFX held, privacy options, `offer()`),
   `rewarded_ad_offer.dart` (`RewardedAdOffer`: one card's ad with the no-ad fallback, `kAdFallbackDelay`),
   `app_update_controller.dart`
@@ -79,8 +81,10 @@ dart run tool/smoke_remote.dart         # live check: app's content client vs pr
 - `lib/data/` — `ProgressRepository`, `SettingsRepository` (also the stored `AgeGroup` and `AppAppearance`),
   `age_group.dart`, `appearance.dart`,
   `app_update_cache.dart` (last good update notice).
-- `lib/platform/` — `play_games.dart` (`PlayGames` interface, statuses, `UnavailablePlayGames`, pure Dart);
-  `games_services_play_games.dart` (the only file importing `games_services`; `createPlayGames()`);
+- `lib/platform/` — `play_games.dart` (`PlayGames` interface, `GamesService`, statuses, `UnavailablePlayGames`, pure
+  Dart); `game_services_ids.dart` (every achievement and leaderboard ID: `GameAchievement`, `GameLeaderboard`, Play
+  Games + Game Center, pure Dart); `games_services_play_games.dart` (the only file importing `games_services`;
+  `createPlayGames()`: Play Games on Android, Game Center on iOS);
   `rewarded_ads.dart` (`RewardedAds` interface, statuses, `AdAudience` per age group, `UnavailableRewardedAds`, pure
   Dart); `managed_rewarded_ads.dart` (`ManagedRewardedAds` over an `AdsBackend`: consent, one ad kept loaded,
   backoff, timeouts); `google_mobile_ads_rewarded.dart` (the only file importing `google_mobile_ads`;
@@ -199,13 +203,24 @@ dart run tool/smoke_remote.dart         # live check: app's content client vs pr
   update too (from its older cached file, `CachedLevel` index, until the new file is cached). Other levels download
   on demand when opened. A newer manifest becomes active only once its registry and its window are cached; never a
   downgrade. Startup never waits for the network (`loadInitial` + `warmUp` read only cache and bundle).
-- Play Games (Android only, docs/PLAY_GAMES.md): optional and never on the startup path (a local channel check in
-  `AppServices.create`; sign-in starts after the lobby's first frame). Only `games_services_play_games.dart`
-  imports the plugin; every call is caught and timed out. The app ID comes from gitignored
-  `android/play_games.properties`; without it Dart sees `UnavailablePlayGames`. 13+ only (Play Families policy,
-  owner 2026-10-17): `PlayGamesController.start(ageGroup)` never starts Play Games for under 13 (or no answer) and hides
-  the lobby buttons; the library's `PlayGamesInitProvider` is always disabled, and `MainActivity` starts the SDK
-  (`initPlayGames` on `brain_train/platform`) only when Dart asks, so nobody is signed in at launch. Release signing reads gitignored `android/key.properties`. iOS min is 15.0 (App Store: ITMS-90068, iOS 15+ required for uploads from April 2027).
+- Play Games (Google Play Games on Android, Game Center on iOS; docs/PLAY_GAMES.md): optional and never on the
+  startup path (a local channel check in `AppServices.create`; sign-in starts after the lobby's first frame). Only
+  `games_services_play_games.dart` imports the plugin; every call is caught and timed out. The Android app ID comes
+  from gitignored `android/play_games.properties`; without it Dart sees `UnavailablePlayGames`. 13+ only (Play
+  Families policy, owner 2026-10-17): `PlayGamesController.start(ageGroup)` never starts Play Games / Game Center for
+  under 13 (or no answer) and hides the lobby buttons; the library's `PlayGamesInitProvider` is always disabled, and
+  `MainActivity` starts the SDK (`initPlayGames` on `brain_train/platform`) only when Dart asks, so nobody is signed in
+  at launch. iOS: the Runner has the Game Center entitlement (`ios/Runner/Runner.entitlements`); the lobby's start
+  asks GameKit to authenticate (`GameAuth.signIn`: Apple's banner, or its sign-in sheet at most once per launch).
+  Achievements and leaderboards (piece 2, 2026-10-17): every ID in `lib/platform/game_services_ids.dart` (Game Center
+  `bt.ach.<key>` / `bt.lb.<key>`). Every win (replays too), signed in at 13+, after its record is saved
+  (`GameController.onWin` → `PlayGamesController.reportWin`, fire and forget, never blocks the win card): Best Score
+  and Fastest Time of its difficulty (none for named tiers; time in ms on Play Games (Duration), hundredths on Game
+  Center), Total Score (sum of `bestScore`), Levels Completed, Best Combo, and the achievements earned (1/10/50/100/
+  250/500 wins, combo ×5, Summit = a difficulty-10 win, Pure Skill = difficulty 7+ with no Hint/Undo/Shuffle). Once
+  per app run at the first sign-in a catch-up sends what the records earned (per-difficulty bests from the manifest's
+  tiers, totals, counts, combo, Summit; never Pure Skill), unlocking without Game Center banners; each achievement
+  goes at most once per run. Release signing reads gitignored `android/key.properties`. iOS min is 15.0 (App Store: ITMS-90068, iOS 15+ required for uploads from April 2027).
 - Ads (owner, docs/ADS.md): Revive shows an AdMob rewarded ad (`GameScreen._revive`); the revive runs only once the
   ad has closed with its reward earned (and the app is in the foreground). Closed early → no revive, the card
   stays. No ad loaded (loading, no fill, errors) → Revive off with "Loading an ad…"; offline → off with "Connect to the
@@ -398,10 +413,11 @@ dart run tool/smoke_remote.dart         # live check: app's content client vs pr
   required" / "This version of Brain Train is no longer supported. Please update to keep playing.", Update only, not
   dismissible (back does nothing), Play / Continue / Levels unreachable; still there after a trip to the
   store. Lobby only, never over a game. The live notice (2026-10-17): Android latest 10, min 10 (forced, after build 10 went live: 1.1.0+9 crashed at launch on Android); iOS unset.
-- Google Play Games (owner, 2026-10-16): Android only; silent sign-in; two round lobby buttons top-right
-  (Achievements, Leaderboards) open Google's screens, signing in first when needed; no Settings entry.
-  Pieces: 1 sign-in (done), 2 achievements + leaderboards, 3 cloud save. Two phones on one account must never
-  clash: piece 3 merges (union of wins, fastest time) before play; no hard one-device lock.
+- Google Play Games (owner, 2026-10-16) and Game Center (owner, 2026-10-17): Play Games on Android, Game Center on
+  iOS; silent sign-in; two round lobby buttons top-right (Achievements, Leaderboards) open Google's / Apple's
+  screens, signing in first when needed; no Settings entry. Pieces: 1 sign-in (done), 2 achievements + leaderboards
+  (done 2026-10-17: 9 achievements, 23 leaderboards; see the Play Games rule above), 3 cloud save. Two phones on one
+  account must never clash: piece 3 merges (union of wins, fastest time) before play; no hard one-device lock.
 - Every launch: navy native screen (no icon) → `assets/video/sun_game_studio_intro.mp4`
   (Sun Game Studio) → Brain Train logo on white (`assets/branding/brain_train_logo.jpg`, at least
   2.2 s and until content is loaded) → lobby. Sequence lives in `lib/app/app.dart`. Once, at first launch (and
@@ -558,7 +574,8 @@ dart run tool/smoke_remote.dart         # live check: app's content client vs pr
   machine 817 pass and 17 skip with the full content tree (2026-10-17, content 2026.10.17.3 draft); on the Mac 6 failed before
   (see Open work).
 - Run on a Mac (iPhone simulator) or any machine with no secrets: `flutter pub get && flutter run`. Debug builds read
-  content from the public host, use Google's test AdMob IDs, skip Play Games (Android only) and use debug signing;
+  content from the public host, use Google's test AdMob IDs, skip Play Games (no app ID; iOS uses Game Center) and
+  use debug signing;
   `.env` and the `android/*.properties` files are only for publishing and release builds.
 - CI: `.github/workflows/ios-build.yml` builds the iOS simulator app (`flutter build ios --simulator --debug`) on a
   macOS runner when `ios/**`, `pubspec.*` or the workflow change, or by hand (Actions > Run workflow). macOS runners
@@ -592,7 +609,10 @@ dart run tool/smoke_remote.dart         # live check: app's content client vs pr
   ID, product interaction, advertising data for third-party ads + analytics, not linked, tracking; diagnostics for
   analytics), version 1.0 texts and URLs saved. `Info.plist`: `ITSAppUsesNonExemptEncryption` false; app privacy
   manifest `ios/Runner/PrivacyInfo.xcprivacy` (no tracking by the app's own code; UserDefaults CA92.1). Still to do:
-  screenshots, App Review contact, real AdMob iOS IDs, build upload.
+  screenshots, App Review contact, real AdMob iOS IDs, build upload. Game Center (2026-10-17): the 9 achievements
+  `bt.ach.*` (300 points) and 23 Classic leaderboards `bt.lb.*` of `lib/platform/game_services_ids.dart` are created
+  with en-US texts and the `art/play-games/` icons (Fastest Time: Elapsed Time to the hundredth, low to high; the rest
+  Integer, high to low); still to do: turn on Game Center for the version and add them there for review.
 - Play Console release state (2026-10-16): every App content declaration is done (privacy policy, ads = yes,
   Advertising ID, content rating, target audience 6+ incl. under 13 (Families), Data safety, Health/Financial/
   Government); category Puzzle; store listing saved. Closed testing - Alpha: versionCode 4 (1.0.0), all countries,
@@ -608,8 +628,10 @@ dart run tool/smoke_remote.dart         # live check: app's content client vs pr
   `android/admob.properties` and `ios/Runner/Info.plist`; app-ads.txt on sungamestudio.com; AdMob Families /
   mixed-audience settings and a published GDPR consent message; Play Console Ads, Advertising ID, Target audience and
   Data safety answers. The iOS `AppDelegate.swift` channel (`rewardedAdUnitId`) is untested until the first Xcode build.
-- Open work: Play Games pieces 2–3 (piece 2 builds on `bestScore`/`bestCombo`; publishing the PGS configuration needs
-  at least 5 achievements). Scoring + combo is implemented (4 s window).
+- Open work: Play Games piece 3 (cloud save). Piece 2 (achievements + leaderboards, Play Games and Game Center) is
+  implemented (2026-10-17); the owner still publishes the Play Games configuration (Play Console → Play Games
+  Services → Publishing; only testers see it until then) and finishes Game Center in App Store Connect. The iOS
+  Game Center path is untested until the first Xcode build. Scoring + combo is implemented (4 s window).
 - Open work: Play Games / scoring follow-ups after the PR #2 merge: run an iOS build on a Mac with full Xcode (iOS min
   15.0, never built yet).
 - Open work: 5–6 tests fail on this Mac (predate PR #2): RenderFlex overflow of 4.4 px at

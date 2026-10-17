@@ -1,0 +1,121 @@
+/// Brain Train's achievements and leaderboards: every ID in one place, the
+/// Google Play Games ID (Play Console, Games Services project 923515226118)
+/// and the Apple Game Center ID (App Store Connect: `bt.ach.<key>`,
+/// `bt.lb.<key>`) of each. Pure Dart; the plugin picks the ID of the
+/// platform it runs on.
+library;
+
+/// The achievements (all plain unlocks, none incremental).
+enum GameAchievement {
+  /// First Match: complete your first level.
+  firstWin('CgkIhpCwrvAaEAIQAw', 'bt.ach.first_win', levelsWon: 1),
+
+  /// Getting Started: complete 10 levels.
+  levels10('CgkIhpCwrvAaEAIQBA', 'bt.ach.levels_10', levelsWon: 10),
+
+  /// Tile Collector: complete 50 levels.
+  levels50('CgkIhpCwrvAaEAIQBQ', 'bt.ach.levels_50', levelsWon: 50),
+
+  /// Centurion: complete 100 levels.
+  levels100('CgkIhpCwrvAaEAIQBg', 'bt.ach.levels_100', levelsWon: 100),
+
+  /// Garden Keeper: complete 250 levels.
+  levels250('CgkIhpCwrvAaEAIQBw', 'bt.ach.levels_250', levelsWon: 250),
+
+  /// Grand Master: complete 500 levels.
+  levels500('CgkIhpCwrvAaEAIQCA', 'bt.ach.levels_500', levelsWon: 500),
+
+  /// Combo Master: reach a x5 combo.
+  combo5('CgkIhpCwrvAaEAIQCQ', 'bt.ach.combo_5'),
+
+  /// Summit: complete a level of difficulty 10.
+  summit('CgkIhpCwrvAaEAIQCg', 'bt.ach.summit'),
+
+  /// Pure Skill: complete a level of difficulty 7+ without Hint, Undo or
+  /// Shuffle.
+  pureSkill('CgkIhpCwrvAaEAIQCw', 'bt.ach.pure_skill');
+
+  const GameAchievement(this.androidId, this.iosId, {this.levelsWon});
+
+  /// Google Play Games ID.
+  final String androidId;
+
+  /// Apple Game Center ID.
+  final String iosId;
+
+  /// For the level-count achievements: the number of won levels that earns
+  /// it; null for the others.
+  final int? levelsWon;
+
+  /// Best combo that earns [combo5].
+  static const int comboTarget = 5;
+
+  /// Lowest difficulty a level needs for [pureSkill].
+  static const int pureSkillMinDifficulty = 7;
+
+  /// Difficulty of the levels that earn [summit].
+  static const int summitDifficulty = 10;
+}
+
+/// The leaderboards. Scores are whole numbers, higher is better, except the
+/// Fastest Time boards (lower is better): Play Games' format there is
+/// Duration (milliseconds), Game Center's "Elapsed Time - To the Hundredth of
+/// a Second" (hundredths).
+enum GameLeaderboard {
+  /// Sum of the best scores of all won levels.
+  totalScore('CgkIhpCwrvAaEAIQDA', 'bt.lb.total_score'),
+
+  /// Number of won levels.
+  levelsCompleted('CgkIhpCwrvAaEAIQDQ', 'bt.lb.levels'),
+
+  /// Longest combo of any game.
+  bestCombo('CgkIhpCwrvAaEAIQDg', 'bt.lb.best_combo'),
+
+  /// Best Score · Difficulty 1 to 10: one game's score.
+  scoreD1('CgkIhpCwrvAaEAIQDw', 'bt.lb.score_d1'),
+  scoreD2('CgkIhpCwrvAaEAIQEA', 'bt.lb.score_d2'),
+  scoreD3('CgkIhpCwrvAaEAIQEQ', 'bt.lb.score_d3'),
+  scoreD4('CgkIhpCwrvAaEAIQEg', 'bt.lb.score_d4'),
+  scoreD5('CgkIhpCwrvAaEAIQEw', 'bt.lb.score_d5'),
+  scoreD6('CgkIhpCwrvAaEAIQFA', 'bt.lb.score_d6'),
+  scoreD7('CgkIhpCwrvAaEAIQFQ', 'bt.lb.score_d7'),
+  scoreD8('CgkIhpCwrvAaEAIQFg', 'bt.lb.score_d8'),
+  scoreD9('CgkIhpCwrvAaEAIQFw', 'bt.lb.score_d9'),
+  scoreD10('CgkIhpCwrvAaEAIQGA', 'bt.lb.score_d10'),
+
+  /// Fastest Time · Difficulty 1 to 10: one game's time (see the enum).
+  timeD1('CgkIhpCwrvAaEAIQGQ', 'bt.lb.time_d1'),
+  timeD2('CgkIhpCwrvAaEAIQGg', 'bt.lb.time_d2'),
+  timeD3('CgkIhpCwrvAaEAIQGw', 'bt.lb.time_d3'),
+  timeD4('CgkIhpCwrvAaEAIQHA', 'bt.lb.time_d4'),
+  timeD5('CgkIhpCwrvAaEAIQHQ', 'bt.lb.time_d5'),
+  timeD6('CgkIhpCwrvAaEAIQHg', 'bt.lb.time_d6'),
+  timeD7('CgkIhpCwrvAaEAIQHw', 'bt.lb.time_d7'),
+  timeD8('CgkIhpCwrvAaEAIQIA', 'bt.lb.time_d8'),
+  timeD9('CgkIhpCwrvAaEAIQIQ', 'bt.lb.time_d9'),
+  timeD10('CgkIhpCwrvAaEAIQIg', 'bt.lb.time_d10');
+
+  const GameLeaderboard(this.androidId, this.iosId);
+
+  /// Google Play Games ID.
+  final String androidId;
+
+  /// Apple Game Center ID.
+  final String iosId;
+
+  static const List<GameLeaderboard> _bestScores = [
+    scoreD1, scoreD2, scoreD3, scoreD4, scoreD5, scoreD6, scoreD7, scoreD8, scoreD9, scoreD10,
+  ];
+
+  static const List<GameLeaderboard> _fastestTimes = [
+    timeD1, timeD2, timeD3, timeD4, timeD5, timeD6, timeD7, timeD8, timeD9, timeD10,
+  ];
+
+  /// Best Score · Difficulty [difficulty] (1 to 10), else null.
+  static GameLeaderboard? bestScore(int difficulty) =>
+      difficulty >= 1 && difficulty <= _bestScores.length ? _bestScores[difficulty - 1] : null;
+
+  /// Fastest Time · Difficulty [difficulty] (1 to 10), else null.
+  static GameLeaderboard? fastestTime(int difficulty) =>
+      difficulty >= 1 && difficulty <= _fastestTimes.length ? _fastestTimes[difficulty - 1] : null;
+}

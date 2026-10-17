@@ -1,8 +1,10 @@
 import 'dart:async';
 
 import 'package:brain_train/app/app_services.dart';
+import 'package:brain_train/app/play_games_controller.dart';
 import 'package:brain_train/content/content_snapshot.dart';
 import 'package:brain_train/content/level_manifest.dart';
+import 'package:brain_train/data/age_group.dart';
 import 'package:brain_train/data/progress_repository.dart';
 import 'package:brain_train/features/gameplay/game_controller.dart';
 import 'package:brain_train/features/gameplay/game_screen.dart';
@@ -14,11 +16,14 @@ import 'package:brain_train/game_engine/scoring/score_format.dart';
 import 'package:brain_train/game_engine/state/game_engine.dart';
 import 'package:brain_train/game_engine/state/game_state.dart';
 import 'package:brain_train/game_engine/validation/solver.dart';
+import 'package:brain_train/platform/game_services_ids.dart';
+import 'package:brain_train/platform/play_games.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../platform/fake_play_games.dart';
 import 'lobby_support.dart';
 
 /// A progress store whose win write waits until [gate] completes.
@@ -163,6 +168,29 @@ void main() {
     expect(find.byType(BackdropFilter), findsNothing);
     expect(tester.takeException(), isNull);
     await captureLobby(tester, 'score-win-card-411x914', largePhone.dpr);
+    await _leave(tester);
+  });
+
+  testWidgets('a win on the game screen goes to the leaderboards and achievements (13+, signed in)', (tester) async {
+    final fake = FakePlayGames(const PlayGamesSignedIn('Ann'));
+    late AppServices services;
+    await tester.runAsync(
+      () async => services = await testServices(playGames: PlayGamesController(fake), ageGroup: AgeGroup.thirteenPlus),
+    );
+    services.playGames.start(services.settings.ageGroup);
+    final entry = services.content.snapshot.playableEntries.first;
+    final difficulty = int.parse(entry.difficulty!);
+    final controller = await _winLevel(tester, services, entry);
+    final summary = controller.winSummary!;
+    expect(fake.unlocks, [(GameAchievement.firstWin, true)]);
+    expect(fake.scores, [
+      (GameLeaderboard.bestScore(difficulty)!, summary.score),
+      (GameLeaderboard.fastestTime(difficulty)!, summary.time.inMilliseconds),
+      (GameLeaderboard.totalScore, summary.score),
+      (GameLeaderboard.levelsCompleted, 1),
+      (GameLeaderboard.bestCombo, summary.bestCombo),
+    ]);
+    expect(summary.time.inMilliseconds, greaterThanOrEqualTo(83000));
     await _leave(tester);
   });
 
