@@ -1,5 +1,7 @@
 // The redesigned gameplay screen (1.1.0) in both looks at phone and tablet
-// sizes: mid-combo with the timer bar and a hint's glow, the Tray full card,
+// sizes: mid-combo with the timer bar and a hint's glow, a hint's hand in
+// progress (on the tile, mid-blink, gliding, on the twin, a tray twin; 360x640
+// and 411x914), the Tray full card,
 // the Restart confirm card, the ad offer for one more Hint and Level
 // Complete; also 360x640 at 1.3x text.
 //
@@ -123,6 +125,72 @@ void main() {
       await captureLobby(tester, 'gameplay-$look-shuffled-${phone.name}', phone.dpr);
       await tester.pumpWidget(const SizedBox());
     });
+  }
+
+  // A hint in progress: the hand taps the tile (bright, then mid-blink),
+  // glides and taps its twin on the board; then a hint whose twin waits in
+  // the tray (the hand stays on the tile, the tray twin blinks).
+  for (final look in ['night', 'day']) {
+    for (final phone in [_small, _large]) {
+      final mode = look == 'day' ? ThemeMode.light : ThemeMode.dark;
+      testWidgets('$look hint hand ${phone.name}', (tester) async {
+        await start(tester);
+        await open(tester, phone, mode, resume: solvedSave(snapshot, meadow, pairs: 2), clock: FakeStopwatch());
+        final game = gameOf(tester);
+        await tester.tap(find.byKey(const ValueKey('action-hint')));
+        await tester.pump();
+        final overlay = tester.state<HintGlowOverlayState>(find.byType(HintGlowOverlay));
+        expect(overlay.hasHand, isTrue);
+        expect(game.engine.indexOf(overlay.hint!.partnerTileId!), isNotNull);
+        expect(game.state.tray, isEmpty, reason: 'the twin is on the board');
+        var at = Duration.zero;
+        for (final (scene, time) in [
+          ('tile', const Duration(milliseconds: 350)),
+          ('tile-blink', const Duration(milliseconds: 1050)),
+          ('glide', const Duration(milliseconds: 1575)),
+          ('twin', const Duration(milliseconds: 2100)),
+        ]) {
+          await tester.pump(time - at);
+          at = time;
+          expect(tester.takeException(), isNull);
+          await captureLobby(tester, 'gameplay-$look-hint-hand-$scene-${phone.name}', phone.dpr);
+        }
+        await tester.pump(HintGlowOverlay.duration);
+        await tester.pump();
+
+        // A tile in the tray whose only twin is free: the hint taps the twin.
+        // Play solver pairs until some symbol is down to such a pair.
+        final engine = game.engine;
+        String? lonePair() => (game.state.free.toList()..sort()).where((id) {
+          final twins = game.state.remaining.where(
+            (other) => other != id && engine.rules.matches(engine.indexOf(id)!, engine.indexOf(other)!),
+          );
+          return twins.length == 1 && game.state.free.contains(twins.single);
+        }).firstOrNull;
+        final solution = MahjongSolver(geometry: engine.geometry, rules: engine.rules)
+            .solve(engine.remainingMask)
+            .solution;
+        for (final (a, b) in solution) {
+          if (lonePair() != null) break;
+          game
+            ..tapTile(game.level.tiles[a].tileId)
+            ..tapTile(game.level.tiles[b].tileId);
+        }
+        await settle(tester);
+        game.tapTile(lonePair()!);
+        await settle(tester);
+        expect(game.grant(GameAction.hint), isTrue, reason: 'the free hint is spent');
+        await tester.pump();
+        await tester.tap(find.byKey(const ValueKey('action-hint')));
+        await tester.pump();
+        await tester.pump(const Duration(milliseconds: 350));
+        expect(overlay.hint!.reason, HintReason.completesPair);
+        expect(tester.takeException(), isNull);
+        await captureLobby(tester, 'gameplay-$look-hint-hand-tray-twin-${phone.name}', phone.dpr);
+        await tester.pump(HintGlowOverlay.duration);
+        await tester.pumpWidget(const SizedBox());
+      });
+    }
   }
 
   for (final (look, phone, textScale) in cases) {

@@ -17,6 +17,7 @@ import 'package:brain_train/features/gameplay/widgets/action_bar.dart';
 import 'package:brain_train/features/gameplay/widgets/board_view.dart';
 import 'package:brain_train/features/gameplay/widgets/game_hud.dart';
 import 'package:brain_train/features/gameplay/widgets/hint_glow.dart';
+import 'package:brain_train/features/gameplay/widgets/hint_hand.dart';
 import 'package:brain_train/features/gameplay/widgets/tray_view.dart';
 import 'package:brain_train/features/levels/level_loader.dart';
 import 'package:brain_train/features/levels/level_select_screen.dart';
@@ -47,6 +48,19 @@ BoardPainter _painter(WidgetTester tester) => tester
     .map((paint) => paint.painter)
     .whereType<BoardPainter>()
     .single;
+
+/// Checks that the hint's hand shows with its fingertip on [tileId]'s face
+/// and is about 1.3 faces wide. The face comes straight from the board,
+/// mapped onto the overlay (not through the canvas the overlay uses).
+void _expectHandOn(WidgetTester tester, String tileId) {
+  final overlay = tester.state<HintGlowOverlayState>(find.byType(HintGlowOverlay));
+  final overlayBox = tester.renderObject<RenderBox>(find.byType(HintGlowOverlay));
+  final face = tester.state<BoardViewState>(find.byType(BoardView)).tileFaceRect(tileId, ancestor: overlayBox)!;
+  expect(overlay.hasHand, isTrue);
+  final pose = overlay.handPose!;
+  expect(face.contains(pose.tip), isTrue, reason: 'the fingertip ${pose.tip} on $tileId at $face');
+  expect(HintHand.handWidth * HintHand.scaleFor(face.width), closeTo(1.3 * face.width, 0.01));
+}
 
 Future<void> _settle(WidgetTester tester, {int rounds = 12}) async {
   for (var i = 0; i < rounds; i++) {
@@ -225,9 +239,16 @@ void main() {
       expect(game.state.moveCount, moves, reason: 'a hint does not move');
       expect(game.usesLeft(GameAction.hint), 0);
       expect(overlay.strength, greaterThan(0));
-      game.tapTile(hint!.tileId);
+      // The hand taps the tile, then its twin on the board.
+      _expectHandOn(tester, hint!.tileId);
+      expect(game.state.tray, isEmpty, reason: 'the twin is on the board');
+      await tester.pump(const Duration(milliseconds: 1800));
+      _expectHandOn(tester, hint.partnerTileId!);
+      game.tapTile(hint.tileId);
       await tester.pump();
       expect(overlay.hint, isNull, reason: 'the next tap clears it');
+      expect(overlay.handPose, isNull, reason: 'the hand goes with it');
+      expect(overlay.animating, isFalse);
 
       // Untouched, it fades out by itself (a second hint: the free one is
       // spent, so one is granted as a rewarded ad would).
@@ -253,8 +274,24 @@ void main() {
       final overlay = tester.state<HintGlowOverlayState>(find.byType(HintGlowOverlay));
       expect(overlay.hint, isNotNull);
       expect(overlay.strength, 1);
+      expect(overlay.animating, isFalse);
+      expect(overlay.handPose!.progress, HintHand.pressedProgress, reason: 'a still hand, pressed on the tile');
+      _expectHandOn(tester, overlay.hint!.tileId);
       await tester.pump(HintGlowOverlay.duration + const Duration(milliseconds: 100));
       expect(overlay.hint, isNull);
+      await tester.pumpWidget(const SizedBox());
+    });
+
+    testWidgets('tablet: the hand points at the tile on the 600-px canvas', (tester) async {
+      await start(tester);
+      await pumpGame(tester, phone: _ipad);
+      await tester.tap(_action(GameAction.hint));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 350));
+      final overlay = tester.state<HintGlowOverlayState>(find.byType(HintGlowOverlay));
+      _expectHandOn(tester, overlay.hint!.tileId);
+      expect(tester.takeException(), isNull);
+      await tester.pump(HintGlowOverlay.duration);
       await tester.pumpWidget(const SizedBox());
     });
 

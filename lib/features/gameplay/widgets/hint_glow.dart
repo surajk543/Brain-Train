@@ -4,24 +4,33 @@ import 'dart:math' as math;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/widgets.dart';
+import 'package:lottie/lottie.dart';
 
 import '../../../app/tablet_scale.dart';
 import '../../../game_engine/state/game_actions.dart';
 import '../../../rendering/mahjong_tile_renderer.dart';
 import '../../../rendering/tile_style.dart';
 import '../game_controller.dart';
+import 'hint_hand.dart';
 
-/// Lights the tile a Hint recommends (and its twin, on the board or in the
-/// tray) with a restrained gold glow that breathes gently, over the board.
+/// Shows the tap a Hint recommends: a pointing hand (the owner's Lottie,
+/// [HintHand]) taps the tile, glides to its twin on the board and taps it,
+/// in a loop, while the tile and its twin (on the board or in the tray) blink
+/// with a gold glow, over the board.
 ///
 /// The glow is one image rendered once per face size
 /// ([MahjongTileRenderer.renderGlow]; its blur is baked in), stamped at the
-/// tiles' rects: nothing blurs per frame. The ticker runs only while a hint
-/// shows. It goes on the next tap that takes a tile (or an undo, shuffle,
-/// revive, restart or the end of the game), or after [duration]. With
-/// reduced motion the glow is still (no ticker) and goes the same way.
+/// tiles' rects with an animated alpha: nothing blurs per frame, and the
+/// board's cached layers are never redrawn (this overlay has its own
+/// [RepaintBoundary]). The hand is a few vector paths. The ticker runs only
+/// while a hint shows. It all goes on the next tap that takes a tile (or an
+/// undo, shuffle, revive, restart or the end of the game), or after
+/// [duration]. With reduced motion the hand rests pressed on the tile and the
+/// glow is still (no ticker); they go the same way. Without the hand (its
+/// file did not load) the glow breathes gently as before.
 ///
-/// A hint never taps for the player: this only draws.
+/// A hint never taps for the player: this only draws, and lets taps through
+/// to the tile under the hand.
 class HintGlowOverlay extends StatefulWidget {
   const HintGlowOverlay({
     super.key,
@@ -30,6 +39,7 @@ class HintGlowOverlay extends StatefulWidget {
     required this.trayRect,
     required this.style,
     required this.reduceMotion,
+    @visibleForTesting this.handAsset = HintHand.asset,
   });
 
   final GameController controller;
@@ -42,11 +52,17 @@ class HintGlowOverlay extends StatefulWidget {
   final TileStyle style;
   final bool reduceMotion;
 
+  /// The hand's Lottie file.
+  final String handAsset;
+
   /// How long a hint stays lit.
   static const Duration duration = Duration(milliseconds: 4500);
 
-  /// One breath of the glow.
+  /// One breath of the glow without the hand.
   static const Duration period = Duration(milliseconds: 1300);
+
+  /// One blink of the glow while the hand points: 2.5 a second.
+  static const Duration blink = Duration(milliseconds: 400);
 
   @override
   State<HintGlowOverlay> createState() => HintGlowOverlayState();
@@ -64,15 +80,76 @@ class HintGlowOverlayState extends State<HintGlowOverlay> with SingleTickerProvi
   Size? _glowFace;
   bool _rendering = false;
 
+  LottieDrawable? _hand;
+  bool _handRequested = false;
+
   /// The hint lit now, if any.
   @visibleForTesting
   Hint? get hint => _hint;
+
+  /// Whether the hand is loaded (it shows with every hint).
+  @visibleForTesting
+  bool get hasHand => _hand != null;
+
+  /// Whether the glow and the hand are moving now.
+  @visibleForTesting
+  bool get animating => _ticker.isActive;
+
+  /// The hand's moves for the hint lit now, in this overlay's coordinates;
+  /// null without a hint, a hand or a laid-out tile.
+  @visibleForTesting
+  HintHandMotion? get handMotion {
+    if (_hand == null) return null;
+    final faces = _faces();
+    final tile = faces.tile, box = context.findRenderObject();
+    if (tile == null || box is! RenderBox) return null;
+    return HintHandMotion.forFaces(
+      tile: tile,
+      twin: faces.twinInTray ? null : faces.twin,
+      bounds: Offset.zero & box.size,
+      total: HintGlowOverlay.duration,
+    );
+  }
+
+  /// The hand now; null when it is not shown.
+  @visibleForTesting
+  HintHandPose? get handPose {
+    final motion = handMotion;
+    if (motion == null) return null;
+    return widget.reduceMotion ? motion.still : motion.at(_elapsed);
+  }
+
+  /// The lit faces (the tile, then its twin) in this overlay's coordinates.
+  @visibleForTesting
+  List<Rect> get litFaces {
+    final faces = _faces();
+    return [?faces.tile, ?faces.twin];
+  }
 
   @override
   void initState() {
     super.initState();
     _ticker = createTicker(_tick);
     _events = widget.controller.events.listen(_onEvent);
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_handRequested) return;
+    _handRequested = true;
+    final ready = widget.handAsset == HintHand.asset ? HintHand.loaded : null;
+    if (ready != null) {
+      _hand = hintHandDrawable(ready);
+      return;
+    }
+    unawaited(
+      HintHand.load(DefaultAssetBundle.of(context), name: widget.handAsset).then((composition) {
+        if (!mounted || composition == null) return;
+        _hand = hintHandDrawable(composition);
+        if (_hint != null) _frame.value++;
+      }),
+    );
   }
 
   @override
@@ -152,23 +229,34 @@ class HintGlowOverlayState extends State<HintGlowOverlay> with SingleTickerProvi
     );
   }
 
-  /// The glow's strength now: a slow breath between 0.6 and 1, fading in over
-  /// the first 200 ms and out over the last 400 ms; 1 with reduced motion.
+  /// The glow's strength now, fading in over the first 200 ms and out over
+  /// the last 400 ms: with the hand it blinks ([HintGlowOverlay.blink])
+  /// between 0.15 and 1; without it, a slow breath between 0.6 and 1. 1 with
+  /// reduced motion.
   double get strength {
     if (widget.reduceMotion) return 1;
     final t = _elapsed.inMicroseconds / 1e6;
-    final breath = 0.8 + 0.2 * math.cos(2 * math.pi * t / (HintGlowOverlay.period.inMicroseconds / 1e6));
+    final double pulse;
+    if (_hand != null) {
+      final blink = HintGlowOverlay.blink.inMicroseconds / 1e6;
+      pulse = 0.15 + 0.85 * (0.5 + 0.5 * math.cos(2 * math.pi * t / blink));
+    } else {
+      pulse = 0.8 + 0.2 * math.cos(2 * math.pi * t / (HintGlowOverlay.period.inMicroseconds / 1e6));
+    }
     final fadeIn = (t / 0.2).clamp(0.0, 1.0);
     final end = HintGlowOverlay.duration.inMicroseconds / 1e6;
     final fadeOut = ((end - t) / 0.4).clamp(0.0, 1.0);
-    return breath * fadeIn * fadeOut;
+    return pulse * fadeIn * fadeOut;
   }
 
-  /// The lit faces in this overlay's coordinates: the tile to tap first.
-  List<Rect> _faces() {
+  /// The hint's faces in this overlay's coordinates: the tile to tap and its
+  /// twin (in the tray when [twinInTray]).
+  ({Rect? tile, Rect? twin, bool twinInTray}) _faces() {
     final hint = _hint;
     final box = context.findRenderObject();
-    if (hint == null || box is! RenderBox || !box.hasSize || !box.attached) return const [];
+    if (hint == null || box is! RenderBox || !box.hasSize || !box.attached) {
+      return (tile: null, twin: null, twinInTray: false);
+    }
     final canvas = TabletScale.canvasAbove(box);
     Rect? local(Rect? global) => global == null
         ? null
@@ -177,10 +265,12 @@ class HintGlowOverlayState extends State<HintGlowOverlay> with SingleTickerProvi
             box.globalToLocal(global.bottomRight, ancestor: canvas),
           );
     final partner = hint.partnerTileId;
-    return [
-      ?local(widget.tileRect(hint.tileId)),
-      if (partner != null) ?local(widget.trayRect(partner) ?? widget.tileRect(partner)),
-    ];
+    final inTray = partner == null ? null : widget.trayRect(partner);
+    return (
+      tile: local(widget.tileRect(hint.tileId)),
+      twin: partner == null ? null : local(inTray ?? widget.tileRect(partner)),
+      twinInTray: inTray != null,
+    );
   }
 
   @override
@@ -209,36 +299,39 @@ class _HintGlowPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     if (state._hint == null) return;
-    final faces = state._faces();
+    final faces = state.litFaces;
     if (faces.isEmpty) return;
     state._ensureGlow(faces.first.size);
     final glow = state._glow, glowFace = state._glowFace;
-    final strength = state.strength;
-    if (strength <= 0) return;
-    for (final face in faces) {
-      if (glow != null && glowFace != null) {
-        final scale = face.width / glowFace.width;
+    final strength = state.strength.clamp(0.0, 1.0);
+    if (strength > 0) {
+      for (final face in faces) {
+        if (glow != null && glowFace != null) {
+          final scale = face.width / glowFace.width;
+          canvas
+            ..save()
+            ..translate(face.left, face.top)
+            ..scale(scale);
+          glow.paint(canvas, Offset.zero, Paint()..color = Color.fromRGBO(0, 0, 0, strength));
+          canvas.restore();
+        }
+        // A warm wash over the face, like light on the ivory, and a fine gold
+        // line around it.
+        final rrect = RRect.fromRectAndRadius(face, Radius.circular(face.width * 0.12));
+        final gold = state.widget.style.glowColor;
         canvas
-          ..save()
-          ..translate(face.left, face.top)
-          ..scale(scale);
-        glow.paint(canvas, Offset.zero, Paint()..color = Color.fromRGBO(0, 0, 0, strength.clamp(0.0, 1.0)));
-        canvas.restore();
+          ..drawRRect(rrect, Paint()..color = gold.withValues(alpha: 0.2 * strength))
+          ..drawRRect(
+            rrect.deflate(0.8),
+            Paint()
+              ..style = PaintingStyle.stroke
+              ..strokeWidth = math.max(1.6, face.width * 0.05)
+              ..color = gold.withValues(alpha: 0.9 * strength),
+          );
       }
-      // A warm wash over the face, like light on the ivory, and a fine gold
-      // line around it.
-      final rrect = RRect.fromRectAndRadius(face, Radius.circular(face.width * 0.12));
-      final gold = state.widget.style.glowColor;
-      canvas
-        ..drawRRect(rrect, Paint()..color = gold.withValues(alpha: 0.2 * strength))
-        ..drawRRect(
-          rrect.deflate(0.8),
-          Paint()
-            ..style = PaintingStyle.stroke
-            ..strokeWidth = math.max(1.6, face.width * 0.05)
-            ..color = gold.withValues(alpha: 0.9 * strength),
-        );
     }
+    final hand = state._hand, pose = state.handPose;
+    if (hand != null && pose != null) HintHand.paint(canvas, hand, pose);
   }
 
   @override

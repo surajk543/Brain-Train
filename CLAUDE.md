@@ -28,7 +28,7 @@ python3 -I tool/lobby_art/make_day_lobby_art.py  # Day lobby art -> assets/lobby
 python3 tool/assets/make_sounds.py      # sound effects -> assets/sounds/
 CAPTURE_DIR=/tmp/x flutter test test/visual/   # write screenshots of lobby/gameplay at phone sizes
 CAPTURE_DIR=/tmp/x flutter test test/visual/theme_capture_test.dart   # the same screens in Day and Night
-CAPTURE_DIR=/tmp/x flutter test test/visual/gameplay_redesign_capture_test.dart   # gameplay 1.1.0: combo+hint, cards, Level Complete
+CAPTURE_DIR=/tmp/x flutter test test/visual/gameplay_redesign_capture_test.dart   # gameplay 1.1.0: combo+hint, hint hand, cards, Level Complete
 STORE_DIR=art/store flutter test test/visual/store_screenshots_test.dart   # 6 store scenes -> phone/, ios/iphone-6.9/, ios/ipad-13/
 python3 tool/store/make_store_shots.py  # framed marketing shots (headline, gold rim) -> art/store/styled/<target>/
 dart run tool/smoke_remote.dart         # live check: app's content client vs production R2 (+ first/middle/last level)
@@ -55,7 +55,8 @@ dart run tool/smoke_remote.dart         # live check: app's content client vs pr
   `widgets/lobby_play_games.dart` round Play Games buttons; `widgets/lobby_update_card.dart` update card);
   `gameplay/` (`game_controller.dart` glues engine + UI; `game_layout.dart` (`GameLayout`: the screen's heights,
   compact on short screens); `widgets/game_hud.dart` top HUD + `ComboTimerBar`; `widgets/action_bar.dart` Undo / Hint /
-  Shuffle / Restart; `widgets/hint_glow.dart` hint highlight; `widgets/result_cards.dart` Level Complete, Tray full,
+  Shuffle / Restart; `widgets/hint_glow.dart` hint overlay (blinking glow + hand); `widgets/hint_hand.dart` the hint's
+  pointing hand (`HintHand` geometry, `HintHandMotion`); `widgets/result_cards.dart` Level Complete, Tray full,
   Restart and ad-offer cards; `widgets/premium_chrome.dart` felt backdrop, panels, buttons;
   `widgets/tray_view.dart` tray + `TrayController`; `widgets/tile_flight_overlay.dart`
   board↔tray flights + `TrayFlightDirector`; `widgets/tile_shatter.dart` match strike + shards;
@@ -271,9 +272,17 @@ dart run tool/smoke_remote.dart         # live check: app's content client vs pr
   `TileHinted`, `BoardShuffled`; `winSummary` counts the uses. UI (`widgets/action_bar.dart`, under the board):
   gold-outlined round buttons with labels (under them; beside them on compact screens) and a gold badge with the uses
   left, a play mark at 0 (an ad offer; "+" without ads); a button is on only while `isAvailable` and no card is open
-  (off = dimmed colours, no ad offer). Hint: `HintGlowOverlay` stamps a pre-rendered gold glow (`renderGlow`, no
-  per-frame blur) plus a gold line on the tile and its twin (board or tray), breathing gently, until the next tap,
-  undo, shuffle, revive or restart, or 4.5 s; still with reduce motion; it never taps. Shuffle: the board, tray,
+  (off = dimmed colours, no ad offer). Hint (owner, 2026-10-17): `HintGlowOverlay` (own `RepaintBoundary`, over the
+  board, `IgnorePointer`) shows a pointing hand (`HintHand`, `assets/lottie/hint_hand.json`, drawn with one
+  `LottieDrawable`) that taps the tile twice, glides to its twin on the board, taps it once and glides back
+  (`HintHandMotion`, 2.8 s rounds); one hand, not two, so the order reads (this tile first) and only one hand covers
+  the small faces. A twin in the tray gets no hand (tray tiles cannot be tapped), only the blink. Fingertip (the
+  finger pad at the pressed frame, (366, 364) in the 512 frame) slightly up-left of the face centre, hand 1.3 face
+  widths wide, mirrored near the left/top edges to stay on screen. Meanwhile the tile and its twin (board or tray)
+  blink 2.5 times a second: the pre-rendered gold glow (`renderGlow`, no per-frame blur) plus a gold wash and line,
+  stamped with an animated alpha. Until the next tap, undo, shuffle, revive or restart (and the tray-full or
+  win taps), or 4.5 s; reduce motion: a still hand pressed on the tile and a still glow (no ticker); if the hand
+  fails to load, the glow alone breathes as before. It never taps. Shuffle: the board, tray,
   intro atlas and animated-tile list draw `GameController.boardLevel` (rebuilt on `symbolsSerial`, so resumed
   shuffled saves draw right); the changed tiles turn over in a left-to-right wave (`BoardEffects.flip`, 360 ms each,
   220 ms stagger; instant with reduce motion; taps wait); "No new arrangement found…" snackbar when no seed passes.
@@ -322,6 +331,9 @@ dart run tool/smoke_remote.dart         # live check: app's content client vs pr
   Test services (`testServices`, gameplay captures) mark it done unless `tutorialDone: false`.
 - Win trophy (Level Complete): `assets/lottie/trophy_cup_rays.json` (LottieFiles, owner's premium licence) via `WinTrophy`, looping while the card is open
   (owner), last frame with reduce motion, `PremiumEmblem` fallback if it fails to load.
+- Hint hand pointer: owner-supplied Lottie (`assets/lottie/hint_hand.json`, recoloured): the owner's `Hint.json`
+  (v5.12.1, 512x512, 30 fps, 21 frames), only its colours changed (light-green fill → gold #F2C96B, green outline →
+  dark green #183D2D, readable on both felts and on ivory tiles), still minified.
 - Lobby update card and force update (owner, 2026-10-16): installed build below the notice's latest → "Update
   available" / "A new version of Brain Train is ready." (or the notice's `message`) with Update (gold) and Later, at
   most once per launch (Later or back hides it until the next launch; needs a `storeUrl`). Below its min → "Update
