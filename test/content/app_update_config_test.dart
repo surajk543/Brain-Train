@@ -127,11 +127,15 @@ void main() {
       expect(_decide(json, 7, platform: UpdatePlatform.android), AppUpdatePrompt.none);
     });
 
-    test("the repository's notice asks nothing of build 4 (iOS: nothing at all)", () {
+    test("the repository's notice leaves the live Android build alone (iOS: nothing at all)", () {
       final json = jsonDecode(File('content-src/app-update.json').readAsStringSync());
       final config = AppUpdateConfig.tryParse(json)!;
-      expect(config.android!.storeUrl, _play);
-      expect(_decide(json, 4), AppUpdatePrompt.none);
+      final android = config.android!;
+      expect(android.storeUrl, _play);
+      expect(android.minBuild, lessThanOrEqualTo(android.latestBuild));
+      expect(_decide(json, android.latestBuild), AppUpdatePrompt.none);
+      // Builds below the minimum must update (2026-10-17: 10, as 1.1.0+9 crashed at launch).
+      if (android.minBuild > 0) expect(_decide(json, android.minBuild - 1).need, AppUpdateNeed.required);
       for (final build in [0, 1, 4, 100]) {
         expect(_decide(json, build, platform: UpdatePlatform.ios), AppUpdatePrompt.none);
       }
