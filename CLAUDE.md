@@ -609,9 +609,10 @@ dart run tool/smoke_remote.dart         # live check: app's content client vs pr
   ID, product interaction, advertising data for third-party ads + analytics, not linked, tracking; diagnostics for
   analytics), version 1.0 texts and URLs saved. `Info.plist`: `ITSAppUsesNonExemptEncryption` false; app privacy
   manifest `ios/Runner/PrivacyInfo.xcprivacy` (no tracking by the app's own code; UserDefaults CA92.1). Still to do:
-  screenshots, App Review contact, real AdMob iOS IDs, build upload; Game Center (2026-10-17, owner creating them):
-  the 9 achievements `bt.ach.*` and 23 leaderboards `bt.lb.*` of `lib/platform/game_services_ids.dart` (Fastest Time:
-  Elapsed Time to the hundredth, low to high), Game Center turned on for the version with them added for review.
+  screenshots, App Review contact, real AdMob iOS IDs, build upload. Game Center (2026-10-17): the 9 achievements
+  `bt.ach.*` (300 points) and 23 Classic leaderboards `bt.lb.*` of `lib/platform/game_services_ids.dart` are created
+  with en-US texts and the `art/play-games/` icons (Fastest Time: Elapsed Time to the hundredth, low to high; the rest
+  Integer, high to low); still to do: turn on Game Center for the version and add them there for review.
 - Play Console release state (2026-10-16): every App content declaration is done (privacy policy, ads = yes,
   Advertising ID, content rating, target audience 6+ incl. under 13 (Families), Data safety, Health/Financial/
   Government); category Puzzle; store listing saved. Closed testing - Alpha: versionCode 4 (1.0.0), all countries,
