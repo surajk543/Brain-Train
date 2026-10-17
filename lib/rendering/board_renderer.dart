@@ -15,9 +15,27 @@ import 'tile_style.dart';
 
 /// Everything pre-rendered for one board at one size.
 class BoardArt {
-  const BoardArt({required this.body, required this.symbols, this.raisedShadow});
+  const BoardArt({
+    required this.body,
+    required this.symbols,
+    this.raisedShadow,
+    this.faceBodies = const {},
+    this.faceColors = const {},
+  });
 
+  /// The ivory tile body.
   final TileBodyImage body;
+
+  /// Bodies with a coloured face, by colour name
+  /// ([MahjongTileRenderer.renderFaceBodies]); the same size as [body].
+  final Map<String, TileBodyImage> faceBodies;
+
+  /// Symbol code -> face colour name (`LevelDefinition.faceColors`): a tile
+  /// takes the colour of the symbol it shows, so it follows a shuffle.
+  final Map<String, String> faceColors;
+
+  /// The body of a tile showing [symbolCode]: its coloured face, or ivory.
+  TileBodyImage bodyFor(String symbolCode) => faceBodies[faceColors[symbolCode]] ?? body;
 
   /// Extra shadow stamped under upper-layer tiles; null for flat boards.
   final TileBodyImage? raisedShadow;
@@ -30,6 +48,9 @@ class BoardArt {
 
   void dispose() {
     body.dispose();
+    for (final face in faceBodies.values) {
+      face.dispose();
+    }
     raisedShadow?.dispose();
   }
 }
@@ -385,7 +406,7 @@ class BoardPainter extends CustomPainter {
   void _drawLiveSymbol(Canvas canvas, _TileDraw t, SymbolFrameAtlas atlas) {
     final area = renderer.symbolRect(t.rect);
     final paint = Paint()..filterQuality = FilterQuality.medium;
-    art.body.paintPart(canvas, t.rect.topLeft, area, paint);
+    art.bodyFor(t.symbolCode).paintPart(canvas, t.rect.topLeft, area, paint);
     if (!atlas.paint(canvas, t.live!, area, paint)) return;
     final overlay = Paint();
     if (t.shade > 0) canvas.drawRect(area, overlay..color = _shadeColor(t.shade));
@@ -412,7 +433,7 @@ double boardTileShade(TileStyle style, {required int layer, required int maxLaye
     style.lowerLayerShade * (maxLayer - layer) + (blocked ? style.blockedDim : 0);
 
 /// Draws [tile] with its face at [face], as the board does: raised shadow,
-/// body, symbol ([live] from [atlas] or at [seconds], else still art), then
+/// body (coloured by the symbol's face colour, [BoardArt.bodyFor]), symbol ([live] from [atlas] or at [seconds], else still art), then
 /// [shade] and [invalidTint].
 void _paintTile(
   Canvas canvas,
@@ -429,9 +450,10 @@ void _paintTile(
   double? seconds,
 }) {
   final imagePaint = Paint()..filterQuality = FilterQuality.medium;
+  final code = symbolCode ?? tile.symbolCode;
   if (tile.layer > 0) art.raisedShadow?.paint(canvas, face.topLeft, imagePaint);
-  art.body.paint(canvas, face.topLeft, imagePaint);
-  final symbol = art.symbols[symbolCode ?? tile.symbolCode];
+  art.bodyFor(code).paint(canvas, face.topLeft, imagePaint);
+  final symbol = art.symbols[code];
   final symbolRect = renderer.symbolRect(face);
   if (live != null && atlas != null && atlas.paint(canvas, live, symbolRect, imagePaint)) {
     // Drawn from the atlas.
@@ -457,8 +479,8 @@ void _paintTile(
   }
 }
 
-/// Every distinct look among some board tiles (symbol, raised or not,
-/// shade), drawn exactly as the board draws them still, packed into one
+/// Every distinct look among some board tiles (symbol, and with it the face
+/// colour; raised or not; shade), drawn exactly as the board draws them still, packed into one
 /// image so a whole board can be drawn with a single `Canvas.drawRawAtlas`.
 ///
 /// Animated symbols show their first frame. Sprites are uniform: a tile's

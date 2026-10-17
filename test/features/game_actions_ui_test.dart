@@ -722,6 +722,17 @@ void main() {
     });
   });
 
+  test('the fixed board grid: 31-px faces or more at 360x640, about 44 px at 393x852', () {
+    double face(Size size, EdgeInsets safe) =>
+        gridFaceWidthIn(size.width, GameLayout.of(size, safe).boardHeight(size, safe));
+    final small = face(const Size(360, 640), const EdgeInsets.only(top: 24));
+    final iphone = face(const Size(393, 852), const EdgeInsets.only(top: 59, bottom: 34));
+    // ignore: avoid_print
+    print('grid faces: ${small.toStringAsFixed(1)} px at 360x640, ${iphone.toStringAsFixed(1)} px at 393x852');
+    expect(small, greaterThanOrEqualTo(31));
+    expect(iphone, greaterThanOrEqualTo(43.5));
+  });
+
   test('every published level keeps 31-px faces on the measured 360x640 board', () {
     // The real board at 360x640 (GameLayout) is at least the size the
     // campaign was built for (test/content/published_content_test.dart

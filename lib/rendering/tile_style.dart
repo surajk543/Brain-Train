@@ -136,4 +136,106 @@ class TileStyle {
   }
 
   static TileStyle forTileSet(String tileSetId) => classicIvory;
+
+  /// Face colours a level can give single pairs (`LevelDefinition.faceColors`,
+  /// the names of `kFaceColorNames`); every other tile has the ivory
+  /// [faceColor]. All light, so dark and colourful symbols stay readable on
+  /// a 31 px face; never green, so they stand out on the felt.
+  static const Map<String, Color> namedFaceColors = {
+    'gold': Color(0xFFECC98D),
+    'sky': Color(0xFFBFDEF3),
+    'blush': Color(0xFFF7CDD6),
+    'lavender': Color(0xFFD9CDEF),
+    'peach': Color(0xFFFACEB5),
+  };
+
+  /// The face colour named [name]; null (ivory) for null or a name this
+  /// build does not know.
+  static Color? faceColorNamed(String? name) => namedFaceColors[name];
+
+  /// The shades of a tile whose face is [face]: this style's own (ivory)
+  /// set for null or [faceColor], else a set derived from [face].
+  TileFaceShades faceShades([Color? face]) => face == null || face == faceColor
+      ? TileFaceShades(
+          highlight: faceHighlightColor,
+          face: faceColor,
+          shade: faceShadeColor,
+          catchLight: catchLightColor,
+          bevelShade: bevelShadeColor,
+          edge: edgeColor,
+          side: sideColor,
+          sideShade: sideShadeColor,
+          dome: const Color(0x147A5A20),
+          lift: const Color(0x40382A10),
+        )
+      : TileFaceShades.derive(face);
+}
+
+/// The colours a tile body takes from its face colour: the face gradient,
+/// bevel light and shade, edge line, the wall under the face, and two faint
+/// shadings (the domed centre, the hairline lifting the face off the wall).
+/// The olive-green base is the same for every face.
+class TileFaceShades {
+  const TileFaceShades({
+    required this.highlight,
+    required this.face,
+    required this.shade,
+    required this.catchLight,
+    required this.bevelShade,
+    required this.edge,
+    required this.side,
+    required this.sideShade,
+    required this.dome,
+    required this.lift,
+  });
+
+  /// Shades of [face] with the ivory set's steps of lightness, saturation
+  /// and hue (see [TileStyle.classicIvory]): lighter highlights, a deeper
+  /// shade, an edge and bevel shade of the same hue.
+  factory TileFaceShades.derive(Color face) {
+    final hsl = HSLColor.fromColor(face);
+    final l = hsl.lightness;
+    Color tone({required double lightness, double hue = 0, double saturation = 1, double alpha = 1}) =>
+        HSLColor.fromAHSL(
+          alpha,
+          (hsl.hue + hue) % 360,
+          (hsl.saturation * saturation).clamp(0.0, 1.0),
+          lightness.clamp(0.0, 1.0),
+        ).toColor();
+    return TileFaceShades(
+      highlight: tone(lightness: l + 0.70 * (1 - l), saturation: 1.25),
+      face: face.withValues(alpha: 1),
+      shade: tone(lightness: l - 0.105, hue: -1, saturation: 0.9),
+      catchLight: tone(lightness: l + 0.32 * (1 - l), saturation: 1.25),
+      bevelShade: tone(lightness: l - 0.47, hue: -3, saturation: 0.8, alpha: 0.4),
+      edge: tone(lightness: l - 0.42, hue: -3, saturation: 0.82, alpha: 0.76),
+      side: tone(lightness: l - 0.055, saturation: 0.96),
+      sideShade: tone(lightness: l - 0.245, hue: -2, saturation: 0.68),
+      dome: tone(lightness: l - 0.60, hue: -3, alpha: 0.08),
+      lift: tone(lightness: 0.141, hue: -3, alpha: 0.25),
+    );
+  }
+
+  final Color highlight;
+  final Color face;
+  final Color shade;
+
+  /// Light on the top/left bevel.
+  final Color catchLight;
+
+  /// Shade on the bottom/right bevel.
+  final Color bevelShade;
+
+  /// Thin line around the face and at the wall/base seam.
+  final Color edge;
+
+  /// The wall under the face, light and shaded.
+  final Color side;
+  final Color sideShade;
+
+  /// Faint shade at the rim of the domed centre.
+  final Color dome;
+
+  /// Hairline shadow lifting the face off the wall.
+  final Color lift;
 }

@@ -22,11 +22,14 @@ class TileArt {
     required this.body,
     required this.symbols,
     this.glow,
+    this.faceBodies = const {},
+    this.faceColors = const {},
     this.ownsBody = true,
   }) : renderer = MahjongTileRenderer(style);
 
-  /// Renders the tile body and glow at [face] and resolves the symbol art of
-  /// every symbol in [level] (missing art falls back as on the board).
+  /// Renders the tile body (ivory, plus one per face colour of [level]'s
+  /// coloured pairs) and glow at [face] and resolves the symbol art of every
+  /// symbol in [level] (missing art falls back as on the board).
   static Future<TileArt> load({
     required LevelDefinition level,
     required SymbolRegistry registry,
@@ -43,6 +46,7 @@ class TileArt {
         if (registry[code] != null) code,
     ];
     final body = renderer.renderBody(face, pixelRatio);
+    final faceBodies = renderer.renderFaceBodies(face, pixelRatio, level.faceColors);
     final glow = renderer.renderGlow(face, pixelRatio);
     final symbols = await Future.wait([
       for (final code in codes) symbolArt.resolve(registry[code]!, artwork, box, pixelRatio),
@@ -51,6 +55,8 @@ class TileArt {
       style: style,
       face: face,
       body: await body,
+      faceBodies: await faceBodies,
+      faceColors: level.faceColors,
       glow: await glow,
       symbols: {for (var i = 0; i < codes.length; i++) codes[i]: symbols[i]},
     );
@@ -60,7 +66,16 @@ class TileArt {
 
   /// The face size the art was rendered at.
   final Size face;
+
+  /// The ivory tile body.
   final TileBodyImage body;
+
+  /// Bodies with a coloured face, by colour name; the same size as [body].
+  final Map<String, TileBodyImage> faceBodies;
+
+  /// Symbol code -> face colour name (`LevelDefinition.faceColors`): a tile
+  /// takes the colour of the symbol it shows.
+  final Map<String, String> faceColors;
 
   /// Gold glow ring at full strength; null draws no glow.
   final TileBodyImage? glow;
@@ -68,8 +83,8 @@ class TileArt {
   /// By symbol code. Owned by the [SymbolArtCache]; not disposed here.
   final Map<String, SymbolArt> symbols;
 
-  /// False when [body] belongs to someone else (the board), so [dispose]
-  /// leaves it alone.
+  /// False when [body] and [faceBodies] belong to someone else (the board),
+  /// so [dispose] leaves them alone.
   final bool ownsBody;
   final MahjongTileRenderer renderer;
 
@@ -77,6 +92,9 @@ class TileArt {
   late final Paint _symbolPaint = Paint()
     ..filterQuality = FilterQuality.medium
     ..colorFilter = style.symbolColorFilter;
+
+  /// The body of a tile showing [symbolCode]: its coloured face, or ivory.
+  TileBodyImage bodyFor(String symbolCode) => faceBodies[faceColors[symbolCode]] ?? body;
 
   bool isAnimated(String symbolCode) => symbols[symbolCode]?.isAnimated ?? false;
 
@@ -110,7 +128,7 @@ class TileArt {
       ..translate(face.left, face.top);
     if (scale != 1) canvas.scale(scale);
     _imagePaint.color = Color.fromRGBO(0, 0, 0, opacity.clamp(0.0, 1.0));
-    body.paint(canvas, Offset.zero, _imagePaint);
+    bodyFor(symbolCode).paint(canvas, Offset.zero, _imagePaint);
     final symbol = symbols[symbolCode];
     final box = renderer.symbolRect(Offset.zero & this.face);
     if (symbol is AnimatedSymbolArt && atlas != null && atlas.paint(canvas, symbol, box, _imagePaint)) {
@@ -138,7 +156,12 @@ class TileArt {
   }
 
   void dispose() {
-    if (ownsBody) body.dispose();
+    if (ownsBody) {
+      body.dispose();
+      for (final face in faceBodies.values) {
+        face.dispose();
+      }
+    }
     glow?.dispose();
   }
 }

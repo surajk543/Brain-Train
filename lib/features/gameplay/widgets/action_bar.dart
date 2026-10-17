@@ -42,8 +42,9 @@ extension GameActionLook on GameAction {
 /// result card, not with nothing to undo, ...) and no card is open
 /// ([blocked]); off buttons are dimmed (colours, not an Opacity layer).
 ///
-/// [compact] (short screens): labels beside the buttons and one 40-px row;
-/// otherwise labels under the buttons.
+/// [compact] (short screens): smaller labels. Labels sit beside the buttons
+/// when [compact] or with a [disc] size (one row as tall as the disc), else
+/// under them.
 class GameActionBar extends StatelessWidget {
   const GameActionBar({
     super.key,
@@ -53,6 +54,7 @@ class GameActionBar extends StatelessWidget {
     required this.onAction,
     required this.onRestart,
     this.compact = false,
+    this.disc,
   });
 
   final GameController controller;
@@ -65,6 +67,10 @@ class GameActionBar extends StatelessWidget {
   final ValueChanged<GameAction> onAction;
   final VoidCallback onRestart;
   final bool compact;
+
+  /// Disc diameter of the action buttons (labels beside); null: the
+  /// [compact] or roomy default.
+  final double? disc;
 
   @override
   Widget build(BuildContext context) => MediaQuery.withClampedTextScaling(
@@ -84,6 +90,7 @@ class GameActionBar extends StatelessWidget {
               usesLeft: controller.usesLeft(action),
               adRefill: !ads.off,
               compact: compact,
+              disc: disc,
               onPressed: open && controller.isAvailable(action) ? () => onAction(action) : null,
             ),
         ];
@@ -95,6 +102,7 @@ class GameActionBar extends StatelessWidget {
           semanticsLabel: 'Restart level',
           quiet: true,
           compact: compact,
+          disc: disc,
           onPressed: restartOn ? onRestart : null,
         );
         // Drawn once into an image until a button changes (or its ink
@@ -107,7 +115,7 @@ class GameActionBar extends StatelessWidget {
             child: Row(
               children: [
                 for (final button in buttons) Expanded(child: Center(child: button)),
-                SizedBox(width: compact ? 50 : 70, child: Center(child: restart)),
+                SizedBox(width: compact || disc != null ? 50 : 70, child: Center(child: restart)),
               ],
             ),
           ),
@@ -132,6 +140,7 @@ class GameActionButton extends StatelessWidget {
     this.adRefill = true,
     this.quiet = false,
     this.compact = false,
+    this.disc,
     this.tooltip,
     this.semanticsLabel,
   });
@@ -147,10 +156,18 @@ class GameActionButton extends StatelessWidget {
   final bool adRefill;
   final bool quiet;
   final bool compact;
+
+  /// Disc diameter (labels beside); null: the [compact] or roomy default.
+  final double? disc;
   final String? tooltip;
   final String? semanticsLabel;
 
-  double get _disc => quiet ? (compact ? 34 : 40) : (compact ? 36 : 50);
+  bool get _beside => compact || disc != null;
+
+  double get _disc => switch (disc) {
+    final double d => quiet ? d - 6 : d,
+    null => quiet ? (compact ? 34 : 40) : (compact ? 36 : 50),
+  };
 
   @override
   Widget build(BuildContext context) {
@@ -164,7 +181,7 @@ class GameActionButton extends StatelessWidget {
         ? palette.text.withValues(alpha: enabled ? 0.82 : 0.3)
         : palette.accentLight.withValues(alpha: enabled ? 1 : 0.35);
     final uses = usesLeft;
-    final disc = SizedBox.square(
+    final discWidget = SizedBox.square(
       dimension: _disc,
       child: Stack(
         clipBehavior: Clip.none,
@@ -209,12 +226,12 @@ class GameActionButton extends StatelessWidget {
                 ),
           );
     final content = text == null
-        ? disc
-        : compact
+        ? discWidget
+        : _beside
         ? Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              disc,
+              discWidget,
               const SizedBox(width: 6),
               // Shrinks rather than clips on a narrow phone at a large text size.
               Flexible(
@@ -225,7 +242,7 @@ class GameActionButton extends StatelessWidget {
               ),
             ],
           )
-        : Column(mainAxisSize: MainAxisSize.min, children: [disc, const SizedBox(height: 4), text]);
+        : Column(mainAxisSize: MainAxisSize.min, children: [discWidget, const SizedBox(height: 4), text]);
     final semantics = semanticsLabel ??
         (uses == null
             ? label
@@ -242,7 +259,10 @@ class GameActionButton extends StatelessWidget {
       splashFactory: InkRipple.splashFactory,
       splashColor: gold.withValues(alpha: 0.22),
       highlightColor: const Color(0x00000000),
-      child: Padding(padding: EdgeInsets.symmetric(horizontal: compact ? 2 : 4, vertical: 4), child: content),
+      child: Padding(
+        padding: EdgeInsets.symmetric(horizontal: compact ? 2 : 4, vertical: disc != null ? 2 : 4),
+        child: content,
+      ),
     );
     return Semantics(
       button: true,

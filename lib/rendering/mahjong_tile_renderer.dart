@@ -63,7 +63,12 @@ class MahjongTileRenderer {
 
   /// Renders the tile: cast shadow, two-tone extruded body (ivory wall over
   /// an olive-green base), and the bevelled ivory face lit from the top-left.
-  Future<TileBodyImage> renderBody(Size face, double pixelRatio) async {
+  ///
+  /// [faceColor] gives the face (and the wall under it) another colour, its
+  /// shades derived from it ([TileStyle.faceShades]); null is the style's
+  /// ivory, drawn exactly as authored.
+  Future<TileBodyImage> renderBody(Size face, double pixelRatio, {Color? faceColor}) async {
+    final shades = style.faceShades(faceColor);
     final depthX = face.width * style.depthXFraction;
     final depthY = face.height * style.depthYFraction;
     final blur = face.width * style.shadowBlurFraction;
@@ -104,7 +109,7 @@ class MahjongTileRenderer {
       final t = i / steps;
       final color = t > style.backSplit
           ? Color.lerp(style.backColor, style.backShadeColor, (t - style.backSplit) / (1 - style.backSplit))!
-          : Color.lerp(style.sideColor, style.sideShadeColor, t / style.backSplit)!;
+          : Color.lerp(shades.side, shades.sideShade, t / style.backSplit)!;
       canvas.drawRRect(rounded(faceRect.shift(Offset(depthX * t, depthY * t))), Paint()..color = color);
     }
     // Fine gold seam between the ivory wall and the green base.
@@ -114,7 +119,7 @@ class MahjongTileRenderer {
       Paint()
         ..style = PaintingStyle.stroke
         ..strokeWidth = math.max(hairline, face.width * 0.008)
-        ..color = style.edgeColor.withValues(alpha: 0.75),
+        ..color = shades.edge.withValues(alpha: 0.75),
     );
     // Crisp outline of the base and a soft sheen on the green rim.
     canvas.drawRRect(
@@ -130,7 +135,7 @@ class MahjongTileRenderer {
     canvas.drawRRect(
       face0.shift(Offset(hairline * 0.8, hairline * 1.2)),
       Paint()
-        ..color = const Color(0x40382A10)
+        ..color = shades.lift
         ..maskFilter = MaskFilter.blur(BlurStyle.normal, math.max(0.6, face.width * 0.012)),
     );
 
@@ -141,7 +146,7 @@ class MahjongTileRenderer {
         ..shader = LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [style.faceHighlightColor, style.faceColor, style.faceShadeColor],
+          colors: [shades.highlight, shades.face, shades.shade],
           stops: const [0, 0.48, 1],
         ).createShader(faceRect),
     );
@@ -158,10 +163,10 @@ class MahjongTileRenderer {
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            style.catchLightColor,
-            style.catchLightColor.withValues(alpha: 0.25),
-            style.bevelShadeColor.withValues(alpha: 0),
-            style.bevelShadeColor,
+            shades.catchLight,
+            shades.catchLight.withValues(alpha: 0.25),
+            shades.bevelShade.withValues(alpha: 0),
+            shades.bevelShade,
           ],
           stops: const [0, 0.35, 0.55, 1],
         ).createShader(faceRect),
@@ -173,7 +178,7 @@ class MahjongTileRenderer {
         ..shader = RadialGradient(
           center: const Alignment(-0.45, -0.55),
           radius: 1.2,
-          colors: [const Color(0x40FFFFFF), const Color(0x00FFFFFF), const Color(0x147A5A20)],
+          colors: [const Color(0x40FFFFFF), const Color(0x00FFFFFF), shades.dome],
           stops: const [0, 0.6, 1],
         ).createShader(innerRect),
     );
@@ -186,7 +191,7 @@ class MahjongTileRenderer {
         ..shader = LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [style.faceShadeColor.withValues(alpha: 0.45), const Color(0x99FFFFFF)],
+          colors: [shades.shade.withValues(alpha: 0.45), const Color(0x99FFFFFF)],
         ).createShader(innerRect),
     );
     // Bright rim along the very top-left edge.
@@ -208,13 +213,32 @@ class MahjongTileRenderer {
       Paint()
         ..style = PaintingStyle.stroke
         ..strokeWidth = math.max(hairline * 1.2, face.width * 0.01)
-        ..color = style.edgeColor,
+        ..color = shades.edge,
     );
 
     final picture = recorder.endRecording();
     final image = await picture.toImage((size.width * pixelRatio).ceil(), (size.height * pixelRatio).ceil());
     picture.dispose();
     return TileBodyImage._(image, Offset(margin, margin), size);
+  }
+
+  /// The bodies of the coloured faces in [faceColors] (symbol code -> colour
+  /// name, `LevelDefinition.faceColors`), by colour name: one per colour used
+  /// that [TileStyle.namedFaceColors] knows. Tiles of other symbols, or of an
+  /// unknown colour, take the ivory [renderBody].
+  Future<Map<String, TileBodyImage>> renderFaceBodies(
+    Size face,
+    double pixelRatio,
+    Map<String, String> faceColors,
+  ) async {
+    final names = [
+      for (final name in {...faceColors.values})
+        if (TileStyle.faceColorNamed(name) != null) name,
+    ];
+    final bodies = await Future.wait([
+      for (final name in names) renderBody(face, pixelRatio, faceColor: TileStyle.faceColorNamed(name)),
+    ]);
+    return {for (var i = 0; i < names.length; i++) names[i]: bodies[i]};
   }
 
   /// A gold glow ring around a tile's face (a tile landing in the tray), at
