@@ -1,15 +1,17 @@
 import 'package:flutter/painting.dart';
 
 import 'theme.dart';
+import 'typography.dart';
 
 /// Brain Train brand constants shared by the lobby and gameplay chrome.
 
-/// Display serif. Uses the platform serif (Noto Serif on Android,
-/// Georgia/Times on iOS) so no font file has to ship; to use a bundled OFL
-/// font (e.g. Playfair Display), add it under pubspec `fonts:` and change
-/// these two constants.
-const String kDisplayFont = 'serif';
-const List<String> kDisplayFontFallback = ['Georgia', 'Times New Roman', 'Noto Serif'];
+/// Display serif: Playfair Display, bundled (assets/fonts/, see
+/// typography.dart), with the platform serifs (Georgia/Times on iOS, Noto
+/// Serif on Android) as fallbacks for missing glyphs. The redesign's type
+/// scale (Playfair for titles and headings, Manrope for buttons, HUD,
+/// numbers and body) is [BrainTrainType] / [BrainTrainTypography].
+const String kDisplayFont = BrainTrainFonts.display;
+const List<String> kDisplayFontFallback = BrainTrainFonts.displayFallback;
 
 abstract final class BrandGold {
   static const Color light = Color(0xFFF3DC98);

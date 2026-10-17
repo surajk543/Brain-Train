@@ -16,6 +16,13 @@ const int kClientContentSchema = 3;
 /// art, the manifest and the registry); written by `tool/content.dart build`.
 const String kStarterContentPrefix = 'content/starter/';
 
+/// Asset prefix of the lobby hero's art, laid out like the content root
+/// (`symbols/v1/...`): the published files of PLANT_POT_B, FLOWER_SUNFLOWER
+/// and FLOWER_PANSY, so a fresh install shows the reference hero tiles
+/// without the network. Read after the starter pack and checked against the
+/// registry's sha256 like any bundled object.
+const String kHeroArtPrefix = 'assets/lobby/hero/';
+
 /// Largest Lottie JSON accepted for an animated symbol.
 const int kMaxAnimationBytes = 1024 * 1024;
 

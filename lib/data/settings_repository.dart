@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'age_group.dart';
+import 'appearance.dart';
 
 /// Player preferences, persisted and observable.
 class SettingsRepository extends ChangeNotifier {
@@ -11,11 +12,34 @@ class SettingsRepository extends ChangeNotifier {
 
   final SharedPreferences _prefs;
 
-  /// Sound effects on tile picks, matches and wins.
-  bool get sound => _prefs.getBool('settings.sound') ?? true;
+  /// Sound effects on tile picks, matches and wins ("Sound Effects"). Only
+  /// the effects: the background music has its own switch ([music]).
+  bool get sound => _prefs.getBool(soundKey) ?? true;
+
+  static const String soundKey = 'settings.sound';
+
+  /// Background music (redesign 1.1.0: its own switch, separate from Sound
+  /// Effects). Before 1.1.0 the Sound switch also silenced the music, so
+  /// until Music is set it follows the stored Sound value: a player who had
+  /// muted Sound keeps a silent game.
+  bool get music => _prefs.getBool(musicKey) ?? sound;
+
+  static const String musicKey = 'settings.music';
 
   /// Vibration (haptic feedback) on tile picks and matches.
   bool get haptics => _prefs.getBool('settings.haptics') ?? true;
+
+  /// Day, Night or the phone's setting ([AppAppearance.system], the default
+  /// for new installs and for an unreadable stored value).
+  AppAppearance get appearance => AppAppearance.tryParse(_prefs.getString(appearanceKey)) ?? AppAppearance.system;
+
+  static const String appearanceKey = 'settings.appearance';
+
+  Future<void> setAppearance(AppAppearance value) async {
+    if (value == appearance) return;
+    await _prefs.setString(appearanceKey, value.storageValue);
+    notifyListeners();
+  }
 
   /// From the age screen at first launch; null until it is answered. Kept
   /// on the device only (never sent anywhere).
@@ -39,7 +63,14 @@ class SettingsRepository extends ChangeNotifier {
     await _prefs.setBool(firstPlayTutorialKey, true);
   }
 
-  Future<void> setSound(bool value) => _setBool('settings.sound', value);
+  Future<void> setSound(bool value) async {
+    // Music stops following Sound the first time Sound changes: it keeps
+    // the value it had (see [music]).
+    if (!_prefs.containsKey(musicKey)) await _prefs.setBool(musicKey, music);
+    await _setBool(soundKey, value);
+  }
+
+  Future<void> setMusic(bool value) => _setBool(musicKey, value);
   Future<void> setHaptics(bool value) => _setBool('settings.haptics', value);
 
   Future<void> _setBool(String key, bool value) async {

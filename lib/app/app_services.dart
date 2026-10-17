@@ -168,6 +168,15 @@ class ContentController extends ChangeNotifier with WidgetsBindingObserver {
   /// Whether [entry] opens at once (its file and art are on the device).
   bool isReady(LevelManifestEntry entry) => snapshot.isReady(entry.levelId);
 
+  /// The level window right now (the first level not won and the ones after
+  /// it, [ContentCoordinator.windowSize] in all): how many of its levels are
+  /// on the device, ready to play offline, and how many it has (0 once every
+  /// level is won). The lobby's "5 levels ready" line.
+  ({int ready, int window}) get windowReadiness {
+    final window = coordinator.windowOf(snapshot);
+    return (ready: window.where((e) => snapshot.isReady(e.levelId)).length, window: window.length);
+  }
+
   /// Gets [entry] ready to play (see [ContentCoordinator.ensureLevel]).
   Future<ReadyLevel> ensureLevel(LevelManifestEntry entry) => coordinator.ensureLevel(entry);
 
@@ -229,8 +238,9 @@ class AppServices {
     final cache = ContentCache(FileContentStore(Directory('${supportDir.path}/content_cache')));
     final fetcher = ContentFetcher(client: http.Client(), config: contentConfig);
     final resolver = RemoteAssetResolver(contentConfig);
-    // The starter pack (levels 1-5, their art, the manifest and registry).
-    final bundled = BundledContentSource(_loadAsset, prefix: kStarterContentPrefix);
+    // The starter pack (levels 1-5, their art, the manifest and registry),
+    // then the lobby hero's three symbols.
+    final bundled = bundledContent(_loadAsset);
     final coordinator = ContentCoordinator(
       cache: cache,
       bundled: bundled,

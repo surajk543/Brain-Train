@@ -62,7 +62,7 @@ void main() {
   testWidgets('taps and semantics are unchanged', (tester) async {
     final services = await _services(tester, const UnavailablePlayGames());
     await pumpLobby(tester, services: services, home: const HomeScreen());
-    expect(find.bySemanticsLabel('Completed Levels'), findsOneWidget);
+    expect(find.bySemanticsLabel('Levels'), findsOneWidget);
     expect(find.bySemanticsLabel('Settings'), findsOneWidget);
     await tester.tap(find.byKey(const ValueKey('lobby-settings')));
     for (var i = 0; i < 10; i++) {

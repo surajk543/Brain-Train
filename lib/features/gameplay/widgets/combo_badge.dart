@@ -1,41 +1,47 @@
 import 'dart:math' as math;
 
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/scheduler.dart';
 
-import '../../../app/brand.dart';
+import '../../../app/theme.dart';
+import '../../../app/typography.dart';
 import '../../common/static_layer.dart';
 import '../game_controller.dart';
 
-const Color _ink = Color(0xFF183D2D);
-const double _pillHeight = 28;
+/// The pill's height, and on compact (short) screens, where the tray's
+/// frame has less room under its wells.
+const double _pillHeight = 24;
+const double _compactPillHeight = 20;
 
-/// "COMBO ×N · Best ×M" pill (from ×2) with a ring that drains with the combo
-/// window; with no combo running, a small "Best ×M" chip once a combo of 2 or
-/// more has happened. Hidden during the board intro.
+/// Where the badge hangs on the tray's bottom edge: the edge crosses the badge
+/// 30% from its top, so the badge sits a little low and its top stays under
+/// the tray's wells (centred, it covered their bottom by ~5 px at 360x640).
+const Alignment kComboBadgeAnchor = Alignment(0, -0.4);
+
+/// "COMBO ×N · Best ×M" gold pill (from ×2) floating on the tray's bottom
+/// edge; with no combo running, a small "Best ×M" chip once a combo of 2 or
+/// more has happened. Hidden during the board intro. The time left in the
+/// combo window is the [ComboTimerBar] under the HUD (redesign 1.1.0), so
+/// the pill itself never ticks.
 ///
-/// Nothing ticks without a combo: the ring ticker runs only while a combo is
-/// active, the clock runs and motion is allowed; the glow (×3) is static, the
-/// spark burst (×4) and shimmer (×5) are one-shot controllers that stop when
-/// done. Draws no blur filter, no `Opacity`, no layers beyond one
-/// [StaticLayer].
+/// The glow (×3) is static; the spark burst (×4) and shimmer (×5) are
+/// one-shot controllers that stop when done. Draws no blur filter, no
+/// `Opacity`, no layers beyond one [StaticLayer].
 class ComboBadge extends StatefulWidget {
-  const ComboBadge({super.key, required this.controller, required this.reduceMotion});
+  const ComboBadge({super.key, required this.controller, required this.reduceMotion, this.compact = false});
 
   final GameController controller;
   final bool reduceMotion;
+
+  /// Short screens: a smaller pill (see `GameLayout.compact`).
+  final bool compact;
 
   @override
   State<ComboBadge> createState() => _ComboBadgeState();
 }
 
 class _ComboBadgeState extends State<ComboBadge> with TickerProviderStateMixin {
-  /// The ring's sweep, 1 (full window) to 0.
-  final ValueNotifier<double> _ring = ValueNotifier(1);
-  late final Ticker _ringTicker = createTicker(_tick);
-  late final AnimationController _sparks = AnimationController(vsync: this, duration: const Duration(milliseconds: 600));
-  late final AnimationController _shimmer = AnimationController(vsync: this, duration: const Duration(milliseconds: 700));
+  late final AnimationController _sparks;
+  late final AnimationController _shimmer;
 
   /// The combo shown at the last update (0 below ×2), to fire each intensity
   /// effect once when the combo first reaches its level.
@@ -44,10 +50,12 @@ class _ComboBadgeState extends State<ComboBadge> with TickerProviderStateMixin {
   @override
   void initState() {
     super.initState();
+    // Made here, not lazily: a controller first made in dispose would look up
+    // the (deactivated) tree.
+    _sparks = AnimationController(vsync: this, duration: const Duration(milliseconds: 600));
+    _shimmer = AnimationController(vsync: this, duration: const Duration(milliseconds: 700));
     _lastCombo = widget.controller.activeCombo >= 2 ? widget.controller.activeCombo : 0;
     widget.controller.addListener(_changed);
-    _ring.value = _fraction();
-    _syncTicker();
   }
 
   @override
@@ -61,22 +69,6 @@ class _ComboBadgeState extends State<ComboBadge> with TickerProviderStateMixin {
       _sparks.stop();
       _shimmer.stop();
     }
-    _syncTicker();
-  }
-
-  void _tick(Duration _) {
-    if (widget.controller.activeCombo < 2 || !widget.controller.clockRunning) {
-      _ringTicker.stop();
-      return;
-    }
-    _ring.value = _fraction();
-  }
-
-  double _fraction() {
-    final left = widget.controller.comboTimeLeft;
-    if (left == null) return 0;
-    final window = widget.controller.scoring.rules.comboWindow.inMicroseconds;
-    return (left.inMicroseconds / window).clamp(0.0, 1.0);
   }
 
   void _changed() {
@@ -90,27 +82,14 @@ class _ComboBadgeState extends State<ComboBadge> with TickerProviderStateMixin {
       }
       _lastCombo = combo;
     }
-    _ring.value = _fraction();
-    _syncTicker();
     if (mounted) setState(() {});
-  }
-
-  void _syncTicker() {
-    final run = widget.controller.activeCombo >= 2 && widget.controller.clockRunning && !widget.reduceMotion;
-    if (run && !_ringTicker.isActive) {
-      _ringTicker.start();
-    } else if (!run && _ringTicker.isActive) {
-      _ringTicker.stop();
-    }
   }
 
   @override
   void dispose() {
     widget.controller.removeListener(_changed);
-    _ringTicker.dispose();
     _sparks.dispose();
     _shimmer.dispose();
-    _ring.dispose();
     super.dispose();
   }
 
@@ -119,21 +98,33 @@ class _ComboBadgeState extends State<ComboBadge> with TickerProviderStateMixin {
     final combo = widget.controller.activeCombo;
     final best = widget.controller.scoring.bestCombo;
     if (widget.controller.introPlaying || (combo < 2 && best < 2)) return const SizedBox.shrink();
-    return IgnorePointer(child: combo >= 2 ? _pill(combo, best) : _bestChip(best));
+    return IgnorePointer(
+      child: MediaQuery.withClampedTextScaling(
+        maxScaleFactor: 1.15,
+        child: combo >= 2 ? _pill(context, combo, best) : _bestChip(context, best),
+      ),
+    );
   }
 
   /// A dark chip, so it reads over ivory tiles as well as felt.
-  Widget _bestChip(int best) => DecoratedBox(
-    decoration: const ShapeDecoration(color: Color(0xCC12372A), shape: StadiumBorder()),
-    child: Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 1),
-      child: Text('Best ×$best', style: displayText(11, color: BrandGold.light, weight: FontWeight.w600)),
-    ),
-  );
+  Widget _bestChip(BuildContext context, int best) {
+    final palette = BrainTrainPalette.of(context);
+    return DecoratedBox(
+      decoration: ShapeDecoration(
+        color: palette.hudFill.last.withValues(alpha: 0.9),
+        shape: StadiumBorder(side: BorderSide(color: palette.accent.withValues(alpha: 0.45), width: 0.8)),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 1),
+        child: Text('Best ×$best', style: BrainTrainType.hudLabel(size: 10.5, color: palette.accentLight).copyWith(letterSpacing: 0.4)),
+      ),
+    );
+  }
 
-  Widget _pill(int combo, int best) {
+  Widget _pill(BuildContext context, int combo, int best) {
+    final palette = BrainTrainPalette.of(context);
     final warm = combo >= 3;
-    final rim = warm ? BrandGold.warm : BrandGold.light;
+    final rim = warm ? palette.accent : palette.accentLight;
     return Semantics(
       label: 'Combo times $combo',
       liveRegion: true,
@@ -142,39 +133,33 @@ class _ComboBadgeState extends State<ComboBadge> with TickerProviderStateMixin {
         alignment: Alignment.center,
         children: [
           if (warm)
-            Positioned.fill(left: -14, right: -14, top: -10, bottom: -10, child: const CustomPaint(painter: _GlowPainter())),
+            Positioned.fill(left: -14, right: -14, top: -10, bottom: -10, child: CustomPaint(painter: _GlowPainter(palette.accent))),
           StaticLayer(
-              overflow: const EdgeInsets.fromLTRB(6, 4, 6, 8),
+            overflow: const EdgeInsets.fromLTRB(6, 4, 6, 8),
             child: Container(
-              height: _pillHeight,
-              padding: const EdgeInsets.symmetric(horizontal: 14),
+              height: widget.compact ? _compactPillHeight : _pillHeight,
+              padding: const EdgeInsets.symmetric(horizontal: 12),
+              alignment: Alignment.center,
               decoration: ShapeDecoration(
-                gradient: const LinearGradient(colors: [Color(0xE6F8DA8C), Color(0xD9D8B25E)]),
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [for (final c in palette.primaryButtonFill) c.withValues(alpha: 0.94)],
+                ),
                 shape: StadiumBorder(side: BorderSide(color: rim, width: 1.2)),
                 shadows: const [BoxShadow(color: Color(0x66000000), blurRadius: 4, offset: Offset(0, 2))],
               ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    'COMBO ×$combo · Best ×${math.max(best, combo)}',
-                    style: displayText(12, color: _ink, weight: FontWeight.w800, spacing: 1.2),
-                  ),
-                  const SizedBox(width: 8),
-                  const SizedBox(width: 18, height: 18),
-                ],
+              child: Text(
+                'COMBO ×$combo · Best ×${math.max(best, combo)}',
+                maxLines: 1,
+                softWrap: false,
+                style: BrainTrainType.combo(size: widget.compact ? 10.5 : 11.5, color: palette.textOnGold)
+                    .copyWith(letterSpacing: 0.9, height: 1.1),
               ),
             ),
           ),
-          // The ring sits in the space the pill leaves for it, on the right.
-          Positioned(
-            right: 14,
-            child: RepaintBoundary(
-              child: CustomPaint(size: const Size(18, 18), painter: _RingPainter(_ring)),
-            ),
-          ),
           if (_sparks.isAnimating)
-            Positioned.fill(left: -16, right: -16, top: -14, bottom: -14, child: RepaintBoundary(child: CustomPaint(painter: _SparksPainter(_sparks)))),
+            Positioned.fill(left: -16, right: -16, top: -14, bottom: -14, child: RepaintBoundary(child: CustomPaint(painter: _SparksPainter(_sparks, palette.accentLight)))),
           if (_shimmer.isAnimating) Positioned.fill(child: RepaintBoundary(child: CustomPaint(painter: _ShimmerPainter(_shimmer)))),
         ],
       ),
@@ -182,37 +167,11 @@ class _ComboBadgeState extends State<ComboBadge> with TickerProviderStateMixin {
   }
 }
 
-/// Arc that drains clockwise from the top as the window closes.
-class _RingPainter extends CustomPainter {
-  _RingPainter(this.fraction) : super(repaint: fraction);
-
-  final ValueListenable<double> fraction;
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final rect = (Offset.zero & size).deflate(1.1);
-    final sweep = 2 * math.pi * fraction.value;
-    if (sweep <= 0) return;
-    canvas.drawArc(
-      rect,
-      -math.pi / 2,
-      sweep,
-      false,
-      Paint()
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 2.2
-        ..strokeCap = StrokeCap.round
-        ..color = _ink.withValues(alpha: 0.8),
-    );
-  }
-
-  @override
-  bool shouldRepaint(_RingPainter old) => old.fraction != fraction;
-}
-
 /// Soft golden halo around the pill: a radial gradient, no blur filter.
 class _GlowPainter extends CustomPainter {
-  const _GlowPainter();
+  const _GlowPainter(this.gold);
+
+  final Color gold;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -221,20 +180,21 @@ class _GlowPainter extends CustomPainter {
       rect,
       Paint()
         ..shader = RadialGradient(
-          colors: [BrandGold.warm.withValues(alpha: 0.42), BrandGold.warm.withValues(alpha: 0)],
+          colors: [gold.withValues(alpha: 0.42), gold.withValues(alpha: 0)],
         ).createShader(rect),
     );
   }
 
   @override
-  bool shouldRepaint(_GlowPainter old) => false;
+  bool shouldRepaint(_GlowPainter old) => old.gold != gold;
 }
 
 /// Seven small gold sparks flying out of the pill, fading as they go.
 class _SparksPainter extends CustomPainter {
-  _SparksPainter(this.t) : super(repaint: t);
+  _SparksPainter(this.t, this.gold) : super(repaint: t);
 
   final Animation<double> t;
+  final Color gold;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -247,13 +207,13 @@ class _SparksPainter extends CustomPainter {
       final angle = 2 * math.pi * i / 7 - math.pi / 2;
       final reach = 0.62 + 0.38 * p;
       final at = centre + Offset(math.cos(angle) * rx * reach, math.sin(angle) * ry * reach);
-      paint.color = BrandGold.light.withValues(alpha: (1 - t.value).clamp(0.0, 1.0));
+      paint.color = gold.withValues(alpha: (1 - t.value).clamp(0.0, 1.0));
       canvas.drawCircle(at, 2.4 - 1.2 * p, paint);
     }
   }
 
   @override
-  bool shouldRepaint(_SparksPainter old) => old.t != t;
+  bool shouldRepaint(_SparksPainter old) => old.t != t || old.gold != gold;
 }
 
 /// A light band sweeping across the pill, clipped to its stadium shape.

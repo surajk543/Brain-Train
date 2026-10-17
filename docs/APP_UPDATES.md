@@ -10,8 +10,8 @@ mutable JSON notice on the content host, compares it with the installed build nu
 | `< min` | **Update required**: "This version of Brain Train is no longer supported. Please update to keep playing." | Update | nothing: no Later, the scrim takes every tap, Android back does nothing |
 
 A platform block's optional `message` replaces the body text. The cards show only in the lobby (never over a game,
-Completed Levels or Settings: they appear when the player is back in the lobby). While the required card is up,
-Play / Continue, Completed Levels, Settings and the Play Games buttons cannot be reached; coming back from the store
+Levels or Settings: they appear when the player is back in the lobby). While the required card is up,
+Play / Continue, Levels, Settings and the Play Games buttons cannot be reached; coming back from the store
 without updating, the card is still there.
 
 ## The notice

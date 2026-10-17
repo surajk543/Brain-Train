@@ -1,22 +1,44 @@
+import 'dart:io';
+
 import 'package:brain_train/app/app_services.dart';
+import 'package:brain_train/content/content_config.dart';
 import 'package:brain_train/content/content_coordinator.dart';
+import 'package:brain_train/content/content_exception.dart';
 import 'package:brain_train/content/content_snapshot.dart';
+import 'package:brain_train/content/content_sources.dart';
+import 'package:brain_train/content/remote_asset_resolver.dart';
 import 'package:brain_train/data/progress_repository.dart';
 import 'package:brain_train/features/common/flowing_leaves.dart';
-import 'package:brain_train/features/common/frosted_glass.dart';
 import 'package:brain_train/features/common/lobby_particles.dart';
 import 'package:brain_train/features/gameplay/game_screen.dart';
 import 'package:brain_train/features/home/home_screen.dart';
 import 'package:brain_train/features/home/widgets/lobby_footer.dart';
 import 'package:brain_train/features/levels/level_select_screen.dart';
 import 'package:brain_train/features/settings/settings_screen.dart';
-import 'package:brain_train/features/home/widgets/lobby_tagline.dart';
+import 'package:brain_train/features/common/premium_mahjong_tile.dart';
+import 'package:brain_train/features/home/widgets/lobby_hero.dart';
+import 'package:brain_train/game_engine/models/symbol_definition.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../helpers.dart';
 import 'lobby_support.dart';
+
+/// Artwork for every path (any bytes do: the hero only checks presence).
+class _AnyArtwork implements ContentSource {
+  @override
+  Future<Uint8List> read(String path, ContentKind kind, {String? sha256}) async => Uint8List(1);
+}
+
+/// No artwork on the device.
+class _NoArtwork implements ContentSource {
+  @override
+  Future<Uint8List> read(String path, ContentKind kind, {String? sha256}) async =>
+      throw ContentException(ContentErrorKind.notFound, 'missing', path: path);
+}
 
 SavedGame _savedOn(AppServices services, int index, {String? url}) {
   final entry = services.content.snapshot.playableEntries[index];
@@ -113,26 +135,147 @@ void main() {
   });
 
   group('footer', () {
-    test('says nothing in normal states, a notice with the content version otherwise', () async {
+    test('the ready levels and the content version; a notice takes the count\'s place', () async {
       final services = await testServices();
       final ContentSnapshot snapshot = services.content.snapshot;
-      final count = snapshot.playableEntries.length;
       final version = snapshot.contentVersion;
-      expect(count, greaterThan(0));
       expect(version, isNotEmpty);
-      expect(LobbyContentFooter.label(snapshot, ContentSyncStatus.upToDate), isNull);
-      expect(LobbyContentFooter.label(snapshot, ContentSyncStatus.idle), isNull);
-      expect(LobbyContentFooter.label(snapshot, ContentSyncStatus.checking), isNull);
-      expect(
-        LobbyContentFooter.label(snapshot, ContentSyncStatus.offline),
-        'Offline · playing saved levels · v$version',
-      );
-      expect(LobbyContentFooter.label(snapshot, ContentSyncStatus.updated), 'New content installed · v$version');
-      expect(
-        LobbyContentFooter.label(snapshot, ContentSyncStatus.rejected),
-        'Update skipped · playing saved levels · v$version',
-      );
+      String label(ContentSyncStatus status, int ready, [int window = 5]) =>
+          LobbyContentFooter.label(snapshot, status, ready: ready, window: window);
+      for (final status in [ContentSyncStatus.upToDate, ContentSyncStatus.idle, ContentSyncStatus.checking]) {
+        expect(label(status, 5), '5 levels ready · v$version');
+        expect(label(status, 1), '1 level ready · v$version');
+        expect(label(status, 0), 'Getting levels ready · v$version');
+        expect(label(status, 0, 0), 'v$version', reason: 'every level won: no next levels');
+      }
+      expect(label(ContentSyncStatus.offline, 4), 'Offline · playing saved levels · v$version');
+      expect(label(ContentSyncStatus.updated, 5), 'New content installed · v$version');
+      expect(label(ContentSyncStatus.rejected, 5), 'Update skipped · playing saved levels · v$version');
     });
+
+    test('counts only the window levels on the device, never unavailable ones', () async {
+      final services = await testServices();
+      // The starter pack holds levels 1-5: the whole first window.
+      expect(services.content.windowReadiness, (ready: 5, window: 5));
+      final entries = services.content.snapshot.playableEntries;
+      await services.progress.recordWin(entries[0].levelId, moves: 8, timeMs: 1);
+      await Future<void>.delayed(const Duration(milliseconds: 50));
+      // Levels 2-6: level 6 is not bundled and the network is out of reach.
+      expect(services.content.isReady(entries[5]), isFalse);
+      expect(services.content.windowReadiness, (ready: 4, window: 5));
+      for (final entry in entries) {
+        await services.progress.recordWin(entry.levelId, moves: 8, timeMs: 1);
+      }
+      expect(services.content.windowReadiness, (ready: 0, window: 0));
+    });
+  });
+
+  testWidgets('the footer shows the real ready count and content version, live', (tester) async {
+    late AppServices services;
+    // The host serves the starter pack: content is up to date, no notice.
+    await tester.runAsync(() async => services = await testServices(client: starterHost));
+    await pumpLobby(tester, services: services, home: const HomeScreen());
+    await tester.runAsync(() => services.content.topUp());
+    await tester.pump();
+    final version = services.content.snapshot.contentVersion;
+    expect(services.content.status, ContentSyncStatus.upToDate);
+    expect(find.text('5 levels ready · v$version'), findsOneWidget);
+    await tester.runAsync(() async {
+      await services.progress.recordWin(services.content.snapshot.playableEntries[0].levelId, moves: 8, timeMs: 1);
+      await Future<void>.delayed(const Duration(milliseconds: 100));
+    });
+    await tester.pump();
+    expect(find.text('4 levels ready · v$version'), findsOneWidget, reason: 'level 6 is not on the device');
+    await _leave(tester);
+  });
+
+  group('hero tiles', () {
+    test('reference symbols first, starter pack stand-ins when their art is not on the device', () async {
+      final snapshot = (await testServices()).content.snapshot;
+      // Offline on a fresh install: the bundled hero art (leaf, sunflower,
+      // purple flower), never a network wait.
+      expect(await LobbyHero.symbolsFor(snapshot), [for (final slot in LobbyHero.slots) slot.first]);
+      // Only the starter pack's art (as if the registry's art for them had
+      // changed and was not cached yet): its stand-ins.
+      final starterOnly = ContentSnapshot(
+        manifest: snapshot.manifest,
+        manifestJson: snapshot.manifestJson,
+        registry: snapshot.registry,
+        origin: snapshot.origin,
+        artwork: repoContent,
+      );
+      final codes = await LobbyHero.symbolsFor(starterOnly);
+      expect(codes, hasLength(3));
+      expect(codes.toSet(), hasLength(3));
+      for (final (i, code) in codes.indexed) {
+        expect(LobbyHero.slots[i], contains(code), reason: 'slot $i');
+        expect(code, isNot(LobbyHero.slots[i].first), reason: 'slot $i: not in the starter pack');
+        expect(snapshot.registry[code], isNotNull);
+      }
+      // With every reference symbol's art on the device: leaf, sunflower,
+      // purple flower.
+      final everything = ContentSnapshot(
+        manifest: snapshot.manifest,
+        manifestJson: snapshot.manifestJson,
+        registry: snapshot.registry,
+        origin: snapshot.origin,
+        artwork: _AnyArtwork(),
+      );
+      expect(await LobbyHero.symbolsFor(everything), [for (final slot in LobbyHero.slots) slot.first]);
+      // Nothing on the device at all: no tiles rather than a network wait.
+      final nothing = ContentSnapshot(
+        manifest: snapshot.manifest,
+        manifestJson: snapshot.manifestJson,
+        registry: snapshot.registry,
+        origin: snapshot.origin,
+        artwork: _NoArtwork(),
+      );
+      expect(await LobbyHero.symbolsFor(nothing), isEmpty);
+    });
+
+    test('the bundled hero art is the published files of the reference symbols', () async {
+      final registry = (await testServices()).content.snapshot.registry;
+      expect(File('pubspec.yaml').readAsStringSync(), contains('- ${kHeroArtPrefix}symbols/v1/'));
+      final bundled = {
+        for (final file in Directory('${kHeroArtPrefix}symbols/v1').listSync().whereType<File>())
+          file.path.split('/').last,
+      };
+      final expected = <String>{};
+      for (final slot in LobbyHero.slots) {
+        final symbol = registry[slot.first]!;
+        expect(symbol.type, SymbolType.image, reason: slot.first);
+        expect(symbol.assetPath, startsWith('symbols/v1/'));
+        expected.add(symbol.assetPath!.split('/').last);
+        // Read like the app does: checked against the registry's sha256.
+        final bytes = await BundledContentSource(
+          (key) async => File(key).existsSync() ? File(key).readAsBytesSync() : null,
+          prefix: kHeroArtPrefix,
+        ).read(symbol.assetPath!, ContentKind.image, sha256: symbol.sha256);
+        expect(bytes, isNotEmpty);
+      }
+      expect(bundled, expected, reason: 'exactly the three hero symbols');
+    });
+  });
+
+  testWidgets('status bar icons: dark over the Day home sky, light on Night and sub-screens', (tester) async {
+    final services = await _start(tester);
+    Brightness? iconsOf(Widget screen) => tester
+        .widgetList<AnnotatedRegion<SystemUiOverlayStyle>>(
+          find.descendant(of: find.byType(screen.runtimeType), matching: find.byType(AnnotatedRegion<SystemUiOverlayStyle>)),
+        )
+        .first
+        .value
+        .statusBarIconBrightness;
+    for (final (mode, home, settings) in [
+      (ThemeMode.light, Brightness.dark, Brightness.light),
+      (ThemeMode.dark, Brightness.light, Brightness.light),
+    ]) {
+      await pumpLobby(tester, services: services, home: const HomeScreen(), themeMode: mode);
+      expect(iconsOf(const HomeScreen()), home, reason: '$mode home');
+      await pumpLobby(tester, services: services, home: const SettingsScreen(), themeMode: mode);
+      expect(iconsOf(const SettingsScreen()), settings, reason: '$mode settings');
+      await _leave(tester);
+    }
   });
 
   testWidgets('home works offline on bundled content', (tester) async {
@@ -142,13 +285,12 @@ void main() {
     expect(snapshot.origin, ContentOrigin.bundled);
     expect(snapshot.playableEntries, hasLength(snapshot.manifest.levels.length));
     expect(services.content.status, ContentSyncStatus.offline);
-    expect(find.byType(LobbyTagline), findsOneWidget);
-    expect(find.text('Train your'), findsOneWidget);
-    expect(find.text('brain'), findsOneWidget);
+    expect(find.byType(LobbyHero), findsOneWidget);
+    expect(find.bySemanticsLabel('Brain Train'), findsOneWidget);
     expect(
-      find.descendant(of: find.byType(LobbyTagline), matching: find.byType(FrostedGlass)),
-      findsOneWidget,
-      reason: 'frosted glass',
+      find.descendant(of: find.byType(LobbyHero), matching: find.byType(PremiumMahjongTile)),
+      findsNWidgets(3),
+      reason: 'three hero tiles from the bundled art',
     );
     expect(find.byType(BackdropFilter), findsNothing, reason: 'no live backdrop blur behind the ambient animation');
     expect(
@@ -156,7 +298,7 @@ void main() {
       isEmpty,
     );
     expect(find.text('Play · Level 1'), findsOneWidget);
-    expect(find.text(LobbyContentFooter.label(snapshot, ContentSyncStatus.offline)!), findsOneWidget);
+    expect(find.text('Offline · playing saved levels · v${snapshot.contentVersion}'), findsOneWidget);
     await _leave(tester);
   });
 
@@ -238,8 +380,8 @@ void main() {
     final services = await _start(tester);
     await pumpLobby(tester, services: services, home: const HomeScreen());
 
-    await tester.tap(find.text('Completed Levels'));
-    await tester.tap(find.text('Completed Levels'), warnIfMissed: false);
+    await tester.tap(find.text('Levels'));
+    await tester.tap(find.text('Levels'), warnIfMissed: false);
     await settleLobby(tester);
     expect(find.byType(LevelSelectScreen), findsOneWidget);
     await tester.pageBack();
@@ -249,9 +391,10 @@ void main() {
     await tester.tap(find.text('Settings'));
     await settleLobby(tester);
     expect(find.byType(SettingsScreen), findsOneWidget);
-    expect(find.text('Sound'), findsOneWidget);
+    expect(find.text('Sound Effects'), findsOneWidget);
+    expect(find.text('Music'), findsOneWidget);
     expect(find.text('Vibration'), findsOneWidget);
-    await tester.pageBack();
+    await tester.tap(find.byKey(const ValueKey('settings-close')));
     await settleLobby(tester);
     expect(find.text('Continue · Level 1'), findsNothing);
     expect(find.text('Play · Level 1'), findsOneWidget);
@@ -263,9 +406,9 @@ void main() {
     final services = await _start(tester);
     await pumpLobby(tester, services: services, home: const HomeScreen(), phone: smallPhone);
     expect(find.bySemanticsLabel('Play, Level 1'), findsOneWidget);
-    expect(find.bySemanticsLabel('Completed Levels'), findsOneWidget);
+    expect(find.bySemanticsLabel('Levels'), findsOneWidget);
     expect(find.bySemanticsLabel('Settings'), findsOneWidget);
-    expect(find.bySemanticsLabel('Train your brain'), findsOneWidget);
+    expect(find.bySemanticsLabel('Brain Train'), findsOneWidget);
     for (final key in ['lobby-play', 'lobby-levels', 'lobby-settings']) {
       expect(tester.getSize(find.byKey(ValueKey(key))).height, greaterThanOrEqualTo(48), reason: key);
     }
@@ -284,7 +427,7 @@ void main() {
     bool homeTicking() => TickerMode.valuesOf(tester.element(find.byType(LobbyParticles, skipOffstage: false))).enabled;
     expect(homeTicking(), isTrue);
 
-    await tester.tap(find.text('Completed Levels'));
+    await tester.tap(find.text('Levels'));
     await settleLobby(tester);
     expect(homeTicking(), isFalse, reason: 'home covered: its tickers are muted');
     expect(find.byType(FlowingLeaves), findsOneWidget, reason: 'only the Levels leaves are on stage');

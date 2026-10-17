@@ -1,3 +1,5 @@
+import 'game_actions.dart';
+
 /// Lifecycle of a level being played.
 enum GameStatus {
   playing,
@@ -31,6 +33,8 @@ class GameState {
     required this.totalPairs,
     required this.history,
     required this.status,
+    this.actions = ActionCounts.initial,
+    this.undoAvailable = false,
   });
 
   final String levelId;
@@ -45,17 +49,27 @@ class GameState {
   final List<String> tray;
   final int trayCapacity;
 
-  /// Accepted taps (every tile sent to the tray). Revives do not count.
+  /// Accepted taps (every tile sent to the tray), less the ones undone.
+  /// Revives do not count.
   final int moveCount;
 
   /// Pairs cleared in the tray.
   final int matchedPairs;
   final int totalPairs;
 
-  /// Accepted taps (tile ids) and revives (`GameEngine.reviveMarker`) in
-  /// order, oldest first. Replaying them restores the game.
+  /// Accepted taps (tile ids) and markers in order, oldest first: revives
+  /// (`GameEngine.reviveMarker`), undos, hints, shuffles (with their seed)
+  /// and granted uses (see `GameEngine`). Replaying them restores the game,
+  /// action uses included.
   final List<String> history;
   final GameStatus status;
+
+  /// Undo, Hint and Shuffle uses left and used in this game.
+  final ActionCounts actions;
+
+  /// The last tap can be undone now (uses left aside): the game is in play
+  /// and a tap was made since the start, the last Revive or Shuffle.
+  final bool undoAvailable;
 
   bool get isTrayFull => tray.length >= trayCapacity;
   double get progress => totalPairs == 0 ? 1 : matchedPairs / totalPairs;

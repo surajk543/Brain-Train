@@ -1,7 +1,9 @@
 # Rewarded ads (AdMob)
 
 Revive on the Tray full card plays a Google AdMob **rewarded** ad; the tiles go back only once the reward is earned.
-Revive stays unlimited. Restart never needs an ad. Android and iOS (`google_mobile_ads` 9.1.0, AdMob + Google's
+Revive stays unlimited. Since 1.1.0 (owner, 2026-10-17) an Undo, Hint or Shuffle with no use left can be refilled
+the same way: a rewarded ad gives +1 of that action. Rewarded ads only, on Revive and on these refills: never
+interstitials or banners. Restart never needs an ad. Android and iOS (`google_mobile_ads` 9.1.0, AdMob + Google's
 User Messaging Platform, UMP).
 
 ## How it behaves
@@ -23,7 +25,7 @@ User Messaging Platform, UMP).
   the lobby only where one is required, e.g. EEA/UK, until answered) → `canRequestAds` → on iOS, for 13+ only,
   the App Tracking Transparency prompt (below) → `MobileAds.initialize` → load one rewarded ad. Every call is caught and timed out. App measurement is delayed until the SDK starts
   (`DELAY_APP_MEASUREMENT_INIT` / `GADDelayAppMeasurementInit`).
-- **Keeping an ad ready**: one ad is kept loaded. A game screen opening, the Tray full card appearing and the app
+- **Keeping an ad ready**: one ad is kept loaded. A game screen opening, the Tray full card or a refill card appearing and the app
   returning to the foreground each load one if none is (and retry at once after a failure); failures retry by
   themselves after 5 s, 10 s, 20 s, 30 s, then every minute. A new ad loads after each one shown.
 - **Revive button** (Tray full card; also for a resumed saved game that was lost with a full tray):
@@ -37,7 +39,22 @@ User Messaging Platform, UMP).
 
   Reward earned → the ad closes → the tray tiles fly back (after the app is in the foreground again). Ad closed
   early or failed to show → no revive, the card stays, Revive shows another ad once one is loaded.
-- **While the ad is on screen**: the game clock is already stopped (a full tray stops it) and stays stopped;
+- **Action refills** (1.1.0; Undo / Hint / Shuffle start each level with 1 / 1 / 1 uses (owner, 2026-10-17)): at 0 uses the button's
+  badge shows a play mark; a tap opens a small card "Watch an ad for +1 Hint?" ("You have no hints left in this
+  level.", Watch ad / Not now; the clock stops while it is open; Back closes it). The use is granted
+  (`GameController.grant`, saved with the game) only once the ad closes with its reward earned and the app is in the
+  foreground again; then the card closes and the clock runs again. Nothing else is asked of the player.
+
+  | Ad state | Watch ad | Note under it |
+  |---|---|---|
+  | loaded | on (video icon) | none; "Watch the ad to the end to get +1 Hint." after an ad closed early |
+  | loading / retrying | off | spinner + "Loading an ad…" |
+  | offline | off | "Connect to the internet to watch an ad" |
+  | on screen | off (Not now too) | none |
+
+  Closed early or failed → no grant, the card stays. Off buttons (intro, tutorial, result cards, nothing to undo, …)
+  never offer an ad. Age-group rules are the same as for Revive (child-directed for under 13).
+- **While the ad is on screen**: the game clock is already stopped (a full tray, or the refill card, stops it) and stays stopped;
   background music is held (`BackgroundMusic.interrupted`; on Android the app also goes to the background) and
   sound effects are stopped; after the ad the game's audio context is applied again.
 - **Privacy choices** (Settings): shown only when UMP's `getPrivacyOptionsRequirementStatus()` is `required`
@@ -52,7 +69,8 @@ User Messaging Platform, UMP).
   Settings › Privacy › Tracking). If a UMP "IDFA explainer" message is published in AdMob, UMP shows its explainer
   and the system prompt itself during consent; the app's call then just reads the answer. Android has no such
   prompt.
-- A build without the SDK (tests, desktop) has ads "off": Revive needs no ad there.
+- A build without the SDK (tests, desktop) has ads "off": Revive needs no ad there, and a refill is granted at once
+  (no card; the badge shows "+").
 
 ## Where the IDs go
 

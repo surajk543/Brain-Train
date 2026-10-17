@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 
 import '../../../app/brand.dart';
+import '../../../app/theme.dart';
 import '../../../content/content_sources.dart';
 import '../../../game_engine/models/level_definition.dart';
 import '../../../game_engine/models/symbol_registry.dart';
@@ -119,6 +120,15 @@ class TrayController extends ChangeNotifier {
   int expect(String tileId) {
     final existing = indexOf(tileId);
     if (existing >= 0) return existing;
+    _makeRoom();
+    _items.add(TrayItem._(tileId, TrayItemPhase.incoming, flew: true));
+    notifyListeners();
+    return _items.length - 1;
+  }
+
+  /// Out of slots while matched pairs are still on show: the oldest such
+  /// pair leaves at once.
+  void _makeRoom() {
     while (_items.length >= capacity) {
       final matched = _items.where((item) => item._partnerId != null).firstOrNull;
       if (matched == null) break;
@@ -126,9 +136,30 @@ class TrayController extends ChangeNotifier {
       if (matched.phase != TrayItemPhase.clearing) onPairReady?.call(matched.tileId, matched._partnerId!, animate: false);
       _removePair(matched);
     }
-    _items.add(TrayItem._(tileId, TrayItemPhase.incoming, flew: true));
+  }
+
+  /// An undo took back the tap of [tileId]: it leaves the tray at once
+  /// (landed, still flying in, or striking; its flight back to the board is
+  /// drawn elsewhere). If that tap had cleared [partnerId], the pair is
+  /// called off: the twin stays (or is back) in the tray, settled, at its
+  /// place in [engineTray] (the engine's tray after the undo, slot order).
+  void takeBack(String tileId, {String? partnerId, List<String> engineTray = const []}) {
+    _items.removeWhere((item) => item.tileId == tileId);
+    if (partnerId != null) {
+      final partner = itemOf(partnerId);
+      if (partner != null) {
+        partner._partnerId = null;
+        // Its strike is called off; a twin still flying in lands as usual.
+        if (partner._phase == TrayItemPhase.clearing) partner._phase = TrayItemPhase.settled;
+      } else {
+        _makeRoom();
+        final order = engineTray.indexOf(partnerId);
+        final after = _items.indexWhere((item) => engineTray.indexOf(item.tileId) > order);
+        _items.insert(after < 0 ? _items.length : after, TrayItem._(partnerId, TrayItemPhase.settled, flew: false));
+      }
+    }
+    _full = false;
     notifyListeners();
-    return _items.length - 1;
   }
 
   /// [tileId]'s flight reached its slot. A matched pair strikes once both
@@ -152,10 +183,11 @@ class TrayController extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// The strike of [tileId] (and so of its pair) is over: remove both.
+  /// The strike of [tileId] (and so of its pair) is over: remove both. A
+  /// tile no longer striking (its pair was undone) stays.
   void completeClear(String tileId) {
     final item = itemOf(tileId);
-    if (item == null) return;
+    if (item == null || item.phase != TrayItemPhase.clearing) return;
     _removePair(item);
     notifyListeners();
   }
@@ -227,8 +259,9 @@ class TrayLayout {
     required int capacity,
     required TileStyle style,
     required double maxFaceWidth,
+    double padV = defaultPadV,
   }) {
-    const padH = 14.0, padV = 9.0, gap = 9.0, inset = 4.0;
+    const padH = 14.0, gap = 9.0, inset = 4.0;
     final perWell = (width - 2 * padH - (capacity - 1) * gap) / capacity;
     final faceWidth = ((perWell - 2 * inset) / (1 + style.depthXFraction)).clamp(18.0, maxFaceWidth);
     final faceHeight = faceWidth / style.faceAspect;
@@ -244,6 +277,14 @@ class TrayLayout {
     }
     return TrayLayout._(Size(width, panel.height), panel, wells, faces);
   }
+
+  /// Panel padding above and below the wells, unless a screen asks for less.
+  static const double defaultPadV = 9;
+
+  /// The tray's height for a face [faceWidth] wide (wells plus [padV] above
+  /// and below), so screens can plan their layout.
+  static double heightFor(double faceWidth, TileStyle style, {double padV = defaultPadV}) =>
+      faceWidth / style.faceAspect * (1 + style.depthYFraction) + 2 * 4.0 + 2 * padV;
 
   /// The whole tray widget.
   final Size size;
@@ -284,7 +325,9 @@ class TrayView extends StatefulWidget {
     required this.symbolArt,
     this.reduceMotion = false,
     this.maxFaceWidth = 46,
+    this.padV = TrayLayout.defaultPadV,
     this.symbolClock,
+    this.symbolOf,
   });
 
   final TrayController controller;
@@ -296,6 +339,13 @@ class TrayView extends StatefulWidget {
 
   /// Largest tile face width; narrow screens get smaller tiles.
   final double maxFaceWidth;
+
+  /// Panel padding above and below the wells (short screens use less).
+  final double padV;
+
+  /// The symbol a tile shows now (e.g. `GameController.symbolCodeOf`, which
+  /// follows shuffles); null: the symbol [level] gives it.
+  final String Function(String tileId)? symbolOf;
 
   /// Clock for animated symbols, e.g. shared with tile flights so a tile
   /// keeps its frame when it lands. The tray starts and pauses it. Null: the
@@ -318,6 +368,10 @@ class TrayView extends StatefulWidget {
 class TrayViewState extends State<TrayView> with TickerProviderStateMixin {
   late final TileStyle _style = TileStyle.forTileSet(widget.level.tileSetId);
   late final Map<String, String> _symbolOf = {for (final tile in widget.level.tiles) tile.tileId: tile.symbolCode};
+
+  /// The symbol [tileId] shows: [TrayView.symbolOf] (after a shuffle a tile
+  /// may show another symbol than the level gave it), else the level's.
+  String _codeOf(String tileId) => widget.symbolOf?.call(tileId) ?? _symbolOf[tileId] ?? '';
   late final bool _ownsClock = widget.symbolClock == null;
   late final SymbolAnimationClock _clock = widget.symbolClock ?? SymbolAnimationClock();
   final SymbolFrameAtlas _atlas = SymbolFrameAtlas();
@@ -354,6 +408,16 @@ class TrayViewState extends State<TrayView> with TickerProviderStateMixin {
     if (layout == null || box == null || !box.hasSize || !box.attached) return null;
     final face = layout.faces[index.clamp(0, layout.faces.length - 1)];
     return MatrixUtils.transformRect(box.getTransformTo(TabletScale.canvasAbove(box)), face);
+  }
+
+  /// Global rect of slot [index]'s well (the recess the tile sits in), once
+  /// laid out.
+  Rect? wellRect(int index) {
+    final layout = _layout;
+    final box = context.findRenderObject() as RenderBox?;
+    if (layout == null || box == null || !box.hasSize || !box.attached) return null;
+    final well = layout.wells[index.clamp(0, layout.wells.length - 1)].outerRect;
+    return MatrixUtils.transformRect(box.getTransformTo(TabletScale.canvasAbove(box)), well);
   }
 
   /// Global rect of the tray's panel (its gold frame), once laid out.
@@ -436,7 +500,7 @@ class TrayViewState extends State<TrayView> with TickerProviderStateMixin {
     if (art == null) return const {};
     return {
       for (final item in widget.controller.items)
-        if (TrayController.isShown(item)) ?art.animatedArt(_symbolOf[item.tileId] ?? ''),
+        if (TrayController.isShown(item)) ?art.animatedArt(_codeOf(item.tileId)),
     };
   }
 
@@ -482,6 +546,7 @@ class TrayViewState extends State<TrayView> with TickerProviderStateMixin {
       capacity: widget.controller.capacity,
       style: _style,
       maxFaceWidth: widget.maxFaceWidth,
+      padV: widget.padV,
     );
   }
 
@@ -531,7 +596,7 @@ class TrayViewState extends State<TrayView> with TickerProviderStateMixin {
     final canvas = Canvas(recorder)
       ..scale(pixelRatio)
       ..clipRect(Offset.zero & size);
-    art.paint(canvas, _symbolOf[tileId] ?? '', Offset.zero & face.size, atlas: _noMotion ? null : _atlas);
+    art.paint(canvas, _codeOf(tileId), Offset.zero & face.size, atlas: _noMotion ? null : _atlas);
     final picture = recorder.endRecording();
     final image = picture.toImageSync((size.width * pixelRatio).ceil(), (size.height * pixelRatio).ceil());
     picture.dispose();
@@ -594,9 +659,9 @@ class TrayViewState extends State<TrayView> with TickerProviderStateMixin {
                                     curve: Curves.easeOutCubic,
                                     child: _TrayTile(
                                       art: art,
-                                      symbolCode: _symbolOf[item.tileId] ?? '',
+                                      symbolCode: _codeOf(item.tileId),
                                       pop: item.flew,
-                                      animation: art.isAnimated(_symbolOf[item.tileId] ?? '') && !_noMotion
+                                      animation: art.isAnimated(_codeOf(item.tileId)) && !_noMotion
                                           ? (atlas: _atlas, clock: _clock)
                                           : null,
                                       reduceMotion: _noMotion,
@@ -639,6 +704,7 @@ class _TrayPanel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final palette = BrainTrainPalette.of(context);
     final radius = BorderRadius.circular(layout.panelRadius);
     return DecoratedBox(
       decoration: BoxDecoration(
@@ -651,14 +717,14 @@ class _TrayPanel extends StatelessWidget {
       child: FrostedGlass(
         borderRadius: radius,
         child: CustomPaint(
-          foregroundPainter: _TrayPanelPainter(layout),
+          foregroundPainter: _TrayPanelPainter(layout, palette),
           child: DecoratedBox(
             decoration: BoxDecoration(
               borderRadius: radius,
-              gradient: const LinearGradient(
+              gradient: LinearGradient(
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
-                colors: [Color(0xD11A5638), Color(0xE00A3322)],
+                colors: palette.panelFill,
               ),
             ),
             child: const SizedBox.expand(),
@@ -671,9 +737,12 @@ class _TrayPanel extends StatelessWidget {
 
 /// Gold border, top sheen and recessed wells; panel-local coordinates.
 class _TrayPanelPainter extends CustomPainter {
-  _TrayPanelPainter(this.layout);
+  _TrayPanelPainter(this.layout, this.palette);
 
   final TrayLayout layout;
+
+  /// Panel sheen, gold rim and highlight of the current look.
+  final BrainTrainPalette palette;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -685,7 +754,7 @@ class _TrayPanelPainter extends CustomPainter {
         ..shader = LinearGradient(
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
-          colors: [Colors.white.withValues(alpha: 0.07), Colors.white.withValues(alpha: 0)],
+          colors: [palette.panelSheen, palette.panelSheen.withValues(alpha: 0)],
           stops: const [0, 0.5],
         ).createShader(bounds),
     );
@@ -724,11 +793,11 @@ class _TrayPanelPainter extends CustomPainter {
         Paint()
           ..style = PaintingStyle.stroke
           ..strokeWidth = 1.3
-          ..shader = const LinearGradient(
+          ..shader = LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
-            colors: [BrandGold.light, BrandGold.base, BrandGold.deep, BrandGold.base, BrandGold.light],
-            stops: [0, 0.3, 0.55, 0.8, 1],
+            colors: palette.panelRim,
+            stops: palette.panelRim.length == 5 ? const [0, 0.3, 0.55, 0.8, 1] : null,
           ).createShader(bounds),
       )
       ..drawRRect(
@@ -739,14 +808,14 @@ class _TrayPanelPainter extends CustomPainter {
           ..shader = LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
-            colors: [Colors.white.withValues(alpha: 0.26), Colors.white.withValues(alpha: 0)],
+            colors: [palette.panelHighlight, palette.panelHighlight.withValues(alpha: 0)],
             stops: const [0, 0.35],
           ).createShader(bounds),
       );
   }
 
   @override
-  bool shouldRepaint(_TrayPanelPainter old) => old.layout != layout;
+  bool shouldRepaint(_TrayPanelPainter old) => old.layout != layout || old.palette != palette;
 }
 
 /// Red rim around a full tray: pulses while the shake runs, then stays

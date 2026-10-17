@@ -14,7 +14,7 @@ import '../../gameplay/widgets/premium_chrome.dart';
 /// Optional update: "Update available" with Update and Later; Android back
 /// is Later. Required update: "Update required" with Update only; nothing
 /// closes it (no Later, the scrim takes every tap, back does nothing), so
-/// Play, Continue and Completed Levels cannot be reached.
+/// Play, Continue and Levels cannot be reached.
 ///
 /// Must sit inside the lobby's [LobbyBackground] (its frost). The card is
 /// flattened by a [StaticLayer]: the fireflies and leaves behind it do not

@@ -94,7 +94,7 @@ void main() {
         expect(find.text('Continue · Level 2'), findsOneWidget);
         expect(find.textContaining('Offline'), findsNothing, reason: 'the content is up to date: no lobby notice');
         await shoot(tester, '01-lobby');
-        await tester.tap(find.text('Completed Levels'));
+        await tester.tap(find.text('Levels'));
         await settleLobby(tester);
         expect(find.text(_level(app, 2).title), findsOneWidget);
         expect(find.text('1 of ${app.content.snapshot.manifest.levels.length} won'), findsOneWidget);
@@ -145,7 +145,7 @@ void main() {
         final app = await services(tester);
         final entry = _level(app, 4);
         await pumpGame(tester, app, entry, resume: solvedSave(app.content.snapshot, entry, elapsedMs: 83000));
-        expect(find.text('Level complete!'), findsOneWidget);
+        expect(find.text('Level Complete!'), findsOneWidget);
         await shoot(tester, '04-level-complete');
         await tester.pumpWidget(const SizedBox());
       });

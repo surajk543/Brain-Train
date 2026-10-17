@@ -1,6 +1,7 @@
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../../app/theme.dart';
 import 'flowing_leaves.dart';
@@ -17,10 +18,11 @@ enum LobbySceneVariant {
   subScreen,
 }
 
-/// The night garden behind the home, Levels and Settings screens, as
+/// The garden (Day or Night) behind the home, Levels and Settings screens, as
 /// described by [LobbyTheme]: bundled art layers, Flutter-drawn lighting
-/// (lantern glow, calm centre, vignette), drifting leaves and, on home,
-/// fireflies. All of it stays behind the child and never takes taps.
+/// (sun or lantern glow, calm centre, vignette), drifting leaves and, on home,
+/// fireflies (Night) or pollen (Day). All of it stays behind the child and
+/// never takes taps.
 ///
 /// Everything is bundled, so the scene is complete offline; a gradient in
 /// the scene's colours shows for the first frames while the art decodes.
@@ -52,30 +54,51 @@ class _LobbyBackgroundState extends State<LobbyBackground> {
     final lobby = LobbyTheme.of(context);
     final home = widget.variant == LobbySceneVariant.home;
     final child = widget.child;
-    return Stack(
-      fit: StackFit.expand,
-      children: [
-        StaticLayer(
-          onRaster: _frost.update,
-          child: _Scene(lobby: lobby, home: home),
-        ),
-        RepaintBoundary(
-          child: FlowingLeaves(
-            count: home ? lobby.leafCount : lobby.subScreenLeafCount,
-            opacity: lobby.leafOpacity * (home ? 1 : 0.8),
+    // Status bar icons: dark over the bright sky of the Day home scene, light
+    // everywhere else (Night, and the shaded Day sub-screens).
+    final darkIcons = home && !BrainTrainPalette.of(context).isNight;
+    return AnnotatedRegion<SystemUiOverlayStyle>(
+      value: darkIcons ? kStatusBarDarkIcons : kStatusBarLightIcons,
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          StaticLayer(
+            onRaster: _frost.update,
+            child: _Scene(lobby: lobby, home: home),
           ),
-        ),
-        if (home && lobby.particleCount > 0)
-          IgnorePointer(
-            child: RepaintBoundary(
-              child: LobbyParticles(count: lobby.particleCount, color: lobby.particleColor, size: lobby.particleSize),
+          RepaintBoundary(
+            child: FlowingLeaves(
+              count: home ? lobby.leafCount : lobby.subScreenLeafCount,
+              opacity: lobby.leafOpacity * (home ? 1 : 0.8),
             ),
           ),
-        if (child != null) FrostScope(source: _frost, child: child),
-      ],
+          if (home && lobby.particleCount > 0)
+            IgnorePointer(
+              child: RepaintBoundary(
+                child: LobbyParticles(count: lobby.particleCount, color: lobby.particleColor, size: lobby.particleSize),
+              ),
+            ),
+          if (child != null) FrostScope(source: _frost, child: child),
+        ],
+      ),
     );
   }
 }
+
+/// Transparent status bar with dark icons (over a bright scene). Only the
+/// status bar: the navigation bar keeps the platform's colours.
+const SystemUiOverlayStyle kStatusBarDarkIcons = SystemUiOverlayStyle(
+  statusBarColor: Color(0x00000000),
+  statusBarIconBrightness: Brightness.dark,
+  statusBarBrightness: Brightness.light,
+);
+
+/// Transparent status bar with light icons (over a dark scene).
+const SystemUiOverlayStyle kStatusBarLightIcons = SystemUiOverlayStyle(
+  statusBarColor: Color(0x00000000),
+  statusBarIconBrightness: Brightness.light,
+  statusBarBrightness: Brightness.dark,
+);
 
 class _Scene extends StatelessWidget {
   const _Scene({required this.lobby, required this.home});
@@ -109,6 +132,8 @@ class _Scene extends StatelessWidget {
             cacheWidth: (baseWidth * dpr).round(),
             gaplessPlayback: true,
             excludeFromSemantics: true,
+            // A missing layer leaves the fallback gradient, never an error.
+            errorBuilder: _missing,
           ),
           for (final (decor, rect) in placed)
             Positioned.fromRect(
@@ -123,6 +148,7 @@ class _Scene extends StatelessWidget {
                     cacheWidth: (rect.width * dpr).round(),
                     gaplessPlayback: true,
                     excludeFromSemantics: true,
+                    errorBuilder: _missing,
                   ),
                 ),
               ),
@@ -144,6 +170,8 @@ class _Scene extends StatelessWidget {
     },
   );
 
+  static Widget _missing(BuildContext context, Object error, StackTrace? stack) => const SizedBox.shrink();
+
   static (LobbyDecor, Rect) _place(LobbyDecor decor, Size size) {
     final w = decor.width * size.width;
     final h = w * decor.aspect;
@@ -160,8 +188,8 @@ class _Scene extends StatelessWidget {
   }
 }
 
-/// Lighting above the art: lantern and ambient glows (screen blend), a calm
-/// vignette behind the content, and darker edges.
+/// Lighting above the art: lantern, sun and ambient glows (screen blend), a
+/// calm vignette behind the content, and darker edges.
 class _LightingPainter extends CustomPainter {
   _LightingPainter({
     required this.lights,

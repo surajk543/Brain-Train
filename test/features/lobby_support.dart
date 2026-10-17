@@ -50,7 +50,7 @@ Future<AppServices> testServices({
   final content = ContentController(
     ContentCoordinator(
       cache: cache,
-      bundled: repoContent,
+      bundled: repoBundle,
       downloads: AssetDownloadManager(cache: cache, fetcher: fetcher, resolver: resolver),
       manifests: ContentManifestService(fetcher: fetcher, resolver: resolver),
     ),
@@ -83,6 +83,8 @@ typedef Phone = ({String name, double width, double height, double dpr, double t
 
 const Phone largePhone = (name: '411x914', width: 411, height: 914, dpr: 2.625, top: 24, bottom: 16);
 const Phone smallPhone = (name: '360x640', width: 360, height: 640, dpr: 2, top: 24, bottom: 0);
+/// iPhone 15/16 class (the redesign's mid reference size).
+const Phone midPhone = (name: '393x852', width: 393, height: 852, dpr: 3, top: 59, bottom: 34);
 const Phone tallPhone = (name: '430x932', width: 430, height: 932, dpr: 3, top: 47, bottom: 34);
 
 /// Store screenshot sizes, portrait: Google Play phone (1080 x 1920 px),
@@ -91,11 +93,21 @@ const Phone playPhone = (name: 'play-phone', width: 360, height: 640, dpr: 3, to
 const Phone iphone69 = (name: 'iphone-6.9', width: 440, height: 956, dpr: 3, top: 62, bottom: 34);
 const Phone ipad13 = (name: 'ipad-13', width: 1032, height: 1376, dpr: 2, top: 24, bottom: 20);
 
-/// Real glyphs instead of test boxes, when the system fonts exist.
+/// The app's bundled fonts (pubspec `fonts:`), for real glyphs in tests.
+const Map<String, List<String>> bundledFontFiles = {
+  'Playfair Display': [
+    'assets/fonts/playfair_display/PlayfairDisplay-VariableFont_wght.ttf',
+  ],
+  'Manrope': ['assets/fonts/manrope/Manrope-VariableFont_wght.ttf'],
+};
+
+/// Real glyphs instead of test boxes: the bundled fonts, and system fonts
+/// for the platform fallbacks when they exist.
 Future<void> loadCaptureFonts() async {
   final flutterRoot =
       Platform.environment['FLUTTER_ROOT'] ?? '${Platform.environment['HOME']}/snap/flutter/common/flutter';
   final families = {
+    ...bundledFontFiles,
     'serif': [
       '/usr/share/fonts/truetype/noto/NotoSerif-Regular.ttf',
       '/usr/share/fonts/truetype/noto/NotoSerif-Bold.ttf',
@@ -126,6 +138,9 @@ Future<void> pumpLobby(
   required Widget home,
   Phone phone = largePhone,
   double textScale = 1,
+  /// Like the app's Appearance setting: dark is Night, light Day, system
+  /// follows the test's platform brightness.
+  ThemeMode themeMode = ThemeMode.dark,
 }) async {
   tester.view
     ..physicalSize = Size(phone.width * phone.dpr, phone.height * phone.dpr)
@@ -142,7 +157,9 @@ Future<void> pumpLobby(
         services: services,
         child: MaterialApp(
           debugShowCheckedModeBanner: false,
-          theme: buildBrainTrainTheme(),
+          theme: buildBrainTrainTheme(Brightness.light),
+          darkTheme: buildBrainTrainTheme(),
+          themeMode: themeMode,
           // Like the app: tablets scale the UI from a 600-px canvas.
           builder: (context, child) => TabletScale(child: child!),
           home: home,

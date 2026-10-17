@@ -1,14 +1,18 @@
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../../../app/brand.dart';
 import '../../../app/theme.dart';
+import '../../../app/typography.dart';
 import '../../common/flowing_leaves.dart';
 import '../../common/frosted_glass.dart';
+import '../../common/lobby_background.dart';
 import '../../common/static_layer.dart';
 
-/// Darkest felt tone, at the screen edges (also the Scaffold colour).
+/// Night's darkest felt tone, at the screen edges. Screens use the current
+/// look's `BrainTrainPalette.feltEdge` (Day or Night).
 const Color kFeltEdge = Color(0xFF062618);
 
 /// Gameplay background: deep emerald felt, warm ambient light tinted by the
@@ -43,6 +47,8 @@ class _EmeraldBackdropState extends State<EmeraldBackdrop> {
 
   @override
   Widget build(BuildContext context) {
+    final palette = BrainTrainPalette.of(context);
+    final foliage = palette.feltFoliage;
     final size = MediaQuery.sizeOf(context);
     final dpr = MediaQuery.devicePixelRatioOf(context);
     // Decoration scales with the shorter side so tablets and landscape do
@@ -50,7 +56,7 @@ class _EmeraldBackdropState extends State<EmeraldBackdrop> {
     final unit = math.min(size.width, size.height * 0.5);
     // Offsets are in units of [unit], except [topOfHeight] (screen height).
     Widget decor(
-      String name,
+      String asset,
       double widthFraction, {
       double? left,
       double? right,
@@ -67,7 +73,7 @@ class _EmeraldBackdropState extends State<EmeraldBackdrop> {
         width: width,
         child: IgnorePointer(
           child: Image.asset(
-            'assets/decor/$name.webp',
+            asset,
             cacheWidth: (width * dpr).round(),
             fit: BoxFit.contain,
             filterQuality: FilterQuality.medium,
@@ -77,47 +83,63 @@ class _EmeraldBackdropState extends State<EmeraldBackdrop> {
       );
     }
 
-    return Stack(
-      fit: StackFit.expand,
-      children: [
-        StaticLayer(
-          onRaster: _frost.update,
-          child: Stack(
-            fit: StackFit.expand,
-            children: [
-              CustomPaint(painter: _FeltPainter(accent: widget.accent)),
-              decor('foliage_right', 0.3, right: -0.06, topOfHeight: 0.19),
-              decor('foliage_top_left', 0.7, left: -0.08, top: -0.07),
-              decor('foliage_bottom_left', 0.7, left: -0.1, bottom: -0.08),
-              decor('foliage_bottom_right', 0.72, right: -0.1, bottom: -0.09),
-            ],
+    // Light status bar icons over the felt (the lobby's Day home sets dark).
+    return AnnotatedRegion<SystemUiOverlayStyle>(
+      value: kStatusBarLightIcons,
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          StaticLayer(
+            onRaster: _frost.update,
+            child: Stack(
+              fit: StackFit.expand,
+              children: [
+                CustomPaint(painter: _FeltPainter(accent: widget.accent, palette: palette)),
+                decor(foliage.right, 0.3, right: -0.06, topOfHeight: 0.19),
+                decor(foliage.topLeft, 0.7, left: -0.08, top: -0.07),
+                decor(foliage.bottomLeft, 0.7, left: -0.1, bottom: -0.08),
+                decor(foliage.bottomRight, 0.72, right: -0.1, bottom: -0.09),
+              ],
+            ),
           ),
-        ),
-        const RepaintBoundary(child: FlowingLeaves(count: 8, opacity: 0.62, scale: 0.9, speed: 0.85, seed: 23)),
-        FrostScope(source: _frost, child: widget.child),
-      ],
+          const RepaintBoundary(child: FlowingLeaves(count: 8, opacity: 0.62, scale: 0.9, speed: 0.85, seed: 23)),
+          FrostScope(source: _frost, child: widget.child),
+        ],
+      ),
     );
   }
 }
 
 class _FeltPainter extends CustomPainter {
-  _FeltPainter({required this.accent});
+  _FeltPainter({required this.accent, required this.palette});
+
+  /// Day's patches of sunlight: centre (fractions of the screen) and radius
+  /// (fraction of the shorter side), mostly towards the sun at the top right.
+  static const List<(double, double, double)> _sunPatches = [
+    (0.78, 0.16, 0.34),
+    (0.18, 0.28, 0.22),
+    (0.62, 0.36, 0.2),
+    (0.9, 0.5, 0.26),
+    (0.3, 0.52, 0.18),
+    (0.08, 0.66, 0.24),
+    (0.7, 0.7, 0.2),
+  ];
 
   final Color accent;
+
+  /// Felt colours, light and vignette of the current look.
+  final BrainTrainPalette palette;
 
   @override
   void paint(Canvas canvas, Size size) {
     final rect = Offset.zero & size;
-    const center = Color(0xFF1B6B45);
-    const mid = Color(0xFF0E4A2F);
-    const edge = kFeltEdge;
     canvas.drawRect(
       rect,
       Paint()
         ..shader = RadialGradient(
           center: const Alignment(0, -0.05),
           radius: 0.9,
-          colors: const [center, mid, edge],
+          colors: [palette.feltCenter, palette.feltMid, palette.feltEdge],
           stops: const [0, 0.6, 1],
         ).createShader(Rect.fromCenter(center: rect.center, width: size.shortestSide * 1.6, height: size.longestSide))
         ..isAntiAlias = false,
@@ -125,12 +147,13 @@ class _FeltPainter extends CustomPainter {
     // Velvet texture: fine diagonal nap, drawn once (static layer).
     final nap = Paint()
       ..strokeWidth = 1
-      ..color = Colors.white.withValues(alpha: 0.018);
+      ..color = Colors.white.withValues(alpha: palette.feltNap);
     for (var x = -size.height; x < size.width; x += 5) {
       canvas.drawLine(Offset(x, size.height), Offset(x + size.height, 0), nap);
     }
     // Warm cinematic light from the top-right, tinted by the level palette.
-    final light = Color.lerp(const Color(0xFFFFD98A), accent, 0.25)!;
+    final light = Color.lerp(palette.feltGlow, accent, 0.25)!;
+    final strength = palette.feltGlowStrength;
     final glow = Rect.fromCircle(
       center: Offset(size.width * 0.92, size.height * 0.02),
       radius: size.longestSide * 0.62,
@@ -140,24 +163,45 @@ class _FeltPainter extends CustomPainter {
       Paint()
         ..blendMode = BlendMode.screen
         ..shader = RadialGradient(
-          colors: [light.withValues(alpha: 0.4), light.withValues(alpha: 0.11), light.withValues(alpha: 0)],
+          colors: [
+            light.withValues(alpha: strength),
+            light.withValues(alpha: strength * 0.275),
+            light.withValues(alpha: 0),
+          ],
           stops: const [0, 0.45, 1],
         ).createShader(glow),
     );
+    // Day: soft patches of sun through the leaves, kept off the action bar.
+    if (palette.feltSunPatches > 0) {
+      final sun = Paint()..blendMode = BlendMode.screen;
+      for (final (x, y, r) in _sunPatches) {
+        final centre = Offset(size.width * x, size.height * y);
+        final radius = size.shortestSide * r;
+        sun.shader = RadialGradient(
+          colors: [
+            light.withValues(alpha: palette.feltSunPatches),
+            light.withValues(alpha: palette.feltSunPatches * 0.4),
+            light.withValues(alpha: 0),
+          ],
+          stops: const [0, 0.5, 1],
+        ).createShader(Rect.fromCircle(center: centre, radius: radius));
+        canvas.drawCircle(centre, radius, sun);
+      }
+    }
     // Vignette, so the edges fall off into deep green.
     canvas.drawRect(
       rect,
       Paint()
         ..shader = RadialGradient(
           radius: 0.85,
-          colors: [Colors.transparent, Colors.black.withValues(alpha: 0.34)],
+          colors: [Colors.transparent, Colors.black.withValues(alpha: palette.feltVignette)],
           stops: const [0.55, 1],
         ).createShader(Rect.fromCenter(center: rect.center, width: size.width * 1.15, height: size.height * 1.05)),
     );
   }
 
   @override
-  bool shouldRepaint(_FeltPainter old) => old.accent != accent;
+  bool shouldRepaint(_FeltPainter old) => old.accent != accent || old.palette != palette;
 }
 
 /// Dark translucent green panel with a fine gold border and top highlight,
@@ -187,27 +231,22 @@ class PremiumPanel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final palette = BrainTrainPalette.of(context);
     final borderRadius = BorderRadius.circular(radius);
     return DecoratedBox(
-      decoration: BoxDecoration(
-        borderRadius: borderRadius,
-        boxShadow: const [
-          BoxShadow(color: Color(0x59000000), blurRadius: 24, offset: Offset(0, 10)),
-          BoxShadow(color: Color(0x33000000), blurRadius: 4, offset: Offset(0, 2)),
-        ],
-      ),
+      decoration: BoxDecoration(borderRadius: borderRadius, boxShadow: palette.panelShadows),
       child: FrostedGlass(
         borderRadius: borderRadius,
         tint: frostTint,
         child: CustomPaint(
-          foregroundPainter: _GoldBorderPainter(radius),
+          foregroundPainter: _GoldBorderPainter(radius, palette),
           child: DecoratedBox(
             decoration: BoxDecoration(
               borderRadius: borderRadius,
-              gradient: const LinearGradient(
+              gradient: LinearGradient(
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
-                colors: [Color(0xD11A5638), Color(0xE00A3322)],
+                colors: palette.panelFill,
               ),
             ),
             child: Padding(padding: padding, child: child),
@@ -219,9 +258,12 @@ class PremiumPanel extends StatelessWidget {
 }
 
 class _GoldBorderPainter extends CustomPainter {
-  _GoldBorderPainter(this.radius);
+  _GoldBorderPainter(this.radius, this.palette);
 
   final double radius;
+
+  /// Rim gold, sheen and highlight of the current look.
+  final BrainTrainPalette palette;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -235,7 +277,7 @@ class _GoldBorderPainter extends CustomPainter {
           ..shader = LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
-            colors: [Colors.white.withValues(alpha: 0.07), Colors.white.withValues(alpha: 0)],
+            colors: [palette.panelSheen, palette.panelSheen.withValues(alpha: 0)],
             stops: const [0, 0.5],
           ).createShader(bounds),
       )
@@ -244,11 +286,11 @@ class _GoldBorderPainter extends CustomPainter {
         Paint()
           ..style = PaintingStyle.stroke
           ..strokeWidth = 1.3
-          ..shader = const LinearGradient(
+          ..shader = LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
-            colors: [BrandGold.light, BrandGold.base, BrandGold.deep, BrandGold.base, BrandGold.light],
-            stops: [0, 0.3, 0.55, 0.8, 1],
+            colors: palette.panelRim,
+            stops: _rimStops(palette.panelRim.length),
           ).createShader(bounds),
       )
       // Fine inner highlight along the top edge.
@@ -260,35 +302,18 @@ class _GoldBorderPainter extends CustomPainter {
           ..shader = LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
-            colors: [Colors.white.withValues(alpha: 0.26), Colors.white.withValues(alpha: 0)],
+            colors: [palette.panelHighlight, palette.panelHighlight.withValues(alpha: 0)],
             stops: const [0, 0.35],
           ).createShader(bounds),
       );
   }
 
-  @override
-  bool shouldRepaint(_GoldBorderPainter old) => old.radius != radius;
-}
-
-/// The HUD's panel with small gold sprigs touching its corners.
-///
-/// The HUD is a bottom bar, so the sprigs are mirrored top-to-bottom: the
-/// larger one hugs the bottom-left corner, the smaller one the top-right.
-class PremiumHudFrame extends StatelessWidget {
-  const PremiumHudFrame({super.key, required this.child, this.radius = 28});
-
-  final Widget child;
-  final double radius;
+  /// The rim's gold bands: light, base, deep, base, light at the stops the
+  /// rim was designed with; other lengths spread evenly.
+  static List<double>? _rimStops(int length) => length == 5 ? const [0, 0.3, 0.55, 0.8, 1] : null;
 
   @override
-  Widget build(BuildContext context) => Stack(
-    clipBehavior: Clip.none,
-    children: [
-      PremiumPanel(radius: radius, child: child),
-      Positioned(left: -9, bottom: -9, child: Transform.flip(flipY: true, child: const GoldSprig(size: 58))),
-      Positioned(right: -9, top: -9, child: Transform.flip(flipY: true, child: const GoldSprig(size: 50, turns: 2))),
-    ],
-  );
+  bool shouldRepaint(_GoldBorderPainter old) => old.radius != radius || old.palette != palette;
 }
 
 /// A small gold vine sprig that curls around a corner. Purely decorative.
@@ -407,75 +432,10 @@ class _SprigPainter extends CustomPainter {
   bool shouldRepaint(_SprigPainter old) => false;
 }
 
-/// Circular outlined icon button (48 px): the HUD's Back and Restart.
-/// [onPressed] null = disabled (dimmed, not tappable).
-class PremiumRoundIconButton extends StatelessWidget {
-  const PremiumRoundIconButton({super.key, required this.icon, required this.label, required this.onPressed, this.tooltip, this.iconSize = 32});
-
-  final IconData icon;
-
-  /// The accessibility label.
-  final String label;
-
-  /// Long-press text; [label] when null.
-  final String? tooltip;
-  final double iconSize;
-  final VoidCallback? onPressed;
-
-  @override
-  Widget build(BuildContext context) {
-    final enabled = onPressed != null;
-    // A dimmer colour rather than an Opacity layer.
-    final ink = BrainTrainColors.ivory.withValues(alpha: enabled ? 1 : 0.35);
-    return Semantics(
-      button: true,
-      enabled: enabled,
-      label: label,
-      excludeSemantics: true,
-      onTap: onPressed,
-      child: Tooltip(
-        message: tooltip ?? label,
-        excludeFromSemantics: true,
-        child: Material(
-          type: MaterialType.transparency,
-          shape: const CircleBorder(),
-          clipBehavior: Clip.antiAlias,
-          child: InkWell(
-            onTap: onPressed,
-            customBorder: const CircleBorder(),
-            child: Container(
-              width: 48,
-              height: 48,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                border: Border.all(color: BrainTrainColors.ivory.withValues(alpha: enabled ? 0.7 : 0.25), width: 1.3),
-                gradient: RadialGradient(
-                  colors: [Colors.white.withValues(alpha: 0.1), Colors.white.withValues(alpha: 0.02)],
-                ),
-              ),
-              child: Icon(icon, color: ink, size: iconSize),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-/// Circular outlined back button.
-class PremiumBackButton extends StatelessWidget {
-  const PremiumBackButton({super.key, required this.onPressed});
-
-  final VoidCallback onPressed;
-
-  @override
-  Widget build(BuildContext context) =>
-      PremiumRoundIconButton(icon: Icons.chevron_left_rounded, label: 'Back', onPressed: onPressed);
-}
-
-/// Serif text button in three weights: gold-filled [primary], gold-outlined
-/// (default) and borderless [quiet]. [onPressed] null = disabled (dimmer
-/// colours rather than an Opacity layer, not tappable).
+/// Text button (Manrope Bold, redesign 1.1.0) in three weights: gold-filled
+/// [primary], gold-outlined (default) and borderless [quiet]. [onPressed]
+/// null = disabled (dimmer colours rather than an Opacity layer, not
+/// tappable).
 class PremiumButton extends StatelessWidget {
   const PremiumButton({
     super.key,
@@ -485,6 +445,7 @@ class PremiumButton extends StatelessWidget {
     this.quiet = false,
     this.expand = false,
     this.icon,
+    this.trailingIcon,
   });
 
   final String label;
@@ -498,12 +459,19 @@ class PremiumButton extends StatelessWidget {
   /// Shown before the label.
   final IconData? icon;
 
+  /// Shown at the right end (e.g. a chevron), the label staying centred.
+  final IconData? trailingIcon;
+
   @override
   Widget build(BuildContext context) {
     final enabled = onPressed != null;
+    final palette = BrainTrainPalette.of(context);
     final radius = BorderRadius.circular(26);
-    final ink = primary ? BrainTrainColors.ink : (quiet ? BrandGold.light : BrainTrainColors.ivory);
+    final ink = primary
+        ? palette.primaryButtonText
+        : (quiet ? palette.quietButtonText : palette.secondaryButtonText);
     final textColor = enabled ? ink : ink.withValues(alpha: primary ? 0.55 : 0.45);
+    final border = palette.secondaryButtonBorder;
     final decoration = primary
         ? BoxDecoration(
             borderRadius: radius,
@@ -511,28 +479,37 @@ class PremiumButton extends StatelessWidget {
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
               colors: [
-                for (final color in const [BrandGold.light, BrandGold.warm, BrandGold.base])
-                  enabled ? color : color.withValues(alpha: 0.38),
+                for (final color in palette.primaryButtonFill)
+                  enabled ? color : color.withValues(alpha: color.a * 0.38),
               ],
             ),
-            border: Border.all(color: const Color(0xFFFFF1C4).withValues(alpha: enabled ? 1 : 0.4), width: 0.8),
-            boxShadow: enabled ? const [BoxShadow(color: Color(0x55000000), blurRadius: 10, offset: Offset(0, 4))] : null,
+            border: Border.all(
+              color: palette.primaryButtonEdge.withValues(alpha: palette.primaryButtonEdge.a * (enabled ? 1 : 0.4)),
+              width: 0.8,
+            ),
+            boxShadow: enabled
+                ? [BoxShadow(color: palette.primaryButtonShadow, blurRadius: 10, offset: const Offset(0, 4))]
+                : null,
           )
         : quiet
         ? BoxDecoration(borderRadius: radius)
         : BoxDecoration(
             borderRadius: radius,
-            color: Colors.white.withValues(alpha: 0.04),
-            border: Border.all(color: BrandGold.base.withValues(alpha: enabled ? 0.85 : 0.35), width: 1.1),
+            color: palette.secondaryButtonFill,
+            border: Border.all(color: border.withValues(alpha: border.a * (enabled ? 0.85 : 0.35)), width: 1.1),
           );
-    final fontSize = quiet ? 17.0 : 19.0;
+    final fontSize = quiet ? 16.0 : 17.0;
     final text = Text(
       label,
       textAlign: TextAlign.center,
       maxLines: 1,
       overflow: TextOverflow.ellipsis,
-      style: displayText(fontSize, color: textColor, weight: FontWeight.w600, spacing: 0.3),
+      style: BrainTrainType.button(size: fontSize, color: textColor).copyWith(
+        fontWeight: quiet ? FontWeight.w600 : FontWeight.w700,
+        letterSpacing: 0.3,
+      ),
     );
+    final trailing = trailingIcon;
     return Semantics(
       button: true,
       enabled: enabled,
@@ -546,23 +523,30 @@ class PremiumButton extends StatelessWidget {
             clipBehavior: Clip.antiAlias,
             child: InkWell(
               onTap: onPressed,
-              splashColor: (primary ? BrainTrainColors.ink : BrandGold.base).withValues(alpha: 0.16),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
-                child: Center(
-                  widthFactor: 1,
-                  heightFactor: 1,
-                  child: icon == null
-                      ? text
-                      : Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(icon, size: fontSize * 1.15, color: textColor),
-                            const SizedBox(width: 8),
-                            Flexible(child: text),
-                          ],
-                        ),
-                ),
+              splashColor: (primary ? palette.primaryButtonText : border).withValues(alpha: 0.16),
+              child: Stack(
+                alignment: Alignment.center,
+                children: [
+                  Padding(
+                    padding: EdgeInsets.symmetric(horizontal: trailing == null ? 18 : 40, vertical: 12),
+                    child: Center(
+                      widthFactor: 1,
+                      heightFactor: 1,
+                      child: icon == null
+                          ? text
+                          : Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(icon, size: fontSize * 1.2, color: textColor),
+                                const SizedBox(width: 8),
+                                Flexible(child: text),
+                              ],
+                            ),
+                    ),
+                  ),
+                  if (trailing != null)
+                    Positioned(right: 16, child: Icon(trailing, size: fontSize * 1.3, color: textColor)),
+                ],
               ),
             ),
           ),
@@ -597,39 +581,6 @@ class PremiumEmblem extends StatelessWidget {
   );
 }
 
-/// A small caps label over a large tabular value, for HUD statistics.
-class PremiumStat extends StatelessWidget {
-  const PremiumStat({super.key, required this.label, required this.value});
-
-  final String label;
-  final String value;
-
-  @override
-  Widget build(BuildContext context) => Semantics(
-    label: '$label $value',
-    excludeSemantics: true,
-    child: Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 8),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text(
-            label.toUpperCase(),
-            style: displayText(
-              10.5,
-              color: BrainTrainColors.ivory.withValues(alpha: 0.78),
-              weight: FontWeight.w500,
-              spacing: 1.5,
-            ),
-          ),
-          const SizedBox(height: 5),
-          Text(value, style: displayText(22, weight: FontWeight.w500)),
-        ],
-      ),
-    ),
-  );
-}
-
 /// Thin gold divider: vertical between HUD statistics, or [horizontal].
 class PremiumDivider extends StatelessWidget {
   const PremiumDivider({super.key, this.horizontal = false});
@@ -637,19 +588,18 @@ class PremiumDivider extends StatelessWidget {
   final bool horizontal;
 
   @override
-  Widget build(BuildContext context) => Container(
-    width: horizontal ? double.infinity : 1,
-    height: horizontal ? 1 : 38,
-    decoration: BoxDecoration(
-      gradient: LinearGradient(
-        begin: horizontal ? Alignment.centerLeft : Alignment.topCenter,
-        end: horizontal ? Alignment.centerRight : Alignment.bottomCenter,
-        colors: [
-          BrandGold.base.withValues(alpha: 0),
-          BrandGold.base.withValues(alpha: 0.75),
-          BrandGold.base.withValues(alpha: 0),
-        ],
+  Widget build(BuildContext context) {
+    final gold = BrainTrainPalette.of(context).hudSeparator;
+    return Container(
+      width: horizontal ? double.infinity : 1,
+      height: horizontal ? 1 : 38,
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: horizontal ? Alignment.centerLeft : Alignment.topCenter,
+          end: horizontal ? Alignment.centerRight : Alignment.bottomCenter,
+          colors: [gold.withValues(alpha: 0), gold.withValues(alpha: gold.a * 0.75), gold.withValues(alpha: 0)],
+        ),
       ),
-    ),
-  );
+    );
+  }
 }

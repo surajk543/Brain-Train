@@ -11,6 +11,8 @@ flutter pub get
 flutter analyze                         # must be clean
 flutter test                            # unit + widget tests, no network
 flutter run -d emulator-5554            # AVDs (this Mac): Pixel_9 (Play Store), TP_API36/TP_Small/TP_Tall
+                                        #   (Linux: Pixel7_Play_API36 is the owner's; agents use TP_* on their own -port, adb -s)
+flutter run --dart-define=BRAIN_TRAIN_APPEARANCE=day   # debug only: force day|night|system over the setting
 flutter build appbundle                 # Play upload; needs android/key.properties (+ play_games.properties for Play Games,
                                         #   admob.properties for real ads: warns while it uses AdMob test IDs)
 dart run tool/content.dart build        # content-src/ -> content/brain-train/ (campaign: generate + solve + simulate + hash)
@@ -23,8 +25,12 @@ python3 tool/assets/prepare_symbols.py [--placeholders]   # art -> WebP symbols
 python3 tool/assets/make_app_icon.py    # launcher icons from the logo emblem (Android + iOS)
 python3 tool/assets/make_foliage.py     # gameplay edge foliage -> assets/decor/
 python3 tool/assets/make_lobby_art.py   # lobby night art -> assets/lobby/
+python3 -I tool/lobby_art/make_day_lobby_art.py  # Day lobby art -> assets/lobby/day/ + hero ledges (Day, Night)
+python3 -I tool/lobby_art/make_day_foliage.py    # Day gameplay foliage: assets/decor/ repainted -> assets/decor/day/
 python3 tool/assets/make_sounds.py      # sound effects -> assets/sounds/
 CAPTURE_DIR=/tmp/x flutter test test/visual/   # write screenshots of lobby/gameplay at phone sizes
+CAPTURE_DIR=/tmp/x flutter test test/visual/theme_capture_test.dart   # the same screens in Day and Night
+CAPTURE_DIR=/tmp/x flutter test test/visual/gameplay_redesign_capture_test.dart   # gameplay 1.1.0: combo+hint, hint hand, cards, Level Complete
 STORE_DIR=art/store flutter test test/visual/store_screenshots_test.dart   # 6 store scenes -> phone/, ios/iphone-6.9/, ios/ipad-13/
 python3 tool/store/make_store_shots.py  # framed marketing shots (headline, gold rim) -> art/store/styled/<target>/
 dart run tool/smoke_remote.dart         # live check: app's content client vs production R2 (+ first/middle/last level)
@@ -35,7 +41,8 @@ dart run tool/smoke_remote.dart         # live check: app's content client vs pr
 - `lib/game_engine/` — pure Dart, no Flutter imports (tools import it). Models, geometry
   (`BoardGeometry`, `TileAvailabilityCalculator`, `BoardProjection`, `TileHitTester`), rules
   (`MatchRules`), `GameEngine`, `MahjongSolver`, `LevelValidator`, `LevelGenerator` (hand layouts),
-  `TraySimulator` (simulated tray player). `scoring/`: `ScoringRules`, `ScoreKeeper`, `formatScore` (pure Dart). `campaign/`: `CampaignConfig` (tiers from the catalog),
+  `TraySimulator` (simulated tray player), `TraySolver` (tray-aware tap solver: hints, shuffle proofs); `state/`:
+  `game_actions.dart` (Undo/Hint/Shuffle types, `kStartingCharges`), `HintFinder`, `ShufflePlanner`. `scoring/`: `ScoringRules`, `ScoreKeeper`, `formatScore` (pure Dart). `campaign/`: `CampaignConfig` (tiers from the catalog),
   `scheduleTiers`, `board_shapes.dart` (22 symmetric shape families + stacking programs),
   `CampaignGenerator`, `LevelDecor` (titles, backdrops), `SeededRandom`/`stableHash` (pinned PRNG).
 - `lib/content/` — pure Dart except `file_content_store.dart` (dart:io). Manifest, registry and
@@ -44,23 +51,30 @@ dart run tool/smoke_remote.dart         # live check: app's content client vs pr
   older cached level files); `content_files.dart` (level file encoding, content-addressed keys);
   `app_update_config.dart` (app update notice: parse, `decideAppUpdate` → none / optional / required, fetch).
 - `lib/rendering/` — tile body rasterizer, symbol art cache, board painter, effects.
-- `lib/features/` — screens. `levels/` Completed Levels (`LevelSelectScreen`), `LevelLoaderScreen`
+- `lib/features/` — screens. `levels/` Levels (`LevelSelectScreen`), `LevelLoaderScreen`
   (`level_loader.dart`: every game opens through it — the game at once when the level is on the device, else
-  "Downloading level…", or offline "Connect to the internet to download this level"), `DifficultyStyle`; `home/` lobby (hero tiles, title, footer widgets; `widgets/lobby_buttons.dart` glass buttons via `_LobbyGlass`;
+  "Downloading level…", or offline "Connect to the internet to download this level"), `DifficultyStyle`; `home/` lobby (`widgets/lobby_hero.dart` hero tiles on the mossy ledge + gold "Brain Train" title, `widgets/lobby_footer.dart` status line; `widgets/lobby_buttons.dart` glass buttons via `_LobbyGlass`;
   `widgets/lobby_play_games.dart` round Play Games buttons; `widgets/lobby_update_card.dart` update card);
-  `gameplay/` (`game_controller.dart` glues engine + UI; `widgets/premium_chrome.dart` HUD, felt
-  backdrop, dialogs; `widgets/tray_view.dart` tray + `TrayController`; `widgets/tile_flight_overlay.dart`
+  `gameplay/` (`game_controller.dart` glues engine + UI; `game_layout.dart` (`GameLayout`: the screen's heights,
+  compact on short screens); `widgets/game_hud.dart` top HUD + `ComboTimerBar`; `widgets/action_bar.dart` Undo / Hint /
+  Shuffle / Restart; `widgets/hint_glow.dart` hint overlay (blinking glow + hand); `widgets/hint_hand.dart` the hint's
+  pointing hand (`HintHand` geometry, `HintHandMotion`); `widgets/result_cards.dart` Level Complete, Tray full,
+  Restart and ad-offer cards; `widgets/premium_chrome.dart` felt backdrop, panels, buttons;
+  `widgets/tray_view.dart` tray + `TrayController`; `widgets/tile_flight_overlay.dart`
   board↔tray flights + `TrayFlightDirector`; `widgets/tile_shatter.dart` match strike + shards;
   `widgets/tile_art.dart` single-tile art; `widgets/board_intro.dart` level-start intro; `widgets/win_trophy.dart` trophy Lottie
   on the win card; `widgets/combo_badge.dart`, `widgets/score_popups.dart`;
   `widgets/first_play_tutorial.dart` first-play coach marks); `common/` shared lobby chrome, `glass_painters.dart` (`GlassRimPainter`/`GlassShadowPainter`), `PremiumMahjongTile`,
   lobby background + fireflies; `intro/` studio video + logo screen + `age_screen.dart` (neutral age screen).
 - `lib/app/` — `AppServices` (wiring), `AppScope` (above `MaterialApp`), `theme.dart`
-  (`BrainTrainPalette.night`, `LobbyTheme.night`), `brand.dart` (serif display font, gold),
+  (`BrainTrainPalette.day/night`, `LobbyTheme.day/night`, `FeltFoliage`, `buildBrainTrainTheme(brightness)`,
+  `AppAppearance.themeMode`), `typography.dart` (`BrainTrainFonts`, `BrainTrainType` builders,
+  `BrainTrainTypography` theme extension, `registerFontLicenses`), `brand.dart` (`kDisplayFont` = Playfair, gold),
   `sound_effects.dart`, `play_games_controller.dart` (lobby Play Games state), `rewarded_ads_controller.dart`
   (`AppServices.ads`: Revive's ad state, show with music/SFX held, privacy options), `app_update_controller.dart`
   (`AppServices.updates`: the lobby's update card, its check, kept notice, Update / Later).
-- `lib/data/` — `ProgressRepository`, `SettingsRepository` (also the stored `AgeGroup`), `age_group.dart`,
+- `lib/data/` — `ProgressRepository`, `SettingsRepository` (also the stored `AgeGroup` and `AppAppearance`),
+  `age_group.dart`, `appearance.dart`,
   `app_update_cache.dart` (last good update notice).
 - `lib/platform/` — `play_games.dart` (`PlayGames` interface, statuses, `UnavailablePlayGames`, pure Dart);
   `games_services_play_games.dart` (the only file importing `games_services`; `createPlayGames()`);
@@ -101,14 +115,23 @@ dart run tool/smoke_remote.dart         # live check: app's content client vs pr
   and `GameEngine`/`GameController`/`TrayController` take it from the level (2/3 slots need content schema 3). A tapped free tile leaves the board for the tray; if it matches a tray tile both clear;
   `capacity` tiles without a match lose (`GameStatus.trayFull`) and show a Revive / Restart card. Revive
   (`GameEngine.revive`, unlimited, not a move) puts all the tray tiles back in their board places, only after a
-  rewarded ad's reward (see Ads below). Saves store the tap sequence plus `GameEngine.reviveMarker` entries
-  (`progress.current.v2`); a tray-full game is saved so it can be revived later. Only the first level not won is saved:
+  rewarded ad's reward (see Ads below). Saves (`progress.current.v3` since 1.1.0; `ProgressRepository.open` moves a
+  1.0 `progress.current.v2` save over, and reads one while no v3 exists) store the tap sequence plus markers:
+  `!revive`, `!undo`, `!hint`, `!shuffle:1:<seed>` (planner version 1, pinned), `!grant:<action>`; replaying them
+  (`GameEngine.replay`) restores board, tray, shuffled symbols and action uses, and `SavedGame.scoring` keeps the
+  score with its undo checkpoints; a tray-full game is saved so it can be revived later. Only the first level not won is saved:
   `saveGame` skips already-won levels (replays), `clearSavedGame(levelId:)` clears only that level's save, so a replay
   never wipes the highest level's game (an unfinished replay is dropped). Solver/generator still prove
-  pair-removal orders, which are valid tray orders (tap a, then b). Screen: tray at the top, board, HUD at the
-  bottom. The board drops a tile at the tap; `TileFlightOverlay` draws it until it lands (ticks only during
+  pair-removal orders, which are valid tray orders (tap a, then b). Screen (1.1.0, `GameLayout`): HUD at the top,
+  the combo timer row, the tray, the board (all the rest) and the action bar at the bottom; nothing between tray and
+  board. On a 360x640 phone the layout is compact and the board gets 360x433.9 (>= `kSmallBoardWidth` x
+  `kSmallBoardHeight`, the room the campaign's >= 31-px faces were generated for; `published_content_test` checks
+  every level on the real `GameLayout` board, smallest face 31.15 px). The board drops a tile at the tap; `TileFlightOverlay` draws it until it lands (ticks only during
   flights); revived tiles fly back one by one, slowly (owner: 700 ms each, 300 ms apart, lower tiles first) and
-  stay hidden on the board until they land. A matched pair
+  stay hidden on the board until they land; an undone tile flies back the same way (`kTileUndoDuration`, 450 ms) from
+  its slot or from mid-air, an undone pair's strike is cancelled and its twin stays in the tray
+  (`TrayController.takeBack`), and `GameController.pairImpact(a, b)` ignores strikes of pairs that no longer exist
+  (undone, or from before a restart). A matched pair
   strikes and shatters in `TileShatterOverlay` (tiles rasterized once via `TrayViewState.snapshot`, shards
   drawn with `drawVertices` + `ImageShader`, ticks only while running); match/win sound plays at impact
   (`GameController.pairImpact`). The tray draws animated symbols through its own `SymbolFrameAtlas`; result
@@ -157,11 +180,16 @@ dart run tool/smoke_remote.dart         # live check: app's content client vs pr
   `android/play_games.properties`; without it Dart sees `UnavailablePlayGames`. 13+ only (Play Families policy,
   owner 2026-10-17): `PlayGamesController.start(ageGroup)` never starts Play Games for under 13 (or no answer) and hides
   the lobby buttons; the library's `PlayGamesInitProvider` is always disabled, and `MainActivity` starts the SDK
-  (`initPlayGames` on `brain_train/platform`) only when Dart asks, so nobody is signed in at launch. Release signing reads gitignored `android/key.properties`. iOS min is 14.0 (plugin).
+  (`initPlayGames` on `brain_train/platform`) only when Dart asks, so nobody is signed in at launch. Release signing reads gitignored `android/key.properties`. iOS min is 15.0 (App Store: ITMS-90068, iOS 15+ required for uploads from April 2027).
 - Ads (owner, docs/ADS.md): Revive shows an AdMob rewarded ad (`GameScreen._revive`); the revive runs only once the
   ad has closed with its reward earned (and the app is in the foreground). Closed early / failed → no revive, the card
   stays. No ad loaded (loading, no fill, errors) → Revive off with "Loading an ad…"; offline → off with "Connect to the
-  internet to watch an ad and revive"; Restart always works; a resumed tray-full save needs an ad too. Never on the
+  internet to watch an ad and revive"; Restart always works; a resumed tray-full save needs an ad too. Action refills
+  (1.1.0) work the same way: an Undo / Hint / Shuffle with 0 uses opens "Watch an ad for +1 Hint?" (`ActionRefillCard`,
+  clock paused while it is open; Watch ad / Not now; Back closes it); `GameController.grant` only after the reward and
+  the app back in the foreground (`GameScreen._watchRefillAd`); closed early → "Watch the ad to the end to get +1
+  Hint.", no grant; loading → "Loading an ad…", offline → "Connect to the internet to watch an ad" (Watch ad off);
+  builds without ads grant at once (no card, "+" badge). Never on the
   startup path: the lobby starts ads after its first frame (configuration by age group → UMP consent → `initialize` →
   load); a game opening, the Tray full card and app resume preload; failures retry 5/10/20/30 s then every minute.
   Only `google_mobile_ads_rewarded.dart` imports the plugin; every call is caught and timed out. While an ad shows the
@@ -185,7 +213,8 @@ dart run tool/smoke_remote.dart         # live check: app's content client vs pr
   combo window 4 s on the game clock (pauses with it), every match restarts it from that match, a gap > 4 s starts over
   at x1; only `TapOutcome.matched` scores; a blocked-tile tap costs 1 (never below 0) and ends the combo; Revive ends
   the combo; Restart resets. State is `SavedGame.scoring`; `LevelRecord.bestScore/bestCombo` only go up. The combo badge
-  floats on the tray's bottom edge: never add layout space between tray and board (31-px faces).
+  floats on the tray's bottom edge, a little low (`kComboBadgeAnchor`; 20 px high on compact screens) so it never covers
+  the wells: never add layout space between tray and board (31-px faces).
 - The app never holds R2 keys or `ASSET_TOKEN_SECRET`. `.env` is gitignored and used only by tools.
 - Content host (versionCode 5+) is `ContentConfig.production` = `https://braintrain-cdn.sungamestudio.com/`: the R2
   bucket `braintrain-public` on a custom domain (min TLS 1.2), which holds ONLY `brain-train/` (everything in it is
@@ -201,22 +230,102 @@ dart run tool/smoke_remote.dart         # live check: app's content client vs pr
 
 ## Product decisions (from the owner)
 
-- Night look only: no day mode, no theme setting. `MaterialApp` is always dark.
-- Settings contains only Sound, Vibration and the app version. Do not add other options. One exception (owner):
-  a "Privacy choices" row (Google's UMP privacy options form) shown only when UMP says the entry point is required
-  (EEA/UK); hidden everywhere else.
+- Day, Night and System looks (owner, 2026-10-17, redesign 1.1.0; replaces "Night look only"). Setting
+  `SettingsRepository.appearance` (`settings.appearance` = `system` | `day` | `night`, default `system` for new
+  installs, `setAppearance` notifies). The game's `MaterialApp` (`lib/app/app.dart`) has `theme` = Day, `darkTheme` =
+  Night and `themeMode` from the setting (System follows the platform brightness), rebuilt by `_AppearanceBuilder` only
+  when the appearance changes: no restart. No flash: that `MaterialApp` is built only once `AppServices` (and the stored
+  setting) are loaded and reads the platform brightness on its first frame; the studio video and white logo screens stay
+  fixed. Chosen in Settings (Game Theme cards Day / Night / System, applied at once); debug builds can force a look
+  with `--dart-define=BRAIN_TRAIN_APPEARANCE=day|night|system`.
+- Design tokens (redesign 1.1.0): screens take every colour from `BrainTrainPalette.of(context)` (felt, background,
+  panels `panelFill/panelRim/panelSheen/panelHighlight/panelShadows`, HUD `hudFill/hudSeparator/hudLabel/hudValue`,
+  buttons `primaryButton*`/`secondaryButton*`/`quietButtonText`, text `text/textMuted/textOnGold`, golds
+  `accent/accentLight/accentDeep`, `textShadow/shadow/overlayScrim`, `feltFoliage` assets) and the lobby scene from
+  `LobbyTheme.of(context)` (art assets, lights, particles, hero ledge, title golds, glass, buttons, panels); text from
+  `BrainTrainTypography.of(context)` (`title`, `levelName`, `heading`, `button`, `scoreValue`, `combo`, `hudLabel`,
+  `body`, `bodyMuted`) or `BrainTrainType.*(size:, color:)`. Both looks keep dark translucent green panels with fine
+  gold rims and ivory text (reference board); dark green text (`textOnGold`) only on gold or ivory, never gold on ivory.
+  Day is garden green (#1D6B43 / #104B34, gold #F2C96B, ivory #FFF6DF); Night keeps the 1.0 look (#062C25 / #0A4433,
+  panel #08392F, gold #F4CB72, ivory #FFF3D8). Tiles are the same in both. The Day lobby has its own art
+  (`tool/lobby_art/make_day_lobby_art.py` -> `assets/lobby/day/`: sunlit garden, cream flowers, mossy stone path, side
+  sprays, no lanterns; pollen instead of fireflies). Day gameplay is the same sunlit garden: `FeltFoliage.day` =
+  `assets/decor/day/` (`tool/lobby_art/make_day_foliage.py`: the night edge foliage repainted in the Day lobby's sunlit
+  greens with warm rims and a few more cream flowers), a warmer felt (centre #2E7D46, as light as ivory text on it
+  allows), a stronger sun and soft patches of sunlight (`feltSunPatches`, drawn once in the static felt layer; 0 at
+  Night). Status bar icons are dark over the bright Day home scene (`LobbyBackground`, `kStatusBarDarkIcons`) and light
+  everywhere else. Missing lobby art falls back to the scene gradient. `test/app/appearance_test.dart` checks the setting, the
+  app following it, the look's assets and WCAG contrast of the tokens.
+- Settings (redesign 1.1.0, reference panel; `settings_screen.dart`): one dark translucent gold-rimmed panel with a
+  header (gear, "Settings", close X; a route, back/close pop it), Game Theme cards (Day / Night / System, selected =
+  gold rim + gold fill), Sound Effects, Music and Vibration switches and the app version. Do not add other options.
+  One exception (owner): a "Privacy choices" row (Google's UMP privacy options form) shown only when UMP says the
+  entry point is required (EEA/UK); hidden everywhere else.
 - Rewarded ads on Revive (owner, 2026-10-16): every Revive plays an AdMob rewarded ad (Revive stays unlimited); no
   ad, no revive. The audience includes children under 13 (Play Families policy, mixed audience): neutral age screen,
-  child-directed ads for under 13. No other ads anywhere.
-- Background music `assets/music/water_flowing.mp3` loops at volume 0.6 (`lib/app/background_music.dart`),
-  starts after the studio intro, pauses in background and while a rewarded ad shows, and follows the Sound switch
-  (no separate music toggle).
+  child-directed ads for under 13. Rewarded ads only (owner, 2026-10-17, 1.1.0; replaces "No other ads anywhere"):
+  on Revive and on action refills (+1 Undo / Hint / Shuffle at 0 uses, see Ads above); never interstitials or banners.
+- Background music `assets/music/water_flowing.mp3` loops at volume 0.4 (owner, 2026-10-17; was 0.6) (`lib/app/background_music.dart`),
+  starts after the studio intro, pauses in background and while a rewarded ad shows, and follows the Music switch
+  (redesign 1.1.0: `SettingsRepository.music`, `settings.music`; until set it reads the stored Sound value, and the
+  first Sound change pins it, so players who muted Sound before 1.1.0 stay silent). Sound Effects (`settings.sound`)
+  gates only the effects (`SoundEffects`). `BackgroundMusic` takes a `MusicPlayer` (audioplayers; a fake in
+  `test/app/background_music_test.dart`).
 - Sounds: `assets/sounds/tap.wav` (one tap cut from the owner's Tap.mp3) on every playable tap; `assets/sounds/strike.wav` (one hit cut from the owner's strike.mp3, 0.95 s) is `Sfx.match`, played when a matched pair strikes in the tray; the last pair's strike is followed by `Sfx.win` 450 ms later.
-- No Undo and no Hint in the game; Restart is the only action (the engine has no undo). Reachable from the round HUD
-  icon (`PremiumRoundIconButton`, right end; only while playing, not during the intro or result cards) with a confirm
-  card "Restart this level?" / "Your score and time start over." (Restart / Keep playing; clock paused, Android back
-  closes it), from the Tray full card and from the win card (Replay).
-- HUD shows SCORE where Moves was (owner); the win card and Completed Levels show score, best score and best combo.
+- Game actions (owner, 2026-10-17, 1.1.0; replaces "no Undo and no Hint"): Undo, Hint and Shuffle, 1 / 1 / 1 uses
+  per level (`kStartingCharges`), back to 1/1/1 on Restart, unchanged by Revive; with none left the player can watch a
+  rewarded ad for +1 of that action (`GameController.grant`, saved as `!grant:<action>`). API:
+  `GameController.isAvailable` / `canUse` / `usesLeft`, `undo`, `useHint`, `shuffle`, `grant`; events `MoveUndone`,
+  `TileHinted`, `BoardShuffled`; `winSummary` counts the uses. UI (`widgets/action_bar.dart`, under the board):
+  gold-outlined round buttons with labels (under them; beside them on compact screens) and a gold badge with the uses
+  left, a play mark at 0 (an ad offer; "+" without ads); a button is on only while `isAvailable` and no card is open
+  (off = dimmed colours, no ad offer). Hint (owner, 2026-10-17): `HintGlowOverlay` (own `RepaintBoundary`, over the
+  board, `IgnorePointer`) shows a pointing hand (`HintHand`, `assets/lottie/hint_hand.json`, drawn with one
+  `LottieDrawable`) that taps the tile twice, glides to its twin on the board, taps it once and glides back
+  (`HintHandMotion`, 2.8 s rounds); one hand, not two, so the order reads (this tile first) and only one hand covers
+  the small faces. A twin in the tray gets no hand (tray tiles cannot be tapped), only the blink. Fingertip (the
+  finger pad at the pressed frame, (366, 364) in the 512 frame) slightly up-left of the face centre, hand 1.3 face
+  widths wide, mirrored near the left/top edges to stay on screen. Meanwhile the tile and its twin (board or tray)
+  blink 2.5 times a second: the pre-rendered gold glow (`renderGlow`, no per-frame blur) plus a gold wash and line,
+  stamped with an animated alpha. Until the next tap, undo, shuffle, revive or restart (and the tray-full or
+  win taps), or 4.5 s; reduce motion: a still hand pressed on the tile and a still glow (no ticker); if the hand
+  fails to load, the glow alone breathes as before. It never taps. Shuffle: the board, tray,
+  intro atlas and animated-tile list draw `GameController.boardLevel` (rebuilt on `symbolsSerial`, so resumed
+  shuffled saves draw right); the changed tiles turn over in a left-to-right wave (`BoardEffects.flip`, 360 ms each,
+  220 ms stagger; instant with reduce motion; taps wait); "No new arrangement found…" snackbar when no seed passes.
+  Undo (`GameEngine.undo`) takes back the last tap: the tile goes back to its board place; a tap that cleared a pair
+  also puts the twin back in its tray slot and takes that match's score, combo and best combo back from the
+  `ScoreKeeper` checkpoint (blocked-tap penalties since stay); not before a tap, after a win, with a full tray, during
+  the intro or the tutorial, or across a Revive or a Shuffle; the clock runs on; scoring values are unchanged.
+  Hint (`HintFinder`, pure, never scores) returns a tap: the last board tile of a tray tile's symbol, else a safe pair
+  (all of a symbol's board tiles free) when the tray has room, else the first tap of `TraySolver` (20k nodes; after a
+  shuffle, the order the shuffle was built along), else any tray match, else any free tile the tray has room for;
+  none when every tap would fill the tray. A tray twin whose symbol has more board tiles goes to the solver: taking
+  the first one found loses often with 2-slot trays. Shuffle (`GameEngine.shuffle`, `ShufflePlanner`) re-deals the
+  board's symbols over the same tiles (places, ids, counts and the tray stay) along a seeded random winning tap order
+  (twins for the tray first, then pairs), proved with `TraySolver.check`; uniform shuffles of the 2-slot boards are
+  mostly unwinnable, so it is built, not drawn. It ends the combo, seals undo, keeps the score; nothing to shuffle
+  (one symbol left) or no passing seed spends no use.
+- Restart stays: a quiet icon-only round button at the right end of the action bar (tooltip "Restart", semantics
+  "Restart level"; smaller, ivory rim, no badge; the HUD has no room for it at 360 px next to the four statistics;
+  only while playing, not during the intro, result cards or another card) with a confirm card "Restart this level?" /
+  "Your score and time start over." (Restart / Keep playing; clock paused, Android back closes it), from the Tray full
+  card and from Level Complete (Replay).
+- HUD (1.1.0, `widgets/game_hud.dart`, top of the screen): back arrow, "Level N" (gold) over the level's name
+  (Playfair, shrinks to 72% then ellipsizes; the statistics shrink first, down to 46% of the width; 1 of the 100 names,
+  "Moonlit Standing Stones", still ends in "…" on phones), then SCORE (counts
+  up), COMBO ×N (gold on a gold cell from ×2, a quiet ×1 otherwise), PAIRS a/b and TIME, Manrope tabular figures
+  between fine gold separators; text scales up to 1.3x in a fixed-height panel. Under it `ComboTimerBar`: a gold bar
+  draining with "2.1s", read from `GameController.comboTimeLeft` (the `ScoreKeeper` window on the game clock, no timer
+  of its own), shown from a match until its window closes, ticking only while the clock runs. The "COMBO ×N · Best
+  ×M" badge still floats on the tray's bottom edge (no ring any more); score popups unchanged.
+- Level Complete (1.1.0, `LevelCompleteView`, over the whole screen on a deep scrim with warm light): `WinTrophy`,
+  "Level Complete!" (gold Playfair), a results panel (Final Score in gold with "New best!" or the level best it missed,
+  Completion Time, Best Combo with a crown, Pairs Matched, Hints / Shuffles / Undos Used, from `winSummary`), then
+  Next Level (gold; the last level shows the all-complete text instead), Level Select (the Levels screen over the
+  lobby: `pushAndRemoveUntil` to the first route), then quiet Replay and Lobby side by side (Lobby: `popUntil` the first
+  route; owner, 2026-10-17); Next Level, Level Select and Lobby navigate once.
+  Tray full, Restart and the ad offer are `PremiumPanel` cards under the HUD (Back stays usable).
 - First-play tutorial (owner, 2026-10-17): once per install, the first time play begins on a game screen (after the
   intro, at once with reduce motion) with the flag `tutorial.firstPlay.v1` unset (`SettingsRepository`), coach marks
   over the real board (`widgets/first_play_tutorial.dart`): 1 "Tap a free tile" (a free matching pair from
@@ -228,13 +337,16 @@ dart run tool/smoke_remote.dart         # live check: app's content client vs pr
   two taps are real moves. Finish or Skip sets the flag; a player with any won level is marked done and never sees
   it; killed mid-tutorial, it shows again; not started over a result card or with tiles in the tray (a resumed save).
   Test services (`testServices`, gameplay captures) mark it done unless `tutorialDone: false`.
-- Win card ("Level complete!"): `assets/lottie/trophy_cup_rays.json` (LottieFiles, owner's premium licence) via `WinTrophy`, looping while the card is open
+- Win trophy (Level Complete): `assets/lottie/trophy_cup_rays.json` (LottieFiles, owner's premium licence) via `WinTrophy`, looping while the card is open
   (owner), last frame with reduce motion, `PremiumEmblem` fallback if it fails to load.
+- Hint hand pointer: owner-supplied Lottie (`assets/lottie/hint_hand.json`, recoloured): the owner's `Hint.json`
+  (v5.12.1, 512x512, 30 fps, 21 frames), only its colours changed (light-green fill → gold #F2C96B, green outline →
+  dark green #183D2D, readable on both felts and on ivory tiles), still minified.
 - Lobby update card and force update (owner, 2026-10-16): installed build below the notice's latest → "Update
   available" / "A new version of Brain Train is ready." (or the notice's `message`) with Update (gold) and Later, at
   most once per launch (Later or back hides it until the next launch; needs a `storeUrl`). Below its min → "Update
   required" / "This version of Brain Train is no longer supported. Please update to keep playing.", Update only, not
-  dismissible (back does nothing), Play / Continue / Completed Levels unreachable; still there after a trip to the
+  dismissible (back does nothing), Play / Continue / Levels unreachable; still there after a trip to the
   store. Lobby only, never over a game. The initial notice (latest 4, min 1) prompts nobody on build 4.
 - Google Play Games (owner, 2026-10-16): Android only; silent sign-in; two round lobby buttons top-right
   (Achievements, Leaderboards) open Google's screens, signing in first when needed; no Settings entry.
@@ -250,12 +362,16 @@ dart run tool/smoke_remote.dart         # live check: app's content client vs pr
 - App icon = the round emblem of the official logo (`art/branding/brain-train-logo.jpg`), adaptive on
   Android 8+. Regenerate with `python3 tool/assets/make_app_icon.py`.
 - No "Mahjong Solitaire" subtitle on the lobby.
-- Look: emerald felt + botanical foliage, dark-green panels with fine gold borders, serif display
-  type (`brand.dart`), warm ivory tiles with olive-green underside. Lobby buttons are frosted glass with fine gold
-  rims (`FrostedGlass` + `StaticLayer`): Play/Continue warm gold with dark green label and soft gold glow
-  (`LobbyTheme.primaryGlass*`), Completed Levels / Settings / round Play Games buttons clear (`secondaryGlass*`);
-  `primaryFill/Edge/Text` stay for the Completed Levels panel button. Level `backdrop.colors` only tints
-  the gameplay ambient light. Tune tiles in `TileStyle`, never the art.
+- Look: emerald felt + botanical foliage, dark-green panels with fine gold borders, warm ivory tiles with olive-green
+  underside. Fonts (bundled, redesign 1.1.0): Playfair Display (title, level names, headings; `kDisplayFont`,
+  `displayText`) and Manrope (buttons, HUD, numbers, body; the theme's default text), the official variable TTFs from
+  google/fonts in `assets/fonts/` (unmodified, OFL 1.1 with `OFL.txt` next to each; Playfair has a Reserved Font Name,
+  so never make modified instances). Flutter sets the `wght` axis from `fontWeight`; no runtime download. Lobby buttons
+  are frosted glass with fine gold rims (`FrostedGlass` + `StaticLayer`): Play/Continue gold with a dark green Manrope
+  label, chevron, leaves at both ends and soft gold glow (`LobbyTheme.primaryGlass*`), Levels / Settings / round Play
+  Games buttons dark-green glass (`secondaryGlass*`; icon + Manrope label centred, chevron); `primaryFill/Edge/Text`
+  stay for the Levels panel medallion. Level `backdrop.colors` only tints the gameplay ambient light. Tune tiles in
+  `TileStyle`, never the art. Playfair is bundled roman only (the italic was used only by the old tagline).
 - Every tile everywhere (board, lobby hero) uses `MahjongTileRenderer`; no second tile renderer.
 - Tablets (owner, 2026-10-17): `TabletScale` (`lib/app/tablet_scale.dart`, the `MaterialApp` builder) lays the whole UI out
   on a canvas whose shortest side is 600 and scales it to the screen (at most 1.75x) when the shortest side is 600+;
@@ -268,6 +384,18 @@ dart run tool/smoke_remote.dart         # live check: app's content client vs pr
   Google Play; the home-screen name stays "Brain Train".
 
 ## Current state (2026-10-16)
+
+- Redesign 1.1.0 in progress on `feat/redesign-1.1` (ships later as version 1.1.0): phase 1 design system (tokens,
+  fonts, Day/Night/System setting) on `redesign/design-system`; phase 4 game actions (engine) on
+  `redesign/game-actions`; phase 2 lobby (Day art, hero tiles, title, footer) and the Settings panel (theme cards,
+  separate Music) on `redesign/lobby-settings`; phase 3 gameplay screen + Level Complete (top HUD, combo timer,
+  action bar with ad refills, hint glow, shuffled-board drawing, restyled cards) on `redesign/gameplay`; phase 6 verify
+  and polish on `redesign/verify` (bundled hero art, Day gameplay foliage and felt, status bar icons, round action
+  ripples, combo pill clear of the wells, HUD names). Emulator pass (2026-10-17, profile build on TP_API36 1080x2400 and
+  TP_Small 1080x1920, Linux): intro, age screen, lobby Day/Night (live switch), Settings, Levels, tutorial, Hint, Undo,
+  Shuffle, a rewarded test ad for +1 Shuffle (granted), combo x5, Level Complete; no Flutter errors in logcat; ~60 fps
+  idle in lobby and game (SurfaceFlinger latency: median 16.7 ms, p99 19-26 ms), a few 30-87 ms frames when a game
+  opens (art decoding).
 
 - Published content 2026.10.17.1 on `braintrain-public` (manifest `minClientContentSchema: 3`): a fresh
   campaign of 100 levels, one batch of 10 per difficulty 1–10 (`catalog.json` `campaign`, seed 20261641, chosen so
@@ -287,16 +415,26 @@ dart run tool/smoke_remote.dart         # live check: app's content client vs pr
 - The app bundles only `content/starter/` (54 files, ~2.0 MB raw / ~1.0 MB compressed; the full tree was 11.2 MB /
   ~3.4 MB). A fresh install downloads only the manifest at first launch (its window is the starter pack); each win
   then fetches about one level file and its new symbols. With no starter pack, the window 1–5 is 5 level files +
-  47 symbol files (~1.8 MB).
-- Lobby menu: Play/Continue (always the first level not won; "Continue" only for a saved game of that level),
-  "Completed Levels", Settings. No "N levels ready" footer (owner); the footer only
-  shows a content notice (offline / update skipped / new content installed).
-- "Completed Levels" screen (`level_select_screen.dart`, owner): a panel with the next level to play (first not won; title, tier,
-  size, tray; Play/Continue) and below it ONLY the completed levels, in order, as a lazy list to replay from
+  47 symbol files (~1.8 MB). Besides it, the lobby hero's 3 symbols (below) are bundled (55 KB).
+- Lobby (redesign 1.1.0, reference panels 1-2, same layout in Day and Night): three hero tiles on a mossy ledge
+  (`LobbyHero`: left leaf, middle sunflower forward and larger, right purple flower; real registry symbols drawn by
+  `PremiumMahjongTile`, each slot the first code of `LobbyHero.slots` whose art is on the device, never the network:
+  PLANT_POT_B / FLOWER_SUNFLOWER / FLOWER_PANSY, whose published files are bundled at their registry paths under
+  `assets/lobby/hero/symbols/v1/` (`kHeroArtPrefix`, 55,494 bytes; the app's bundled source `bundledContent` reads the
+  starter pack, then them, sha256-checked against the registry), so a fresh install shows them; the starter pack's
+  XMAS_TREE / BIRD_PEACOCK / GALAXY_POMEGRANATE only if a later registry changes their art before it is cached), the
+  gold Playfair title "Brain Train" (replaces the "Train your
+  brain" tagline), then Play/Continue/Replay · Level N (always the first level not won; "Continue" only for a saved
+  game of that level), "Levels", "Settings". Footer status line (owner, replaces "no N levels ready footer"): "N levels
+  ready · v<contentVersion>" with N = window levels on the device now (`ContentController.windowReadiness`); a content
+  notice (offline / update skipped / new content installed) takes the count's place; a Play Games notice replaces the
+  line.
+- Levels screen (`level_select_screen.dart`, title "Levels", owner): a panel with the next level to play (first not won; title, tier,
+  size, tray; Play/Continue) and below it ("COMPLETED") ONLY the completed levels, in order, as a lazy list to replay from
   (one row each: number, title, tier badge, tiles, best time, date-time of that best win). Replays keep the
   fastest time and its date (`ProgressRepository.recordWin`).
 - All levels won (owner): `AllLevelsCompleteNote` ("All N levels complete! New levels are coming soon.") in the
-  lobby (Play becomes "Replay · Level N") and in place of the next-level panel on Completed Levels; the last
+  lobby (Play becomes "Replay · Level N") and in place of the next-level panel on Levels; the last
   level's win card says so instead of "Next level". No list of all levels and no locked cells; an empty message before the first win.
   Tray UI lays out 2 to 5 wells.
 - Static art pipeline: `art/asset_sources.json` → `python3 tool/assets/prepare_symbols.py` → `content/brain-train/symbols/v1/`
@@ -312,7 +450,7 @@ dart run tool/smoke_remote.dart         # live check: app's content client vs pr
 - Not yet integrated: 4 IconScout AI images (spring rolls ×2, salad, nachos) — not reachable via the IconScout API.
 - Tray mechanic is integrated (tray at the top, flights, strike-and-shatter matches, Tray full card with
   Revive / Restart), with 2 to 5 slots per level.
-- App version 1.0.0+7 (2026-10-17): first-play tutorial, Play Games for 13+ only. 1.0.0+6: real AdMob IDs. 1.0.0+5: new content host, update popup, iOS release settings. 1.0.0+4 (`feat/rewarded-ads`, merged into `feat/campaign-v2`): rewarded ads on Revive, age screen,
+- App version 1.1.0+8 (redesign, `feat/redesign-1.1`, not released yet): Day/Night/System looks, new lobby, Settings, gameplay HUD, Undo / Hint / Shuffle, Level Complete, iOS min 15.0. 1.0.0+7 (2026-10-17): first-play tutorial, Play Games for 13+ only. 1.0.0+6: real AdMob IDs. 1.0.0+5: new content host, update popup, iOS release settings. 1.0.0+4 (`feat/rewarded-ads`, merged into `feat/campaign-v2`): rewarded ads on Revive, age screen,
   Privacy choices row, built with Google's AdMob test IDs (`google_mobile_ads` 9.1.0). This bundle (66.7 MB AAB,
   19.2 MB install) is the Closed testing - Alpha release in the Play Console.
 - Play Store listing (owner-approved): texts in `art/store/listing-en-US.md`, `art/store/icon-512.png`,
@@ -335,7 +473,8 @@ dart run tool/smoke_remote.dart         # live check: app's content client vs pr
   `/opt/homebrew/share/android-commandlinetools`, AVD `Pixel_9` = Play Store image (use for Play Games), `TP_*` AVDs
   have no Play Store, `Pixel_6_API_34` does not exist. Python 3 + Pillow for `tool/assets/*.py`, ffmpeg for audio.
 - `flutter analyze` and `flutter test` work on a fresh clone (tests use fixtures and `content/starter/`); on the Linux
-  machine 567 pass, 26 skip without the full content tree (2026-10-17); on the Mac 6 failed before (see Open work).
+  machine 724 pass, 26 skip without the full content tree (2026-10-17, redesign 1.1.0 with phase 6); on the Mac 6 failed before
+  (see Open work).
 - Run on a Mac (iPhone simulator) or any machine with no secrets: `flutter pub get && flutter run`. Debug builds read
   content from the public host, use Google's test AdMob IDs, skip Play Games (Android only) and use debug signing;
   `.env` and the `android/*.properties` files are only for publishing and release builds.
@@ -389,7 +528,7 @@ dart run tool/smoke_remote.dart         # live check: app's content client vs pr
 - Open work: Play Games pieces 2–3 (piece 2 builds on `bestScore`/`bestCombo`; publishing the PGS configuration needs
   at least 5 achievements). Scoring + combo is implemented (4 s window).
 - Open work: Play Games / scoring follow-ups after the PR #2 merge: run an iOS build on a Mac with full Xcode (iOS min
-  14.0, never built yet); check the combo pill on a phone (its top overlaps the tray wells by ~5 px at 360×640).
+  15.0, never built yet).
 - Open work: 5–6 tests fail on this Mac (predate PR #2): RenderFlex overflow of 4.4 px at
   `lib/features/levels/level_select_screen.dart:232` (Completed Levels row) — level_select_test (2), level_loader_test (1),
   lobby_capture_test (2, per-phone "home, levels, settings"), gameplay_capture_test ("tray-full overlay 360x640 at 1.3x
