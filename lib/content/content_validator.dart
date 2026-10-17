@@ -95,9 +95,14 @@ class ContentValidator {
     String? expectedLevelId,
     bool checkSolvable = false,
     int solverNodeBudget = 500000,
-  }) => LevelValidator(
-    registry: registry,
-  ).validate(level, expectedLevelId: expectedLevelId, checkSolvable: checkSolvable, solverNodeBudget: solverNodeBudget);
+    bool checkCampaignRules = false,
+  }) => LevelValidator(registry: registry).validate(
+    level,
+    expectedLevelId: expectedLevelId,
+    checkSolvable: checkSolvable,
+    solverNodeBudget: solverNodeBudget,
+    checkCampaignRules: checkCampaignRules,
+  );
 
   /// Throws a checksum [ContentException] when [expected] is set and differs.
   static void verifyChecksum(List<int> bytes, String? expected, String path) {

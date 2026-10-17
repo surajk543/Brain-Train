@@ -15,9 +15,18 @@ final SymbolRegistry hardRegistry = registry({..._codes('S', 60), ..._codes('A',
 
 List<LevelDefinition>? _hard;
 
-/// Boards like the campaign's hardest: the catalog's difficulty-10 tier
-/// (144-176 tiles on 5-7 layers, a 2-slot tray, 1.25 pairs per symbol),
-/// three levels generated with a short simulation.
+/// The catalog's difficulty-10 tier.
+Map<String, Object?> _hardTier() => ((jsonDecode(File('content-src/catalog.json').readAsStringSync()) as Map)['campaign']
+        as Map)['tiers']
+    .cast<Map<String, Object?>>()
+    .firstWhere((t) => t['id'] == '10');
+
+/// The fewest tiles a difficulty-10 board has.
+int hardMinTiles() => ((_hardTier()['tiles']! as List).first as num).toInt();
+
+/// Boards like the campaign's hardest: the catalog's difficulty-10 tier (the
+/// most tiles and layers, a 2-slot tray, 1.25 pairs per symbol), three
+/// levels generated with a short simulation.
 List<LevelDefinition> hardLevels() => _hard ??= () {
   final campaign = (jsonDecode(File('content-src/catalog.json').readAsStringSync()) as Map)['campaign'] as Map;
   final tier = (campaign['tiers'] as List).cast<Map<String, Object?>>().firstWhere((t) => t['id'] == '10');

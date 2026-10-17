@@ -7,11 +7,13 @@ import 'package:brain_train/game_engine/campaign/campaign_generator.dart';
 import 'package:brain_train/game_engine/campaign/seeded_random.dart';
 import 'package:brain_train/game_engine/campaign/tier_schedule.dart';
 import 'package:brain_train/game_engine/geometry/board_geometry.dart';
+import 'package:brain_train/game_engine/geometry/board_grid.dart';
 import 'package:brain_train/game_engine/models/level_definition.dart';
 import 'package:brain_train/game_engine/models/tile_definition.dart';
 import 'package:brain_train/game_engine/rules/match_rules.dart';
 import 'package:brain_train/game_engine/state/game_engine.dart';
 import 'package:brain_train/game_engine/state/game_state.dart';
+import 'package:brain_train/game_engine/validation/depth_rules.dart';
 import 'package:brain_train/game_engine/validation/level_validator.dart';
 import 'package:brain_train/game_engine/validation/solver.dart';
 import 'package:brain_train/game_engine/validation/tray_simulator.dart';
@@ -34,8 +36,8 @@ CampaignConfig miniCampaign({int seed = 7}) => CampaignConfig.fromJson({
     {
       'id': 'veryHard',
       'count': 4,
-      'tiles': [144, 176],
-      'layers': [5, 7],
+      'tiles': [84, 126],
+      'layers': [4, 4],
       'trayCapacity': 5,
       'pairsPerStaticSymbol': 1.25,
       'pairsPerAnimatedSymbol': 2.2,
@@ -87,8 +89,25 @@ void main() {
           '10 10 9 10 10 9 10 9 10 10 9 10 10 9 10 10 9 10 10 9 10 10 9 10 10 9 10 10 9 10 10 9 10 10 9 '
           '10 10 9 10 10 9 10 10 9 10 10 9 10 10 9 10 10 9 10 10 9 10 10 9 10 10 9 10 10 9 10 10 9 10 9 '
           '10 10 9 10 10';
+      // 500 levels of difficulty 5-10 (84 / 84 / 83 / 83 / 83 / 83).
+      const batch3 =
+          '5 10 10 7 5 9 9 6 6 5 5 10 6 9 10 9 8 10 9 5 7 8 10 6 7 7 6 7 9 7 7 6 8 10 6 8 9 7 5 6 '
+          '10 8 10 8 8 9 7 10 5 8 7 9 10 9 7 7 5 8 10 9 9 5 7 5 7 7 5 9 7 5 8 10 10 7 7 8 10 9 10 7 '
+          '5 9 8 7 5 9 5 5 8 8 10 9 10 8 5 8 6 10 6 7 10 8 6 9 5 8 5 8 6 8 6 6 10 8 8 5 8 9 5 5 '
+          '6 7 6 10 10 5 6 5 7 8 7 10 7 5 7 6 5 10 6 8 10 8 6 9 9 7 6 6 10 7 6 10 5 10 6 8 9 6 7 5 '
+          '6 9 9 6 9 9 6 10 6 8 10 9 10 6 7 5 5 9 7 6 7 5 5 8 7 7 6 7 8 6 7 8 5 9 10 10 7 10 8 6 '
+          '6 10 7 5 5 9 9 8 9 7 8 7 5 6 7 6 9 7 9 8 10 8 9 8 9 5 8 7 10 8 7 8 9 6 7 8 9 6 6 7 '
+          '8 5 6 6 10 9 8 5 6 7 6 6 5 6 8 8 6 7 5 9 6 8 8 5 5 10 7 7 8 10 9 9 10 10 7 9 9 8 6 8 '
+          '8 6 5 9 10 5 10 10 6 7 5 10 10 9 6 7 5 10 10 5 10 6 5 9 10 5 5 9 8 8 6 6 8 7 6 5 8 7 6 5 '
+          '7 8 9 9 7 6 9 6 6 5 5 6 9 7 5 7 7 9 8 7 7 5 5 7 5 10 9 10 10 5 10 9 10 10 5 6 6 10 5 6 '
+          '5 9 9 7 10 7 7 8 10 9 9 10 6 5 10 6 8 7 8 9 9 8 8 10 9 10 9 10 9 9 6 5 8 9 7 5 5 10 6 7 '
+          '5 9 9 6 8 8 6 7 6 10 9 10 5 6 9 5 6 6 10 10 8 10 9 5 10 7 10 8 7 8 9 9 8 8 6 9 8 10 8 7 '
+          '5 6 9 5 6 7 8 7 9 10 8 8 9 7 10 7 5 9 10 5 8 9 8 8 6 5 5 7 6 7 5 6 10 10 9 5 10 6 6 7 '
+          '10 8 5 10 9 6 5 7 8 5 5 9 8 8 6 5 7 7 8 9';
       expect(catalogOrder.sublist(0, 100).join(' '), batch1);
       expect(catalogOrder.sublist(100, 175).join(' '), batch2);
+      expect(catalogOrder.sublist(175, 675).join(' '), batch3);
+      expect(catalogOrder, hasLength(675));
       // The batch-1 order is the same with the old restart limit: raising it
       // changed no published level.
       final firstBatch = CampaignConfig.fromJson({
@@ -200,10 +219,14 @@ void main() {
       expect(kFitLayerOffset, 0.07);
     });
 
-    test('every family builds valid, mirror-symmetric, even boards', () {
+    test('the fixed grid gives faces of at least minFaceWidth on a 360x640 phone', () {
+      expect(gridFaceWidthIn(kSmallBoardWidth, kSmallBoardHeight), greaterThanOrEqualTo(catalogCampaign().minFaceWidth));
+    });
+
+    test('every family builds valid, mirror-symmetric, even boards inside the grid, with depth showing', () {
       for (final family in shapeFamilies) {
         var checked = 0;
-        for (final shape in familyShapes(family, maxLayers: 5)) {
+        for (final shape in familyShapes(family)) {
           // A sample of each family keeps the test fast.
           if (checked++ % 7 != 0) continue;
           expect(shape.tileCount.isEven, isTrue, reason: shape.describe);
@@ -219,6 +242,14 @@ void main() {
           final geometry = BoardGeometry.build(level);
           expect(geometry.sameLayerOverlaps, isEmpty, reason: shape.describe);
           expect(geometry.unsupportedTiles, isEmpty, reason: shape.describe);
+          expect(shape.fitsGrid, isTrue, reason: shape.describe);
+          expect(geometry.bounds.width, lessThanOrEqualTo(2 * kBoardGridColumns), reason: shape.describe);
+          expect(geometry.bounds.height, lessThanOrEqualTo(2 * kBoardGridRows), reason: shape.describe);
+          expect(shape.layerCount, lessThanOrEqualTo(kBoardGridLayers), reason: shape.describe);
+          // Depth shows: nothing exactly on top of anything, a quarter of
+          // every tile uncovered.
+          expect(stackedTiles(geometry), isEmpty, reason: shape.describe);
+          expect(visibleQuarters(geometry).every((v) => v >= kMinVisibleQuarters), isTrue, reason: shape.describe);
           final (minX, _, maxX, _) = shape.bounds;
           for (final layer in shape.layers) {
             for (final (x, y) in layer) {
@@ -291,8 +322,12 @@ void main() {
         expect(level.tiles.length, inInclusiveRange(tier.minTiles, tier.maxTiles), reason: level.levelId);
         expect(l.layers, inInclusiveRange(tier.minLayers, tier.maxLayers), reason: level.levelId);
         expect(level.rules.trayCapacity, tier.trayCapacity);
-        expect(l.shape.smallPhoneFaceWidth, greaterThanOrEqualTo(config.minFaceWidth));
-        final report = LevelValidator(registry: reg).validate(level, checkSolvable: true, solverNodeBudget: 2000000);
+        expect(l.shape.fitsGrid, isTrue, reason: level.levelId);
+        // 1 or 2 single pairs have a face colour (validated below too).
+        expect(level.faceColors.length, inInclusiveRange(1, 2), reason: level.levelId);
+        final report = LevelValidator(
+          registry: reg,
+        ).validate(level, checkSolvable: true, solverNodeBudget: 2000000, checkCampaignRules: true);
         expect(report.isValid, isTrue, reason: '${level.levelId}: ${report.errors}');
         expect(report.solve!.outcome, SolveOutcome.solvable);
       }
@@ -335,6 +370,12 @@ void main() {
         animatedPool: [...animated, ...codes('ANEW', 3)],
       ).generate();
       var changed = 0;
+      // Levels before the first one that ranks a new symbol keep their bytes;
+      // from there on, codes may move along (least used first).
+      final firstNew = more.indexWhere(
+        (l) => {...l.staticSymbols, ...l.animatedSymbols}.any((c) => c.startsWith('NEW') || c.startsWith('ANEW')),
+      );
+      expect(firstNew, greaterThanOrEqualTo(0));
       for (var i = 0; i < levels.length; i++) {
         final a = levels[i], b = more[i];
         expect(b.level.title, a.level.title);
@@ -348,11 +389,7 @@ void main() {
         expect(pairsB, pairsA);
         if (jsonEncode(a.level.toJson()) != jsonEncode(b.level.toJson())) {
           changed++;
-          expect(
-            {...b.staticSymbols, ...b.animatedSymbols}.any((c) => c.startsWith('NEW') || c.startsWith('ANEW')),
-            isTrue,
-            reason: '${a.level.levelId} changed although no new symbol ranks in it',
-          );
+          expect(i, greaterThanOrEqualTo(firstNew), reason: '${a.level.levelId} changed before any new symbol ranks');
         }
       }
       expect(changed, greaterThan(0));

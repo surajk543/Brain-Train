@@ -64,15 +64,28 @@ const List<List<String>> kBackdropPalettes = [
 
 /// Picks unique titles and palettes level by level. A first word is not
 /// reused within six levels, a noun within three, a palette within two.
+/// Published titles are pinned (catalog `campaign.titles`).
 class LevelDecor {
-  LevelDecor(this.seed);
+  /// [pinned] titles (level order, from 1) are used as they are; generated
+  /// titles never repeat them.
+  LevelDecor(this.seed, {List<String> pinned = const []}) : _pinned = pinned {
+    _titles.addAll(pinned);
+  }
 
   final int seed;
+  final List<String> _pinned;
   final Set<String> _titles = {};
   final List<String> _firstWords = [], _nouns = [];
   final List<int> _palettes = [];
 
   String title(int order, String family) {
+    if (order <= _pinned.length) {
+      final title = _pinned[order - 1];
+      final space = title.indexOf(' ');
+      _firstWords.add(space < 0 ? title : title.substring(0, space));
+      _nouns.add(space < 0 ? title : title.substring(space + 1));
+      return title;
+    }
     final nouns = kTitleNouns[family] ?? const ['Glade'];
     final random = SeededRandom.of(['title', seed, order]);
     for (var attempt = 0; attempt < 4000; attempt++) {

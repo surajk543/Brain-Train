@@ -18,6 +18,11 @@ class LevelBackdrop {
   Map<String, Object?> toJson() => {'colors': colors};
 }
 
+/// Tile face colours a level may give single pairs (`faceColors`), besides
+/// the usual ivory. Never green, so the tiles stand out on the felt. Builds
+/// that predate the field ignore it and draw those tiles ivory.
+const List<String> kFaceColorNames = ['gold', 'sky', 'blush', 'lavender', 'peach'];
+
 /// An immutable, screen-independent level: tiles, board geometry and rules.
 class LevelDefinition {
   LevelDefinition({
@@ -30,7 +35,9 @@ class LevelDefinition {
     required List<TileDefinition> tiles,
     this.rules = const LevelRules(),
     this.backdrop,
-  }) : tiles = List.unmodifiable(tiles);
+    Map<String, String> faceColors = const {},
+  }) : tiles = List.unmodifiable(tiles),
+       faceColors = Map.unmodifiable(faceColors);
 
   /// Parses the JSON shape. Semantic checks (unique IDs, symbols, overlaps,
   /// solvability) belong to `LevelValidator`.
@@ -46,6 +53,7 @@ class LevelDefinition {
       tiles: json.objectList('tiles').map(TileDefinition.fromJson).toList(),
       rules: json.has('rules') ? LevelRules.fromJson(json.object('rules')) : const LevelRules(),
       backdrop: json.has('backdrop') ? LevelBackdrop.fromJson(json.object('backdrop')) : null,
+      faceColors: json.has('faceColors') ? json.stringMap('faceColors') : const {},
     );
   }
 
@@ -61,6 +69,17 @@ class LevelDefinition {
   /// Rendering only; null uses the app's default palette.
   final LevelBackdrop? backdrop;
 
+  /// Rendering only: symbol code -> face colour name ([kFaceColorNames]) for
+  /// the pairs whose tiles are not ivory. Matching never looks at it. Names
+  /// this build does not know draw ivory.
+  final Map<String, String> faceColors;
+
+  /// The face colour of tile [index], or null for ivory.
+  String? faceColorOf(int index) {
+    final name = faceColors[tiles[index].symbolCode];
+    return name != null && kFaceColorNames.contains(name) ? name : null;
+  }
+
   int get pairCount => tiles.length ~/ 2;
 
   Map<String, Object?> toJson() => {
@@ -72,6 +91,7 @@ class LevelDefinition {
     'board': board.toJson(),
     'rules': rules.toJson(),
     if (backdrop != null) 'backdrop': backdrop!.toJson(),
+    if (faceColors.isNotEmpty) 'faceColors': faceColors,
     'tiles': [for (final tile in tiles) tile.toJson()],
   };
 }

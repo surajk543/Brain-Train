@@ -173,7 +173,7 @@ void main() {
     expect(mean(byTier['10']!.map(layers)), greaterThan(mean(byTier['5']!.map(layers))));
     expect(mean(byTier['5']!.map(layers)), greaterThan(mean(byTier['1']!.map(layers))));
     expect(mean(byTier['10']!.map(freeShare)), lessThan(mean(byTier['1']!.map(freeShare))));
-    expect(byTier['10']!.map((l) => l.tiles.length).reduce((a, b) => a < b ? a : b), greaterThanOrEqualTo(144));
+    expect(byTier['10']!.map((l) => l.tiles.length).reduce((a, b) => a < b ? a : b), greaterThanOrEqualTo(campaign.tier('10').minTiles));
   });
 
   test('the simulated tray player wins less from tier to tier', () {
