@@ -17,7 +17,7 @@ const double kFitLayerOffset = 0.07;
 /// The gameplay board area of a 360x640 phone (measured in the capture
 /// tests), and the board's padding inside it.
 const double kSmallBoardWidth = 360;
-const double kSmallBoardHeight = 433.5;
+const double kSmallBoardHeight = 439.7;
 const double kBoardPadding = 4;
 
 /// One procedurally built board: a mirror-symmetric base shape and the

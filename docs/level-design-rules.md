@@ -15,16 +15,21 @@ Each difficulty is a tier in the catalog. A tier sets the board size, the depth,
 
 | Difficulty | Tiles   | Layers | Tray slots | Pairs per static / animated symbol (average) | Decoy pairs | Target win rate (random player) |
 |-----------:|---------|--------|------------|-----------------------------------------------|-------------|---------------------------------|
-| 1          | 24–36   | 1–2    | 5          | 2.0 / 2.0                                     | 0           | 85–100%                         |
-| 2          | 28–44   | 1–2    | 5          | 2.0 / 2.0                                     | 0           | 70–95%                          |
-| 3          | 36–56   | 2–3    | 4–5        | 2.0 / 2.0                                     | 0           | 55–80%                          |
-| 4          | 44–64   | 2–3    | 4          | 2.0 / 2.0                                     | 0           | 40–65%                          |
-| 5          | 56–80   | 2–3    | 4          | 2.0 / 2.0                                     | 0           | 25–45%                          |
-| 6          | 68–96   | 3–4    | 4          | 1.9 / 1.8                                     | 0           | 10–30%                          |
-| 7          | 84–112  | 3–4    | 3–4        | 1.8 / 1.8                                     | 0           | 2–15%                           |
-| 8          | 100–132 | 4–5    | 3          | 1.6 / 1.5                                     | 5%          | 0–6%                            |
-| 9          | 120–152 | 4–6    | 2–3        | 1.4 / 1.5                                     | 10%         | 0–3%                            |
-| 10         | 144–176 | 5–7    | 2          | 1.25 / 1.25                                   | 20%         | 0–2%                            |
+| 1          | 20–32   | 1–2    | 5          | 2.0 / 2.0                                     | 0           | 85–100%                         |
+| 2          | 24–38   | 1–2    | 5          | 2.0 / 2.0                                     | 0           | 70–95%                          |
+| 3          | 30–46   | 2–3    | 4–5        | 2.0 / 2.0                                     | 0           | 55–80%                          |
+| 4          | 36–54   | 2–3    | 4          | 2.0 / 2.0                                     | 0           | 40–65%                          |
+| 5          | 44–62   | 2–3    | 4          | 2.0 / 2.0                                     | 0           | 25–45%                          |
+| 6          | 50–70   | 3      | 4          | 1.9 / 1.8                                     | 0           | 10–30%                          |
+| 7          | 56–78   | 3–4    | 3–4        | 1.8 / 1.8                                     | 0           | 2–15%                           |
+| 8          | 64–88   | 3–4    | 3          | 1.6 / 1.5                                     | 5%          | 0–6%                            |
+| 9          | 72–100  | 3–4    | 2–3        | 1.4 / 1.5                                     | 10%         | 0–3%                            |
+| 10         | 84–126  | 4      | 2          | 1.25 / 1.25                                   | 20%         | 0–2%                            |
+
+The tile and layer bands are those of the fixed 7×9 grid with depth showing (section 5, 2026-10-17): upper layers are
+sparser, so a board holds at most about 126 tiles on 4 layers (before, difficulty 10 had 144–176 tiles on 5–7 layers).
+Tray slots, pairs per symbol, decoys and win-rate bands did not change. Easy tiers also keep at least one symbol with a
+single pair (for the coloured pair, section 3), so their pairs-per-symbol average is a little under 2.0.
 
 How each column makes a level harder:
 
@@ -33,8 +38,9 @@ How each column makes a level harder:
 - **Pairs per symbol:** a lower number means more different symbols, so fewer ways to make a match.
 - **Decoy pairs:** a share of pairs is built so that one tile is free long before its partner, and it waits in the tray.
 - **Win rate:** the generator plays every candidate board 200 times with a simulated player who taps free tiles at
-  random. It keeps the board whose win rate is closest to the tier's band. A careful player does much better. The build
-  also reports a "pair-seeking" player, who wins about 50% of difficulty 8–10 levels.
+  random. It keeps the board whose win rate is closest to the tier's band (a few levels end just outside it). A careful
+  player does much better. The build also reports a "pair-seeking" player, who wins about 64–69% of difficulty 8–10
+  levels.
 
 ## 2. Tray size: 2 to 5 slots
 
@@ -54,6 +60,14 @@ How each column makes a level harder:
 - **Every integrated symbol is used:** symbols are picked least-used first, with ties broken by a seeded hash of the level
   and the symbol. Every symbol is therefore on some level before any symbol is on many. The build **fails** if any
   integrated symbol is on no level. Add levels or lower `pairsPer...Symbol` if that happens.
+- **Coloured pairs (owner, 2026-10-17):** every level has **1 or 2 pairs** (seeded random) whose tile face is a
+  different colour from the usual ivory. The colour is drawn from a fixed palette (for example warm gold, sky blue,
+  blush pink, lavender, peach), never green, so it stands out on the felt. It is applied per symbol: pick only symbols
+  that appear as exactly one pair on that level, so both tiles of the pair share the colour. Matching still uses symbol
+  codes only; the colour is decoration, and the symbol must stay readable on it. In the level file it is the optional
+  `faceColors` map (`{"CODE": "gold"}`; names `gold`, `sky`, `blush`, `lavender`, `peach`), which older app builds
+  ignore. The generator colours static symbols only, picked among the level's abstract symbols (so new symbols change
+  which codes are coloured, never which pairs), and `validate` checks 1–2 coloured single pairs with palette names.
 - **Neighbouring levels look different:** they share only a small part of their symbol set (the build reports the
   maximum).
 - **Which symbols are integrated:** only symbols with `"status": "integrated"` in `art/asset_sources.json` (static, image
@@ -61,21 +75,43 @@ How each column makes a level harder:
 
 ## 4. Level order
 
-- Levels come in **batches** (`campaign.batches`), and each batch lists how many levels each difficulty gets. The first
-  batch has 10 of each difficulty: 100 levels.
+- Levels come in **batches** (`campaign.batches`), and each batch lists how many levels each difficulty gets. Batch 1 has
+  10 of each difficulty (levels 1–100), batch 2 has 25 of difficulty 9 and 50 of 10 (101–175), batch 3 has 84 each of
+  5 and 6 and 83 each of 7–10 (176–675).
 - Inside a batch the difficulties are **shuffled** with the campaign seed.
 - **Level 1 is always difficulty 1.**
 - **No difficulty appears 3 times in a row** (`maxTierRun: 2`).
 - The seed (`20261641`) was chosen so the game opens gently. Levels 1–10 have difficulty 1, 2, 1, 4, 4, 5, 2, 6, 1, 1.
-- **A batch depends only on the batches before it.** Appending a batch never changes an existing level. Never edit an
-  existing batch's counts, the seed or a tier, because that regenerates every level after it.
+- **A batch depends only on the batches before it.** Appending a batch never changes an existing level's difficulty or
+  tray. Never edit an existing batch's counts, the seed or a tier, because that regenerates every level after it.
+- **Titles of published levels are pinned** (`campaign.titles`, level 1 first): a change to how boards are built never
+  renames a level. New levels get generated titles that repeat none of them; every title is unique. Append a batch's
+  titles to the list once it is published.
 
 ## 5. Boards
 
 - Boards come from 22 symmetric shape families (`lib/game_engine/campaign/board_shapes.dart`). The same family never
   appears on two of three neighbouring levels.
+- **Depth must show (owner, 2026-10-17).** Upper layers sit **half a tile off** the layer below (right and/or down),
+  never exactly on top, so the player can always see that there are more tiles underneath:
+  - No two tiles on different layers share the same `(x, y)`: no tile sits exactly on top of another.
+  - Every tile shows part of its face from above: of the four quarters of its 2×2 footprint, at least one (two where
+    possible) is not covered by any higher tile.
+  - Boards stay mirror-symmetric. The generator rejects boards that break these rules, and `validate` checks them.
+  - How the generator stacks: each layer takes half offsets (right/left and down/up, mirrored) from the tiles below, a
+    tile rests on at least half a tile of the layer directly below and lies wholly over lower tiles. Most stacking
+    programs keep two quarters of every tile showing; the dense ones (`heap`, `dense`, `solid`, `towers`) keep one.
 - Every level is **solver-proven**: it is built so that it can be cleared pair by pair, then the solver proves it.
-- Tiles stay at least **31 px wide on a 360×640 phone** (`minFaceWidth`).
+- **Same tile size on every level (owner, 2026-10-17).** Boards never shrink or grow to fit the screen. Every board,
+  with all its layers and half offsets, fits a fixed grid of **7 tiles wide × 9 tiles tall** (logical span ≤ 14 × 18
+  units) and **4 layers** (`kBoardGridColumns`, `kBoardGridRows`, `kBoardGridLayers` in
+  `lib/game_engine/geometry/board_grid.dart`). The app fits that grid, not the level, into the board area, so a phone
+  shows every level at the same scale, and smaller boards are centred, not enlarged. The generator rejects boards
+  outside the grid, and `validate` checks it.
+- Tiles stay at least **31 px wide on a 360×640 phone** (`minFaceWidth`). With the fixed grid this holds for every level
+  at once: 34.8 px there, and 44.3 px on a 393×852 phone (the gameplay screen's low tray and compact action bar give
+  the board its height). Tablets lay the screen out on a 600-wide canvas (`TabletScale`) and scale it up, so their
+  tiles are bigger: about 78 dp on an iPad 13, 69 on an iPad 11, 75 on a 10-inch and 55 on a 7-inch tablet.
 - Board size grows a little through a difficulty's levels within each batch.
 
 ## 6. Delivery to the phone

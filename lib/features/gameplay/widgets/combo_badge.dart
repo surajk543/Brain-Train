@@ -13,9 +13,10 @@ const double _pillHeight = 24;
 const double _compactPillHeight = 20;
 
 /// Where the badge hangs on the tray's bottom edge: the edge crosses the badge
-/// 30% from its top, so the badge sits a little low and its top stays under
-/// the tray's wells (centred, it covered their bottom by ~5 px at 360x640).
-const Alignment kComboBadgeAnchor = Alignment(0, -0.4);
+/// 20% from its top, so the badge sits low and its top stays under the tray's
+/// wells (the low tray of 2026-10-17 has 5-6 px of frame under them; centred,
+/// the badge covered their bottom).
+const Alignment kComboBadgeAnchor = Alignment(0, -0.6);
 
 /// "COMBO ×N · Best ×M" gold pill (from ×2) floating on the tray's bottom
 /// edge; with no combo running, a small "Best ×M" chip once a combo of 2 or

@@ -733,6 +733,31 @@ void main() {
     expect(iphone, greaterThanOrEqualTo(43.5));
   });
 
+  test('tablets show the grid\'s tiles bigger than a 393x852 phone does (TabletScale canvas)', () {
+    // On-screen face width in dp: the grid fitted into the board of the
+    // 600-wide canvas, times the canvas scale.
+    double onScreen(Size screen, EdgeInsets safe) {
+      final scale = TabletScale.scaleFor(screen);
+      final canvas = screen / scale, inset = safe / scale;
+      final board = GameLayout.of(canvas, inset).boardHeight(canvas, inset);
+      return gridFaceWidthIn(canvas.width, board) * scale;
+    }
+
+    final phone = onScreen(const Size(393, 852), const EdgeInsets.only(top: 59, bottom: 34));
+    final tablets = {
+      'iPad 13 (1032x1376)': onScreen(const Size(1032, 1376), const EdgeInsets.only(top: 24, bottom: 20)),
+      'iPad 11 (834x1194)': onScreen(const Size(834, 1194), const EdgeInsets.only(top: 24, bottom: 20)),
+      '10-inch Android (800x1280)': onScreen(const Size(800, 1280), const EdgeInsets.only(top: 24, bottom: 48)),
+      '7-inch (600x960)': onScreen(const Size(600, 960), const EdgeInsets.only(top: 24, bottom: 48)),
+    };
+    // ignore: avoid_print
+    print('faces (dp): 393x852 phone ${phone.toStringAsFixed(1)}; '
+        '${[for (final e in tablets.entries) '${e.key} ${e.value.toStringAsFixed(1)}'].join('; ')}');
+    for (final MapEntry(:key, :value) in tablets.entries) {
+      expect(value, greaterThan(phone * 1.2), reason: key);
+    }
+  });
+
   test('every published level keeps 31-px faces on the measured 360x640 board', () {
     // The real board at 360x640 (GameLayout) is at least the size the
     // campaign was built for (test/content/published_content_test.dart

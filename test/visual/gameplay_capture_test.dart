@@ -76,8 +76,9 @@ final BundledContentSource _fullTree = BundledContentSource((key) async {
 
 /// `PREVIEW_TREE=<content root>` (with CAPTURE_DIR) captures every level of
 /// that tree, or the PREVIEW_LEVELS=level-0001,... among them, at 393x852
-/// and 360x640 ("board previews"); the full tree's tests then read it
-/// instead of content/brain-train.
+/// and 360x640, or the PREVIEW_PHONES=393x852,360x640,ipad-13 given ("board
+/// previews"); the full tree's tests then read it instead of
+/// content/brain-train.
 final String? _previewTree = Platform.environment['PREVIEW_TREE'];
 final String _treeRoot = _previewTree ?? 'content/brain-train';
 
@@ -789,9 +790,11 @@ void main() {
   testWidgets('board previews', skip: _previewTree == null || _captureDir == null, (tester) async {
     await start(tester, full: true);
     final only = Platform.environment['PREVIEW_LEVELS']?.split(',').toSet();
+    final phones = Platform.environment['PREVIEW_PHONES']?.split(',').toSet();
     for (final entry in snapshot.playableEntries) {
       if (only != null && !only.contains(entry.levelId)) continue;
-      for (final phone in [_iphone, _small]) {
+      for (final phone in [_iphone, _small, _ipad]) {
+        if (phones == null ? phone == _ipad : !phones.contains(phone.name)) continue;
         await _pumpGame(tester, services: services, entry: entry, phone: phone);
         for (var i = 0; i < 3; i++) {
           await _settle(tester);
@@ -962,7 +965,7 @@ void main() {
       await start(tester, full: true);
       final hard = firstOf('10');
       await _pumpGame(tester, services: services, entry: hard, phone: _large);
-      expect(snapshot.levels[hard.levelId]!.tiles.length, greaterThan(140));
+      expect(snapshot.levels[hard.levelId]!.tiles.length, greaterThanOrEqualTo(80), reason: 'a big board on the 7x9 grid');
       final hardFrames = await sequence(tester, 'intro_${hard.levelId}_411x914');
       await _leave(tester);
       final easy = firstOf('1');
