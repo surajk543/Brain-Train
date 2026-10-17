@@ -512,7 +512,12 @@ dart run tool/smoke_remote.dart         # live check: app's content client vs pr
 - Not yet integrated: 4 IconScout AI images (spring rolls ×2, salad, nachos) — not reachable via the IconScout API.
 - Tray mechanic is integrated (tray at the top, flights, strike-and-shatter matches, Tray full card with
   Revive / Restart), with 2 to 5 slots per level.
-- App version 1.1.0+9 (2026-10-17, for App Review and Play): no-ad fallback for rewarded ads (free after
+- App version 1.1.0+10 (2026-10-17): fixes a launch crash of every Android release build ("Failed to create an instance
+  of androidx.work.impl.WorkDatabase": R8 full mode removed `WorkDatabase_Impl`'s no-arg constructor, which the
+  room-runtime 2.2.5 keep rule pulled in by the ads SDK's WorkManager does not keep); `android/app/proguard-rules.pro`
+  keeps `<init>()` of every `RoomDatabase`. Debug builds skip R8, so only release builds showed it: test a release APK
+  (`flutter build apk --release`) on an emulator before every store upload.
+  1.1.0+9 (2026-10-17, for App Review and Play; crashes at launch on Android, replaced by +10): no-ad fallback for rewarded ads (free after
   `kAdFallbackDelay` while online), at most 2 revives per level attempt, new strike sound. 1.1.0+8 (redesign, `feat/redesign-1.1`): Day/Night/System looks, new lobby, Settings, gameplay HUD, Undo / Hint / Shuffle, Level Complete, iOS min 15.0. 1.0.0+7 (2026-10-17): first-play tutorial, Play Games for 13+ only. 1.0.0+6: real AdMob IDs. 1.0.0+5: new content host, update popup, iOS release settings. 1.0.0+4 (`feat/rewarded-ads`, merged into `feat/campaign-v2`): rewarded ads on Revive, age screen,
   Privacy choices row, built with Google's AdMob test IDs (`google_mobile_ads` 9.1.0). This bundle (66.7 MB AAB,
   19.2 MB install) is the Closed testing - Alpha release in the Play Console.
