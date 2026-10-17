@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
   "android": {
-    "latestVersionCode": 4,
-    "minVersionCode": 1,
+    "latestVersionCode": 10,
+    "minVersionCode": 10,
     "storeUrl": "https://play.google.com/store/apps/details?id=com.sungamestudio.braintrain"
   },
   "ios": {
