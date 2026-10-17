@@ -3,7 +3,9 @@
 Revive on the Tray full card plays a Google AdMob **rewarded** ad; the tiles go back only once the reward is earned.
 At most **2 revives per level attempt** (owner, 2026-10-17; `kMaxRevivesPerLevel`; was unlimited), free ones included;
 Restart gives them back. Since 1.1.0 (owner, 2026-10-17) an Undo, Hint or Shuffle with no use left can be refilled
-the same way: a rewarded ad gives +1 of that action. Rewarded ads only, on Revive and on these refills: never
+the same way: a rewarded ad gives +1 of that action, **at most once per action per level attempt** (since 1.1.0+11;
+`kMaxGrantsPerAction`), so each action is used at most 2 times; then its button disappears and no ad is offered for
+it until Restart. Rewarded ads only, on Revive and on these refills: never
 interstitials or banners. Restart never needs an ad. Android and iOS (`google_mobile_ads` 9.1.0, AdMob + Google's
 User Messaging Platform, UMP).
 
@@ -77,8 +79,16 @@ User Messaging Platform, UMP).
   | on screen | off (Not now too) | none |
 
   Closed early → no grant, the card stays; failed to show → granted free when online. The action bar's badge keeps
-  the play mark at 0 uses. Off buttons (intro, tutorial, result cards, nothing to undo, …)
-  never offer an ad. Age-group rules are the same as for Revive (child-directed for under 13).
+  the play mark at 0 uses while the action's refill is still to come. Off buttons (intro, tutorial, result cards,
+  nothing to undo, …) never offer an ad. Age-group rules are the same as for Revive (child-directed for under 13).
+
+  **One refill per action per attempt** (owner, 2026-10-17, 1.1.0+11; `kMaxGrantsPerAction` = 1): 1 free use + 1
+  after an ad, so at most 2 Undos, 2 Hints and 2 Shuffles per level attempt. A free refill (no ad while online)
+  counts as that action's refill too. Once the refilled use is spent the action is spent
+  (`GameController.isSpent`): its button fades out and leaves an empty place (the other buttons stay where they
+  are), no ad is loaded or offered for it, and `GameEngine.grant` refuses another. Restart (and a new level) gives
+  the free use and the refill back; Revive changes nothing. A resumed save keeps the count (its `!grant:` markers); a
+  save from 1.1.0+8 to +10 with more refills still resumes, and that action then has none left.
 - **While the ad is on screen**: the game clock is already stopped (a full tray, or the refill card, stops it) and stays stopped;
   background music is held (`BackgroundMusic.interrupted`; on Android the app also goes to the background) and
   sound effects are stopped; after the ad the game's audio context is applied again.
@@ -95,7 +105,7 @@ User Messaging Platform, UMP).
   and the system prompt itself during consent; the app's call then just reads the answer. Android has no such
   prompt.
 - A build without the SDK (tests, desktop) has ads "off": Revive needs no ad there, and a refill is granted at once
-  (no card; the badge shows "+").
+  (no card; the badge shows "+"), still at most once per action per level attempt.
 
 ## Where the IDs go
 
@@ -179,9 +189,10 @@ Google's test IDs are the defaults; they only ever show test ads:
   `test/platform/google_mobile_ads_rewarded_test.dart` (request settings per age group),
   `test/app/rewarded_ad_offer_test.dart` (the no-ad fallback on fake time),
   `test/features/revive_ad_test.dart` (incl. the fallback and the 2-revive limit), `game_actions_ui_test.dart`
-  (refills), `age_screen_test.dart`, `settings_privacy_test.dart`; captures of the age screen, the privacy row, the
-  Tray full card per ad state (loading, offline, ready, free, no revives left) and the refill card (loading, free) in
-  `test/visual/gameplay_capture_test.dart`.
+  (refills, the one-refill cap and the spent button), `age_screen_test.dart`, `settings_privacy_test.dart`; captures
+  of the age screen, the privacy row, the Tray full card per ad state (loading, offline, ready, free, no revives left)
+  and the refill card (loading, free) in `test/visual/gameplay_capture_test.dart`; the action bar with Hint's ad mark
+  and with Hint spent in `test/visual/gameplay_redesign_capture_test.dart`.
 
 ## Code map
 

@@ -3,7 +3,9 @@
 // progress (on the tile, mid-blink, gliding, on the twin, a tray twin; 360x640
 // and 411x914), the Tray full card,
 // the Restart confirm card, the ad offer for one more Hint and Level
-// Complete; also 360x640 at 1.3x text.
+// Complete; also 360x640 at 1.3x text. The action bar with Hint's ad mark
+// (its free use gone) and with Hint spent (its ad use gone too: no button;
+// 360x640 and 393x852).
 //
 // Always checks that layout succeeds without exceptions or overflow. When
 // CAPTURE_DIR is set, also writes `gameplay-<look>-<scene>-<phone>.png`:
@@ -15,6 +17,7 @@ import 'package:brain_train/content/content_snapshot.dart';
 import 'package:brain_train/content/level_manifest.dart';
 import 'package:brain_train/data/progress_repository.dart';
 import 'package:brain_train/features/gameplay/game_screen.dart';
+import 'package:brain_train/features/gameplay/widgets/action_bar.dart';
 import 'package:brain_train/features/gameplay/widgets/game_hud.dart';
 import 'package:brain_train/features/gameplay/widgets/hint_glow.dart';
 import 'package:brain_train/game_engine/state/game_actions.dart';
@@ -125,6 +128,44 @@ void main() {
       await captureLobby(tester, 'gameplay-$look-shuffled-${phone.name}', phone.dpr);
       await tester.pumpWidget(const SizedBox());
     });
+  }
+
+  // The action bar once Hint's free use is gone (the badge offers an ad), then
+  // once its ad use is gone too: no Hint button, the others in their places.
+  for (final look in ['night', 'day']) {
+    for (final phone in [_small, _iphone]) {
+      final mode = look == 'day' ? ThemeMode.light : ThemeMode.dark;
+      testWidgets('$look action bar with Hint spent ${phone.name}', (tester) async {
+        await start(tester);
+        await open(tester, phone, mode, resume: solvedSave(snapshot, meadow, pairs: 2), clock: FakeStopwatch());
+        final game = gameOf(tester);
+        Rect place(String key) => tester.getRect(find.byKey(ValueKey(key)));
+        final places = [for (final key in ['action-undo', 'action-hint', 'action-shuffle', 'action-restart']) place(key)];
+        expect(game.useHint(), isNotNull);
+        await tester.pump();
+        await tester.pump(HintGlowOverlay.duration);
+        await tester.pump();
+        expect(find.descendant(of: find.byKey(const ValueKey('action-hint')), matching: find.byIcon(Icons.play_arrow_rounded)),
+            findsOneWidget);
+        expect(tester.takeException(), isNull);
+        await captureLobby(tester, 'gameplay-$look-action-ad-mark-${phone.name}', phone.dpr);
+        expect(game.grant(GameAction.hint), isTrue);
+        expect(game.useHint(), isNotNull);
+        await tester.pump();
+        await tester.pump(HintGlowOverlay.duration);
+        await tester.pump(kSpentFadeDuration);
+        expect(game.isSpent(GameAction.hint), isTrue);
+        expect(find.byKey(const ValueKey('action-hint')), findsNothing);
+        expect(
+          [for (final key in ['action-undo', 'action-hint-spent', 'action-shuffle', 'action-restart']) place(key)],
+          places,
+          reason: 'nothing moved',
+        );
+        expect(tester.takeException(), isNull);
+        await captureLobby(tester, 'gameplay-$look-action-spent-${phone.name}', phone.dpr);
+        await tester.pumpWidget(const SizedBox());
+      });
+    }
   }
 
   // A hint in progress: the hand taps the tile (bright, then mid-blink),

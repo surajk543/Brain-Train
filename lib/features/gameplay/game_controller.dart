@@ -343,10 +343,21 @@ class GameController extends ChangeNotifier {
   /// Uses of [action] left in this game.
   int usesLeft(GameAction action) => engine.usesLeft(action);
 
+  /// Extra uses of [action] a rewarded ad can still give in this level
+  /// attempt ([kMaxGrantsPerAction] in all; a restart starts over, a revive
+  /// changes nothing).
+  int grantsLeft(GameAction action) => engine.grantsLeft(action);
+
+  /// [action] has no use left and no grant to be had (owner, 2026-10-17: 1
+  /// free use + at most 1 for an ad): its button leaves the action bar and no
+  /// ad is loaded or offered for it until a restart or another level.
+  bool isSpent(GameAction action) => engine.isSpent(action);
+
   /// Whether [action] makes sense now, uses aside: the game is in play (not
   /// over, no intro, no tutorial) and Undo has a tap to take back (not past
   /// a Revive or a Shuffle), Hint a tap to recommend, Shuffle two symbols
-  /// to swap. With no use left the UI can offer a rewarded ad ([grant]).
+  /// to swap. With no use left the UI can offer a rewarded ad ([grant])
+  /// unless the action [isSpent].
   bool isAvailable(GameAction action) {
     if (_disposed || _introPlaying || _tutorialActive || state.status != GameStatus.playing) return false;
     return switch (action) {
@@ -639,8 +650,9 @@ class GameController extends ChangeNotifier {
     return result;
   }
 
-  /// One more use of [action] (its rewarded ad paid out). Saved with the
-  /// game; false once the game is won.
+  /// One more use of [action] (its rewarded ad paid out, or free when no ad
+  /// could be had while online). Saved with the game; false once the game is
+  /// won or when [action] has no grant left ([grantsLeft]).
   bool grant(GameAction action) {
     if (_disposed || !engine.grant(action)) return false;
     _save();

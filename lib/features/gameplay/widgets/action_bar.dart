@@ -31,11 +31,20 @@ extension GameActionLook on GameAction {
   };
 }
 
+/// How long a spent action's button takes to fade out (at once with reduce
+/// motion).
+const Duration kSpentFadeDuration = Duration(milliseconds: 240);
+
 /// The bottom action bar (redesign 1.1.0, reference board): Undo, Hint and
 /// Shuffle as gold-outlined round buttons with their labels and a badge with
 /// the uses left; with none left the badge shows a play mark (a rewarded ad
 /// gives one more; a "+" in builds without ads). Restart sits at the right
 /// end as a smaller, quieter round button without a badge (it asks first).
+///
+/// A spent action ([GameController.isSpent]: its free use and its one use
+/// for an ad are both gone; owner, 2026-10-17) has no button until a restart:
+/// it fades out and leaves an empty place of the same size, so the other
+/// buttons never move under the player's finger.
 ///
 /// A button is on only while its action makes sense now
 /// ([GameController.isAvailable]: not during the intro, the tutorial or a
@@ -83,15 +92,22 @@ class GameActionBar extends StatelessWidget {
             open && controller.state.status == GameStatus.playing && !controller.introPlaying;
         final buttons = [
           for (final action in GameAction.values)
-            GameActionButton(
-              key: ValueKey('action-${action.name}'),
-              icon: action.icon,
-              label: action.label,
-              usesLeft: controller.usesLeft(action),
-              adRefill: !ads.off,
-              compact: compact,
-              disc: disc,
-              onPressed: open && controller.isAvailable(action) ? () => onAction(action) : null,
+            _ActionSlot(
+              key: ValueKey('slot-${action.name}'),
+              spent: controller.isSpent(action),
+              // The live button (fade null), or its spent look fading out:
+              // off, no badge, keyed apart so finders see it is gone.
+              button: (fade) => GameActionButton(
+                key: ValueKey(fade == null ? 'action-${action.name}' : 'action-${action.name}-spent'),
+                icon: action.icon,
+                label: action.label,
+                usesLeft: fade == null ? controller.usesLeft(action) : null,
+                adRefill: !ads.off,
+                compact: compact,
+                disc: disc,
+                fade: fade ?? 1,
+                onPressed: fade == null && open && controller.isAvailable(action) ? () => onAction(action) : null,
+              ),
             ),
         ];
         final restart = GameActionButton(
@@ -106,8 +122,8 @@ class GameActionBar extends StatelessWidget {
           onPressed: restartOn ? onRestart : null,
         );
         // Drawn once into an image until a button changes (or its ink
-        // plays): the leaves drifting behind would otherwise redraw the
-        // buttons' shadows and text every frame.
+        // plays, or a spent one fades out): the leaves drifting behind would
+        // otherwise redraw the buttons' shadows and text every frame.
         return StaticLayer(
           overflow: const EdgeInsets.all(12),
           child: Material(
@@ -123,6 +139,74 @@ class GameActionBar extends StatelessWidget {
       },
     ),
   );
+}
+
+/// One action's place in the bar: its live button, or once the action is
+/// spent a placeholder of the same size (the button's spent look, laid out
+/// but never painted, with no taps, no ink and no semantics), so the other
+/// buttons and Restart stay put. Spent during play, the button first fades
+/// out over [kSpentFadeDuration] (its colours, not an Opacity layer; the
+/// ticker runs only then); with reduce motion, or already spent when the
+/// bar is built (a resumed save), it is gone at once. Back after a restart.
+class _ActionSlot extends StatefulWidget {
+  const _ActionSlot({super.key, required this.spent, required this.button});
+
+  final bool spent;
+
+  /// The live button for a null fade, else the spent look at that fade (1
+  /// shown, 0 gone).
+  final Widget Function(double? fade) button;
+
+  @override
+  State<_ActionSlot> createState() => _ActionSlotState();
+}
+
+class _ActionSlotState extends State<_ActionSlot> with SingleTickerProviderStateMixin {
+  /// The spent look's fade: 0 (gone) unless it is fading out.
+  late final AnimationController _fade;
+
+  @override
+  void initState() {
+    super.initState();
+    _fade = AnimationController(vsync: this, duration: kSpentFadeDuration);
+  }
+
+  @override
+  void didUpdateWidget(_ActionSlot oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.spent == oldWidget.spent) return;
+    if (widget.spent && !MediaQuery.disableAnimationsOf(context)) {
+      _fade.reverse(from: 1);
+    } else {
+      _fade.value = 0;
+    }
+  }
+
+  @override
+  void dispose() {
+    _fade.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (!widget.spent) return widget.button(null);
+    return ExcludeSemantics(
+      child: IgnorePointer(
+        child: AnimatedBuilder(
+          animation: _fade,
+          // Laid out at 0 (keeps the place), painted only while fading.
+          builder: (context, _) => Visibility(
+            visible: _fade.value > 0,
+            maintainState: true,
+            maintainAnimation: true,
+            maintainSize: true,
+            child: widget.button(_fade.value),
+          ),
+        ),
+      ),
+    );
+  }
 }
 
 /// A gold-outlined round button with a label (under it, or beside it when
@@ -141,6 +225,7 @@ class GameActionButton extends StatelessWidget {
     this.quiet = false,
     this.compact = false,
     this.disc,
+    this.fade = 1,
     this.tooltip,
     this.semanticsLabel,
   });
@@ -159,6 +244,10 @@ class GameActionButton extends StatelessWidget {
 
   /// Disc diameter (labels beside); null: the [compact] or roomy default.
   final double? disc;
+
+  /// How much of the button shows: 1 fully, down to 0 as a spent action's
+  /// button fades out (its colours' alpha, not an Opacity layer).
+  final double fade;
   final String? tooltip;
   final String? semanticsLabel;
 
@@ -174,12 +263,15 @@ class GameActionButton extends StatelessWidget {
     final palette = BrainTrainPalette.of(context);
     final enabled = onPressed != null;
     final gold = palette.accent;
-    final rim = quiet
-        ? palette.text.withValues(alpha: enabled ? 0.5 : 0.2)
-        : gold.withValues(alpha: enabled ? 0.95 : 0.32);
-    final ink = quiet
-        ? palette.text.withValues(alpha: enabled ? 0.82 : 0.3)
-        : palette.accentLight.withValues(alpha: enabled ? 1 : 0.35);
+    Color faded(Color c) => fade >= 1 ? c : c.withValues(alpha: c.a * fade.clamp(0, 1));
+    final rim = faded(
+      quiet ? palette.text.withValues(alpha: enabled ? 0.5 : 0.2) : gold.withValues(alpha: enabled ? 0.95 : 0.32),
+    );
+    final ink = faded(
+      quiet
+          ? palette.text.withValues(alpha: enabled ? 0.82 : 0.3)
+          : palette.accentLight.withValues(alpha: enabled ? 1 : 0.35),
+    );
     final uses = usesLeft;
     final discWidget = SizedBox.square(
       dimension: _disc,
@@ -193,8 +285,8 @@ class GameActionButton extends StatelessWidget {
                 gradient: RadialGradient(
                   center: const Alignment(-0.3, -0.4),
                   colors: [
-                    palette.hudFill.first.withValues(alpha: quiet ? 0.6 : 0.92),
-                    palette.hudFill.last.withValues(alpha: quiet ? 0.7 : 0.96),
+                    faded(palette.hudFill.first.withValues(alpha: quiet ? 0.6 : 0.92)),
+                    faded(palette.hudFill.last.withValues(alpha: quiet ? 0.7 : 0.96)),
                   ],
                 ),
                 border: Border.all(color: rim, width: quiet ? 1.1 : 1.6),
@@ -219,11 +311,13 @@ class GameActionButton extends StatelessWidget {
             maxLines: 1,
             softWrap: false,
             overflow: TextOverflow.fade,
-            style: BrainTrainType.button(size: compact ? 12.5 : 13.5, color: palette.text.withValues(alpha: enabled ? 0.95 : 0.4))
-                .copyWith(
-                  fontWeight: FontWeight.w600,
-                  shadows: [Shadow(color: palette.textShadow, blurRadius: 3, offset: const Offset(0, 1))],
-                ),
+            style: BrainTrainType.button(
+              size: compact ? 12.5 : 13.5,
+              color: faded(palette.text.withValues(alpha: enabled ? 0.95 : 0.4)),
+            ).copyWith(
+              fontWeight: FontWeight.w600,
+              shadows: [Shadow(color: faded(palette.textShadow), blurRadius: 3, offset: const Offset(0, 1))],
+            ),
           );
     final content = text == null
         ? discWidget

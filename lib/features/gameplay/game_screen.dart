@@ -371,10 +371,12 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
   }
 
   /// An action bar button: uses [action] when it has a use left; with none
-  /// left, offers a rewarded ad for one more (a build without ads grants it
-  /// at once, like Revive).
+  /// left and its grant still to come, offers a rewarded ad for one more (a
+  /// build without ads grants it at once, like Revive). A spent action (1
+  /// free use + 1 for an ad, both gone; [kMaxGrantsPerAction]) has no button
+  /// and never loads or offers an ad.
   void _onAction(GameAction action) {
-    if (_cardOpen.value || !controller.isAvailable(action)) return;
+    if (_cardOpen.value || !controller.isAvailable(action) || controller.isSpent(action)) return;
     if (controller.usesLeft(action) > 0) {
       _use(action);
       return;

@@ -31,7 +31,7 @@ python3 tool/assets/make_sounds.py      # sound effects -> assets/sounds/
 CAPTURE_DIR=/tmp/x flutter test test/visual/   # write screenshots of lobby/gameplay at phone sizes
 CAPTURE_DIR=/tmp/x flutter test test/visual/theme_capture_test.dart   # the same screens in Day and Night
 CAPTURE_DIR=/tmp/x flutter test test/visual/tile_closeup_capture_test.dart   # tile close-ups: 3 layers, Day/Night felt, 64/31-px faces
-CAPTURE_DIR=/tmp/x flutter test test/visual/gameplay_redesign_capture_test.dart   # gameplay 1.1.0: combo+hint, hint hand, cards, Level Complete
+CAPTURE_DIR=/tmp/x flutter test test/visual/gameplay_redesign_capture_test.dart   # gameplay 1.1.0: combo+hint, hint hand, cards, Level Complete, spent action
 STORE_DIR=art/store flutter test test/visual/store_screenshots_test.dart   # 6 store scenes -> phone/, ios/iphone-6.9/, ios/ipad-13/
 python3 tool/store/make_store_shots.py  # framed marketing shots (headline, gold rim) -> art/store/styled/<target>/
 dart run tool/smoke_remote.dart         # live check: app's content client vs production R2 (+ first/middle/last level)
@@ -225,7 +225,9 @@ dart run tool/smoke_remote.dart         # live check: app's content client vs pr
   the app back in the foreground (`GameScreen._watchRefillAd`); closed early → "Watch the ad to the end to get +1
   Hint.", no grant; loading → "Loading an ad…", offline → "Connect to the internet to watch an ad" (Watch ad off);
   free → "One more Hint?" / "Get +1 Hint" / "No ad available right now. This hint is free."; builds without ads grant
-  at once (no card, "+" badge). Never on the
+  at once (no card, "+" badge). At most one refill per action per level attempt (`kMaxGrantsPerAction` = 1, owner
+  2026-10-17; a free one counts too): once its granted use is spent the action is spent (`GameController.isSpent`), its
+  button is gone and no ad is loaded or offered for it (`GameScreen._onAction` returns) until Restart. Never on the
   startup path: the lobby starts ads after its first frame (configuration by age group → UMP consent → `initialize` →
   load); a game opening, the Tray full card and app resume preload; failures retry 5/10/20/30 s then every minute.
   Only `google_mobile_ads_rewarded.dart` imports the plugin; every call is caught and timed out. While an ad shows the
@@ -302,7 +304,8 @@ dart run tool/smoke_remote.dart         # live check: app's content client vs pr
   available while online → the reward (Revive or a refill) is free after `kAdFallbackDelay`; offline stays blocked;
   reason: AdMob limited ad serving before store linking (as soon as AdMob serves ads they are required again). The audience includes children under 13 (Play Families policy, mixed audience): neutral age screen,
   child-directed ads for under 13. Rewarded ads only (owner, 2026-10-17, 1.1.0; replaces "No other ads anywhere"):
-  on Revive and on action refills (+1 Undo / Hint / Shuffle at 0 uses, see Ads above); never interstitials or banners.
+  on Revive and on action refills (+1 Undo / Hint / Shuffle at 0 uses, at most one per action per level attempt, see
+  Ads above); never interstitials or banners.
 - Background music `assets/music/water_flowing.mp3` loops at volume 0.4 (owner, 2026-10-17; was 0.6) (`lib/app/background_music.dart`),
   starts after the studio intro, pauses in background and while a rewarded ad shows, and follows the Music switch
   (redesign 1.1.0: `SettingsRepository.music`, `settings.music`; until set it reads the stored Sound value, and the
@@ -311,13 +314,22 @@ dart run tool/smoke_remote.dart         # live check: app's content client vs pr
   `test/app/background_music_test.dart`).
 - Sounds: `assets/sounds/tap.wav` (one tap cut from the owner's Tap.mp3) on every playable tap; `assets/sounds/strike.wav` (the owner's impact.mp3, trimmed to 0.81 s, -6 dB; owner 2026-10-17; was a hit cut from strike.mp3) is `Sfx.match`, played when a matched pair strikes in the tray; the last pair's strike is followed by `Sfx.win` 450 ms later.
 - Game actions (owner, 2026-10-17, 1.1.0; replaces "no Undo and no Hint"): Undo, Hint and Shuffle, 1 / 1 / 1 uses
-  per level (`kStartingCharges`), back to 1/1/1 on Restart, unchanged by Revive; with none left the player can watch a
-  rewarded ad for +1 of that action (`GameController.grant`, saved as `!grant:<action>`). API:
-  `GameController.isAvailable` / `canUse` / `usesLeft`, `undo`, `useHint`, `shuffle`, `grant`; events `MoveUndone`,
-  `TileHinted`, `BoardShuffled`; `winSummary` counts the uses. UI (`widgets/action_bar.dart`, under the board):
-  gold-outlined round buttons with labels (under them; beside them on compact screens) and a gold badge with the uses
-  left, a play mark at 0 (an ad offer; "+" without ads); a button is on only while `isAvailable` and no card is open
-  (off = dimmed colours, no ad offer). Hint (owner, 2026-10-17): `HintGlowOverlay` (own `RepaintBoundary`, over the
+  per level attempt (`kStartingCharges`), back to 1/1/1 on Restart, unchanged by Revive; with none left the player can
+  watch a rewarded ad for +1 of that action (`GameController.grant`, saved as `!grant:<action>`), at most once per
+  action per attempt (owner, 2026-10-17, 1.1.0+11: `kMaxGrantsPerAction` = 1, so each action is used at most 2 times;
+  a free no-ad refill counts as the grant; `GameEngine.grant` refuses a second; Restart gives it back, Revive changes
+  nothing; counted from the `!grant:` markers, so a resumed save keeps it; replay still accepts more from a save made
+  before the cap (1.1.0+8 to +10), whose action then has no grant left). Once the granted use is spent the action is
+  spent (`isSpent`: no use and no grant left): its button disappears for the rest of the attempt and no ad is loaded
+  or offered for it. API: `GameController.isAvailable` / `canUse` / `usesLeft` / `grantsLeft` / `isSpent`, `undo`,
+  `useHint`, `shuffle`, `grant`; events `MoveUndone`, `TileHinted`, `BoardShuffled`; `winSummary` counts the uses. UI
+  (`widgets/action_bar.dart`, under the board): gold-outlined round buttons with labels (under them; beside them on
+  compact screens) and a gold badge with the uses left, a play mark at 0 while the grant is left (an ad offer; "+"
+  without ads); a button is on only while `isAvailable` and no card is open (off = dimmed colours, no ad offer). A
+  spent action's button fades out (`kSpentFadeDuration` 240 ms, colour alphas, no Opacity layer; at once with reduce
+  motion or in a resumed save) and leaves an invisible placeholder of the same size (laid out, not painted, no taps,
+  ink or semantics; key `action-<name>-spent`), so the other buttons and Restart never move; back after Restart and on
+  a new level. Hint (owner, 2026-10-17): `HintGlowOverlay` (own `RepaintBoundary`, over the
   board, `IgnorePointer`) shows a pointing hand (`HintHand`, `assets/lottie/hint_hand.json`, drawn with one
   `LottieDrawable`) that taps the tile twice, glides to its twin on the board, taps it once and glides back
   (`HintHandMotion`, 2.8 s rounds); one hand, not two, so the order reads (this tile first) and only one hand covers
@@ -512,7 +524,9 @@ dart run tool/smoke_remote.dart         # live check: app's content client vs pr
 - Not yet integrated: 4 IconScout AI images (spring rolls ×2, salad, nachos) — not reachable via the IconScout API.
 - Tray mechanic is integrated (tray at the top, flights, strike-and-shatter matches, Tray full card with
   Revive / Restart), with 2 to 5 slots per level.
-- App version 1.1.0+10 (2026-10-17): fixes a launch crash of every Android release build ("Failed to create an instance
+- App version 1.1.0+11 (2026-10-17, `feat/action-cap`): each of Undo, Hint and Shuffle at most 2 uses per level
+  attempt (1 free + 1 after an ad), then its button disappears (see Game actions).
+  1.1.0+10 (2026-10-17): fixes a launch crash of every Android release build ("Failed to create an instance
   of androidx.work.impl.WorkDatabase": R8 full mode removed `WorkDatabase_Impl`'s no-arg constructor, which the
   room-runtime 2.2.5 keep rule pulled in by the ads SDK's WorkManager does not keep); `android/app/proguard-rules.pro`
   keeps `<init>()` of every `RoomDatabase`. Debug builds skip R8, so only release builds showed it: test a release APK
