@@ -19,7 +19,7 @@ dart run tool/content.dart build        # content-src/ -> content/brain-train/ (
 dart run tool/content.dart validate     # check content/brain-train/ like the app, plus solver
 dart run tool/content.dart stats        # simulated tray-player win rates per tier of the built tree
 dart run tool/publish.dart --dry-run    # then without --dry-run to upload to R2 (parallel, manifest last)
-dart run tool/r2_prune.dart             # list R2 objects the live manifest no longer uses (--delete: owner only)
+dart run tool/r2_prune.dart             # list R2 objects the live manifest no longer uses, never app-update.json (--delete: owner only)
 dart run tool/r2_art.dart push|pull     # symbol masters art/masters/ <-> R2 (private keys art/masters/..., not in git)
 python3 tool/assets/prepare_symbols.py [--placeholders]   # art -> WebP symbols
 python3 tool/assets/make_app_icon.py    # launcher icons from the logo emblem (Android + iOS)
@@ -504,9 +504,6 @@ dart run tool/smoke_remote.dart         # live check: app's content client vs pr
   day, but 150 went through on 2026-10-16 evening; stop at the first server error.
 - Open work: 16 static entries `awaiting download` (MED_VIRUS + 15 SCI_, not downloaded on the owner's stop); a frame-time slowdown after hours of play on the emulator (Impeller GLES; watch
   `adb logcat | grep app_time_stats`, app restart resets it) is not explained yet.
-- Open work: `dart run tool/r2_prune.dart` lists the live mutable `brain-train/app-update.json` among the
-  unreferenced objects (it only knows the manifest's keys), so `--delete` would remove the app update notice. Fix the
-  tool, or re-run `dart run tool/publish.dart --app-update-only` right after a `--delete`.
 - Play Console setup (2026-10-16, docs/PLAY_GAMES.md steps 1–6 done): app "Brain Train" in the sungamestudio.com
   developer account (personal account), Play App Signing on; Games Services project = Play Games app ID `923515226118`
   (in `android/play_games.properties`), linked Cloud project `brain-train-511814` (OAuth consent screen External,
