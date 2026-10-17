@@ -385,7 +385,7 @@ dart run tool/smoke_remote.dart         # live check: app's content client vs pr
   most once per launch (Later or back hides it until the next launch; needs a `storeUrl`). Below its min → "Update
   required" / "This version of Brain Train is no longer supported. Please update to keep playing.", Update only, not
   dismissible (back does nothing), Play / Continue / Levels unreachable; still there after a trip to the
-  store. Lobby only, never over a game. The initial notice (latest 4, min 1) prompts nobody on build 4.
+  store. Lobby only, never over a game. The live notice (2026-10-17): Android latest 10, min 10 (forced, after build 10 went live: 1.1.0+9 crashed at launch on Android); iOS unset.
 - Google Play Games (owner, 2026-10-16): Android only; silent sign-in; two round lobby buttons top-right
   (Achievements, Leaderboards) open Google's screens, signing in first when needed; no Settings entry.
   Pieces: 1 sign-in (done), 2 achievements + leaderboards, 3 cloud save. Two phones on one account must never
