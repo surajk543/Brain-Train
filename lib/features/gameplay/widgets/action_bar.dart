@@ -234,22 +234,26 @@ class GameActionButton extends StatelessWidget {
             : adRefill
             ? '$label, watch an ad for one more'
             : '$label, none left');
+    // A round ripple from the tap, unclipped: the theme's sparkle would fill
+    // the button's whole box (disc and label) as a pale rectangle.
+    final button = InkResponse(
+      onTap: onPressed,
+      radius: _disc * 0.75,
+      splashFactory: InkRipple.splashFactory,
+      splashColor: gold.withValues(alpha: 0.22),
+      highlightColor: const Color(0x00000000),
+      child: Padding(padding: EdgeInsets.symmetric(horizontal: compact ? 2 : 4, vertical: 4), child: content),
+    );
     return Semantics(
       button: true,
       enabled: enabled,
       label: semantics,
       excludeSemantics: true,
       onTap: onPressed,
-      child: Tooltip(
-        message: tooltip ?? label,
-        excludeFromSemantics: true,
-        child: InkResponse(
-          onTap: onPressed,
-          radius: _disc * 0.75,
-          highlightShape: BoxShape.circle,
-          child: Padding(padding: EdgeInsets.symmetric(horizontal: compact ? 2 : 4, vertical: 4), child: content),
-        ),
-      ),
+      // Only the quiet button has no visible label to repeat.
+      child: quiet || tooltip != null
+          ? Tooltip(message: tooltip ?? label, excludeFromSemantics: true, child: button)
+          : button,
     );
   }
 }

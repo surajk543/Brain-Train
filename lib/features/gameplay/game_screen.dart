@@ -656,7 +656,8 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
                 reduceMotion: reduceMotion,
               ),
             ),
-            // The combo badge is centred on the tray frame's bottom border, above the board
+            // The combo badge hangs on the tray frame's bottom border (a little low, clear of the
+            // wells: kComboBadgeAnchor), above the board
             // (a later sibling would hide it) and below the cards, flights, shatters and
             // popups. It takes no space (the board keeps its size: the 31-px face
             // guarantee) and is hidden behind a result or other card.
@@ -671,9 +672,9 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
                         link: _trayLink,
                         showWhenUnlinked: false,
                         targetAnchor: Alignment.bottomCenter,
-                        followerAnchor: Alignment.center,
+                        followerAnchor: kComboBadgeAnchor,
                         child: IgnorePointer(
-                          child: ComboBadge(controller: controller, reduceMotion: reduceMotion),
+                          child: ComboBadge(controller: controller, reduceMotion: reduceMotion, compact: layout.compact),
                         ),
                       ),
               ),

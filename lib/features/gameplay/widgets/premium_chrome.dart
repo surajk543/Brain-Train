@@ -1,12 +1,14 @@
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../../../app/brand.dart';
 import '../../../app/theme.dart';
 import '../../../app/typography.dart';
 import '../../common/flowing_leaves.dart';
 import '../../common/frosted_glass.dart';
+import '../../common/lobby_background.dart';
 import '../../common/static_layer.dart';
 
 /// Night's darkest felt tone, at the screen edges. Screens use the current
@@ -81,31 +83,47 @@ class _EmeraldBackdropState extends State<EmeraldBackdrop> {
       );
     }
 
-    return Stack(
-      fit: StackFit.expand,
-      children: [
-        StaticLayer(
-          onRaster: _frost.update,
-          child: Stack(
-            fit: StackFit.expand,
-            children: [
-              CustomPaint(painter: _FeltPainter(accent: widget.accent, palette: palette)),
-              decor(foliage.right, 0.3, right: -0.06, topOfHeight: 0.19),
-              decor(foliage.topLeft, 0.7, left: -0.08, top: -0.07),
-              decor(foliage.bottomLeft, 0.7, left: -0.1, bottom: -0.08),
-              decor(foliage.bottomRight, 0.72, right: -0.1, bottom: -0.09),
-            ],
+    // Light status bar icons over the felt (the lobby's Day home sets dark).
+    return AnnotatedRegion<SystemUiOverlayStyle>(
+      value: kStatusBarLightIcons,
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          StaticLayer(
+            onRaster: _frost.update,
+            child: Stack(
+              fit: StackFit.expand,
+              children: [
+                CustomPaint(painter: _FeltPainter(accent: widget.accent, palette: palette)),
+                decor(foliage.right, 0.3, right: -0.06, topOfHeight: 0.19),
+                decor(foliage.topLeft, 0.7, left: -0.08, top: -0.07),
+                decor(foliage.bottomLeft, 0.7, left: -0.1, bottom: -0.08),
+                decor(foliage.bottomRight, 0.72, right: -0.1, bottom: -0.09),
+              ],
+            ),
           ),
-        ),
-        const RepaintBoundary(child: FlowingLeaves(count: 8, opacity: 0.62, scale: 0.9, speed: 0.85, seed: 23)),
-        FrostScope(source: _frost, child: widget.child),
-      ],
+          const RepaintBoundary(child: FlowingLeaves(count: 8, opacity: 0.62, scale: 0.9, speed: 0.85, seed: 23)),
+          FrostScope(source: _frost, child: widget.child),
+        ],
+      ),
     );
   }
 }
 
 class _FeltPainter extends CustomPainter {
   _FeltPainter({required this.accent, required this.palette});
+
+  /// Day's patches of sunlight: centre (fractions of the screen) and radius
+  /// (fraction of the shorter side), mostly towards the sun at the top right.
+  static const List<(double, double, double)> _sunPatches = [
+    (0.78, 0.16, 0.34),
+    (0.18, 0.28, 0.22),
+    (0.62, 0.36, 0.2),
+    (0.9, 0.5, 0.26),
+    (0.3, 0.52, 0.18),
+    (0.08, 0.66, 0.24),
+    (0.7, 0.7, 0.2),
+  ];
 
   final Color accent;
 
@@ -153,6 +171,23 @@ class _FeltPainter extends CustomPainter {
           stops: const [0, 0.45, 1],
         ).createShader(glow),
     );
+    // Day: soft patches of sun through the leaves, kept off the action bar.
+    if (palette.feltSunPatches > 0) {
+      final sun = Paint()..blendMode = BlendMode.screen;
+      for (final (x, y, r) in _sunPatches) {
+        final centre = Offset(size.width * x, size.height * y);
+        final radius = size.shortestSide * r;
+        sun.shader = RadialGradient(
+          colors: [
+            light.withValues(alpha: palette.feltSunPatches),
+            light.withValues(alpha: palette.feltSunPatches * 0.4),
+            light.withValues(alpha: 0),
+          ],
+          stops: const [0, 0.5, 1],
+        ).createShader(Rect.fromCircle(center: centre, radius: radius));
+        canvas.drawCircle(centre, radius, sun);
+      }
+    }
     // Vignette, so the edges fall off into deep green.
     canvas.drawRect(
       rect,

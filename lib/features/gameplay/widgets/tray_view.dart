@@ -410,6 +410,16 @@ class TrayViewState extends State<TrayView> with TickerProviderStateMixin {
     return MatrixUtils.transformRect(box.getTransformTo(TabletScale.canvasAbove(box)), face);
   }
 
+  /// Global rect of slot [index]'s well (the recess the tile sits in), once
+  /// laid out.
+  Rect? wellRect(int index) {
+    final layout = _layout;
+    final box = context.findRenderObject() as RenderBox?;
+    if (layout == null || box == null || !box.hasSize || !box.attached) return null;
+    final well = layout.wells[index.clamp(0, layout.wells.length - 1)].outerRect;
+    return MatrixUtils.transformRect(box.getTransformTo(TabletScale.canvasAbove(box)), well);
+  }
+
   /// Global rect of the tray's panel (its gold frame), once laid out.
   Rect? panelRect() {
     final layout = _layout;

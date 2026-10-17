@@ -11,6 +11,7 @@ flutter pub get
 flutter analyze                         # must be clean
 flutter test                            # unit + widget tests, no network
 flutter run -d emulator-5554            # AVDs (this Mac): Pixel_9 (Play Store), TP_API36/TP_Small/TP_Tall
+                                        #   (Linux: Pixel7_Play_API36 is the owner's; agents use TP_* on their own -port, adb -s)
 flutter run --dart-define=BRAIN_TRAIN_APPEARANCE=day   # debug only: force day|night|system over the setting
 flutter build appbundle                 # Play upload; needs android/key.properties (+ play_games.properties for Play Games,
                                         #   admob.properties for real ads: warns while it uses AdMob test IDs)
@@ -25,6 +26,7 @@ python3 tool/assets/make_app_icon.py    # launcher icons from the logo emblem (A
 python3 tool/assets/make_foliage.py     # gameplay edge foliage -> assets/decor/
 python3 tool/assets/make_lobby_art.py   # lobby night art -> assets/lobby/
 python3 -I tool/lobby_art/make_day_lobby_art.py  # Day lobby art -> assets/lobby/day/ + hero ledges (Day, Night)
+python3 -I tool/lobby_art/make_day_foliage.py    # Day gameplay foliage: assets/decor/ repainted -> assets/decor/day/
 python3 tool/assets/make_sounds.py      # sound effects -> assets/sounds/
 CAPTURE_DIR=/tmp/x flutter test test/visual/   # write screenshots of lobby/gameplay at phone sizes
 CAPTURE_DIR=/tmp/x flutter test test/visual/theme_capture_test.dart   # the same screens in Day and Night
@@ -211,7 +213,8 @@ dart run tool/smoke_remote.dart         # live check: app's content client vs pr
   combo window 4 s on the game clock (pauses with it), every match restarts it from that match, a gap > 4 s starts over
   at x1; only `TapOutcome.matched` scores; a blocked-tile tap costs 1 (never below 0) and ends the combo; Revive ends
   the combo; Restart resets. State is `SavedGame.scoring`; `LevelRecord.bestScore/bestCombo` only go up. The combo badge
-  floats on the tray's bottom edge: never add layout space between tray and board (31-px faces).
+  floats on the tray's bottom edge, a little low (`kComboBadgeAnchor`; 20 px high on compact screens) so it never covers
+  the wells: never add layout space between tray and board (31-px faces).
 - The app never holds R2 keys or `ASSET_TOKEN_SECRET`. `.env` is gitignored and used only by tools.
 - Content host (versionCode 5+) is `ContentConfig.production` = `https://braintrain-cdn.sungamestudio.com/`: the R2
   bucket `braintrain-public` on a custom domain (min TLS 1.2), which holds ONLY `brain-train/` (everything in it is
@@ -246,8 +249,12 @@ dart run tool/smoke_remote.dart         # live check: app's content client vs pr
   Day is garden green (#1D6B43 / #104B34, gold #F2C96B, ivory #FFF6DF); Night keeps the 1.0 look (#062C25 / #0A4433,
   panel #08392F, gold #F4CB72, ivory #FFF3D8). Tiles are the same in both. The Day lobby has its own art
   (`tool/lobby_art/make_day_lobby_art.py` -> `assets/lobby/day/`: sunlit garden, cream flowers, mossy stone path, side
-  sprays, no lanterns; pollen instead of fireflies); `FeltFoliage.day` still reuses the night gameplay foliage (gameplay
-  phase). Missing lobby art falls back to the scene gradient. `test/app/appearance_test.dart` checks the setting, the
+  sprays, no lanterns; pollen instead of fireflies). Day gameplay is the same sunlit garden: `FeltFoliage.day` =
+  `assets/decor/day/` (`tool/lobby_art/make_day_foliage.py`: the night edge foliage repainted in the Day lobby's sunlit
+  greens with warm rims and a few more cream flowers), a warmer felt (centre #2E7D46, as light as ivory text on it
+  allows), a stronger sun and soft patches of sunlight (`feltSunPatches`, drawn once in the static felt layer; 0 at
+  Night). Status bar icons are dark over the bright Day home scene (`LobbyBackground`, `kStatusBarDarkIcons`) and light
+  everywhere else. Missing lobby art falls back to the scene gradient. `test/app/appearance_test.dart` checks the setting, the
   app following it, the look's assets and WCAG contrast of the tokens.
 - Settings (redesign 1.1.0, reference panel; `settings_screen.dart`): one dark translucent gold-rimmed panel with a
   header (gear, "Settings", close X; a route, back/close pop it), Game Theme cards (Day / Night / System, selected =
@@ -305,7 +312,8 @@ dart run tool/smoke_remote.dart         # live check: app's content client vs pr
   "Your score and time start over." (Restart / Keep playing; clock paused, Android back closes it), from the Tray full
   card and from Level Complete (Replay).
 - HUD (1.1.0, `widgets/game_hud.dart`, top of the screen): back arrow, "Level N" (gold) over the level's name
-  (Playfair, shrinks to 80% then ellipsizes; the statistics shrink first, down to half the width), then SCORE (counts
+  (Playfair, shrinks to 72% then ellipsizes; the statistics shrink first, down to 46% of the width; 1 of the 100 names,
+  "Moonlit Standing Stones", still ends in "…" on phones), then SCORE (counts
   up), COMBO ×N (gold on a gold cell from ×2, a quiet ×1 otherwise), PAIRS a/b and TIME, Manrope tabular figures
   between fine gold separators; text scales up to 1.3x in a fixed-height panel. Under it `ComboTimerBar`: a gold bar
   draining with "2.1s", read from `GameController.comboTimeLeft` (the `ScoreKeeper` window on the game clock, no timer
@@ -381,7 +389,13 @@ dart run tool/smoke_remote.dart         # live check: app's content client vs pr
   fonts, Day/Night/System setting) on `redesign/design-system`; phase 4 game actions (engine) on
   `redesign/game-actions`; phase 2 lobby (Day art, hero tiles, title, footer) and the Settings panel (theme cards,
   separate Music) on `redesign/lobby-settings`; phase 3 gameplay screen + Level Complete (top HUD, combo timer,
-  action bar with ad refills, hint glow, shuffled-board drawing, restyled cards) on `redesign/gameplay`.
+  action bar with ad refills, hint glow, shuffled-board drawing, restyled cards) on `redesign/gameplay`; phase 6 verify
+  and polish on `redesign/verify` (bundled hero art, Day gameplay foliage and felt, status bar icons, round action
+  ripples, combo pill clear of the wells, HUD names). Emulator pass (2026-10-17, profile build on TP_API36 1080x2400 and
+  TP_Small 1080x1920, Linux): intro, age screen, lobby Day/Night (live switch), Settings, Levels, tutorial, Hint, Undo,
+  Shuffle, a rewarded test ad for +1 Shuffle (granted), combo x5, Level Complete; no Flutter errors in logcat; ~60 fps
+  idle in lobby and game (SurfaceFlinger latency: median 16.7 ms, p99 19-26 ms), a few 30-87 ms frames when a game
+  opens (art decoding).
 
 - Published content 2026.10.17.1 on `braintrain-public` (manifest `minClientContentSchema: 3`): a fresh
   campaign of 100 levels, one batch of 10 per difficulty 1–10 (`catalog.json` `campaign`, seed 20261641, chosen so
@@ -401,12 +415,15 @@ dart run tool/smoke_remote.dart         # live check: app's content client vs pr
 - The app bundles only `content/starter/` (54 files, ~2.0 MB raw / ~1.0 MB compressed; the full tree was 11.2 MB /
   ~3.4 MB). A fresh install downloads only the manifest at first launch (its window is the starter pack); each win
   then fetches about one level file and its new symbols. With no starter pack, the window 1–5 is 5 level files +
-  47 symbol files (~1.8 MB).
+  47 symbol files (~1.8 MB). Besides it, the lobby hero's 3 symbols (below) are bundled (55 KB).
 - Lobby (redesign 1.1.0, reference panels 1-2, same layout in Day and Night): three hero tiles on a mossy ledge
   (`LobbyHero`: left leaf, middle sunflower forward and larger, right purple flower; real registry symbols drawn by
-  `PremiumMahjongTile`, each slot the first code of `LobbyHero.slots` whose art is on the device, cache or starter
-  pack, never the network: PLANT_POT_B / FLOWER_SUNFLOWER / FLOWER_PANSY once downloaded, else the starter pack's
-  XMAS_TREE / BIRD_PEACOCK / GALAXY_POMEGRANATE), the gold Playfair title "Brain Train" (replaces the "Train your
+  `PremiumMahjongTile`, each slot the first code of `LobbyHero.slots` whose art is on the device, never the network:
+  PLANT_POT_B / FLOWER_SUNFLOWER / FLOWER_PANSY, whose published files are bundled at their registry paths under
+  `assets/lobby/hero/symbols/v1/` (`kHeroArtPrefix`, 55,494 bytes; the app's bundled source `bundledContent` reads the
+  starter pack, then them, sha256-checked against the registry), so a fresh install shows them; the starter pack's
+  XMAS_TREE / BIRD_PEACOCK / GALAXY_POMEGRANATE only if a later registry changes their art before it is cached), the
+  gold Playfair title "Brain Train" (replaces the "Train your
   brain" tagline), then Play/Continue/Replay · Level N (always the first level not won; "Continue" only for a saved
   game of that level), "Levels", "Settings". Footer status line (owner, replaces "no N levels ready footer"): "N levels
   ready · v<contentVersion>" with N = window levels on the device now (`ContentController.windowReadiness`); a content
@@ -456,7 +473,7 @@ dart run tool/smoke_remote.dart         # live check: app's content client vs pr
   `/opt/homebrew/share/android-commandlinetools`, AVD `Pixel_9` = Play Store image (use for Play Games), `TP_*` AVDs
   have no Play Store, `Pixel_6_API_34` does not exist. Python 3 + Pillow for `tool/assets/*.py`, ffmpeg for audio.
 - `flutter analyze` and `flutter test` work on a fresh clone (tests use fixtures and `content/starter/`); on the Linux
-  machine 719 pass, 26 skip without the full content tree (2026-10-17, redesign phases 1-4 merged); on the Mac 6 failed before
+  machine 724 pass, 26 skip without the full content tree (2026-10-17, redesign 1.1.0 with phase 6); on the Mac 6 failed before
   (see Open work).
 - Run on a Mac (iPhone simulator) or any machine with no secrets: `flutter pub get && flutter run`. Debug builds read
   content from the public host, use Google's test AdMob IDs, skip Play Games (Android only) and use debug signing;
@@ -511,7 +528,7 @@ dart run tool/smoke_remote.dart         # live check: app's content client vs pr
 - Open work: Play Games pieces 2–3 (piece 2 builds on `bestScore`/`bestCombo`; publishing the PGS configuration needs
   at least 5 achievements). Scoring + combo is implemented (4 s window).
 - Open work: Play Games / scoring follow-ups after the PR #2 merge: run an iOS build on a Mac with full Xcode (iOS min
-  15.0, never built yet); check the combo pill on a phone (its top overlaps the tray wells by ~5 px at 360×640).
+  15.0, never built yet).
 - Open work: 5–6 tests fail on this Mac (predate PR #2): RenderFlex overflow of 4.4 px at
   `lib/features/levels/level_select_screen.dart:232` (Completed Levels row) — level_select_test (2), level_loader_test (1),
   lobby_capture_test (2, per-phone "home, levels, settings"), gameplay_capture_test ("tray-full overlay 360x640 at 1.3x

@@ -1,6 +1,7 @@
-import 'dart:typed_data';
+import 'dart:io';
 
 import 'package:brain_train/app/app_services.dart';
+import 'package:brain_train/content/content_config.dart';
 import 'package:brain_train/content/content_coordinator.dart';
 import 'package:brain_train/content/content_exception.dart';
 import 'package:brain_train/content/content_snapshot.dart';
@@ -16,11 +17,14 @@ import 'package:brain_train/features/levels/level_select_screen.dart';
 import 'package:brain_train/features/settings/settings_screen.dart';
 import 'package:brain_train/features/common/premium_mahjong_tile.dart';
 import 'package:brain_train/features/home/widgets/lobby_hero.dart';
+import 'package:brain_train/game_engine/models/symbol_definition.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../helpers.dart';
 import 'lobby_support.dart';
 
 /// Artwork for every path (any bytes do: the hero only checks presence).
@@ -188,12 +192,24 @@ void main() {
   group('hero tiles', () {
     test('reference symbols first, starter pack stand-ins when their art is not on the device', () async {
       final snapshot = (await testServices()).content.snapshot;
-      // Offline on a fresh install: only the starter pack's art.
-      final codes = await LobbyHero.symbolsFor(snapshot);
+      // Offline on a fresh install: the bundled hero art (leaf, sunflower,
+      // purple flower), never a network wait.
+      expect(await LobbyHero.symbolsFor(snapshot), [for (final slot in LobbyHero.slots) slot.first]);
+      // Only the starter pack's art (as if the registry's art for them had
+      // changed and was not cached yet): its stand-ins.
+      final starterOnly = ContentSnapshot(
+        manifest: snapshot.manifest,
+        manifestJson: snapshot.manifestJson,
+        registry: snapshot.registry,
+        origin: snapshot.origin,
+        artwork: repoContent,
+      );
+      final codes = await LobbyHero.symbolsFor(starterOnly);
       expect(codes, hasLength(3));
       expect(codes.toSet(), hasLength(3));
       for (final (i, code) in codes.indexed) {
         expect(LobbyHero.slots[i], contains(code), reason: 'slot $i');
+        expect(code, isNot(LobbyHero.slots[i].first), reason: 'slot $i: not in the starter pack');
         expect(snapshot.registry[code], isNotNull);
       }
       // With every reference symbol's art on the device: leaf, sunflower,
@@ -216,6 +232,50 @@ void main() {
       );
       expect(await LobbyHero.symbolsFor(nothing), isEmpty);
     });
+
+    test('the bundled hero art is the published files of the reference symbols', () async {
+      final registry = (await testServices()).content.snapshot.registry;
+      expect(File('pubspec.yaml').readAsStringSync(), contains('- ${kHeroArtPrefix}symbols/v1/'));
+      final bundled = {
+        for (final file in Directory('${kHeroArtPrefix}symbols/v1').listSync().whereType<File>())
+          file.path.split('/').last,
+      };
+      final expected = <String>{};
+      for (final slot in LobbyHero.slots) {
+        final symbol = registry[slot.first]!;
+        expect(symbol.type, SymbolType.image, reason: slot.first);
+        expect(symbol.assetPath, startsWith('symbols/v1/'));
+        expected.add(symbol.assetPath!.split('/').last);
+        // Read like the app does: checked against the registry's sha256.
+        final bytes = await BundledContentSource(
+          (key) async => File(key).existsSync() ? File(key).readAsBytesSync() : null,
+          prefix: kHeroArtPrefix,
+        ).read(symbol.assetPath!, ContentKind.image, sha256: symbol.sha256);
+        expect(bytes, isNotEmpty);
+      }
+      expect(bundled, expected, reason: 'exactly the three hero symbols');
+    });
+  });
+
+  testWidgets('status bar icons: dark over the Day home sky, light on Night and sub-screens', (tester) async {
+    final services = await _start(tester);
+    Brightness? iconsOf(Widget screen) => tester
+        .widgetList<AnnotatedRegion<SystemUiOverlayStyle>>(
+          find.descendant(of: find.byType(screen.runtimeType), matching: find.byType(AnnotatedRegion<SystemUiOverlayStyle>)),
+        )
+        .first
+        .value
+        .statusBarIconBrightness;
+    for (final (mode, home, settings) in [
+      (ThemeMode.light, Brightness.dark, Brightness.light),
+      (ThemeMode.dark, Brightness.light, Brightness.light),
+    ]) {
+      await pumpLobby(tester, services: services, home: const HomeScreen(), themeMode: mode);
+      expect(iconsOf(const HomeScreen()), home, reason: '$mode home');
+      await pumpLobby(tester, services: services, home: const SettingsScreen(), themeMode: mode);
+      expect(iconsOf(const SettingsScreen()), settings, reason: '$mode settings');
+      await _leave(tester);
+    }
   });
 
   testWidgets('home works offline on bundled content', (tester) async {
@@ -230,7 +290,7 @@ void main() {
     expect(
       find.descendant(of: find.byType(LobbyHero), matching: find.byType(PremiumMahjongTile)),
       findsNWidgets(3),
-      reason: 'three hero tiles from the starter pack',
+      reason: 'three hero tiles from the bundled art',
     );
     expect(find.byType(BackdropFilter), findsNothing, reason: 'no live backdrop blur behind the ambient animation');
     expect(

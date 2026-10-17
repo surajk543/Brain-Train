@@ -169,6 +169,13 @@ void main() {
         expect(find.descendant(of: _action(action), matching: find.text('1')), findsOneWidget);
       }
       expect(find.byTooltip('Restart'), findsOneWidget);
+      // A round ripple (not the sparkle, which fills the box as a rectangle);
+      // a tooltip only where there is no visible label.
+      for (final action in GameAction.values) {
+        final ink = tester.widget<InkResponse>(find.descendant(of: _action(action), matching: find.byType(InkResponse)));
+        expect(ink.splashFactory, same(InkRipple.splashFactory), reason: action.name);
+        expect(find.descendant(of: _action(action), matching: find.byType(Tooltip)), findsNothing, reason: action.name);
+      }
 
       final game = _gameOf(tester);
       game.tapTile((game.state.free.toList()..sort()).first);
