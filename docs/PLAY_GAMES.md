@@ -83,8 +83,7 @@ time, every call caught and timed out, never blocking the win card):
 6. Testers → add the Google accounts that test sign-in (only testers can sign in until the configuration is
    published).
 7. Achievements (9) and leaderboards (23) are created (2026-10-17; IDs above, Fastest Time boards: Duration,
-   smallest first). Publish the configuration (Play Games Services → Publishing) so players other than testers see
-   them.
+   smallest first). The configuration is published (2026-10-17), so every player sees them.
 
 ## Game Center (iOS)
 
@@ -107,4 +106,4 @@ AVD with Google Play (here `Pixel_9`, `google_apis_playstore`), signed in to a t
 lobby that open Google's Achievements / Leaderboards; airplane mode → "Couldn't connect to Google Play Games"
 in the footer, no crash. `adb logcat | grep -i "PlayGames\|games_services"` for errors (a SHA-1 or app ID
 mismatch shows as a sign-in failure). After a win: First Match unlocks (a Play Games popup) and the scores show on
-the leaderboards (testers only until the configuration is published).
+the leaderboards.

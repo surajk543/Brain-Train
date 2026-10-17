@@ -612,7 +612,8 @@ dart run tool/smoke_remote.dart         # live check: app's content client vs pr
   screenshots, App Review contact, real AdMob iOS IDs, build upload. Game Center (2026-10-17): the 9 achievements
   `bt.ach.*` (300 points) and 23 Classic leaderboards `bt.lb.*` of `lib/platform/game_services_ids.dart` are created
   with en-US texts and the `art/play-games/` icons (Fastest Time: Elapsed Time to the hundredth, low to high; the rest
-  Integer, high to low); still to do: turn on Game Center for the version and add them there for review.
+  Integer, high to low); Game Center is on for the version; still to do: "Add for Review" on each item with the
+  first build that has the Game Center entitlement.
 - Play Console release state (2026-10-16): every App content declaration is done (privacy policy, ads = yes,
   Advertising ID, content rating, target audience 6+ incl. under 13 (Families), Data safety, Health/Financial/
   Government); category Puzzle; store listing saved. Closed testing - Alpha: versionCode 4 (1.0.0), all countries,
@@ -629,9 +630,10 @@ dart run tool/smoke_remote.dart         # live check: app's content client vs pr
   mixed-audience settings and a published GDPR consent message; Play Console Ads, Advertising ID, Target audience and
   Data safety answers. The iOS `AppDelegate.swift` channel (`rewardedAdUnitId`) is untested until the first Xcode build.
 - Open work: Play Games piece 3 (cloud save). Piece 2 (achievements + leaderboards, Play Games and Game Center) is
-  implemented (2026-10-17); the owner still publishes the Play Games configuration (Play Console → Play Games
-  Services → Publishing; only testers see it until then) and finishes Game Center in App Store Connect. The iOS
-  Game Center path is untested until the first Xcode build. Scoring + combo is implemented (4 s window).
+  implemented (2026-10-17); the Play Games configuration is published (2026-10-17: game details = store description,
+  Puzzle, store icon and feature graphic; saved games Off) and Game Center is set up in App Store Connect (on for the
+  version; each item still needs "Add for Review" with the first build that has the entitlement). The iOS Game Center
+  path is untested until the first Xcode build. Scoring + combo is implemented (4 s window).
 - Open work: Play Games / scoring follow-ups after the PR #2 merge: run an iOS build on a Mac with full Xcode (iOS min
   15.0, never built yet).
 - Open work: 5–6 tests fail on this Mac (predate PR #2): RenderFlex overflow of 4.4 px at
