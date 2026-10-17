@@ -358,14 +358,13 @@ class BoardPainter extends CustomPainter {
   Rect _footprint(_TileDraw t) {
     final w = projection.faceWidth, h = projection.faceHeight;
     final r = t.rect;
-    final reach = w * (style.shadowOffsetFraction + style.shadowBlurFraction);
-    var right = r.right + w * style.depthXFraction + reach;
-    var bottom = r.bottom + h * style.depthYFraction + reach;
+    var reachX = style.shadowReachXFraction, reachY = style.shadowReachFraction;
     if (t.tile.layer > 0) {
-      final raised = w * (style.raisedShadowOffsetFraction + style.raisedShadowBlurFraction);
-      right += raised;
-      bottom += raised;
+      reachX = math.max(reachX, style.raisedShadowReachFraction);
+      reachY = math.max(reachY, style.raisedShadowReachFraction);
     }
+    final right = r.right + w * (style.depthXFraction + reachX);
+    final bottom = r.bottom + h * style.depthYFraction + w * reachY;
     return Rect.fromLTRB(r.left - w * 0.02, r.top - w * 0.02, right, bottom);
   }
 

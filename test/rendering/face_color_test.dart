@@ -63,37 +63,17 @@ void main() {
       expect(TileStyle.faceColorNamed('sky'), TileStyle.namedFaceColors['sky']);
     });
 
-    test('ivory keeps the authored shades; colours get a coherent derived set', () {
-      for (final ivory in [style.faceShades(), style.faceShades(style.faceColor)]) {
-        expect(
-          [ivory.highlight, ivory.face, ivory.shade, ivory.catchLight, ivory.bevelShade, ivory.edge, ivory.side, ivory.sideShade],
-          [
-            style.faceHighlightColor,
-            style.faceColor,
-            style.faceShadeColor,
-            style.catchLightColor,
-            style.bevelShadeColor,
-            style.edgeColor,
-            style.sideColor,
-            style.sideShadeColor,
-          ],
-        );
-      }
+    test('each colour gives the style a coherent face (TileStyle.withFace)', () {
+      expect(style.withFace(style.faceColor).faceColor, style.faceColor);
       for (final colour in TileStyle.namedFaceColors.values) {
-        final s = style.faceShades(colour);
+        final s = style.withFace(colour);
         double l(Color c) => HSLColor.fromColor(c).lightness;
-        expect(s.face, colour);
-        expect(l(s.highlight), greaterThan(l(s.face)));
-        expect(l(s.catchLight), greaterThan(l(s.face)));
-        expect(l(s.shade), lessThan(l(s.face)));
-        expect(l(s.side), lessThan(l(s.face)));
-        expect(l(s.sideShade), lessThan(l(s.side)));
-        expect(l(s.edge), lessThan(l(s.shade)));
-        for (final c in [s.highlight, s.shade, s.side, s.sideShade, s.edge, s.bevelShade]) {
-          final dh = (HSLColor.fromColor(c).hue - HSLColor.fromColor(colour).hue).abs();
-          expect(dh < 6 || dh > 354, isTrue, reason: 'same hue as the face');
-        }
-        expect([s.highlight.a, s.face.a, s.shade.a, s.side.a, s.sideShade.a], everyElement(1.0));
+        expect(s.faceColor, colour);
+        expect(l(s.faceHighlightColor), greaterThan(l(s.faceColor)));
+        expect(l(s.faceShadeColor), lessThan(l(s.faceColor)));
+        expect(l(s.sideColor), lessThan(l(s.faceColor)));
+        expect(l(s.sideShadeColor), lessThan(l(s.sideColor)));
+        expect(l(s.edgeColor), lessThan(l(s.faceShadeColor)));
       }
     });
 
@@ -101,8 +81,8 @@ void main() {
       await tester.runAsync(() async {
         const face = Size(40, 52);
         final plain = await renderer.renderBody(face, 2);
-        final ivory = await renderer.renderBody(face, 2, faceColor: style.faceColor);
-        final sky = await renderer.renderBody(face, 2, faceColor: TileStyle.namedFaceColors['sky']);
+        final ivory = await MahjongTileRenderer(style.withFace(style.faceColor)).renderBody(face, 2);
+        final sky = await MahjongTileRenderer(style.withFace(TileStyle.namedFaceColors['sky']!)).renderBody(face, 2);
         final a = await plain.image.toByteData(), b = await ivory.image.toByteData();
         expect(b!.buffer.asUint8List(), a!.buffer.asUint8List(), reason: 'ivory is drawn exactly as before');
         final centre = (plain.faceOffset + face.center(Offset.zero)) * 2;

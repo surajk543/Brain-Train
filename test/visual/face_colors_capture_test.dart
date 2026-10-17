@@ -51,12 +51,11 @@ void main() {
         for (final MapEntry(:key, :value) in TileStyle.namedFaceColors.entries) (key, value),
       ];
       for (final (name, colour) in colours) {
-        final s = style.faceShades(colour);
+        final s = colour == null ? style : style.withFace(colour);
         // ignore: avoid_print
         print(
-          '$name: face ${_hex(s.face)} highlight ${_hex(s.highlight)} shade ${_hex(s.shade)} '
-          'catch ${_hex(s.catchLight)} bevel ${_hex(s.bevelShade)} edge ${_hex(s.edge)} '
-          'side ${_hex(s.side)} sideShade ${_hex(s.sideShade)}',
+          '$name: face ${_hex(s.faceColor)} highlight ${_hex(s.faceHighlightColor)} shade ${_hex(s.faceShadeColor)} '
+          'bevel ${_hex(s.bevelShadeColor)} edge ${_hex(s.edgeColor)} side ${_hex(s.sideColor)} sideShade ${_hex(s.sideShadeColor)}',
         );
       }
 
@@ -90,7 +89,10 @@ void main() {
       for (final (faceWidth, origin) in panels) {
         final face = Size(faceWidth, faceWidth / style.faceAspect);
         final cell = _cell(style, faceWidth, gap);
-        final bodies = [for (final (_, colour) in colours) await renderer.renderBody(face, _pixelRatio, faceColor: colour)];
+        final bodies = [
+          for (final (_, colour) in colours)
+            await (colour == null ? renderer : MahjongTileRenderer(style.withFace(colour))).renderBody(face, _pixelRatio),
+        ];
         final box = renderer.symbolRect(Offset.zero & face).size;
         label('${faceWidth.round()} px', Offset(pad, origin.dy - labelHeight + 4), fontSize: 12);
         for (final (column, (name, _)) in colours.indexed) {
