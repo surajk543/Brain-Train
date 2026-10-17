@@ -30,6 +30,7 @@ python3 -I tool/lobby_art/make_day_foliage.py    # Day gameplay foliage: assets/
 python3 tool/assets/make_sounds.py      # sound effects -> assets/sounds/
 CAPTURE_DIR=/tmp/x flutter test test/visual/   # write screenshots of lobby/gameplay at phone sizes
 CAPTURE_DIR=/tmp/x flutter test test/visual/theme_capture_test.dart   # the same screens in Day and Night
+CAPTURE_DIR=/tmp/x flutter test test/visual/tile_closeup_capture_test.dart   # tile close-ups: 3 layers, Day/Night felt, 64/31-px faces
 CAPTURE_DIR=/tmp/x flutter test test/visual/gameplay_redesign_capture_test.dart   # gameplay 1.1.0: combo+hint, hint hand, cards, Level Complete
 STORE_DIR=art/store flutter test test/visual/store_screenshots_test.dart   # 6 store scenes -> phone/, ios/iphone-6.9/, ios/ipad-13/
 python3 tool/store/make_store_shots.py  # framed marketing shots (headline, gold rim) -> art/store/styled/<target>/
@@ -384,8 +385,13 @@ dart run tool/smoke_remote.dart         # live check: app's content client vs pr
 - App icon = the round emblem of the official logo (`art/branding/brain-train-logo.jpg`), adaptive on
   Android 8+. Regenerate with `python3 tool/assets/make_app_icon.py`.
 - No "Mahjong Solitaire" subtitle on the lobby.
-- Look: emerald felt + botanical foliage, dark-green panels with fine gold borders, warm ivory tiles with olive-green
-  underside. Fonts (bundled, redesign 1.1.0): Playfair Display (title, level names, headings; `kDisplayFont`,
+- Look: emerald felt + botanical foliage, dark-green panels with fine gold borders, thick 3D tiles (owner, 2026-10-17):
+  warm ivory face with a soft top-left-lit rim and fine inner edge, a light wall over an olive/emerald-green base on
+  the right and bottom, a fine dark outline, a soft cast shadow down-right and a longer one under upper layers onto the
+  tiles below. All baked once per face size (`MahjongTileRenderer.renderBody` / `renderRaisedShadow`), never blurred
+  per frame. The face colour is one input, `TileStyle.faceColor` (`withFace(Color)`; highlight, rim and wall shades
+  derive from it). Walls and shadows stay inside `TileStyle.edgeFraction` (fixed 0.2999 = `kFitEdgeFraction`, a test
+  checks), so retuning the look never moves tiles. Fonts (bundled, redesign 1.1.0): Playfair Display (title, level names, headings; `kDisplayFont`,
   `displayText`) and Manrope (buttons, HUD, numbers, body; the theme's default text), the official variable TTFs from
   google/fonts in `assets/fonts/` (unmodified, OFL 1.1 with `OFL.txt` next to each; Playfair has a Reserved Font Name,
   so never make modified instances). Flutter sets the `wght` axis from `fontWeight`; no runtime download. Lobby buttons

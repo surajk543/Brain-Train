@@ -61,80 +61,108 @@ class MahjongTileRenderer {
   /// The area inside the bevel where symbols are drawn.
   Rect symbolRect(Rect face) => face.deflate(face.width * style.symbolInsetFraction);
 
-  /// Renders the tile: cast shadow, two-tone extruded body (ivory wall over
-  /// an olive-green base), and the bevelled ivory face lit from the top-left.
+  /// Renders the tile, everything baked into one image: a soft cast shadow
+  /// and a tight contact shadow down-right, the solid body (a light wall in
+  /// the face's colour over a green base, outlined), and the face with a
+  /// softly rounded rim lit from the top-left.
+  ///
+  /// The face sits at [TileBodyImage.faceOffset]; the walls (right and below,
+  /// [TileStyle.depthXFraction] / [TileStyle.depthYFraction]) and shadows
+  /// paint outside the face, inside the board's fit margin
+  /// ([TileStyle.edgeFraction]).
   Future<TileBodyImage> renderBody(Size face, double pixelRatio) async {
-    final depthX = face.width * style.depthXFraction;
-    final depthY = face.height * style.depthYFraction;
-    final blur = face.width * style.shadowBlurFraction;
-    final shadowOffset = face.width * style.shadowOffsetFraction;
-    final margin = (blur * 2.2 + 2).ceilToDouble();
+    final w = face.width;
+    final depth = Offset(w * style.depthXFraction, face.height * style.depthYFraction);
+    final sigma = w * style.shadowBlurFraction;
+    final hairline = 1 / pixelRatio;
+    final outline = math.max(hairline * 1.5, w * 0.014);
+    final margin = (math.max(sigma * 3, outline) + 2).ceilToDouble();
+    final shadowShift = Offset(w * style.shadowOffsetXFraction, w * style.shadowOffsetFraction);
     final size = Size(
-      face.width + depthX + shadowOffset + margin * 2,
-      face.height + depthY + shadowOffset + margin * 2,
+      w + depth.dx + shadowShift.dx + margin * 2,
+      face.height + depth.dy + shadowShift.dy + margin * 2,
     );
 
     final recorder = ui.PictureRecorder();
     final canvas = Canvas(recorder)..scale(pixelRatio);
     final faceRect = Offset(margin, margin) & face;
-    final radius = Radius.circular(face.width * style.cornerRadiusFraction);
+    final radius = Radius.circular(w * style.cornerRadiusFraction);
     RRect rounded(Rect rect) => RRect.fromRectAndRadius(rect, radius);
-    final hairline = 1 / pixelRatio;
-    final base = faceRect.shift(Offset(depthX, depthY));
+    final face0 = rounded(faceRect);
+    final base = faceRect.shift(depth);
+    // Wall copies: enough that the extruded walls are solid at this size.
+    final steps = math.max(4, (math.max(depth.dx, depth.dy) * pixelRatio * 1.5).ceil());
 
-    // Two shadows: a wide soft one and a tight contact one under the base.
+    // Shadows: the body's silhouette, offset down-right and blurred (here,
+    // once; the board stamps the image).
     canvas
-      ..drawRRect(
-        rounded(base.shift(Offset(shadowOffset * 0.55, shadowOffset)).inflate(face.width * 0.01)),
+      ..drawPath(
+        _silhouette(faceRect, depth, radius, shift: shadowShift),
         Paint()
           ..color = style.shadowColor
-          ..maskFilter = MaskFilter.blur(BlurStyle.normal, blur),
+          ..maskFilter = MaskFilter.blur(BlurStyle.normal, sigma),
       )
-      ..drawRRect(
-        rounded(base.shift(Offset(shadowOffset * 0.2, shadowOffset * 0.35))),
+      ..drawPath(
+        _silhouette(faceRect, depth, radius, shift: Offset(w * 0.008, w * 0.014)),
         Paint()
           ..color = style.contactShadowColor
-          ..maskFilter = MaskFilter.blur(BlurStyle.normal, math.max(0.8, blur * 0.25)),
-      );
+          ..maskFilter = MaskFilter.blur(BlurStyle.normal, math.max(hairline, w * 0.012)),
+      )
+      // Fine dark outline around the whole tile, under the walls.
+      ..drawPath(_silhouette(faceRect, depth, radius, inflate: outline), Paint()..color = style.outlineColor);
 
-    // Extruded thickness: stacked copies from the dark base to the ivory
-    // wall just under the face, so the walls read as one solid block.
-    final steps = math.max(3, (math.max(depthX, depthY) * pixelRatio * 1.5).ceil());
+    // Extruded thickness: stacked copies from the base on the felt up to the
+    // wall just under the face, so the walls read as one solid block. The
+    // outer part is the green base, the inner part the face's colour,
+    // darkening with depth.
+    final split = style.backSplit;
+    final faceSide = style.sideColor, faceSideShade = style.sideShadeColor;
     for (var i = steps; i >= 1; i--) {
       final t = i / steps;
-      final color = t > style.backSplit
-          ? Color.lerp(style.backColor, style.backShadeColor, (t - style.backSplit) / (1 - style.backSplit))!
-          : Color.lerp(style.sideColor, style.sideShadeColor, t / style.backSplit)!;
-      canvas.drawRRect(rounded(faceRect.shift(Offset(depthX * t, depthY * t))), Paint()..color = color);
+      final color = t > split
+          ? Color.lerp(style.backColor, style.backShadeColor, (t - split) / (1 - split))!
+          : Color.lerp(faceSide, faceSideShade, t / split)!;
+      canvas.drawRRect(rounded(faceRect.shift(depth * t)), Paint()..color = color);
     }
-    // Fine gold seam between the ivory wall and the green base.
-    final seam = rounded(faceRect.shift(Offset(depthX * style.backSplit, depthY * style.backSplit)));
+    // Light along the top of the green base, then the base's dark rim.
+    canvas
+      ..drawRRect(
+        rounded(faceRect.shift(depth * split)),
+        Paint()
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = math.max(hairline, w * 0.012)
+          ..color = style.backLightColor.withValues(alpha: 0.9),
+      )
+      ..drawRRect(
+        rounded(base),
+        Paint()
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = math.max(hairline, w * 0.008)
+          ..color = style.outlineColor.withValues(alpha: 0.55),
+      );
+    // Walls turn away from the light: darker toward the bottom-right corner.
+    canvas
+      ..save()
+      ..clipPath(_silhouette(faceRect, depth, radius))
+      ..drawRect(
+        faceRect.expandToInclude(base),
+        Paint()
+          ..shader = LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: const [Color(0x00000000), Color(0x00000000), Color(0x38000000)],
+            stops: const [0, 0.55, 1],
+          ).createShader(faceRect.expandToInclude(base)),
+      )
+      ..restore();
+
+    // Crisp step from the face down to its wall.
     canvas.drawRRect(
-      seam,
-      Paint()
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = math.max(hairline, face.width * 0.008)
-        ..color = style.edgeColor.withValues(alpha: 0.75),
-    );
-    // Crisp outline of the base and a soft sheen on the green rim.
-    canvas.drawRRect(
-      rounded(base),
-      Paint()
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = hairline * 1.5
-        ..color = const Color(0x66061A0C),
+      face0.shift(Offset(hairline * 0.5, hairline * 0.8)).inflate(w * 0.006),
+      Paint()..color = style.edgeColor,
     );
 
-    final face0 = rounded(faceRect);
-    // Lift the face off the wall with a hairline of shade along its edge.
-    canvas.drawRRect(
-      face0.shift(Offset(hairline * 0.8, hairline * 1.2)),
-      Paint()
-        ..color = const Color(0x40382A10)
-        ..maskFilter = MaskFilter.blur(BlurStyle.normal, math.max(0.6, face.width * 0.012)),
-    );
-
-    // Ivory face with gentle top-left lighting.
+    // The face, lit from the top-left.
     canvas.drawRRect(
       face0,
       Paint()
@@ -142,73 +170,49 @@ class MahjongTileRenderer {
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [style.faceHighlightColor, style.faceColor, style.faceShadeColor],
-          stops: const [0, 0.48, 1],
+          stops: const [0, 0.5, 1],
         ).createShader(faceRect),
     );
 
-    // Bevel: warm gold-white catch light top/left, honey shade bottom/right.
-    final bevel = face.width * style.bevelFraction;
-    final innerRect = faceRect.deflate(bevel);
-    final inner = RRect.fromRectAndRadius(innerRect, Radius.circular(math.max(1, radius.x - bevel * 0.6)));
-    canvas.drawDRRect(
-      face0,
+    // Its rim rounds down into the wall: a soft shade inside the bottom and
+    // right edges, a soft light inside the top and left ones.
+    final bevel = w * style.bevelFraction;
+    canvas
+      ..save()
+      ..clipRRect(face0)
+      ..drawPath(
+        _rim(face0, Offset(-bevel * 0.45, -bevel * 0.55), faceRect.inflate(bevel * 3)),
+        Paint()
+          ..color = style.bevelShadeColor.withValues(alpha: 0.55)
+          ..maskFilter = MaskFilter.blur(BlurStyle.normal, bevel * 0.45),
+      )
+      ..drawPath(
+        _rim(face0, Offset(bevel * 0.35, bevel * 0.4), faceRect.inflate(bevel * 3)),
+        Paint()
+          ..color = const Color(0xE6FFFFFF)
+          ..maskFilter = MaskFilter.blur(BlurStyle.normal, bevel * 0.3),
+      )
+      ..restore();
+    // Fine inner edge where the rim meets the flat of the face.
+    final inner = face0.deflate(bevel);
+    canvas.drawRRect(
       inner,
       Paint()
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = math.max(hairline * 0.75, w * 0.006)
         ..shader = LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [
-            style.catchLightColor,
-            style.catchLightColor.withValues(alpha: 0.25),
-            style.bevelShadeColor.withValues(alpha: 0),
-            style.bevelShadeColor,
-          ],
-          stops: const [0, 0.35, 0.55, 1],
-        ).createShader(faceRect),
+          colors: [style.bevelShadeColor.withValues(alpha: 0.2), style.faceHighlightColor.withValues(alpha: 0.8)],
+        ).createShader(inner.outerRect),
     );
-    // Slightly domed centre.
+    // Crisp outer edge of the face.
     canvas.drawRRect(
-      inner,
-      Paint()
-        ..shader = RadialGradient(
-          center: const Alignment(-0.45, -0.55),
-          radius: 1.2,
-          colors: [const Color(0x40FFFFFF), const Color(0x00FFFFFF), const Color(0x147A5A20)],
-          stops: const [0, 0.6, 1],
-        ).createShader(innerRect),
-    );
-    // Soft step between bevel and centre.
-    canvas.drawRRect(
-      inner,
+      face0.deflate(hairline * 0.35),
       Paint()
         ..style = PaintingStyle.stroke
-        ..strokeWidth = math.max(0.6, face.width * 0.01)
-        ..shader = LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [style.faceShadeColor.withValues(alpha: 0.45), const Color(0x99FFFFFF)],
-        ).createShader(innerRect),
-    );
-    // Bright rim along the very top-left edge.
-    canvas.drawRRect(
-      face0.deflate(math.max(hairline, face.width * 0.012)),
-      Paint()
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = math.max(hairline * 1.5, face.width * 0.014)
-        ..shader = const LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [Color(0xF2FFFFFF), Color(0x00FFFFFF)],
-          stops: [0, 0.45],
-        ).createShader(faceRect),
-    );
-    // Thin gold edge line.
-    canvas.drawRRect(
-      face0,
-      Paint()
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = math.max(hairline * 1.2, face.width * 0.01)
-        ..color = style.edgeColor,
+        ..strokeWidth = math.max(hairline, w * 0.008)
+        ..color = style.edgeColor.withValues(alpha: 0.45),
     );
 
     final picture = recorder.endRecording();
@@ -216,6 +220,24 @@ class MahjongTileRenderer {
     picture.dispose();
     return TileBodyImage._(image, Offset(margin, margin), size);
   }
+
+  /// The tile's outline seen from the front: the face swept along [depth]
+  /// to the base, moved by [shift] and grown by [inflate].
+  Path _silhouette(Rect face, Offset depth, Radius radius, {Offset shift = Offset.zero, double inflate = 0}) {
+    final path = Path();
+    final steps = math.max(4, (depth.distance / math.max(1, radius.x * 0.5)).ceil());
+    for (var i = 0; i <= steps; i++) {
+      path.addRRect(RRect.fromRectAndRadius(face.shift(shift + depth * (i / steps)), radius).inflate(inflate));
+    }
+    return path;
+  }
+
+  /// Everything in [bounds] outside [rrect] moved by [shift]: blurred and
+  /// clipped to the face, a soft rim along the edges [shift] points away from.
+  Path _rim(RRect rrect, Offset shift, Rect bounds) => Path()
+    ..fillType = PathFillType.evenOdd
+    ..addRect(bounds)
+    ..addRRect(rrect.shift(shift));
 
   /// A gold glow ring around a tile's face (a tile landing in the tray), at
   /// full strength (stamp it with the paint's alpha as the strength).
@@ -256,19 +278,21 @@ class MahjongTileRenderer {
       );
   }
 
-  /// The extra shadow a raised (upper-layer) tile casts onto the tiles below.
+  /// The extra shadow a raised (upper-layer) tile casts onto the tiles below:
+  /// the body's silhouette, further down-right than its own shadow and
+  /// softer, baked once.
   Future<TileBodyImage> renderRaisedShadow(Size face, double pixelRatio) async {
-    final blur = face.width * style.raisedShadowBlurFraction;
-    final margin = (blur * 2.2 + 2).ceilToDouble();
-    final offset =
-        Offset(face.width * style.depthXFraction, face.height * style.depthYFraction) +
-        Offset(face.width * style.raisedShadowOffsetFraction * 0.7, face.width * style.raisedShadowOffsetFraction);
-    final size = Size(face.width + offset.dx + margin * 2, face.height + offset.dy + margin * 2);
+    final w = face.width;
+    final blur = w * style.raisedShadowBlurFraction;
+    final margin = (blur * 3 + 2).ceilToDouble();
+    final depth = Offset(w * style.depthXFraction, face.height * style.depthYFraction);
+    final shift = Offset(w * style.raisedShadowOffsetFraction, w * style.raisedShadowOffsetFraction);
+    final size = Size(w + depth.dx + shift.dx + margin * 2, face.height + depth.dy + shift.dy + margin * 2);
     final recorder = ui.PictureRecorder();
     final canvas = Canvas(recorder)..scale(pixelRatio);
     final faceRect = Offset(margin, margin) & face;
-    canvas.drawRRect(
-      RRect.fromRectAndRadius(faceRect.shift(offset), Radius.circular(face.width * style.cornerRadiusFraction)),
+    canvas.drawPath(
+      _silhouette(faceRect, depth, Radius.circular(w * style.cornerRadiusFraction), shift: shift),
       Paint()
         ..color = style.raisedShadowColor
         ..maskFilter = MaskFilter.blur(BlurStyle.normal, blur),
