@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:brain_train/platform/game_services_ids.dart';
 import 'package:brain_train/platform/games_services_play_games.dart';
 import 'package:brain_train/platform/play_games.dart';
 import 'package:flutter/services.dart';
@@ -31,14 +32,34 @@ class _FakeBackend implements PlayGamesBackend {
     return onInitialize();
   }
 
+  int signIns = 0;
+
   @override
-  Future<void> signIn() => onSignIn();
+  Future<void> signIn() {
+    signIns++;
+    return onSignIn();
+  }
 
   @override
   Future<void> showAchievements() => onShow();
 
   @override
   Future<void> showLeaderboards() => onShow();
+
+  final List<String> reports = [];
+  Future<void> Function() onReport = () async {};
+
+  @override
+  Future<void> unlock(GameAchievement achievement, {required bool showBanner}) {
+    reports.add('unlock ${achievement.name} banner=$showBanner');
+    return onReport();
+  }
+
+  @override
+  Future<void> submitScore(GameLeaderboard leaderboard, int value) {
+    reports.add('submit ${leaderboard.name} $value');
+    return onReport();
+  }
 }
 
 Future<void> _settle() => Future<void>.delayed(Duration.zero);
@@ -181,7 +202,92 @@ void main() {
     expect(playGames.current, const PlayGamesSignedOut());
   });
 
-  test('createPlayGames: unavailable off Android', () async {
+  group('reports', () {
+    Future<void> signInAs(String name) async {
+      playGames.refresh();
+      await _settle();
+      backend.check!.add(name);
+      await _settle();
+    }
+
+    test('signed out: nothing reaches the plugin', () async {
+      expect(await playGames.unlock(GameAchievement.firstWin), isFalse);
+      expect(await playGames.submitScore(GameLeaderboard.totalScore, 100), isFalse);
+      expect(backend.reports, isEmpty);
+    });
+
+    test('signed in: unlocks (with or without the banner) and scores go through', () async {
+      await signInAs('Ann');
+      expect(await playGames.unlock(GameAchievement.summit), isTrue);
+      expect(await playGames.unlock(GameAchievement.firstWin, showBanner: false), isTrue);
+      expect(await playGames.submitScore(GameLeaderboard.timeD3, 61234), isTrue);
+      expect(backend.reports, [
+        'unlock summit banner=true',
+        'unlock firstWin banner=false',
+        'submit timeD3 61234',
+      ]);
+    });
+
+    test('an error or a timeout: false, never a throw', () async {
+      await signInAs('Ann');
+      backend.onReport = () async => throw PlatformException(code: 'failed_to_send_score', message: 'offline');
+      expect(await playGames.submitScore(GameLeaderboard.levelsCompleted, 3), isFalse);
+      backend.onReport = () => Completer<void>().future;
+      expect(await playGames.unlock(GameAchievement.combo5), isFalse);
+      backend.onReport = () async => throw StateError('boom');
+      expect(await playGames.unlock(GameAchievement.combo5), isFalse);
+    });
+
+    test('after dispose: nothing', () async {
+      await signInAs('Ann');
+      playGames.dispose();
+      expect(await playGames.unlock(GameAchievement.firstWin), isFalse);
+      expect(backend.reports, isEmpty);
+    });
+  });
+
+  group('Game Center', () {
+    late GamesServicesPlayGames gameCenter;
+
+    setUp(() {
+      gameCenter = GamesServicesPlayGames(
+        backend: backend,
+        service: GamesService.gameCenter,
+        callTimeout: const Duration(milliseconds: 20),
+        signInTimeout: const Duration(milliseconds: 20),
+      );
+    });
+
+    tearDown(() => gameCenter.dispose());
+
+    test('the check asks GameKit to authenticate; no Play Games SDK start', () async {
+      gameCenter.refresh();
+      await _settle();
+      expect(backend.initializes, 0);
+      expect(backend.listens, 1);
+      expect(backend.signIns, 1);
+      backend.check!.add('Ann');
+      await _settle();
+      expect(gameCenter.current, const PlayGamesSignedIn('Ann'));
+      expect(gameCenter.service, GamesService.gameCenter);
+    });
+
+    test('a failed or unanswered authentication is swallowed: signed out', () async {
+      backend.onSignIn = () async => throw PlatformException(code: 'sign_in_unavailable', message: 'Settings');
+      gameCenter.refresh();
+      await _settle();
+      backend.check!.add(null);
+      await _settle();
+      expect(gameCenter.current, const PlayGamesSignedOut());
+      backend.onSignIn = () => Completer<void>().future;
+      gameCenter.refresh();
+      await Future<void>.delayed(const Duration(milliseconds: 50));
+      expect(gameCenter.current, const PlayGamesSignedOut());
+      expect(backend.signIns, 2);
+    });
+  });
+
+  test('createPlayGames: unavailable off Android and iOS', () async {
     expect(await createPlayGames(), isA<UnavailablePlayGames>());
   });
 }

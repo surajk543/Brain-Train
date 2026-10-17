@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 
 import '../../app/app_services.dart';
 import '../../app/brand.dart';
+import '../../app/play_games_reports.dart';
 import '../../app/rewarded_ads_controller.dart';
 import '../../app/theme.dart';
 import '../../content/content_snapshot.dart';
@@ -165,6 +166,17 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
         winSoundDelay: reduceMotion ? Duration.zero : const Duration(milliseconds: 450),
         // Every game opens with the board intro, unless motion is reduced.
         playIntro: !reduceMotion,
+        // Leaderboards and achievements (13+ and signed in; fire and forget).
+        onWin: (summary) => services.playGames.reportWin(
+          WonGame(
+            difficulty: widget.entry.difficulty,
+            score: summary.score,
+            time: summary.time,
+            hintsUsed: summary.hintsUsed,
+            undosUsed: summary.undosUsed,
+            shufflesUsed: summary.shufflesUsed,
+          ),
+        ),
       );
       _tray = TrayController(capacity: controller.trayCapacity);
       _flights = TileFlightController(duration: _flightTime(reduceMotion));

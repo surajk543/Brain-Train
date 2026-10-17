@@ -1,6 +1,7 @@
 import 'package:brain_train/app/app_services.dart';
 import 'package:brain_train/app/play_games_controller.dart';
 import 'package:brain_train/features/home/home_screen.dart';
+import 'package:brain_train/platform/game_services_ids.dart';
 import 'package:brain_train/platform/play_games.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -106,6 +107,39 @@ void main() {
     await _tap(tester, _achievements);
     expect(fake.calls, ['signIn']);
     expect(find.text(PlayGamesController.failedNotice), findsNothing);
+    await _leave(tester);
+  });
+
+  testWidgets("sign-in catches up the stored wins once, on the manifest's tiers", (tester) async {
+    final fake = FakePlayGames();
+    final services = await _services(tester, fake);
+    final levels = services.content.snapshot.manifest.levels;
+    final first = levels.first;
+    final top = levels.firstWhere((level) => level.difficulty == '10');
+    await tester.runAsync(() async {
+      await services.progress.recordWin(first.levelId, moves: 30, timeMs: 45000, score: 2100, bestCombo: 3);
+      await services.progress.recordWin(top.levelId, moves: 90, timeMs: 300000, score: 9000, bestCombo: 4);
+    });
+    await pumpLobby(tester, services: services, home: const HomeScreen());
+    expect(fake.scores, isEmpty, reason: 'not signed in yet');
+    fake.emit(const PlayGamesSignedIn('Ann'));
+    await tester.pump();
+    final firstTier = int.parse(first.difficulty!);
+    expect(fake.unlocks, [(GameAchievement.firstWin, false), (GameAchievement.summit, false)]);
+    expect(fake.submitted, {
+      GameLeaderboard.bestScore(firstTier)!: 2100,
+      GameLeaderboard.fastestTime(firstTier)!: 45000,
+      GameLeaderboard.scoreD10: 9000,
+      GameLeaderboard.timeD10: 300000,
+      GameLeaderboard.totalScore: 11100,
+      GameLeaderboard.levelsCompleted: 2,
+      GameLeaderboard.bestCombo: 4,
+    });
+    fake
+      ..emit(const PlayGamesSignedOut())
+      ..emit(const PlayGamesSignedIn('Ann'));
+    await tester.pump();
+    expect(fake.scores, hasLength(7), reason: 'once per run');
     await _leave(tester);
   });
 

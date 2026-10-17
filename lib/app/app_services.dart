@@ -210,6 +210,12 @@ class AppServices {
        updates = updates ?? AppUpdateController(updater: const UnavailableAppUpdater()) {
     // The level window follows this player's progress.
     content.attachProgress(progress);
+    // Leaderboards and achievements read the wins and each level's tier
+    // (the manifest's; read only when the catch-up after sign-in runs).
+    this.playGames.attachProgress(
+      progress,
+      difficulties: () => {for (final level in content.snapshot.manifest.levels) level.levelId: level.difficulty},
+    );
   }
 
   final ContentController content;
@@ -223,7 +229,8 @@ class AppServices {
   /// Looping ambient music, started after the studio intro. Null in tests.
   final BackgroundMusic? music;
 
-  /// Google Play Games (Android builds with an app ID); unavailable elsewhere.
+  /// Google Play Games (Android builds with an app ID) or Game Center (iOS):
+  /// sign-in, the lobby's buttons, the win reports; unavailable elsewhere.
   final PlayGamesController playGames;
 
   /// Rewarded ads for Revive (Android and iOS); off elsewhere (no ad needed).

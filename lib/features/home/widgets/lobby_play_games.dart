@@ -5,8 +5,9 @@ import 'package:flutter/material.dart';
 import '../../../app/play_games_controller.dart';
 import 'lobby_buttons.dart';
 
-/// Achievements and Leaderboards (Google Play Games): two small round
-/// buttons at the top of the lobby. Nothing without Play Games.
+/// Achievements and Leaderboards (Google Play Games on Android, Game Center
+/// on iOS): two small round buttons at the top of the lobby. Nothing without
+/// a game service, or for a player under 13.
 class LobbyPlayGamesButtons extends StatelessWidget {
   const LobbyPlayGamesButtons({super.key, required this.controller, this.size = 48});
 

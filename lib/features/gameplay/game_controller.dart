@@ -202,6 +202,7 @@ class GameController extends ChangeNotifier {
     this.matchFeedbackOnImpact = false,
     this.winSoundDelay = Duration.zero,
     this.playIntro = false,
+    this.onWin,
     Stopwatch? stopwatch,
     ScoringRules scoringRules = const ScoringRules(),
   }) : trayCapacity = trayCapacity ?? level.rules.trayCapacity,
@@ -275,6 +276,11 @@ class GameController extends ChangeNotifier {
   /// Whether each game (a new one, a restart, a resumed save) opens with the
   /// board intro: taps are ignored and the clock waits until [endIntro].
   final bool playIntro;
+
+  /// Called once per won game (replays too), with [winSummary], once its
+  /// record is saved: the leaderboards and achievements. Its errors are only
+  /// logged; the win goes on.
+  final void Function(GameSummary summary)? onWin;
 
   /// Null plays no sounds (tests).
   final SoundEffects? sounds;
@@ -779,7 +785,12 @@ class GameController extends ChangeNotifier {
       bestCombo: scoring.bestCombo,
     );
     newBestScore = previousBest != null && scoring.score > previousBest;
-    winSummary = summary;
+    final won = winSummary = summary;
+    try {
+      onWin?.call(won);
+    } on Object catch (error) {
+      debugPrint('Win report failed ($error)');
+    }
     await progress.clearSavedGame(levelId: level.levelId);
     if (!_disposed) notifyListeners();
   }

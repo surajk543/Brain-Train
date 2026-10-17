@@ -285,6 +285,50 @@ void main() {
     controller.dispose();
   });
 
+  test('onWin: once per won game (replays too), after the record is saved; its errors never stop the win', () async {
+    final small = level([('a1', 'A', 0, 0, 0), ('a2', 'A', 4, 0, 0), ('b1', 'B', 8, 0, 0), ('b2', 'B', 12, 0, 0)]);
+    final reported = <(GameSummary, LevelRecord?)>[];
+    final controller = GameController(
+      entry: entry,
+      level: small,
+      registry: reg,
+      progress: progress,
+      settings: settings,
+      onWin: (summary) => reported.add((summary, progress.completed()['test-level'])),
+    );
+    await tap(controller, ['a1', 'b1', 'a2']);
+    await Future<void>.delayed(const Duration(milliseconds: 10));
+    expect(reported, isEmpty);
+    await tap(controller, ['b2']);
+    await Future<void>.delayed(const Duration(milliseconds: 10));
+    expect(reported, hasLength(1));
+    final (summary, record) = reported.single;
+    expect(summary, same(controller.winSummary));
+    expect(summary.score, controller.score);
+    expect(record, isNotNull, reason: 'the record is saved first');
+    expect(record!.bestScore, summary.score);
+    controller.restart();
+    await tap(controller, ['a1', 'b1', 'a2', 'b2']);
+    await Future<void>.delayed(const Duration(milliseconds: 10));
+    expect(reported, hasLength(2));
+    controller.dispose();
+
+    final throwing = GameController(
+      entry: entry,
+      level: small,
+      registry: reg,
+      progress: progress,
+      settings: settings,
+      onWin: (_) => throw StateError('report failed'),
+    );
+    await tap(throwing, ['a1', 'b1', 'a2', 'b2']);
+    await Future<void>.delayed(const Duration(milliseconds: 10));
+    expect(throwing.state.status, GameStatus.won);
+    expect(throwing.winSummary, isNotNull);
+    expect(throwing.winRecord, isNotNull);
+    throwing.dispose();
+  });
+
   test('a replay never touches the highest level\'s save, through taps, restart and a win', () async {
     await progress.recordWin('test-level', moves: 4, timeMs: 1000);
     final other = SavedGame(
