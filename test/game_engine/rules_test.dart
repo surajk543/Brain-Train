@@ -309,6 +309,92 @@ void main() {
       expect(e.state.history, isEmpty);
       expect(e.state.moveCount, 0);
     });
+
+    group('at most kMaxRevivesPerLevel per attempt', () {
+      /// Fills the 4-slot tray of [wide] with four unmatched tiles.
+      void fill(GameEngine e) {
+        for (final id in ['a1', 'b1', 'c1', 'd1']) {
+          e.tap(id);
+        }
+        expect(e.state.status, GameStatus.trayFull);
+      }
+
+      test('the limit is 2', () => expect(kMaxRevivesPerLevel, 2));
+
+      test('a third revive is refused and changes nothing', () {
+        final e = engineFor(wide, reg);
+        expect(e.revivesLeft, 2);
+        fill(e);
+        expect(e.canRevive, isTrue);
+        expect(e.revive(), isNotNull);
+        expect(e.revivesUsed, 1);
+        expect(e.revivesLeft, 1);
+        fill(e);
+        expect(e.revive(), isNotNull);
+        expect(e.revivesLeft, 0);
+        fill(e);
+        expect(e.canRevive, isFalse);
+        final before = e.state.history;
+        expect(e.revive(), isNull);
+        expect(e.state.status, GameStatus.trayFull);
+        expect(e.state.tray, ['a1', 'b1', 'c1', 'd1']);
+        expect(e.state.history, before);
+        expect(e.state.history.where((h) => h == GameEngine.reviveMarker), hasLength(2));
+      });
+
+      test('a resumed save keeps its count (from its revive markers)', () {
+        final e = engineFor(wide, reg);
+        fill(e);
+        e.revive();
+        fill(e);
+        e.revive();
+        fill(e);
+        final resumed = engineFor(wide, reg);
+        expect(resumed.replay(e.state.history), isTrue);
+        expect(resumed.state.status, GameStatus.trayFull);
+        expect(resumed.revivesUsed, 2);
+        expect(resumed.revivesLeft, 0);
+        expect(resumed.canRevive, isFalse);
+        expect(resumed.revive(), isNull);
+      });
+
+      test('a 1.0 save with more revives (unlimited then) still resumes, with none left', () {
+        final history = [
+          for (var i = 0; i < 3; i++) ...['a1', 'b1', 'c1', 'd1', GameEngine.reviveMarker],
+          'a1',
+        ];
+        final e = engineFor(wide, reg);
+        expect(e.replay(history), isTrue);
+        expect(e.state.tray, ['a1']);
+        expect(e.revivesUsed, 3);
+        expect(e.revivesLeft, 0);
+      });
+
+      test('restart starts the count over', () {
+        final e = engineFor(wide, reg);
+        fill(e);
+        e.revive();
+        fill(e);
+        e.revive();
+        e.restart();
+        expect(e.revivesUsed, 0);
+        expect(e.revivesLeft, 2);
+        fill(e);
+        expect(e.revive(), isNotNull);
+      });
+
+      test('undo never gives a revive back', () {
+        final e = engineFor(wide, reg);
+        fill(e);
+        e
+          ..revive()
+          ..tap('a1');
+        expect(e.undo(), isNotNull);
+        expect(e.revivesUsed, 1);
+        expect(e.revivesLeft, 1);
+        expect(e.undoAvailable, isFalse, reason: 'undo never crosses a revive');
+      });
+    });
   });
 
   group('special matching groups', () {

@@ -54,6 +54,12 @@ class TapResult {
   bool get accepted => slot != null;
 }
 
+/// Revives a level attempt allows (owner, 2026-10-17): after the second, a
+/// full tray can only be restarted. Counted from the game's
+/// [GameEngine.reviveMarker]s, so a resumed save keeps its count; Restart
+/// starts over at 0 and Undo never gives one back.
+const int kMaxRevivesPerLevel = 2;
+
 /// UI-independent rules for one level: Mahjong Solitaire freedom rules with
 /// a matching tray.
 ///
@@ -66,7 +72,8 @@ class TapResult {
 /// matched), so an arriving tile has at most one partner.
 ///
 /// A lost game can be revived ([revive]): the tray's tiles go back to their
-/// places on the board and play goes on.
+/// places on the board and play goes on, at most [kMaxRevivesPerLevel] times
+/// per level attempt (a restart starts over).
 ///
 /// Helper actions (owner, 2026-10-17, 1.1.0), each with uses per game
 /// ([kStartingCharges]: 1 undo, 1 hint, 1 shuffle; +1 with [grant]):
@@ -160,6 +167,9 @@ class GameEngine {
   /// Taps that [undo] can take back, oldest first; a revive or a shuffle
   /// clears it (undo never crosses them).
   final List<_Move> _undoable = [];
+
+  /// The [reviveMarker]s in [_history].
+  int _revives = 0;
   final Map<GameAction, int> _left = {};
   final Map<GameAction, int> _used = {};
 
@@ -231,6 +241,16 @@ class GameEngine {
 
   /// Uses of [action] left in this game.
   int usesLeft(GameAction action) => _left[action]!;
+
+  /// Revives used in this game (its [reviveMarker]s since the start or the
+  /// last restart).
+  int get revivesUsed => _revives;
+
+  /// Revives this game still allows ([kMaxRevivesPerLevel] in all).
+  int get revivesLeft => _revives >= kMaxRevivesPerLevel ? 0 : kMaxRevivesPerLevel - _revives;
+
+  /// The game is lost with a full tray and a revive is left: [revive] works.
+  bool get canRevive => _status == GameStatus.trayFull && _tray.isNotEmpty && revivesLeft > 0;
 
   /// The last tap can be taken back now, uses left aside: the game is in
   /// play and a tap was made since the start or the last revive or shuffle.
@@ -433,8 +453,13 @@ class GameEngine {
   /// board and empties the tray, so play goes on. Pairs already cleared stay
   /// cleared, and a revive is not a move. Returns the returned tile ids in
   /// their former slot order, or null when the game is not lost with a full
-  /// tray.
-  List<String>? revive() {
+  /// tray or has no revive left ([canRevive]).
+  List<String>? revive() => canRevive ? _revive() : null;
+
+  /// [revive] without the limit: a save from a build without it (1.0, when
+  /// Revive was unlimited) may hold more revives; it resumes with none left
+  /// instead of starting over.
+  List<String>? _revive() {
     if (_status != GameStatus.trayFull || _tray.isEmpty) return null;
     final returned = List.of(_tray);
     _tray.clear();
@@ -445,6 +470,7 @@ class GameEngine {
     _refresh({for (final index in returned) ...[index, ...geometry.affectedBy(index)]});
     _undoable.clear();
     _history.add(reviveMarker);
+    _revives++;
     _changed();
     return [for (final index in returned) _id(index)];
   }
@@ -463,6 +489,7 @@ class GameEngine {
     _boardLevel = null;
     _shuffleProof = const [];
     _undoable.clear();
+    _revives = 0;
     _resetActions();
     _recomputeAll();
     _changed();
@@ -471,7 +498,8 @@ class GameEngine {
   /// Re-applies saved taps and markers in order (revives, undos, hints,
   /// shuffles from their seeds, granted uses). Stops at the first entry
   /// that is no longer legal (or not known) and returns false, leaving the
-  /// valid prefix applied.
+  /// valid prefix applied. Revives past [kMaxRevivesPerLevel] replay (a 1.0
+  /// save, from before the limit): the game then has none left.
   ///
   /// A pair-removal order (what the solver and generator produce) replays
   /// as taps `a1, b1, a2, b2, ...`: each first tile waits alone in the tray
@@ -485,7 +513,7 @@ class GameEngine {
 
   bool _replayEntry(String entry) {
     if (!entry.startsWith('!')) return tap(entry).accepted;
-    if (entry == reviveMarker) return revive() != null;
+    if (entry == reviveMarker) return _revive() != null;
     if (entry == undoMarker) return undo() != null;
     if (entry == hintMarker) {
       // Only the use counts: the hint itself is not needed again.

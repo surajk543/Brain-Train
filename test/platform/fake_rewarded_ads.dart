@@ -24,12 +24,23 @@ class FakeRewardedAds implements RewardedAds {
   /// When set, [show] waits for it (the ad is on screen meanwhile).
   Completer<void>? gate;
 
+  /// What [checkOnline] answers, and how often it was asked.
+  bool online = true;
+  int onlineChecks = 0;
+
+  /// When set, [checkOnline] waits for it.
+  Completer<void>? onlineGate;
+
   void emit(RewardedAdsState state) {
     _current = state;
     _states.add(state);
   }
 
-  void setStatus(RewardedAdStatus status) => emit(_current.copyWith(ad: status));
+  void setStatus(RewardedAdStatus status) => emit(_current.copyWith(ad: status, loadFailed: false));
+
+  /// A failed load that was not the network (no fill, an error): loading,
+  /// waiting for the retry.
+  void failLoad() => emit(_current.copyWith(ad: RewardedAdStatus.loading, loadFailed: true));
 
   void setPrivacyOptionsRequired(bool required) => emit(_current.copyWith(privacyOptionsRequired: required));
 
@@ -58,6 +69,13 @@ class FakeRewardedAds implements RewardedAds {
   Future<bool> showPrivacyOptions() async {
     privacyForms++;
     return true;
+  }
+
+  @override
+  Future<bool> checkOnline() async {
+    onlineChecks++;
+    await onlineGate?.future;
+    return online;
   }
 
   @override

@@ -36,6 +36,8 @@ import 'package:brain_train/features/gameplay/widgets/tile_flight_overlay.dart';
 import 'package:brain_train/features/gameplay/widgets/score_popups.dart';
 import 'package:brain_train/features/gameplay/widgets/tray_view.dart';
 import 'package:brain_train/game_engine/geometry/tile_mask.dart';
+import 'package:brain_train/game_engine/state/game_actions.dart';
+import 'package:brain_train/game_engine/state/game_engine.dart';
 import 'package:brain_train/game_engine/validation/solver.dart';
 import 'package:brain_train/platform/rewarded_ads.dart';
 import 'package:brain_train/rendering/symbol_art.dart';
@@ -664,6 +666,74 @@ void main() {
       expect(tester.getRect(find.text('Restart')).top, greaterThan(tester.getRect(find.byType(GameHud)).bottom));
       expect(tester.takeException(), isNull);
       await _capture(tester, 'gameplay_night_360x640_tray_full_ad_${status.name}', _small.dpr);
+      await _leave(tester);
+    });
+  }
+
+  for (final textScale in [1.0, 1.3]) {
+    final text = textScale == 1 ? '' : '_text130';
+
+    // Online with no ad to show: Revive is free after kAdFallbackDelay
+    // (owner, 2026-10-17).
+    testWidgets('tray-full overlay, no ad: a free revive, 360x640 at ${textScale}x text', (tester) async {
+      await start(tester, ads: FakeRewardedAds(RewardedAdStatus.loading));
+      final (save, last) = nearlyFullSave(snapshot, meadow);
+      await _pumpGame(tester, services: services, entry: meadow, phone: _small, textScale: textScale, resume: save);
+      await tapBoardTile(tester, snapshot, meadow, save.history, last);
+      await _settle(tester);
+      expect(find.text(kReviveLoadingNote), findsOneWidget);
+      await tester.pump(kAdFallbackDelay);
+      await tester.pump();
+      expect(find.text(kReviveFreeNote), findsOneWidget);
+      expect(find.byIcon(Icons.ondemand_video_rounded), findsNothing);
+      expect(tester.widget<PremiumButton>(find.widgetWithText(PremiumButton, 'Revive')).onPressed, isNotNull);
+      _expectLayout(tester, _small);
+      expect(tester.takeException(), isNull);
+      await _capture(tester, 'gameplay_night_360x640_tray_full_ad_free$text', _small.dpr);
+      await _leave(tester);
+    });
+
+    // After kMaxRevivesPerLevel revives: Restart only, and no ad.
+    testWidgets('tray-full overlay, no revives left, 360x640 at ${textScale}x text', (tester) async {
+      await start(tester, ads: FakeRewardedAds());
+      final (save, last) = nearlyFullSave(snapshot, meadow, revives: kMaxRevivesPerLevel);
+      await _pumpGame(tester, services: services, entry: meadow, phone: _small, textScale: textScale, resume: save);
+      await tapBoardTile(tester, snapshot, meadow, save.history, last);
+      await _settle(tester);
+      expect(find.text('Tray full'), findsOneWidget);
+      expect(find.text('Revive'), findsNothing);
+      expect(find.text(kNoRevivesLeftNote), findsOneWidget);
+      expect(find.text('Restart'), findsOneWidget);
+      _expectLayout(tester, _small);
+      expect(tester.takeException(), isNull);
+      await _capture(tester, 'gameplay_night_360x640_tray_full_no_revives$text', _small.dpr);
+      await _leave(tester);
+    });
+
+    testWidgets('refill card, no ad: a free Hint, 360x640 at ${textScale}x text', (tester) async {
+      await start(tester, ads: FakeRewardedAds(RewardedAdStatus.loading));
+      await _pumpGame(
+        tester,
+        services: services,
+        entry: meadow,
+        phone: _small,
+        textScale: textScale,
+        resume: solvedSave(snapshot, meadow, pairs: 2),
+      );
+      final game = gameOf(tester);
+      while (game.usesLeft(GameAction.hint) > 0 && game.useHint() != null) {}
+      await tester.pump();
+      await tester.tap(find.byKey(const ValueKey('action-hint')));
+      await _settle(tester);
+      expect(find.text(kRefillLoadingNote), findsOneWidget);
+      await _capture(tester, 'gameplay_night_360x640_refill_loading$text', _small.dpr);
+      await tester.pump(kAdFallbackDelay);
+      await tester.pump();
+      expect(find.text('One more Hint?'), findsOneWidget);
+      expect(find.text('Get +1 Hint'), findsOneWidget);
+      expect(find.text(refillFreeNote(GameAction.hint)), findsOneWidget);
+      expect(tester.takeException(), isNull);
+      await _capture(tester, 'gameplay_night_360x640_refill_free$text', _small.dpr);
       await _leave(tester);
     });
   }

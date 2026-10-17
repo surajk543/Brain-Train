@@ -201,6 +201,35 @@ void main() {
     controller.dispose();
   });
 
+  test('two revives per attempt: canRevive and revivesLeft follow, a resumed save keeps the count, Restart resets', () async {
+    final controller = controllerFor();
+    expect(controller.revivesLeft, kMaxRevivesPerLevel);
+    expect(controller.canRevive, isFalse, reason: 'nothing to revive while playing');
+    for (var i = 0; i < kMaxRevivesPerLevel; i++) {
+      await tap(controller, ['a1', 'b1', 'c1', 'd1']);
+      expect(controller.canRevive, isTrue);
+      expect(controller.revive(), isTrue);
+    }
+    await tap(controller, ['a1', 'b1', 'c1', 'd1']);
+    expect(controller.state.status, GameStatus.trayFull);
+    expect(controller.revivesLeft, 0);
+    expect(controller.canRevive, isFalse);
+    expect(controller.revive(), isFalse);
+    expect(controller.state.status, GameStatus.trayFull);
+    await Future<void>.delayed(Duration.zero);
+    // Saved lost with a full tray: it resumes with no revive left.
+    final resumed = controllerFor(resume: progress.savedGame());
+    expect(resumed.state.status, GameStatus.trayFull);
+    expect(resumed.revivesLeft, 0);
+    expect(resumed.canRevive, isFalse);
+    resumed.restart();
+    expect(resumed.revivesLeft, kMaxRevivesPerLevel);
+    await tap(resumed, ['a1', 'b1', 'c1', 'd1']);
+    expect(resumed.canRevive, isTrue);
+    resumed.dispose();
+    controller.dispose();
+  });
+
   test('with matches played as strikes, match and win sound at impact, not on tap', () async {
     final small = level([('a1', 'A', 0, 0, 0), ('a2', 'A', 4, 0, 0), ('b1', 'B', 8, 0, 0), ('b2', 'B', 12, 0, 0)]);
     final controller = GameController(
