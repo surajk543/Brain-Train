@@ -57,9 +57,12 @@ void main() {
   });
 
   group('tier schedule', () {
+    // Batch 2 needs over a million restarts (about 2 s): schedule the catalog once.
+    late final catalogOrder = scheduleTiers(catalogCampaign());
+
     test('the catalog: difficulty 1-10, 10 levels each, level 1 is 1, never three of a tier in a row', () {
       final config = catalogCampaign();
-      final order = scheduleTiers(config);
+      final order = catalogOrder;
       expect(config.tiers.map((t) => t.id), [for (var d = 1; d <= 10; d++) '$d']);
       expect(order, hasLength(config.levelCount));
       for (final tier in config.tiers) {
@@ -69,6 +72,30 @@ void main() {
       expect(order.first, '1');
       expect(longestRun(order), lessThanOrEqualTo(2));
       expect(scheduleTiers(config), order, reason: 'deterministic');
+    });
+
+    test('the catalog: the published tier order is pinned, batch by batch', () {
+      // Published levels depend on this order: a change to the schedule (its
+      // draw, restart limit or the catalog) must never move a published level.
+      const batch1 =
+          '1 2 1 4 4 5 2 6 1 1 3 8 6 7 8 7 4 3 4 10 3 10 9 5 8 4 5 6 8 8 1 7 5 10 6 2 3 9 10 1 '
+          '2 8 10 4 9 6 3 7 7 2 7 7 3 1 9 5 8 7 8 1 1 6 3 9 6 6 9 10 7 10 3 10 6 5 5 3 2 9 10 2 '
+          '7 8 1 10 2 4 8 4 5 3 9 9 4 6 2 2 5 4 9 5';
+      // 25 of difficulty 9 and 50 of 10 only fit as "10 10 9" repeats; the
+      // draw finds one at restart 1,263,282 (maxScheduleAttempts).
+      const batch2 =
+          '10 10 9 10 10 9 10 9 10 10 9 10 10 9 10 10 9 10 10 9 10 10 9 10 10 9 10 10 9 10 10 9 10 10 9 '
+          '10 10 9 10 10 9 10 10 9 10 10 9 10 10 9 10 10 9 10 10 9 10 10 9 10 10 9 10 10 9 10 10 9 10 9 '
+          '10 10 9 10 10';
+      expect(catalogOrder.sublist(0, 100).join(' '), batch1);
+      expect(catalogOrder.sublist(100, 175).join(' '), batch2);
+      // The batch-1 order is the same with the old restart limit: raising it
+      // changed no published level.
+      final firstBatch = CampaignConfig.fromJson({
+        ...(jsonDecode(File('content-src/catalog.json').readAsStringSync()) as Map)['campaign'] as Map<String, Object?>,
+        'batches': [catalogCampaign().batches.first],
+      });
+      expect(scheduleTiers(firstBatch, maxAttempts: 10000).join(' '), batch1);
     });
 
     test('the catalog: trays shrink as difficulty rises, within 2-5', () {

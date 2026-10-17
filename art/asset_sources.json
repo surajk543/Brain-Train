@@ -2673,7 +2673,8 @@
       "expectedSourceFile": "shop-credit-card",
       "outputFile": "shop-credit-card.webp",
       "sourceUrl": "https://iconscout.com/3d-icon/credit-card-3d-icon_13533047",
-      "status": "integrated"
+      "status": "rejected",
+      "rejected": "payment card in a game for under-13 players (owner, 2026-10-17)"
     },
     {
       "code": "SHOP_RATING_STARS",

@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "registryVersion": "brain-train-symbols-c01cf59c",
+  "registryVersion": "brain-train-symbols-39ee55e5",
   "symbols": {
     "COSMIC_CHESTNUT": {
       "type": "image",
@@ -1529,6 +1529,134 @@
       "label": "Pill Bottle",
       "sha256": "bfd9f6c04aca1651ea32d0eee1422b7e497d818f2cdffc4a57e45dac4f53cc73",
       "source": "https://iconscout.com/3d-icon/medicine-bottle-with-capsule-medicine-3d-icon_14221063"
+    },
+    "SHOP_BARCODE_TAG": {
+      "type": "image",
+      "assetPath": "symbols/v1/shop-barcode-tag.webp",
+      "matchGroup": "SHOP_BARCODE_TAG",
+      "label": "Barcode Tag",
+      "sha256": "b14807daaad1ca8bc26cde36673913713c1ff0d2d74dc91349afe3e8a732d6c0",
+      "source": "https://iconscout.com/3d-icon/barcode-tag-3d-icon_13533046"
+    },
+    "SHOP_LOCATION_PIN": {
+      "type": "image",
+      "assetPath": "symbols/v1/shop-location-pin.webp",
+      "matchGroup": "SHOP_LOCATION_PIN",
+      "label": "Location Pin",
+      "sha256": "65ec7daf39b227ef92eaf6cf6292512e6aa840362b39084ddc046ab545e400c6",
+      "source": "https://iconscout.com/3d-icon/discount-location-3d-icon_13533034"
+    },
+    "SHOP_OPEN_SIGN": {
+      "type": "image",
+      "assetPath": "symbols/v1/shop-open-sign.webp",
+      "matchGroup": "SHOP_OPEN_SIGN",
+      "label": "Open Sign",
+      "sha256": "b05e61164dddec099cfdc2b47acdec24dc73063cff7e163cebfe67fc6a0b0b4b",
+      "source": "https://iconscout.com/3d-icon/open-sale-3d-icon_13533049"
+    },
+    "SHOP_PARCEL": {
+      "type": "image",
+      "assetPath": "symbols/v1/shop-parcel.webp",
+      "matchGroup": "SHOP_PARCEL",
+      "label": "Parcel",
+      "sha256": "9d8f13cdc61bbc6c5a5e530fb307446eaed725a7df59bbc5ea6ded45d7b1b18d",
+      "source": "https://iconscout.com/3d-icon/package-delivery-location-3d-icon_13533026"
+    },
+    "SHOP_BAGS": {
+      "type": "image",
+      "assetPath": "symbols/v1/shop-bags.webp",
+      "matchGroup": "SHOP_BAGS",
+      "label": "Shopping Bags",
+      "sha256": "f9390f9fe591bf247e79e51ea2ba0dea59cbdd217a48360a1ca5a118207b299e",
+      "source": "https://iconscout.com/3d-icon/shopping-bag-3d-icon_13533044"
+    },
+    "SHOP_BASKET": {
+      "type": "image",
+      "assetPath": "symbols/v1/shop-basket.webp",
+      "matchGroup": "SHOP_BASKET",
+      "label": "Shopping Basket",
+      "sha256": "696e7242ad229294c4dbd9a02b05759fe520113f90b33451ef7ee1566a400b35",
+      "source": "https://iconscout.com/3d-icon/shopping-basket-3d-icon_13533031"
+    },
+    "UI_CHAT_BUBBLE": {
+      "type": "image",
+      "assetPath": "symbols/v1/ui-chat-bubble.webp",
+      "matchGroup": "UI_CHAT_BUBBLE",
+      "label": "Chat Bubble",
+      "sha256": "fd7e8a885a625122389d6079ca02002d4193fb15910615fc255d526eb25d659b",
+      "source": "https://iconscout.com/3d-icon/chat-notification-3d-icon_13327984"
+    },
+    "UI_CONTACT_BOOK": {
+      "type": "image",
+      "assetPath": "symbols/v1/ui-contact-book.webp",
+      "matchGroup": "UI_CONTACT_BOOK",
+      "label": "Contact Book",
+      "sha256": "29d70669003c642ddd6943fb2db69757f7f7cfde3208ebc4f30166a1f2e4786d",
+      "source": "https://iconscout.com/3d-icon/contact-book-3d-icon_13327988"
+    },
+    "UI_MICROPHONE": {
+      "type": "image",
+      "assetPath": "symbols/v1/ui-microphone.webp",
+      "matchGroup": "UI_MICROPHONE",
+      "label": "Microphone",
+      "sha256": "e75b7a3ba121ba60b6298f7d2e74a2f41af9ccd8779f6fab2961b4ccde8ce33f",
+      "source": "https://iconscout.com/3d-icon/microphone-3d-icon_13327986"
+    },
+    "MKT_EMAIL": {
+      "type": "image",
+      "assetPath": "symbols/v1/mkt-email.webp",
+      "matchGroup": "MKT_EMAIL",
+      "label": "Email Envelope",
+      "sha256": "88c5eee6675aeca3e27f18e341d5deb729fdaa8c1dfabe7e368ee48058519763",
+      "source": "https://iconscout.com/3d-icon/email-marketing-3d-icon_8868408"
+    },
+    "TRIP2_SCROLL_MAP": {
+      "type": "image",
+      "assetPath": "symbols/v1/trip2-scroll-map.webp",
+      "matchGroup": "TRIP2_SCROLL_MAP",
+      "label": "Map Scroll",
+      "sha256": "4a174eb89d9272b9f5d75d14aaa84cb4d4e5dd4cd92e1223772b6fa101080596",
+      "source": "https://iconscout.com/3d-icon/map-3d-icon_9052856"
+    },
+    "TRIP2_SURF_WAVE": {
+      "type": "image",
+      "assetPath": "symbols/v1/trip2-surf-wave.webp",
+      "matchGroup": "TRIP2_SURF_WAVE",
+      "label": "Surfboard Wave",
+      "sha256": "96451ca8c41a9fb58c31dec4d7a9c1bc95f8aad1c42583db7d0f4302e6e9cb05",
+      "source": "https://iconscout.com/3d-icon/surfing-board-3d-icon_9052847"
+    },
+    "LOVE2_CHOCOLATE_BAR": {
+      "type": "image",
+      "assetPath": "symbols/v1/love2-chocolate-bar.webp",
+      "matchGroup": "LOVE2_CHOCOLATE_BAR",
+      "label": "Chocolate Bar",
+      "sha256": "7b194f45855bc26613839ec4638547f5ea4fcead0908480b8133367ea2df19d6",
+      "source": "https://iconscout.com/3d-icon/chocolate-bar-3d-icon_6067884"
+    },
+    "LOVE2_BOUQUET": {
+      "type": "image",
+      "assetPath": "symbols/v1/love2-bouquet.webp",
+      "matchGroup": "LOVE2_BOUQUET",
+      "label": "Rose Bouquet",
+      "sha256": "a72e0bcb61fed95b4c65dbbe0c70ccdeaa3fe1786f10f6ec5e9d102a3221b3e7",
+      "source": "https://iconscout.com/3d-icon/flower-bouquet-3d-icon_6067883"
+    },
+    "LOVE2_HEART_HANDS": {
+      "type": "image",
+      "assetPath": "symbols/v1/love2-heart-hands.webp",
+      "matchGroup": "LOVE2_HEART_HANDS",
+      "label": "Heart in Hands",
+      "sha256": "043ccc6f00acabbc68e4770015718f522cb50d26833f48208cca74ad92b66a7f",
+      "source": "https://iconscout.com/3d-icon/giving-love-3d-icon_6067888"
+    },
+    "LOVE2_TEDDY_BEAR": {
+      "type": "image",
+      "assetPath": "symbols/v1/love2-teddy-bear.webp",
+      "matchGroup": "LOVE2_TEDDY_BEAR",
+      "label": "Teddy Bear",
+      "sha256": "899ec805057ebf597927d81de7f2b95f9af12ccdc9b5b5865ccb7a6d587bc373",
+      "source": "https://iconscout.com/3d-icon/teddy-bear-3d-icon_6067891"
     },
     "EMOJI_FIRE": {
       "type": "lottie",
