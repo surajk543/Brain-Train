@@ -271,7 +271,7 @@ dart run tool/smoke_remote.dart         # live check: app's content client vs pr
   first Sound change pins it, so players who muted Sound before 1.1.0 stay silent). Sound Effects (`settings.sound`)
   gates only the effects (`SoundEffects`). `BackgroundMusic` takes a `MusicPlayer` (audioplayers; a fake in
   `test/app/background_music_test.dart`).
-- Sounds: `assets/sounds/tap.wav` (one tap cut from the owner's Tap.mp3) on every playable tap; `assets/sounds/strike.wav` (one hit cut from the owner's strike.mp3, 0.95 s) is `Sfx.match`, played when a matched pair strikes in the tray; the last pair's strike is followed by `Sfx.win` 450 ms later.
+- Sounds: `assets/sounds/tap.wav` (one tap cut from the owner's Tap.mp3) on every playable tap; `assets/sounds/strike.wav` (the owner's impact.mp3, trimmed to 0.81 s, -6 dB; owner 2026-10-17; was a hit cut from strike.mp3) is `Sfx.match`, played when a matched pair strikes in the tray; the last pair's strike is followed by `Sfx.win` 450 ms later.
 - Game actions (owner, 2026-10-17, 1.1.0; replaces "no Undo and no Hint"): Undo, Hint and Shuffle, 1 / 1 / 1 uses
   per level (`kStartingCharges`), back to 1/1/1 on Restart, unchanged by Revive; with none left the player can watch a
   rewarded ad for +1 of that action (`GameController.grant`, saved as `!grant:<action>`). API:

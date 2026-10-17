@@ -8,8 +8,8 @@ enum Sfx {
   /// The player tapped a tile that can be played (it goes to the tray).
   tap('sounds/tap.wav'),
   select('sounds/select.wav'),
-  /// Two matched tiles strike each other in the tray (a single hit cut from
-  /// the owner's strike.mp3).
+  /// Two matched tiles strike each other in the tray (the owner's
+  /// impact.mp3, trimmed to 0.81 s and lowered 6 dB; owner, 2026-10-17).
   match('sounds/strike.wav'),
   invalid('sounds/invalid.wav'),
   win('sounds/win.wav'),
