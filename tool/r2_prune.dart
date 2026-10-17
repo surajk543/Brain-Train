@@ -67,9 +67,12 @@ Future<void> main(List<String> args) async {
     stderr.writeln('ABORT     ${missing.length} referenced objects are not in the bucket, e.g. ${missing.first}');
     exit(1);
   }
+  // Mutable keys the manifest does not reference but the app reads: never
+  // stale (the app update notice, docs/APP_UPDATES.md).
+  final mutable = {'${prefix}app-update.json'};
   final stale = [
     for (final (key, size) in objects)
-      if (!keep.contains(key)) (key, size),
+      if (!keep.contains(key) && !mutable.contains(key)) (key, size),
   ]..sort((a, b) => a.$1.compareTo(b.$1));
 
   // Summary by folder (levels/, registries/, symbols/v3/, ...).

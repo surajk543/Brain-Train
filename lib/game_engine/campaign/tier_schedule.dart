@@ -1,5 +1,16 @@
+import 'dart:typed_data';
+
 import 'campaign_config.dart';
 import 'seeded_random.dart';
+
+/// Restarts allowed per batch before [scheduleTiers] gives up.
+///
+/// A batch whose counts leave almost no valid order needs many: batch 2 of
+/// the catalog (25 levels of difficulty 9, 50 of difficulty 10, maxTierRun 2)
+/// only fits as near-forced "10 10 9" repeats and is placed at restart
+/// 1,263,282 (about 2 s). Raising the limit never changes a batch that was
+/// already placed, because every batch stops at its first success.
+const int maxScheduleAttempts = 2000000;
 
 /// The difficulty tier of each level, in level order.
 ///
@@ -10,60 +21,88 @@ import 'seeded_random.dart';
 /// across a batch boundary. Each pick is weighted by how many levels a tier
 /// still needs, so the tiers stay mixed along the whole batch; a dead end
 /// (only a tier that would break the run rule is left) restarts the batch
-/// with the next random stream. A batch depends only on the ones before it,
-/// so appending one never changes an earlier level.
-List<String> scheduleTiers(CampaignConfig config) {
+/// with the next random stream, at most [maxAttempts] times. A batch depends
+/// only on the ones before it, so appending one never changes an earlier
+/// level.
+List<String> scheduleTiers(CampaignConfig config, {int maxAttempts = maxScheduleAttempts}) {
   final order = <String>[];
   for (var batch = 0; batch < config.batches.length; batch++) {
-    order.addAll(_scheduleBatch(config, batch, order));
+    order.addAll(_scheduleBatch(config, batch, order, maxAttempts));
   }
   return order;
 }
 
-List<String> _scheduleBatch(CampaignConfig config, int batch, List<String> before) {
+// The draw is pinned: published levels depend on it. Per pick, the options
+// are the tiers (in catalog order) that still need levels and would not
+// break the run; one nextInt over their summed remaining counts picks one,
+// weighted by those counts. This loop is the plain list version
+// (`options = [for (t in tiers) if (remaining > 0 && !breaksRun) t]`)
+// written with arrays and a running run length, so a batch that needs
+// millions of restarts stays fast; it makes the same random calls.
+List<String> _scheduleBatch(CampaignConfig config, int batch, List<String> before, int maxAttempts) {
   final random = SeededRandom.of(batch == 0 ? ['tiers', config.seed] : ['tiers', config.seed, batch]);
   final total = config.batches[batch].values.fold(0, (sum, n) => sum + n);
-  for (var attempt = 0; attempt < 10000; attempt++) {
-    final remaining = {for (final t in config.tiers) t.id: config.countIn(batch, t.id)};
-    final order = [...before];
-    if (batch == 0) {
-      order.add(config.firstTier);
-      remaining[config.firstTier] = remaining[config.firstTier]! - 1;
-      if (remaining[config.firstTier]! < 0) throw StateError('firstTier ${config.firstTier} has count 0');
+  final ids = [
+    for (final t in config.tiers)
+      if (config.countIn(batch, t.id) > 0) t.id,
+  ];
+  final counts = Int32List.fromList([for (final id in ids) config.countIn(batch, id)]);
+  final maxRun = config.maxTierRun;
+
+  // The run the batch starts after: the tier ending [before] (-1 if it is not
+  // in this batch, so it can never be extended) and how many times in a row.
+  var startRunTier = -1, startRunLength = 0;
+  if (before.isNotEmpty) {
+    startRunTier = ids.indexOf(before.last);
+    for (var i = before.length - 1; i >= 0 && before[i] == before.last; i--) {
+      startRunLength++;
+    }
+  }
+  final first = batch == 0 ? ids.indexOf(config.firstTier) : -1;
+  if (batch == 0 && first < 0) throw StateError('firstTier ${config.firstTier} has count 0');
+
+  final remaining = Int32List(ids.length);
+  final picks = Int32List(total);
+  for (var attempt = 0; attempt < maxAttempts; attempt++) {
+    remaining.setAll(0, counts);
+    var length = 0, runTier = startRunTier, runLength = startRunLength;
+    if (first >= 0) {
+      picks[length++] = first;
+      remaining[first]--;
+      runTier = first;
+      runLength = 1;
     }
     var dead = false;
-    while (order.length < before.length + total) {
-      final options = [
-        for (final t in config.tiers)
-          if (remaining[t.id]! > 0 && !_breaksRun(order, t.id, config.maxTierRun)) t.id,
-      ];
-      if (options.isEmpty) {
+    while (length < total) {
+      var weight = 0;
+      for (var k = 0; k < ids.length; k++) {
+        if (remaining[k] > 0 && !(k == runTier && runLength >= maxRun)) weight += remaining[k];
+      }
+      if (weight == 0) {
         dead = true;
         break;
       }
-      var roll = random.nextInt(options.fold(0, (sum, id) => sum + remaining[id]!));
-      var chosen = options.last;
-      for (final id in options) {
-        roll -= remaining[id]!;
-        if (roll < 0) {
-          chosen = id;
-          break;
+      var roll = random.nextInt(weight);
+      var chosen = -1;
+      for (var k = 0; k < ids.length; k++) {
+        if (remaining[k] > 0 && !(k == runTier && runLength >= maxRun)) {
+          chosen = k;
+          roll -= remaining[k];
+          if (roll < 0) break;
         }
       }
-      order.add(chosen);
-      remaining[chosen] = remaining[chosen]! - 1;
+      picks[length++] = chosen;
+      remaining[chosen]--;
+      if (chosen == runTier) {
+        runLength++;
+      } else {
+        runTier = chosen;
+        runLength = 1;
+      }
     }
-    if (!dead) return order.sublist(before.length);
+    if (!dead) return [for (var i = 0; i < total; i++) ids[picks[i]]];
   }
   throw StateError('batch ${batch + 1}: no tier order satisfies maxTierRun ${config.maxTierRun}');
-}
-
-bool _breaksRun(List<String> order, String id, int maxRun) {
-  if (order.length < maxRun) return false;
-  for (var i = order.length - maxRun; i < order.length; i++) {
-    if (order[i] != id) return false;
-  }
-  return true;
 }
 
 /// Longest run of one tier in [order].

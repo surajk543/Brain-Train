@@ -1,5 +1,5 @@
 {
-  "_comment": "Static symbol artwork for Brain Train, set v1 (was v4 until 2026-10-16). Two kinds of source: (1) owner-supplied images (Downloads/symbol, generated with Gemini 2.5 Flash Image) on light backgrounds, style \"cutout\": the background is removed by tool/assets/cutout.py; (2) IconScout premium 3D icons and illustrations downloaded with the owner's IconScout subscription: 3D icons are transparent PNGs (trimmed, centred, normalised); illustrations with a scene background use \"cutout\" too. Originals live in art/source/symbols-v1/ (gitignored). Process with `python3 tool/assets/prepare_symbols.py`. Each entry has a `status`: \"integrated\" (WebP written and reviewed; only these go into the registry), \"pending\" (source present, not yet reviewed), \"rejected\" (see its `rejected` reason; unreadable at a 31 px tile) or \"awaiting download\" (IconScout source not downloaded yet; the 3D download quota ran out). Pack items left out as duplicates are not listed. (3) Owner-supplied nano-banana 2.1 renders (2026-10-16; originalFile is the downloaded name): the white, grey or dark backdrop was cut away beforehand (border flood fill, feathered edge), so their sources are transparent PNGs and the entries have no style; near-duplicate renders are not listed.",
+  "_comment": "Static symbol artwork for Brain Train, set v1 (was v4 until 2026-10-16). Two kinds of source: (1) owner-supplied images (Downloads/symbol, generated with Gemini 2.5 Flash Image) on light backgrounds, style \"cutout\": the background is removed by tool/assets/cutout.py; (2) IconScout premium 3D icons and illustrations downloaded with the owner's IconScout subscription: 3D icons are transparent PNGs (trimmed, centred, normalised); illustrations with a scene background use \"cutout\" too. Originals live in art/source/symbols-v1/ (gitignored). Process with `python3 tool/assets/prepare_symbols.py`. Each entry has a `status`: \"integrated\" (WebP written and reviewed; only these go into the registry), \"pending\" (source present, not yet reviewed), \"rejected\" (see its `rejected` reason; unreadable at a 31 px tile) or \"awaiting download\" (IconScout source not downloaded yet; the 3D download quota ran out). Pack items left out as duplicates are not listed. (3) Owner-supplied nano-banana 2.1 renders (2026-10-16; originalFile is the downloaded name): the white, grey or dark backdrop was cut away beforehand (border flood fill, feathered edge), so their sources are transparent PNGs and the entries have no style; near-duplicate renders are not listed. 2026-10-17: the IconScout 3D packs User Interface (375876), Shopping And Sale (381781), Internet Marketing (250877), Travel & Holiday (256432) and Valentine's Day (168294) were screened from their previews; pack items not listed (duplicate subjects, busy scenes, phones and screens, money or trading imagery, look-alikes) were left out without a download.",
   "provider": "Owner-supplied (Gemini 2.5 Flash Image, nano-banana 2.1) + IconScout (premium 3D icons and illustrations)",
   "licenseNote": "Owner-supplied images (AI renders the owner made with Gemini 2.5 Flash Image and nano-banana 2.1): supplied by the owner for use in Brain Train. IconScout assets: downloaded under the owner's IconScout subscription license (commercial use, no attribution required); sourceUrl lists each asset page.",
   "imageSet": "v1",
@@ -2601,6 +2601,210 @@
       "outputFile": "sci-test-tubes.webp",
       "sourceUrl": "https://iconscout.com/3d-icon/test-tube-3d-icon_13511088",
       "status": "awaiting download"
+    },
+    {
+      "code": "SHOP_BARCODE_TAG",
+      "title": "Barcode Tag",
+      "originalFile": "barcode-tag-3d-icon_13533046.png",
+      "expectedSourceFile": "shop-barcode-tag",
+      "outputFile": "shop-barcode-tag.webp",
+      "sourceUrl": "https://iconscout.com/3d-icon/barcode-tag-3d-icon_13533046",
+      "status": "integrated"
+    },
+    {
+      "code": "SHOP_LOCATION_PIN",
+      "title": "Location Pin",
+      "originalFile": "discount-location-3d-icon_13533034.png",
+      "expectedSourceFile": "shop-location-pin",
+      "outputFile": "shop-location-pin.webp",
+      "sourceUrl": "https://iconscout.com/3d-icon/discount-location-3d-icon_13533034",
+      "status": "integrated"
+    },
+    {
+      "code": "SHOP_HOT_SALE",
+      "title": "Hot Sale Tag",
+      "originalFile": "hot-sale-3d-icon_13533051.png",
+      "expectedSourceFile": "shop-hot-sale",
+      "outputFile": "shop-hot-sale.webp",
+      "sourceUrl": "https://iconscout.com/3d-icon/hot-sale-3d-icon_13533051",
+      "status": "rejected",
+      "rejected": "confusable at 31 px with SHOP_BARCODE_TAG (red price tag); the HOT SALE text is illegible"
+    },
+    {
+      "code": "SHOP_OPEN_SIGN",
+      "title": "Open Sign",
+      "originalFile": "open-sale-3d-icon_13533049.png",
+      "expectedSourceFile": "shop-open-sign",
+      "outputFile": "shop-open-sign.webp",
+      "sourceUrl": "https://iconscout.com/3d-icon/open-sale-3d-icon_13533049",
+      "status": "integrated"
+    },
+    {
+      "code": "SHOP_PARCEL",
+      "title": "Parcel",
+      "originalFile": "package-delivery-location-3d-icon_13533026.png",
+      "expectedSourceFile": "shop-parcel",
+      "outputFile": "shop-parcel.webp",
+      "sourceUrl": "https://iconscout.com/3d-icon/package-delivery-location-3d-icon_13533026",
+      "status": "integrated"
+    },
+    {
+      "code": "SHOP_BAGS",
+      "title": "Shopping Bags",
+      "originalFile": "shopping-bag-3d-icon_13533044.png",
+      "expectedSourceFile": "shop-bags",
+      "outputFile": "shop-bags.webp",
+      "sourceUrl": "https://iconscout.com/3d-icon/shopping-bag-3d-icon_13533044",
+      "status": "integrated"
+    },
+    {
+      "code": "SHOP_BASKET",
+      "title": "Shopping Basket",
+      "originalFile": "shopping-basket-3d-icon_13533031.png",
+      "expectedSourceFile": "shop-basket",
+      "outputFile": "shop-basket.webp",
+      "sourceUrl": "https://iconscout.com/3d-icon/shopping-basket-3d-icon_13533031",
+      "status": "integrated"
+    },
+    {
+      "code": "SHOP_CREDIT_CARD",
+      "title": "Payment Cards",
+      "originalFile": "credit-card-3d-icon_13533047.png",
+      "expectedSourceFile": "shop-credit-card",
+      "outputFile": "shop-credit-card.webp",
+      "sourceUrl": "https://iconscout.com/3d-icon/credit-card-3d-icon_13533047",
+      "status": "rejected",
+      "rejected": "payment card in a game for under-13 players (owner, 2026-10-17)"
+    },
+    {
+      "code": "SHOP_RATING_STARS",
+      "title": "Star Rating",
+      "originalFile": "rating-star-hand-gesture-3d-icon_13533027.png",
+      "expectedSourceFile": "shop-rating-stars",
+      "outputFile": "shop-rating-stars.webp",
+      "sourceUrl": "https://iconscout.com/3d-icon/rating-star-hand-gesture-3d-icon_13533027",
+      "status": "rejected",
+      "rejected": "busy at 31 px (thin row of small stars becomes a yellow fringe); same two-hands composition as LOVE2_HEART_HANDS"
+    },
+    {
+      "code": "UI_CHAT_BUBBLE",
+      "title": "Chat Bubble",
+      "originalFile": "chat-notification-3d-icon_13327984.png",
+      "expectedSourceFile": "ui-chat-bubble",
+      "outputFile": "ui-chat-bubble.webp",
+      "sourceUrl": "https://iconscout.com/3d-icon/chat-notification-3d-icon_13327984",
+      "status": "integrated"
+    },
+    {
+      "code": "UI_CONTACT_BOOK",
+      "title": "Contact Book",
+      "originalFile": "contact-book-3d-icon_13327988.png",
+      "expectedSourceFile": "ui-contact-book",
+      "outputFile": "ui-contact-book.webp",
+      "sourceUrl": "https://iconscout.com/3d-icon/contact-book-3d-icon_13327988",
+      "status": "integrated"
+    },
+    {
+      "code": "UI_MICROPHONE",
+      "title": "Microphone",
+      "originalFile": "microphone-3d-icon_13327986.png",
+      "expectedSourceFile": "ui-microphone",
+      "outputFile": "ui-microphone.webp",
+      "sourceUrl": "https://iconscout.com/3d-icon/microphone-3d-icon_13327986",
+      "status": "integrated"
+    },
+    {
+      "code": "MKT_EMAIL",
+      "title": "Email Envelope",
+      "originalFile": "email-marketing-3d-icon_8868408.png",
+      "expectedSourceFile": "mkt-email",
+      "outputFile": "mkt-email.webp",
+      "sourceUrl": "https://iconscout.com/3d-icon/email-marketing-3d-icon_8868408",
+      "status": "integrated"
+    },
+    {
+      "code": "TRIP2_SCROLL_MAP",
+      "title": "Map Scroll",
+      "originalFile": "map-3d-icon_9052856.png",
+      "expectedSourceFile": "trip2-scroll-map",
+      "outputFile": "trip2-scroll-map.webp",
+      "sourceUrl": "https://iconscout.com/3d-icon/map-3d-icon_9052856",
+      "status": "integrated"
+    },
+    {
+      "code": "TRIP2_BINOCULARS",
+      "title": "Binoculars",
+      "originalFile": "scope-3d-icon_9052855.png",
+      "expectedSourceFile": "trip2-binoculars",
+      "outputFile": "trip2-binoculars.webp",
+      "sourceUrl": "https://iconscout.com/3d-icon/scope-3d-icon_9052855",
+      "status": "rejected",
+      "rejected": "confusable at 31 px with TRIP_CAMERA (dark body with yellow accents); the straw hat on top muddles the shape"
+    },
+    {
+      "code": "TRIP2_SURF_WAVE",
+      "title": "Surfboard Wave",
+      "originalFile": "surfing-board-3d-icon_9052847.png",
+      "expectedSourceFile": "trip2-surf-wave",
+      "outputFile": "trip2-surf-wave.webp",
+      "sourceUrl": "https://iconscout.com/3d-icon/surfing-board-3d-icon_9052847",
+      "status": "integrated"
+    },
+    {
+      "code": "LOVE2_CHOCOLATE_BAR",
+      "title": "Chocolate Bar",
+      "originalFile": "chocolate-bar-3d-icon_6067884.png",
+      "expectedSourceFile": "love2-chocolate-bar",
+      "outputFile": "love2-chocolate-bar.webp",
+      "sourceUrl": "https://iconscout.com/3d-icon/chocolate-bar-3d-icon_6067884",
+      "status": "integrated"
+    },
+    {
+      "code": "LOVE2_BOUQUET",
+      "title": "Rose Bouquet",
+      "originalFile": "flower-bouquet-3d-icon_6067883.png",
+      "expectedSourceFile": "love2-bouquet",
+      "outputFile": "love2-bouquet.webp",
+      "sourceUrl": "https://iconscout.com/3d-icon/flower-bouquet-3d-icon_6067883",
+      "status": "integrated"
+    },
+    {
+      "code": "LOVE2_HEART_HANDS",
+      "title": "Heart in Hands",
+      "originalFile": "giving-love-3d-icon_6067888.png",
+      "expectedSourceFile": "love2-heart-hands",
+      "outputFile": "love2-heart-hands.webp",
+      "sourceUrl": "https://iconscout.com/3d-icon/giving-love-3d-icon_6067888",
+      "status": "integrated"
+    },
+    {
+      "code": "LOVE2_LETTER",
+      "title": "Love Letter",
+      "originalFile": "love-letter-3d-icon_6067887.png",
+      "expectedSourceFile": "love2-letter",
+      "outputFile": "love2-letter.webp",
+      "sourceUrl": "https://iconscout.com/3d-icon/love-letter-3d-icon_6067887",
+      "status": "rejected",
+      "rejected": "duplicate subject of MKT_EMAIL (envelope with a letter); pale pink on the ivory face at 31 px"
+    },
+    {
+      "code": "LOVE2_HEART_WINGS",
+      "title": "Winged Heart",
+      "originalFile": "love-wings-3d-icon_6067890.png",
+      "expectedSourceFile": "love2-heart-wings",
+      "outputFile": "love2-heart-wings.webp",
+      "sourceUrl": "https://iconscout.com/3d-icon/love-wings-3d-icon_6067890",
+      "status": "rejected",
+      "rejected": "confusable at 31 px with LOVE_HEART_BUDDY (pink heart); the white wings and halo nearly vanish on the ivory face"
+    },
+    {
+      "code": "LOVE2_TEDDY_BEAR",
+      "title": "Teddy Bear",
+      "originalFile": "teddy-bear-3d-icon_6067891.png",
+      "expectedSourceFile": "love2-teddy-bear",
+      "outputFile": "love2-teddy-bear.webp",
+      "sourceUrl": "https://iconscout.com/3d-icon/teddy-bear-3d-icon_6067891",
+      "status": "integrated"
     }
   ]
 }
