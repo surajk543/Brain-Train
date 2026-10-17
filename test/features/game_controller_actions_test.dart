@@ -77,8 +77,9 @@ void main() {
 
   Future<void> settle() => Future<void>.delayed(Duration.zero);
 
-  /// [c] with [extra] more uses of [action] than the one a level starts with,
-  /// granted the way a rewarded ad does ([GameController.grant]).
+  /// [c] with [extra] (at most [kMaxGrantsPerAction]) more uses of [action]
+  /// than the one a level starts with, granted the way a rewarded ad does
+  /// ([GameController.grant]).
   GameController withGranted(GameController c, GameAction action, int extra) {
     for (var i = 0; i < extra; i++) {
       expect(c.grant(action), isTrue);
@@ -200,6 +201,10 @@ void main() {
       expect(c.usesLeft(GameAction.undo), 0);
       c.tapTile('a1');
       expect(c.canUse(GameAction.undo), isFalse, reason: 'one ad, one use');
+      expect(c.isSpent(GameAction.undo), isTrue, reason: 'one ad per level attempt');
+      expect(c.grant(GameAction.undo), isFalse);
+      await settle();
+      expect(progress.savedGame()!.history.last, 'a1', reason: 'a refused grant is not saved');
       c.dispose();
     });
 
@@ -310,13 +315,12 @@ void main() {
       expect(c.isAvailable(GameAction.hint), isTrue);
       expect(c.canUse(GameAction.hint), isFalse);
       expect(c.useHint(), isNull);
-      withGranted(c, GameAction.hint, 2);
-      expect(c.useHint(), isNotNull);
+      withGranted(c, GameAction.hint, 1);
       expect(c.useHint(), isNotNull);
       expect(c.useHint(), isNull);
-      expect(c.actions.hintsUsed, 3);
-      c.grant(GameAction.hint);
-      expect(c.useHint(), isNotNull);
+      expect(c.actions.hintsUsed, 2);
+      expect(c.grant(GameAction.hint), isFalse, reason: 'two hints per level attempt');
+      expect(c.useHint(), isNull);
       for (final id in ['a1', 'b1', 'c1', 'd1']) {
         c.tapTile(id);
       }
@@ -428,7 +432,10 @@ void main() {
       undosUsed: 1,
       hintsUsed: 1,
       shufflesUsed: 1,
+      undosGranted: 1,
     ));
+    expect([for (final action in GameAction.values) resumed.grantsLeft(action)], [0, 1, 1],
+        reason: 'undo, hint, shuffle');
     List<String> symbols(GameController game) => [for (final t in game.boardLevel.tiles) t.symbolCode];
     expect(symbols(resumed), symbols(c));
     expect((resumed.score, resumed.scoring.bestCombo), (c.score, c.scoring.bestCombo));
@@ -464,6 +471,82 @@ void main() {
     c.restart();
     expect(c.winSummary, isNull);
     c.dispose();
+  });
+
+  group('grant cap', () {
+    test('1 free use + 1 granted, then spent; grantsLeft and isSpent follow', () async {
+      final c = controllerFor();
+      for (final action in GameAction.values) {
+        expect((c.usesLeft(action), c.grantsLeft(action), c.isSpent(action)), (1, 1, false), reason: action.name);
+      }
+      expect(c.useHint(), isNotNull);
+      expect((c.usesLeft(GameAction.hint), c.grantsLeft(GameAction.hint), c.isSpent(GameAction.hint)), (0, 1, false));
+      expect(c.grant(GameAction.hint), isTrue);
+      expect((c.usesLeft(GameAction.hint), c.grantsLeft(GameAction.hint), c.isSpent(GameAction.hint)), (1, 0, false));
+      expect(c.useHint(), isNotNull);
+      expect((c.usesLeft(GameAction.hint), c.grantsLeft(GameAction.hint), c.isSpent(GameAction.hint)), (0, 0, true));
+      expect(c.isAvailable(GameAction.hint), isTrue, reason: 'a hint exists; the action is spent');
+      expect(c.grant(GameAction.hint), isFalse);
+      expect(c.useHint(), isNull);
+      expect(c.isSpent(GameAction.undo) || c.isSpent(GameAction.shuffle), isFalse);
+      c.dispose();
+    });
+
+    test('revive keeps the cap; restart gives the grant back', () async {
+      final c = controllerFor();
+      c
+        ..useHint()
+        ..grant(GameAction.hint)
+        ..useHint();
+      for (final id in ['a1', 'b1', 'c1', 'd1']) {
+        c.tapTile(id);
+      }
+      expect(c.revive(), isTrue);
+      expect(c.isSpent(GameAction.hint), isTrue);
+      expect(c.grant(GameAction.hint), isFalse);
+      c.restart();
+      expect(c.actions, ActionCounts.initial);
+      expect((c.usesLeft(GameAction.hint), c.grantsLeft(GameAction.hint), c.isSpent(GameAction.hint)), (1, 1, false));
+      c.dispose();
+    });
+
+    test('a resumed save keeps the cap', () async {
+      final c = controllerFor();
+      c
+        ..tapTile('a1')
+        ..undo()
+        ..grant(GameAction.undo)
+        ..tapTile('a1')
+        ..undo();
+      expect(c.isSpent(GameAction.undo), isTrue);
+      await settle();
+      final resumed = controllerFor(resume: progress.savedGame());
+      expect(resumed.state.history, c.state.history, reason: 'resumed, not started over');
+      expect(resumed.isSpent(GameAction.undo), isTrue);
+      resumed.tapTile('a1');
+      expect(resumed.grant(GameAction.undo), isFalse);
+      expect(resumed.undo(), isNull);
+      resumed.dispose();
+      c.dispose();
+    });
+
+    test('a save from before the cap (two grants of an action) resumes; the action is then spent', () async {
+      final saved = SavedGame(
+        levelId: 'test-level',
+        levelUrl: entry.ref.url,
+        history: const ['a1', '!hint', '!grant:hint', '!hint', '!grant:hint', '!hint', 'b1'],
+        elapsedMs: 5000,
+      );
+      final c = controllerFor(resume: saved);
+      expect(c.state.history, saved.history, reason: 'resumed, not started over');
+      expect(c.state.tray, ['a1', 'b1']);
+      expect(c.elapsed, const Duration(seconds: 5));
+      expect(c.actions.hintsUsed, 3);
+      expect((c.usesLeft(GameAction.hint), c.grantsLeft(GameAction.hint), c.isSpent(GameAction.hint)), (0, 0, true));
+      expect(c.grant(GameAction.hint), isFalse);
+      expect(c.isSpent(GameAction.undo), isFalse);
+      c.dispose();
+    });
   });
 
   test('revive keeps the uses and seals undo; restart gives them back', () async {

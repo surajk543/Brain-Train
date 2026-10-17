@@ -76,7 +76,8 @@ const int kMaxRevivesPerLevel = 2;
 /// per level attempt (a restart starts over).
 ///
 /// Helper actions (owner, 2026-10-17, 1.1.0), each with uses per game
-/// ([kStartingCharges]: 1 undo, 1 hint, 1 shuffle; +1 with [grant]):
+/// ([kStartingCharges]: 1 undo, 1 hint, 1 shuffle; +1 with [grant], at most
+/// [kMaxGrantsPerAction] per action, then the action is spent ([isSpent])):
 /// [undo] takes the last tap back, [useHint] recommends a tap ([findHint]),
 /// [shuffle] rearranges the board's symbols into a position that can be won.
 /// Every action that changes the game or its uses is a marker in
@@ -173,6 +174,9 @@ class GameEngine {
   final Map<GameAction, int> _left = {};
   final Map<GameAction, int> _used = {};
 
+  /// The [grantMarkerPrefix] markers of each action in [_history].
+  final Map<GameAction, int> _granted = {};
+
   GameState get state => _cachedState ??= GameState(
     levelId: level.levelId,
     remaining: Set.unmodifiable(_remaining.indices.map(_id)),
@@ -191,6 +195,9 @@ class GameEngine {
       undosUsed: _used[GameAction.undo]!,
       hintsUsed: _used[GameAction.hint]!,
       shufflesUsed: _used[GameAction.shuffle]!,
+      undosGranted: _granted[GameAction.undo]!,
+      hintsGranted: _granted[GameAction.hint]!,
+      shufflesGranted: _granted[GameAction.shuffle]!,
     ),
     undoAvailable: undoAvailable,
   );
@@ -242,6 +249,17 @@ class GameEngine {
 
   /// Uses of [action] left in this game.
   int usesLeft(GameAction action) => _left[action]!;
+
+  /// Extra uses of [action] [grant] can still give in this game
+  /// ([kMaxGrantsPerAction] in all; a restart starts over).
+  int grantsLeft(GameAction action) {
+    final granted = _granted[action]!;
+    return granted >= kMaxGrantsPerAction ? 0 : kMaxGrantsPerAction - granted;
+  }
+
+  /// No use of [action] left and no [grant] to be had: it is over for this
+  /// level attempt (until a restart).
+  bool isSpent(GameAction action) => _left[action]! <= 0 && grantsLeft(action) <= 0;
 
   /// Revives used in this game (its [reviveMarker]s since the start or the
   /// last restart).
@@ -429,10 +447,17 @@ class GameEngine {
   }
 
   /// One more use of [action] (after a rewarded ad). False once the game is
-  /// won.
-  bool grant(GameAction action) {
+  /// won or when [action] has no grant left ([grantsLeft]: at most
+  /// [kMaxGrantsPerAction] per level attempt).
+  bool grant(GameAction action) => grantsLeft(action) > 0 && _grant(action);
+
+  /// [grant] without the limit: a save from a build without it (1.1.0+10 and
+  /// earlier, when refills were unlimited) may hold more grants; it resumes
+  /// with that action's grant used up instead of starting over.
+  bool _grant(GameAction action) {
     if (_status == GameStatus.won) return false;
     _left[action] = _left[action]! + 1;
+    _granted[action] = _granted[action]! + 1;
     _history.add(grantMarker(action));
     _changed();
     return true;
@@ -447,6 +472,7 @@ class GameEngine {
     _left.addAll(kStartingCharges);
     for (final action in GameAction.values) {
       _used[action] = 0;
+      _granted[action] = 0;
     }
   }
 
@@ -476,7 +502,8 @@ class GameEngine {
     return [for (final index in returned) _id(index)];
   }
 
-  /// A new game: the level as dealt, every action's uses back to the start.
+  /// A new game: the level as dealt, every action's uses (and its grant) back
+  /// to the start.
   void restart() {
     _remaining = TileMask.all(level.tiles.length);
     _tray.clear();
@@ -500,7 +527,9 @@ class GameEngine {
   /// shuffles from their seeds, granted uses). Stops at the first entry
   /// that is no longer legal (or not known) and returns false, leaving the
   /// valid prefix applied. Revives past [kMaxRevivesPerLevel] replay (a 1.0
-  /// save, from before the limit): the game then has none left.
+  /// save, from before the limit): the game then has none left. So do grants
+  /// past [kMaxGrantsPerAction] (a save from 1.1.0+10 or earlier): the
+  /// action keeps the uses they gave and has no grant left.
   ///
   /// A pair-removal order (what the solver and generator produce) replays
   /// as taps `a1, b1, a2, b2, ...`: each first tile waits alone in the tray
@@ -524,7 +553,7 @@ class GameEngine {
     }
     if (entry.startsWith(grantMarkerPrefix)) {
       final action = GameAction.fromWire(entry.substring(grantMarkerPrefix.length));
-      return action != null && grant(action);
+      return action != null && _grant(action);
     }
     if (entry.startsWith(shuffleMarkerPrefix)) {
       final parts = entry.substring(shuffleMarkerPrefix.length).split(':');

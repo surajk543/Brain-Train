@@ -472,7 +472,7 @@ void main() {
       await tester.pumpWidget(const SizedBox());
     });
 
-    testWidgets('a failed load is free at once; an ad that fails to show grants free; offline never', (tester) async {
+    testWidgets('a failed load is free at once', (tester) async {
       await start(tester, adStatus: RewardedAdStatus.loading);
       await pumpGame(tester);
       final game = await spendHints(tester);
@@ -488,11 +488,14 @@ void main() {
       expect(game.usesLeft(GameAction.hint), 1);
       expect(game.useHint(), isNotNull);
       await tester.pump(HintGlowOverlay.duration);
+      await tester.pumpWidget(const SizedBox());
+    });
 
-      // A loaded ad that cannot be shown: the use is granted anyway.
-      ads
-        ..setStatus(RewardedAdStatus.ready)
-        ..showResult = RewardedAdResult.failed;
+    testWidgets('a loaded ad that fails to show grants free', (tester) async {
+      await start(tester, adStatus: RewardedAdStatus.ready);
+      await pumpGame(tester);
+      final game = await spendHints(tester);
+      ads.showResult = RewardedAdResult.failed;
       await tester.tap(_action(GameAction.hint));
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 400));
@@ -503,10 +506,13 @@ void main() {
       expect(game.usesLeft(GameAction.hint), 1);
       expect(game.useHint(), isNotNull);
       await tester.pump(HintGlowOverlay.duration);
+      await tester.pumpWidget(const SizedBox());
+    });
 
-      // Offline: off, however long the card is open.
-      ads.setStatus(RewardedAdStatus.offline);
-      await tester.pump();
+    testWidgets('offline: never free, however long the card is open', (tester) async {
+      await start(tester, adStatus: RewardedAdStatus.offline);
+      await pumpGame(tester);
+      final game = await spendHints(tester);
       await tester.tap(_action(GameAction.hint));
       await tester.pump();
       await tester.pump(kAdFallbackDelay * 2);
@@ -546,6 +552,189 @@ void main() {
       await tester.pump();
       expect(game.usesLeft(GameAction.hint), 1);
       expect(find.text('Watch an ad for +1 Hint?'), findsNothing);
+      await tester.pumpWidget(const SizedBox());
+    });
+  });
+
+  group('spent actions (1 free use + 1 for an ad, then the button is gone)', () {
+    Finder spentLook(GameAction action) => find.byKey(ValueKey('action-${action.name}-spent'));
+    Finder slot(GameAction action) => find.byKey(ValueKey('slot-${action.name}'));
+
+    /// Whether the spent look in [action]'s place is painted (fading out).
+    bool painted(WidgetTester tester, GameAction action) =>
+        tester.widget<Visibility>(find.descendant(of: slot(action), matching: find.byType(Visibility))).visible;
+
+    /// The places of the bar's buttons, Restart included.
+    Map<String, Rect> barRects(WidgetTester tester) => {
+      for (final action in GameAction.values)
+        action.name: tester.getRect(_action(action).evaluate().isEmpty ? spentLook(action) : _action(action)),
+      'restart': tester.getRect(find.byKey(const ValueKey('action-restart'))),
+    };
+
+    Future<void> waitForIntro(WidgetTester tester) async {
+      final game = _gameOf(tester);
+      for (var i = 0; i < 80 && game.introPlaying; i++) {
+        await tester.runAsync(() => Future<void>.delayed(const Duration(milliseconds: 40)));
+        await tester.pump(const Duration(milliseconds: 100));
+      }
+      expect(game.introPlaying, isFalse);
+      await tester.pump();
+    }
+
+    testWidgets('play mark after the free use; after the ad use the button fades out, the others stay put, no ad '
+        'offer any more; Restart brings it back', (tester) async {
+      await start(tester, adStatus: RewardedAdStatus.ready);
+      await pumpGame(tester, phone: smallPhone);
+      final semantics = tester.ensureSemantics();
+      final game = _gameOf(tester);
+      final places = barRects(tester);
+
+      // The free hint: the badge then offers an ad.
+      expect(game.useHint(), isNotNull);
+      await tester.pump();
+      expect(_button(tester, GameAction.hint).usesLeft, 0);
+      expect(find.descendant(of: _action(GameAction.hint), matching: find.byIcon(Icons.play_arrow_rounded)), findsOneWidget);
+      expect(find.bySemanticsLabel('Hint, watch an ad for one more'), findsOneWidget);
+      expect(game.grantsLeft(GameAction.hint), 1);
+      await tester.pump(HintGlowOverlay.duration);
+
+      // The ad: +1 Hint.
+      await tester.tap(_action(GameAction.hint));
+      await _settle(tester, rounds: 4);
+      await tester.tap(find.text('Watch ad'));
+      await _settle(tester, rounds: 4);
+      expect(ads.shows, 1);
+      expect((game.usesLeft(GameAction.hint), game.grantsLeft(GameAction.hint)), (1, 0));
+      expect(find.descendant(of: _action(GameAction.hint), matching: find.text('1')), findsOneWidget);
+      expect(game.isSpent(GameAction.hint), isFalse);
+
+      // The granted hint: the action is spent and its button fades out.
+      await tester.tap(_action(GameAction.hint));
+      await tester.pump();
+      expect(game.isSpent(GameAction.hint), isTrue);
+      expect(_action(GameAction.hint), findsNothing);
+      expect(spentLook(GameAction.hint), findsOneWidget);
+      await tester.pump(kSpentFadeDuration ~/ 2);
+      expect(painted(tester, GameAction.hint), isTrue, reason: 'fading out');
+      final fade = tester.widget<GameActionButton>(spentLook(GameAction.hint)).fade;
+      expect(fade, inExclusiveRange(0, 1));
+      await tester.pump(kSpentFadeDuration);
+      expect(painted(tester, GameAction.hint), isFalse, reason: 'gone');
+      expect(tester.widget<GameActionButton>(spentLook(GameAction.hint)).onPressed, isNull);
+      expect(find.bySemanticsLabel(RegExp('^Hint')), findsNothing, reason: 'no semantics for the empty place');
+      // Same place, same size: nothing moved.
+      expect(barRects(tester), places);
+      expect(tester.takeException(), isNull);
+
+      // Its place takes no taps and makes no ad offer.
+      final preloads = ads.preloads, checks = ads.onlineChecks;
+      await tester.tapAt(places['hint']!.center);
+      await _settle(tester, rounds: 4);
+      tester.widget<GameActionBar>(find.byType(GameActionBar)).onAction(GameAction.hint);
+      await _settle(tester, rounds: 4);
+      expect(find.text('Watch an ad for +1 Hint?'), findsNothing);
+      expect(find.text('One more Hint?'), findsNothing);
+      expect((ads.preloads, ads.onlineChecks, ads.shows), (preloads, checks, 1));
+      expect(game.state.history.where((h) => h == GameEngine.grantMarker(GameAction.hint)), hasLength(1));
+      expect(game.clockRunning, isTrue);
+      // The other actions are untouched.
+      expect(_button(tester, GameAction.shuffle).usesLeft, 1);
+      expect(_button(tester, GameAction.shuffle).onPressed, isNotNull);
+
+      // Restart (confirmed): every button is back, in its place.
+      await tester.tap(find.byTooltip('Restart'));
+      await _settle(tester, rounds: 4);
+      await tester.tap(find.text('Restart'));
+      await tester.pump();
+      await waitForIntro(tester);
+      expect(spentLook(GameAction.hint), findsNothing);
+      expect(_button(tester, GameAction.hint).usesLeft, 1);
+      expect(_button(tester, GameAction.hint).onPressed, isNotNull);
+      expect(game.grantsLeft(GameAction.hint), 1);
+      expect(barRects(tester), places);
+      semantics.dispose();
+      await tester.pumpWidget(const SizedBox());
+    });
+
+    testWidgets('the free fallback (no ad while online) counts as the grant', (tester) async {
+      await start(tester, adStatus: RewardedAdStatus.loading);
+      await pumpGame(tester);
+      final game = _gameOf(tester);
+      final places = barRects(tester);
+      expect(game.useHint(), isNotNull);
+      await tester.pump();
+      await tester.tap(_action(GameAction.hint));
+      await tester.pump();
+      await tester.pump(kAdFallbackDelay);
+      await tester.pump();
+      await tester.tap(find.text('Get +1 Hint'));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 400));
+      expect(ads.shows, 0);
+      expect((game.usesLeft(GameAction.hint), game.grantsLeft(GameAction.hint)), (1, 0));
+      await tester.tap(_action(GameAction.hint));
+      await tester.pump();
+      await tester.pump(kSpentFadeDuration);
+      expect(game.isSpent(GameAction.hint), isTrue);
+      expect(_action(GameAction.hint), findsNothing);
+      expect(painted(tester, GameAction.hint), isFalse);
+      expect(barRects(tester), places);
+      // No second card, free or not.
+      final preloads = ads.preloads;
+      tester.widget<GameActionBar>(find.byType(GameActionBar)).onAction(GameAction.hint);
+      await tester.pump();
+      await tester.pump(kAdFallbackDelay);
+      expect(find.text('One more Hint?'), findsNothing);
+      expect(find.text('Watch an ad for +1 Hint?'), findsNothing);
+      expect(ads.preloads, preloads);
+      await tester.pump(HintGlowOverlay.duration);
+      await tester.pumpWidget(const SizedBox());
+    });
+
+    testWidgets('a build without ads: "+" once, then gone; with reduce motion it vanishes at once', (tester) async {
+      await start(tester);
+      tester.platformDispatcher.accessibilityFeaturesTestValue = const FakeAccessibilityFeatures(disableAnimations: true);
+      addTearDown(tester.platformDispatcher.clearAccessibilityFeaturesTestValue);
+      await pumpGame(tester, phone: smallPhone);
+      final game = _gameOf(tester);
+      final places = barRects(tester);
+      expect(game.shuffle().shuffled, isTrue);
+      await tester.pump();
+      expect(find.descendant(of: _action(GameAction.shuffle), matching: find.byIcon(Icons.add_rounded)), findsOneWidget);
+      await tester.tap(_action(GameAction.shuffle));
+      await tester.pump();
+      expect((game.usesLeft(GameAction.shuffle), game.grantsLeft(GameAction.shuffle)), (1, 0));
+      await tester.tap(_action(GameAction.shuffle));
+      await tester.pump();
+      expect(game.actions.shufflesUsed, 2);
+      expect(game.isSpent(GameAction.shuffle), isTrue);
+      expect(_action(GameAction.shuffle), findsNothing);
+      expect(painted(tester, GameAction.shuffle), isFalse, reason: 'no fade with reduce motion');
+      expect(tester.hasRunningAnimations, isFalse);
+      expect(barRects(tester), places);
+      await tester.pumpWidget(const SizedBox());
+    });
+
+    testWidgets('a resumed save keeps its spent action: no button from the start', (tester) async {
+      await start(tester, adStatus: RewardedAdStatus.ready);
+      await pumpGame(tester);
+      final places = barRects(tester);
+      await tester.pumpWidget(const SizedBox());
+      await pumpGame(
+        tester,
+        resume: SavedGame(
+          levelId: entry.levelId,
+          levelUrl: entry.ref.url,
+          history: const [GameEngine.hintMarker, '!grant:hint', GameEngine.hintMarker],
+          elapsedMs: 9000,
+        ),
+      );
+      final game = _gameOf(tester);
+      expect(game.state.history, hasLength(3), reason: 'resumed, not started over');
+      expect(game.isSpent(GameAction.hint), isTrue);
+      expect(_action(GameAction.hint), findsNothing);
+      expect(painted(tester, GameAction.hint), isFalse);
+      expect(barRects(tester), places);
       await tester.pumpWidget(const SizedBox());
     });
   });

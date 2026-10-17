@@ -1,5 +1,6 @@
 /// The player's helper actions (owner, 2026-10-17, 1.1.0): Undo, Hint and
-/// Shuffle, each with one use per level and +1 per rewarded ad.
+/// Shuffle, each with one use per level attempt and at most one more for a
+/// rewarded ad ([kMaxGrantsPerAction]).
 library;
 
 enum GameAction {
@@ -21,7 +22,15 @@ enum GameAction {
 /// Uses a level starts with (and starts over with on Restart).
 const Map<GameAction, int> kStartingCharges = {GameAction.undo: 1, GameAction.hint: 1, GameAction.shuffle: 1};
 
-/// Uses left and used of each [GameAction] in one game.
+/// Extra uses of one action a level attempt can get, each for a rewarded ad
+/// (or free when no ad can be had while online) (owner, 2026-10-17). With
+/// [kStartingCharges], each action is used at most twice per attempt: 1 free,
+/// 1 after an ad; then it is spent and its button leaves the action bar.
+/// Restart starts over; Revive changes nothing. Counted from the game's
+/// `!grant:<action>` markers, so a resumed save keeps its count.
+const int kMaxGrantsPerAction = 1;
+
+/// Uses left, used and granted of each [GameAction] in one game.
 class ActionCounts {
   const ActionCounts({
     required this.undosLeft,
@@ -30,6 +39,9 @@ class ActionCounts {
     this.undosUsed = 0,
     this.hintsUsed = 0,
     this.shufflesUsed = 0,
+    this.undosGranted = 0,
+    this.hintsGranted = 0,
+    this.shufflesGranted = 0,
   });
 
   /// A new game: [kStartingCharges] left, none used (a test keeps the two
@@ -43,6 +55,12 @@ class ActionCounts {
   final int hintsUsed;
   final int shufflesUsed;
 
+  /// Extra uses given for rewarded ads (more than [kMaxGrantsPerAction] only
+  /// in a save from a build without the limit).
+  final int undosGranted;
+  final int hintsGranted;
+  final int shufflesGranted;
+
   int left(GameAction action) => switch (action) {
     GameAction.undo => undosLeft,
     GameAction.hint => hintsLeft,
@@ -55,6 +73,20 @@ class ActionCounts {
     GameAction.shuffle => shufflesUsed,
   };
 
+  int granted(GameAction action) => switch (action) {
+    GameAction.undo => undosGranted,
+    GameAction.hint => hintsGranted,
+    GameAction.shuffle => shufflesGranted,
+  };
+
+  /// Extra uses of [action] a rewarded ad can still give in this game.
+  int grantsLeft(GameAction action) =>
+      granted(action) >= kMaxGrantsPerAction ? 0 : kMaxGrantsPerAction - granted(action);
+
+  /// No use of [action] left and none to be had: its button is gone until a
+  /// restart.
+  bool isSpent(GameAction action) => left(action) <= 0 && grantsLeft(action) <= 0;
+
   @override
   bool operator ==(Object other) =>
       other is ActionCounts &&
@@ -63,14 +95,28 @@ class ActionCounts {
       other.shufflesLeft == shufflesLeft &&
       other.undosUsed == undosUsed &&
       other.hintsUsed == hintsUsed &&
-      other.shufflesUsed == shufflesUsed;
+      other.shufflesUsed == shufflesUsed &&
+      other.undosGranted == undosGranted &&
+      other.hintsGranted == hintsGranted &&
+      other.shufflesGranted == shufflesGranted;
 
   @override
-  int get hashCode => Object.hash(undosLeft, hintsLeft, shufflesLeft, undosUsed, hintsUsed, shufflesUsed);
+  int get hashCode => Object.hash(
+    undosLeft,
+    hintsLeft,
+    shufflesLeft,
+    undosUsed,
+    hintsUsed,
+    shufflesUsed,
+    undosGranted,
+    hintsGranted,
+    shufflesGranted,
+  );
 
   @override
   String toString() =>
-      'ActionCounts(left: $undosLeft/$hintsLeft/$shufflesLeft, used: $undosUsed/$hintsUsed/$shufflesUsed)';
+      'ActionCounts(left: $undosLeft/$hintsLeft/$shufflesLeft, used: $undosUsed/$hintsUsed/$shufflesUsed, '
+      'granted: $undosGranted/$hintsGranted/$shufflesGranted)';
 }
 
 /// Why a [Hint] picked its tile, best first.
@@ -140,7 +186,7 @@ enum ShuffleOutcome {
   /// the tutorial runs).
   unavailable,
 
-  /// No shuffles left (a rewarded ad can grant one).
+  /// No shuffles left (a rewarded ad can grant one, unless it is spent).
   noCharges,
 
   /// The board has fewer than two different symbols: nothing would change.
