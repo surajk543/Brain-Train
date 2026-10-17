@@ -11,8 +11,8 @@ import '../../content/level_manifest.dart';
 import '../../data/progress_repository.dart';
 import '../../game_engine/models/level_definition.dart';
 import '../../game_engine/state/game_actions.dart';
+import '../../game_engine/state/game_engine.dart';
 import '../../game_engine/state/game_state.dart';
-import '../../platform/rewarded_ads.dart';
 import '../../rendering/symbol_art.dart';
 import '../../rendering/tile_style.dart';
 import '../levels/level_loader.dart';
@@ -36,12 +36,15 @@ import 'widgets/tray_view.dart';
 export 'widgets/game_hud.dart' show formatDuration;
 export 'widgets/result_cards.dart'
     show
+        kNoRevivesLeftNote,
         kRefillLoadingNote,
         kRefillOfflineNote,
         kReviveDismissedNote,
+        kReviveFreeNote,
         kReviveLoadingNote,
         kReviveOfflineNote,
-        refillDismissedNote;
+        refillDismissedNote,
+        refillFreeNote;
 
 /// The level's first palette colour, used to tint the ambient light.
 Color levelAccent(LevelBackdrop? backdrop) {
@@ -101,16 +104,13 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
   /// off and Back closes the card.
   final ValueNotifier<bool> _cardOpen = ValueNotifier(false);
 
-  /// True from a Revive tap until its ad has closed (and the revive, if
-  /// earned, has started): the Revive button is off meanwhile.
-  final ValueNotifier<bool> _adInFlight = ValueNotifier(false);
+  /// The Tray full card's rewarded ad (with its no-ad fallback) while the
+  /// card is up and a revive is left; null otherwise.
+  RewardedAdOffer? _reviveOffer;
 
-  /// How the last Revive ad ended, for the Tray full card's note.
-  final ValueNotifier<RewardedAdResult?> _lastAd = ValueNotifier(null);
-
-  /// The same two for the ad offered for one more Undo, Hint or Shuffle.
-  final ValueNotifier<bool> _refillAdInFlight = ValueNotifier(false);
-  final ValueNotifier<RewardedAdResult?> _refillLastAd = ValueNotifier(null);
+  /// The same for the ad offered for one more Undo, Hint or Shuffle, while
+  /// its card is open.
+  RewardedAdOffer? _refillOffer;
   late final RewardedAdsController _ads;
   GameController? _controller;
   late final TrayController _tray;
@@ -208,7 +208,7 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
       _resultTimer?.cancel();
       _resultTimer = null;
       _resultShown.value = false;
-      _lastAd.value = null;
+      _closeReviveOffer();
       return;
     }
     // The game ended: no card about helpers stays open.
@@ -224,10 +224,19 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
       if (!mounted || controller.state.status == GameStatus.playing) return;
       // Tray events arrive just after the move: wait for them to play out.
       if (_busy) return;
+      // Revive needs an ad: the offer loads one now if none is (retries at
+      // once) and counts the fallback wait from here. No revive left: no ad.
+      if (controller.state.status == GameStatus.trayFull) {
+        _closeReviveOffer();
+        if (controller.canRevive) _reviveOffer = _ads.offer();
+      }
       _resultShown.value = true;
-      // Revive needs an ad: load one now if none is (retries at once).
-      if (controller.state.status == GameStatus.trayFull) _ads.preload();
     });
+  }
+
+  void _closeReviveOffer() {
+    _reviveOffer?.dispose();
+    _reviveOffer = null;
   }
 
   /// Starts the board intro when the game wants one (a new game, a restart,
@@ -323,29 +332,24 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
   }
 
   /// Revive from the Tray full card: only after a rewarded ad's reward
-  /// (no ad needed in a build without ads). The clock is already stopped (a
-  /// full tray stops it); the tiles fly back once the ad has closed and the
-  /// app is in the foreground again. A closed or failed ad leaves the card
-  /// up, and Revive shows another ad.
+  /// (no ad needed in a build without ads), or free when no ad could be had
+  /// while online ([RewardedAdOffer]; owner, 2026-10-17). At most
+  /// [kMaxRevivesPerLevel] per level attempt, free ones included. The clock
+  /// is already stopped (a full tray stops it); the tiles fly back once the
+  /// ad has closed and the app is in the foreground again. An ad closed early
+  /// leaves the card up, and Revive shows another ad. The offer pays once, so
+  /// rapid taps revive once.
   Future<void> _revive() async {
-    if (controller.state.status != GameStatus.trayFull || _adInFlight.value) return;
+    if (controller.state.status != GameStatus.trayFull || !controller.canRevive) return;
     if (_ads.off) {
       controller.revive();
       return;
     }
-    if (_ads.status != RewardedAdStatus.ready) return;
-    _adInFlight.value = true;
-    _lastAd.value = null;
-    final result = await _ads.show();
+    final offer = _reviveOffer;
+    if (offer == null || !await offer.claim() || !mounted) return;
+    await _untilResumed();
     if (!mounted) return;
-    if (result == RewardedAdResult.earned) await _untilResumed();
-    if (!mounted) return;
-    _adInFlight.value = false;
-    if (result == RewardedAdResult.earned) {
-      if (controller.state.status == GameStatus.trayFull) controller.revive();
-    } else {
-      _lastAd.value = result;
-    }
+    if (controller.state.status == GameStatus.trayFull) controller.revive();
   }
 
   /// The ad was a separate screen: wait (briefly) for the app to be in the
@@ -380,9 +384,10 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
       return;
     }
     controller.pauseClock();
-    _refillLastAd.value = null;
+    _refillOffer?.dispose();
+    // Loads an ad if none is, and counts the fallback wait from this tap.
+    _refillOffer = _ads.offer();
     _refill.value = action;
-    _ads.preload();
   }
 
   void _use(GameAction action) {
@@ -402,27 +407,21 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
   }
 
   /// "Watch ad" on the ad offer: one more use of the action, granted only
-  /// once the reward is earned and the app is in the foreground again. A
-  /// closed or failed ad grants nothing and leaves the card up. The clock
-  /// stays stopped meanwhile (the card stopped it); music and sound effects
-  /// are held by the ads controller while the ad shows.
+  /// once the reward is earned and the app is in the foreground again, or
+  /// ("Get +1 …") free when no ad could be had while online
+  /// ([RewardedAdOffer]). An ad closed early grants nothing and leaves the
+  /// card up. The clock stays stopped meanwhile (the card stopped it); music
+  /// and sound effects are held by the ads controller while the ad shows.
+  /// The offer pays once, so rapid taps grant once.
   Future<void> _watchRefillAd() async {
     final action = _refill.value;
-    if (action == null || _refillAdInFlight.value || _ads.status != RewardedAdStatus.ready) return;
-    _refillAdInFlight.value = true;
-    _refillLastAd.value = null;
-    final result = await _ads.show();
+    final offer = _refillOffer;
+    if (action == null || offer == null || !await offer.claim() || !mounted) return;
+    await _untilResumed();
     if (!mounted) return;
-    if (result == RewardedAdResult.earned) await _untilResumed();
-    if (!mounted) return;
-    _refillAdInFlight.value = false;
-    if (result == RewardedAdResult.earned) {
-      if (_refill.value == action) {
-        controller.grant(action);
-        _closeRefill();
-      }
-    } else {
-      _refillLastAd.value = result;
+    if (_refill.value == action && identical(_refillOffer, offer)) {
+      controller.grant(action);
+      _closeRefill();
     }
   }
 
@@ -431,7 +430,8 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
   void _closeRefill({bool resume = true}) {
     if (_refill.value == null) return;
     _refill.value = null;
-    _refillLastAd.value = null;
+    _refillOffer?.dispose();
+    _refillOffer = null;
     if (resume) controller.resumeClock();
   }
 
@@ -454,7 +454,7 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
   /// Android back or the HUD's Back while a card is open: close the card.
   void _closeCard() {
     if (_refill.value != null) {
-      if (!_refillAdInFlight.value) _closeRefill();
+      if (_refillOffer?.mode != AdOfferMode.busy) _closeRefill();
       return;
     }
     _keepPlaying();
@@ -524,10 +524,8 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
     _confirmingRestart.dispose();
     _refill.dispose();
     _cardOpen.dispose();
-    _adInFlight.dispose();
-    _lastAd.dispose();
-    _refillAdInFlight.dispose();
-    _refillLastAd.dispose();
+    _reviveOffer?.dispose();
+    _refillOffer?.dispose();
     _symbolClock.dispose();
     super.dispose();
   }
@@ -712,9 +710,7 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
                         top: hudBottom,
                         child: ResultOverlay(
                           child: TrayFullCard(
-                            ads: _ads,
-                            adInFlight: _adInFlight,
-                            lastAd: _lastAd,
+                            offer: _reviveOffer,
                             reduceMotion: reduceMotion,
                             onRevive: _revive,
                             onRestart: controller.restart,
@@ -741,13 +737,12 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
                     );
                   }
                   final action = _refill.value;
-                  if (action == null) return const SizedBox.shrink();
+                  final offer = _refillOffer;
+                  if (action == null || offer == null) return const SizedBox.shrink();
                   return ResultOverlay(
                     child: ActionRefillCard(
                       action: action,
-                      ads: _ads,
-                      adInFlight: _refillAdInFlight,
-                      lastAd: _refillLastAd,
+                      offer: offer,
                       reduceMotion: reduceMotion,
                       onWatch: _watchRefillAd,
                       onCancel: _closeRefill,

@@ -171,15 +171,69 @@ class GoogleMobileAdsBackend implements AdsBackend {
     }
   }
 
+  /// The ad server [isOnline] tries to reach.
+  static const String _adHost = 'googleads.g.doubleclick.net';
+
+  /// A name lookup alone is not enough: on iOS a system service resolves
+  /// names even while this app has no network (mobile data turned off for
+  /// it, an unanswered data prompt), and a DNS ad block answers with an
+  /// address that goes nowhere. So a public address must also take a
+  /// connection (TCP only, closed at once; no request is sent). Every
+  /// address is tried at once and the first connection wins (an IPv6-only
+  /// network, as in App Review, cannot reach the IPv4 ones). A local answer
+  /// (loopback, private, link-local) counts as offline and is never dialled
+  /// (iOS would ask for local network access).
   @override
   Future<bool> isOnline() async {
+    final List<InternetAddress> addresses;
     try {
-      final addresses = await InternetAddress.lookup('googleads.g.doubleclick.net');
-      return addresses.isNotEmpty;
+      addresses = [...(await InternetAddress.lookup(_adHost)).where(isPublicAddress)];
     } on SocketException {
       return false;
+    } on OSError {
+      return false;
     }
+    if (addresses.isEmpty) return false;
+    final connected = Completer<bool>();
+    var pending = addresses.length;
+    for (final address in addresses) {
+      unawaited(
+        Socket.connect(address, 443, timeout: const Duration(seconds: 4)).then(
+          (socket) {
+            socket.destroy();
+            if (!connected.isCompleted) connected.complete(true);
+          },
+          onError: (Object _) {
+            if (--pending == 0 && !connected.isCompleted) connected.complete(false);
+          },
+        ),
+      );
+    }
+    return connected.future;
   }
+}
+
+/// Whether [address] is on the internet: not loopback, link-local, a
+/// private range (10/8, 172.16/12, 192.168/16, 100.64/10, fc00::/7), the
+/// "any" address or multicast.
+@visibleForTesting
+bool isPublicAddress(InternetAddress address) {
+  if (address.isLoopback || address.isLinkLocal || address.isMulticast) return false;
+  final b = address.rawAddress;
+  if (address.type == InternetAddressType.IPv4) {
+    if (b.length != 4) return false;
+    return !(b[0] == 0 ||
+        b[0] == 10 ||
+        (b[0] == 172 && b[1] >= 16 && b[1] < 32) ||
+        (b[0] == 192 && b[1] == 168) ||
+        (b[0] == 100 && b[1] >= 64 && b[1] < 128));
+  }
+  if (address.type == InternetAddressType.IPv6) {
+    if (b.length != 16) return false;
+    if (b.every((byte) => byte == 0)) return false;
+    return (b[0] & 0xFE) != 0xFC;
+  }
+  return false;
 }
 
 class _GoogleRewardedAd implements LoadedRewardedAd {

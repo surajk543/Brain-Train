@@ -92,6 +92,12 @@ class _FakeBackend implements AdsBackend {
   Future<bool> isOnline() async => online;
 }
 
+/// A backend whose online check never answers.
+class _HangingOnline extends _FakeBackend {
+  @override
+  Future<bool> isOnline() => Completer<bool>().future;
+}
+
 Future<void> _settle([int ms = 0]) => Future<void>.delayed(Duration(milliseconds: ms));
 
 /// Waits (real time, briefly) until [ads] reports [status].
@@ -217,6 +223,47 @@ void main() {
     await _settle(5);
     expect(ads.current.ad, RewardedAdStatus.loading);
     await _until(ads, RewardedAdStatus.ready);
+  });
+
+  test('no fill marks the load failed until the next attempt (a card may then go free at once)', () async {
+    final slow = ManagedRewardedAds(backend, loadTimeout: const Duration(milliseconds: 50), retryDelays: const [Duration(minutes: 5)]);
+    addTearDown(slow.dispose);
+    backend.loadFailures.addAll([const AdsFailure('no fill'), const AdsFailure('no fill')]);
+    expect(slow.current.loadFailed, isFalse);
+    slow.start(_teenOrAdult);
+    for (var i = 0; i < 100 && !slow.current.loadFailed; i++) {
+      await _settle(5);
+    }
+    expect(slow.current.ad, RewardedAdStatus.loading);
+    expect(slow.current.loadFailed, isTrue);
+    // A card opening retries at once: no longer failed while it runs.
+    backend.loadGate = Completer<void>();
+    slow.preload();
+    expect(slow.current.loadFailed, isFalse);
+    backend.loadGate!.complete();
+    for (var i = 0; i < 100 && !slow.current.loadFailed; i++) {
+      await _settle(5);
+    }
+    expect(slow.current.loadFailed, isTrue, reason: 'no fill again');
+    slow.preload();
+    await _until(slow, RewardedAdStatus.ready);
+    expect(slow.current.loadFailed, isFalse);
+  });
+
+  test('a network failure is offline, never a failed load', () async {
+    backend.loadFailures.add(const AdsFailure('network', offline: true));
+    ads.start(_teenOrAdult);
+    await _until(ads, RewardedAdStatus.offline);
+    expect(ads.current.loadFailed, isFalse);
+  });
+
+  test('checkOnline asks the backend fresh; a failure or a slow answer is offline', () async {
+    expect(await ads.checkOnline(), isTrue);
+    backend.online = false;
+    expect(await ads.checkOnline(), isFalse);
+    final slow = ManagedRewardedAds(_HangingOnline(), onlineTimeout: const Duration(milliseconds: 20));
+    addTearDown(slow.dispose);
+    expect(await slow.checkOnline(), isFalse);
   });
 
   test('a hung SDK call times out and is retried', () async {

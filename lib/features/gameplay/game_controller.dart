@@ -532,9 +532,17 @@ class GameController extends ChangeNotifier {
     if (won) _later(winSoundDelay, () => sounds?.play(Sfx.win));
   }
 
+  /// Revives left in this level attempt ([kMaxRevivesPerLevel] in all; a
+  /// restart starts over, free revives count too).
+  int get revivesLeft => engine.revivesLeft;
+
+  /// The game is lost with a full tray and a revive is left: the Tray full
+  /// card offers Revive (else Restart only, and no ad).
+  bool get canRevive => !_disposed && engine.canRevive;
+
   /// Revives a game lost with a full tray: its tiles go back to the board,
   /// the clock runs again and the game is saved. Not a move. Returns false
-  /// when there is nothing to revive.
+  /// when there is nothing to revive or no revive left ([canRevive]).
   bool revive() {
     final returned = engine.revive();
     if (returned == null) return false;
