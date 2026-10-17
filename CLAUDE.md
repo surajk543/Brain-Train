@@ -440,7 +440,7 @@ dart run tool/smoke_remote.dart         # live check: app's content client vs pr
   idle in lobby and game (SurfaceFlinger latency: median 16.7 ms, p99 19-26 ms), a few 30-87 ms frames when a game
   opens (art decoding).
 
-- Published content 2026.10.17.2 on `braintrain-public` (manifest `minClientContentSchema: 3`): 175 levels
+- Previous content 2026.10.17.2 (superseded by .17.3 below; its old R2 objects were deleted): 175 levels
   (`catalog.json` `campaign`, seed 20261641, chosen so levels 1–10 open 1 2 1 4 4 5 2 6 1 1): batch 1 = levels
   1–100, 10 per difficulty 1–10; batch 2 = levels 101–175, `{"9": 25, "10": 50}` (only fits as `10 10 9` repeats),
   added on 2026-10-17 with 16 new static symbols; levels 1–100 kept their boards, tiers, trays, titles and win rates
@@ -451,8 +451,9 @@ dart run tool/smoke_remote.dart         # live check: app's content client vs pr
   alcohol, crude humour, weapon; IARC) and 8 in .17.1 for a 4+ App Store rating (WEAPON_* swords, ray guns, blaster,
   war hammer, EQUIP_CUTTER, EQUIP_STAPLE_GUN: "guns or other weapons"). Never add weapons, alcohol, tobacco, drugs or
   crude humour. The private bucket's frozen .12 copy (old Worker) is unchanged.
-- Draft content 2026.10.17.3 (built and committed on `content/seasonal-symbols`, NOT published; waits for the owner's
-  choice of grid, 7x9 or 6x8): 675 levels, batch 3 = levels 176–675 `{"5": 84, "6": 84, "7": 83, "8": 83, "9": 83,
+- Published content 2026.10.17.3 on `braintrain-public` (live since 2026-10-17, manifest `minClientContentSchema: 3`,
+  grid 7x9; all 675 titles pinned in `campaign.titles`; `r2_prune --delete` removed the 372 objects of older versions
+  the same day, so the bucket holds only .17.3 plus `app-update.json`): 675 levels, batch 3 = levels 176–675 `{"5": 84, "6": 84, "7": 83, "8": 83, "9": 83,
   "10": 83}`; every level regenerated for the fixed 7x9 grid, depth and coloured pairs (levels 1–175 keep difficulty,
   tray and title); tier bands in docs/level-design-rules.md (difficulty 10: 84–126 tiles, 4 layers); registry
   `registries/symbols-08ab2ec20da3.json`, 331 symbols (220 static, 61–62 levels each; 111 animated, 21–22 each). Random
