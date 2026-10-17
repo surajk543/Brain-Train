@@ -1,10 +1,10 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import '../../../app/rewarded_ads_controller.dart';
 import '../../../app/theme.dart';
 import '../../../app/typography.dart';
 import '../../../data/progress_repository.dart';
+import '../../../game_engine/state/game_engine.dart';
 import '../../../game_engine/scoring/score_format.dart';
 import '../../../game_engine/state/game_actions.dart';
 import '../../../platform/rewarded_ads.dart';
@@ -20,12 +20,22 @@ const String kReviveLoadingNote = 'Loading an ad…';
 const String kReviveOfflineNote = 'Connect to the internet to watch an ad and revive';
 const String kReviveDismissedNote = 'Watch the ad to the end to revive.';
 
+/// Under Revive when no ad could be had while online (owner, 2026-10-17).
+const String kReviveFreeNote = 'No ad available right now. This revive is free.';
+
+/// On the Tray full card once the level's revives are used up
+/// ([kMaxRevivesPerLevel]).
+const String kNoRevivesLeftNote = 'No revives left. Restart to try again.';
+
 /// Notes on the "Watch an ad for +1 …?" card while it waits for an ad.
 const String kRefillLoadingNote = 'Loading an ad…';
 const String kRefillOfflineNote = 'Connect to the internet to watch an ad';
 
 /// The note after an ad for [action] closed before its reward.
 String refillDismissedNote(GameAction action) => 'Watch the ad to the end to get +1 ${action.label}.';
+
+/// The note when +1 [action] is free (no ad could be had while online).
+String refillFreeNote(GameAction action) => 'No ad available right now. This ${action.label.toLowerCase()} is free.';
 
 /// A card over the dimmed board: the scrim fades in from the top, the card
 /// (a [PremiumPanel], or the bare [child] for [bare] screens such as Level
@@ -201,23 +211,21 @@ class _AdNote extends StatelessWidget {
   }
 }
 
-/// The note for an ad's [status] (null: none), and whether it is loading.
+/// The note for an offer in [mode] (null: none), and whether it is loading.
 (String?, bool) _adNoteFor(
-  RewardedAdStatus status, {
-  required bool busy,
+  AdOfferMode mode, {
   required bool dismissed,
   required String loading,
   required String offline,
   required String dismissedNote,
-}) {
-  if (busy) return (null, false);
-  return switch (status) {
-    RewardedAdStatus.loading => (loading, true),
-    RewardedAdStatus.offline => (offline, false),
-    RewardedAdStatus.ready when dismissed => (dismissedNote, false),
-    _ => (null, false),
-  };
-}
+  required String freeNote,
+}) => switch (mode) {
+  AdOfferMode.waiting => (loading, true),
+  AdOfferMode.offline => (offline, false),
+  AdOfferMode.free => (freeNote, false),
+  AdOfferMode.ad when dismissed => (dismissedNote, false),
+  _ => (null, false),
+};
 
 /// The Level Complete screen (reference board): the trophy, "Level
 /// Complete!" in large gold Playfair, a dark translucent results panel with
@@ -477,66 +485,82 @@ class _CrownPainter extends CustomPainter {
 /// Shown when the tray fills up: revive (the tray's tiles go back to the
 /// board) or start the level again. The HUD's Back button stays available.
 ///
-/// Revive plays a rewarded ad first (owner): it is off while no ad is loaded
-/// (a note says it is loading, or that the internet is needed) and while one
-/// is on screen. Restart always works.
+/// Revive plays a rewarded ad first (owner) through [offer]: it is off while
+/// no ad is loaded (a note says it is loading, or that the internet is
+/// needed) and while one is on screen; online with no ad to show, it becomes
+/// free after a short wait ([kAdFallbackDelay], a note says so). [offer] null:
+/// the level's revives are used up ([kMaxRevivesPerLevel]): Restart only, with
+/// a note, and no ad. Restart always works.
 class TrayFullCard extends StatelessWidget {
   const TrayFullCard({
     super.key,
-    required this.ads,
-    required this.adInFlight,
-    required this.lastAd,
+    required this.offer,
     required this.reduceMotion,
     required this.onRevive,
     required this.onRestart,
   });
 
-  final RewardedAdsController ads;
-  final ValueListenable<bool> adInFlight;
-  final ValueListenable<RewardedAdResult?> lastAd;
+  final RewardedAdOffer? offer;
   final bool reduceMotion;
   final VoidCallback onRevive;
   final VoidCallback onRestart;
 
   @override
-  Widget build(BuildContext context) => ListenableBuilder(
-    listenable: Listenable.merge([ads, adInFlight, lastAd]),
-    builder: (context, _) {
-      final status = ads.status;
-      final busy = adInFlight.value;
-      final canRevive = !busy && (status == RewardedAdStatus.off || status == RewardedAdStatus.ready);
-      final (note, loading) = _adNoteFor(
-        status,
-        busy: busy,
-        dismissed: lastAd.value == RewardedAdResult.dismissed,
-        loading: kReviveLoadingNote,
-        offline: kReviveOfflineNote,
-        dismissedNote: kReviveDismissedNote,
-      );
+  Widget build(BuildContext context) {
+    final offer = this.offer;
+    if (offer == null) {
       return Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          _CardHeader(
+          const _CardHeader(
             icon: Icons.inventory_2_outlined,
             title: 'Tray full',
-            body: ads.off
-                ? 'The tray filled up without a match. Revive to put these tiles back on the board, or start again.'
-                : 'The tray filled up without a match. Watch a short ad to revive and put these tiles back on the board, or start again.',
+            body: 'The tray filled up without a match.',
           ),
-          PremiumButton(
-            label: 'Revive',
-            icon: ads.off ? null : Icons.ondemand_video_rounded,
-            primary: true,
-            expand: true,
-            onPressed: canRevive ? onRevive : null,
-          ),
-          if (note != null) _AdNote(note: note, loading: loading, reduceMotion: reduceMotion),
-          const SizedBox(height: 10),
-          PremiumButton(label: 'Restart', expand: true, onPressed: onRestart),
+          PremiumButton(label: 'Restart', primary: true, expand: true, onPressed: onRestart),
+          _AdNote(note: kNoRevivesLeftNote, loading: false, reduceMotion: reduceMotion),
         ],
       );
-    },
-  );
+    }
+    return ListenableBuilder(
+      listenable: offer,
+      builder: (context, _) {
+        final mode = offer.mode;
+        // No ad in the way (none in this build, or a free revive).
+        final noAd = mode == AdOfferMode.off || mode == AdOfferMode.free;
+        final (note, loading) = _adNoteFor(
+          mode,
+          dismissed: offer.lastResult == RewardedAdResult.dismissed,
+          loading: kReviveLoadingNote,
+          offline: kReviveOfflineNote,
+          dismissedNote: kReviveDismissedNote,
+          freeNote: kReviveFreeNote,
+        );
+        return Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            _CardHeader(
+              icon: Icons.inventory_2_outlined,
+              title: 'Tray full',
+              body: noAd
+                  ? 'The tray filled up without a match. Revive to put these tiles back on the board, or start again.'
+                  : 'The tray filled up without a match. Watch a short ad to revive and put these tiles back on the board, or start again.',
+            ),
+            PremiumButton(
+              label: 'Revive',
+              icon: noAd ? null : Icons.ondemand_video_rounded,
+              primary: true,
+              expand: true,
+              onPressed: offer.canClaim ? onRevive : null,
+            ),
+            if (note != null) _AdNote(note: note, loading: loading, reduceMotion: reduceMotion),
+            const SizedBox(height: 10),
+            PremiumButton(label: 'Restart', expand: true, onPressed: onRestart),
+          ],
+        );
+      },
+    );
+  }
 }
 
 /// Asks before starting the level over: moves, tray and time are lost.
@@ -566,59 +590,56 @@ class RestartConfirmCard extends StatelessWidget {
 /// offers one more for a rewarded ad (owner, 1.1.0). Like Revive: the button
 /// is off while no ad is loaded (a note says it is loading, or that the
 /// internet is needed) and while one is on screen; the use is granted only
-/// once the reward is earned.
+/// once the reward is earned. Online with no ad to show, it becomes free
+/// after a short wait: "One more Hint?" with "Get +1 Hint" and a note.
 class ActionRefillCard extends StatelessWidget {
   const ActionRefillCard({
     super.key,
     required this.action,
-    required this.ads,
-    required this.adInFlight,
-    required this.lastAd,
+    required this.offer,
     required this.reduceMotion,
     required this.onWatch,
     required this.onCancel,
   });
 
   final GameAction action;
-  final RewardedAdsController ads;
-  final ValueListenable<bool> adInFlight;
-  final ValueListenable<RewardedAdResult?> lastAd;
+  final RewardedAdOffer offer;
   final bool reduceMotion;
   final VoidCallback onWatch;
   final VoidCallback onCancel;
 
   @override
   Widget build(BuildContext context) => ListenableBuilder(
-    listenable: Listenable.merge([ads, adInFlight, lastAd]),
+    listenable: offer,
     builder: (context, _) {
-      final status = ads.status;
-      final busy = adInFlight.value;
+      final mode = offer.mode;
+      final free = mode == AdOfferMode.free;
       final (note, loading) = _adNoteFor(
-        status,
-        busy: busy,
-        dismissed: lastAd.value == RewardedAdResult.dismissed,
+        mode,
+        dismissed: offer.lastResult == RewardedAdResult.dismissed,
         loading: kRefillLoadingNote,
         offline: kRefillOfflineNote,
         dismissedNote: refillDismissedNote(action),
+        freeNote: refillFreeNote(action),
       );
       return Column(
         mainAxisSize: MainAxisSize.min,
         children: [
           _CardHeader(
             icon: action.icon,
-            title: 'Watch an ad for +1 ${action.label}?',
+            title: free ? 'One more ${action.label}?' : 'Watch an ad for +1 ${action.label}?',
             body: 'You have no ${action.plural} left in this level.',
           ),
           PremiumButton(
-            label: 'Watch ad',
-            icon: Icons.ondemand_video_rounded,
+            label: free ? 'Get +1 ${action.label}' : 'Watch ad',
+            icon: free ? null : Icons.ondemand_video_rounded,
             primary: true,
             expand: true,
-            onPressed: !busy && status == RewardedAdStatus.ready ? onWatch : null,
+            onPressed: offer.canClaim ? onWatch : null,
           ),
           if (note != null) _AdNote(note: note, loading: loading, reduceMotion: reduceMotion),
           const SizedBox(height: 4),
-          PremiumButton(label: 'Not now', quiet: true, expand: true, onPressed: busy ? null : onCancel),
+          PremiumButton(label: 'Not now', quiet: true, expand: true, onPressed: mode == AdOfferMode.busy ? null : onCancel),
         ],
       );
     },

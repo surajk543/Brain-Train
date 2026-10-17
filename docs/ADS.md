@@ -1,7 +1,8 @@
 # Rewarded ads (AdMob)
 
 Revive on the Tray full card plays a Google AdMob **rewarded** ad; the tiles go back only once the reward is earned.
-Revive stays unlimited. Since 1.1.0 (owner, 2026-10-17) an Undo, Hint or Shuffle with no use left can be refilled
+At most **2 revives per level attempt** (owner, 2026-10-17; `kMaxRevivesPerLevel`; was unlimited), free ones included;
+Restart gives them back. Since 1.1.0 (owner, 2026-10-17) an Undo, Hint or Shuffle with no use left can be refilled
 the same way: a rewarded ad gives +1 of that action. Rewarded ads only, on Revive and on these refills: never
 interstitials or banners. Restart never needs an ad. Android and iOS (`google_mobile_ads` 9.1.0, AdMob + Google's
 User Messaging Platform, UMP).
@@ -28,17 +29,39 @@ User Messaging Platform, UMP).
 - **Keeping an ad ready**: one ad is kept loaded. A game screen opening, the Tray full card or a refill card appearing and the app
   returning to the foreground each load one if none is (and retry at once after a failure); failures retry by
   themselves after 5 s, 10 s, 20 s, 30 s, then every minute. A new ad loads after each one shown.
+- **No-ad fallback** (owner 2026-10-17: no ad available while online → the reward is free after `kAdFallbackDelay`;
+  offline stays blocked; reason: AdMob limited ad serving before store linking). AdMob serves almost no ads to an app
+  that is not yet linked to its published store listing ("Requires review · Limited ad serving · Add store to lift
+  limit"), so Revive would wait on "Loading an ad…" for ever (App Review guideline 2.1). Each card that needs an ad
+  (Tray full, a refill offer) gets a `RewardedAdOffer` (`lib/app/rewarded_ad_offer.dart`) when it opens:
+  - an ad is loaded → the ad is required, as before;
+  - no ad to show (still loading, no fill, load errors, the SDK not started) → after `kAdFallbackDelay` (8 s from the
+    card opening), or at once when the ads layer reports a failed load (`RewardedAdsState.loadFailed`: no fill or an
+    error, not the network), the app checks the connection afresh (`RewardedAds.checkOnline`: a DNS lookup of
+    `googleads.g.doubleclick.net` plus a TCP connection to one of its public addresses, all tried at once so IPv6-only
+    networks work; a local or blocked answer, a failure or no answer within 6 s counts as offline). Online → the
+    reward is free; offline → blocked with the offline note, checked again every 8 s;
+  - a loaded ad that fails to show → free if the check says online, else nothing;
+  - ads status `offline` → never free;
+  - once free, the open card stays free even if an ad loads meanwhile (no flip under the player's finger); the next
+    card needs an ad again. An ad closed early pays nothing and starts the 8 s over.
+  The offer pays at most once (rapid taps give one reward), through exactly the same path as an ad's reward
+  (`GameController.revive` / `grant`, the same `!revive` / `!grant:` save markers). As soon as AdMob serves ads, they
+  are required again by themselves. Builds without ads (tests) still grant at once.
 - **Revive button** (Tray full card; also for a resumed saved game that was lost with a full tray):
 
   | Ad state | Revive | Note under it |
   |---|---|---|
   | loaded | on (video icon) | none; "Watch the ad to the end to revive." after an ad closed early |
-  | loading / retrying (SDK start, consent, no fill, errors) | off | spinner + "Loading an ad…" |
-  | offline (network error, or the network is unreachable) | off | "Connect to the internet to watch an ad and revive" |
+  | loading / retrying (SDK start, consent, no fill, errors), first 8 s | off | spinner + "Loading an ad…" |
+  | no ad after 8 s (at once after no fill / an error), online | on (no icon) | "No ad available right now. This revive is free." |
+  | offline (network error, the network is unreachable, or the check fails) | off | "Connect to the internet to watch an ad and revive" |
   | on screen | off | none |
+  | no revives left (2 used) | hidden; Restart is the gold button | "No revives left. Restart to try again." (no ad loaded or offered) |
 
   Reward earned → the ad closes → the tray tiles fly back (after the app is in the foreground again). Ad closed
-  early or failed to show → no revive, the card stays, Revive shows another ad once one is loaded.
+  early → no revive, the card stays, Revive shows another ad once one is loaded (or turns free after 8 s without one).
+  Ad failed to show → free revive when online.
 - **Action refills** (1.1.0; Undo / Hint / Shuffle start each level with 1 / 1 / 1 uses (owner, 2026-10-17)): at 0 uses the button's
   badge shows a play mark; a tap opens a small card "Watch an ad for +1 Hint?" ("You have no hints left in this
   level.", Watch ad / Not now; the clock stops while it is open; Back closes it). The use is granted
@@ -48,11 +71,13 @@ User Messaging Platform, UMP).
   | Ad state | Watch ad | Note under it |
   |---|---|---|
   | loaded | on (video icon) | none; "Watch the ad to the end to get +1 Hint." after an ad closed early |
-  | loading / retrying | off | spinner + "Loading an ad…" |
+  | loading / retrying, first 8 s | off | spinner + "Loading an ad…" |
+  | no ad after 8 s (at once after no fill / an error), online | "One more Hint?" with "Get +1 Hint" (no icon) | "No ad available right now. This hint is free." |
   | offline | off | "Connect to the internet to watch an ad" |
   | on screen | off (Not now too) | none |
 
-  Closed early or failed → no grant, the card stays. Off buttons (intro, tutorial, result cards, nothing to undo, …)
+  Closed early → no grant, the card stays; failed to show → granted free when online. The action bar's badge keeps
+  the play mark at 0 uses. Off buttons (intro, tutorial, result cards, nothing to undo, …)
   never offer an ad. Age-group rules are the same as for Revive (child-directed for under 13).
 - **While the ad is on screen**: the game clock is already stopped (a full tray, or the refill card, stops it) and stays stopped;
   background music is held (`BackgroundMusic.interrupted`; on Android the app also goes to the background) and
@@ -99,6 +124,10 @@ Google's test IDs are the defaults; they only ever show test ads:
 ## Owner setup (once)
 
 1. **AdMob account** at admob.google.com with the Sun Game Studio Google account; payments and tax info.
+   **After each store release**: AdMob → Apps → the app → "Add store" (link it to its published App Store / Google
+   Play listing). Until an app is linked, AdMob shows "Requires review · Limited ad serving" and serves almost no
+   ads; the no-ad fallback then makes Revive and refills free while online. Linking lifts the limit, and the ads are
+   required again without an app update.
 2. **Add the app**: Apps → Add app → Android, "published on a store" once the Play listing is live (link
    `com.sungamestudio.braintrain`); add iOS later the same way.
 3. **Ad unit**: the app → Ad units → Add → **Rewarded**, name "Revive"; reward amount 1, item "revive" (the app
@@ -148,8 +177,11 @@ Google's test IDs are the defaults; they only ever show test ads:
 - Logs: `adb logcat | grep -i "Rewarded ads\|Ads\|UserMessagingPlatform"`.
 - Tests (no SDK, no network): `test/platform/managed_rewarded_ads_test.dart` (flow, backoff, timeouts, privacy),
   `test/platform/google_mobile_ads_rewarded_test.dart` (request settings per age group),
-  `test/features/revive_ad_test.dart`, `age_screen_test.dart`, `settings_privacy_test.dart`; captures of the age
-  screen, the privacy row and the Tray full card per ad state in `test/visual/`.
+  `test/app/rewarded_ad_offer_test.dart` (the no-ad fallback on fake time),
+  `test/features/revive_ad_test.dart` (incl. the fallback and the 2-revive limit), `game_actions_ui_test.dart`
+  (refills), `age_screen_test.dart`, `settings_privacy_test.dart`; captures of the age screen, the privacy row, the
+  Tray full card per ad state (loading, offline, ready, free, no revives left) and the refill card (loading, free) in
+  `test/visual/gameplay_capture_test.dart`.
 
 ## Code map
 
@@ -160,7 +192,9 @@ Google's test IDs are the defaults; they only ever show test ads:
 - `lib/platform/google_mobile_ads_rewarded.dart` — the only file importing `google_mobile_ads`:
   `GoogleMobileAdsBackend`, request settings per audience, `createRewardedAds()`.
 - `lib/app/rewarded_ads_controller.dart` — `RewardedAdsController` (`AppServices.ads`): started by the lobby,
-  reloads on app resume, holds music and sound effects around `show()`.
+  reloads on app resume, holds music and sound effects around `show()`, `offer()` for a card.
+- `lib/app/rewarded_ad_offer.dart` — `RewardedAdOffer` (one card's ad with the no-ad fallback, pays once),
+  `AdOfferMode`, `kAdFallbackDelay`.
 - `lib/data/age_group.dart`, `lib/features/intro/age_screen.dart`, the gate in `lib/app/app.dart`.
 - `lib/features/gameplay/game_screen.dart` — `_revive` and the Tray full card; `lib/features/settings/` — the
   Privacy choices row.

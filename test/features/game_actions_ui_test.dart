@@ -18,12 +18,14 @@ import 'package:brain_train/features/gameplay/widgets/board_view.dart';
 import 'package:brain_train/features/gameplay/widgets/game_hud.dart';
 import 'package:brain_train/features/gameplay/widgets/hint_glow.dart';
 import 'package:brain_train/features/gameplay/widgets/hint_hand.dart';
+import 'package:brain_train/features/gameplay/widgets/premium_chrome.dart';
 import 'package:brain_train/features/gameplay/widgets/tray_view.dart';
 import 'package:brain_train/features/levels/level_loader.dart';
 import 'package:brain_train/features/levels/level_select_screen.dart';
 import 'package:brain_train/game_engine/campaign/board_shapes.dart';
 import 'package:brain_train/game_engine/scoring/score_format.dart';
 import 'package:brain_train/game_engine/state/game_actions.dart';
+import 'package:brain_train/game_engine/state/game_engine.dart';
 import 'package:brain_train/game_engine/state/game_state.dart';
 import 'package:brain_train/game_engine/validation/solver.dart';
 import 'package:brain_train/platform/rewarded_ads.dart';
@@ -87,9 +89,12 @@ void main() {
 
   /// [adStatus] null: a build without ads.
   Future<void> start(WidgetTester tester, {RewardedAdStatus? adStatus}) async {
+    ads = FakeRewardedAds(adStatus ?? RewardedAdStatus.ready);
+    // Built on the test's fake clock (not in runAsync): its stream callbacks
+    // and the no-ad fallback's online check then run when the test pumps.
+    final controller = adStatus == null ? null : RewardedAdsController(ads);
     await tester.runAsync(() async {
-      ads = FakeRewardedAds(adStatus ?? RewardedAdStatus.ready);
-      services = await testServices(ads: adStatus == null ? null : RewardedAdsController(ads));
+      services = await testServices(ads: controller);
       // A difficulty-4 level: 4-slot tray.
       entry = services.content.snapshot.playableEntries.firstWhere((e) => e.difficulty == '4');
     });
@@ -436,6 +441,99 @@ void main() {
       await tester.pump(const Duration(milliseconds: 100));
       expect(find.text('Watch an ad for +1 Hint?'), findsNothing);
       expect(find.byType(GameScreen), findsOneWidget, reason: 'Back closed the card, not the game');
+      await tester.pumpWidget(const SizedBox());
+    });
+
+    testWidgets('no ad loaded: after kAdFallbackDelay "Get +1 Hint" grants it free, saved like an ad grant', (tester) async {
+      await start(tester, adStatus: RewardedAdStatus.loading);
+      await pumpGame(tester);
+      final game = await spendHints(tester);
+      await tester.tap(_action(GameAction.hint));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 400));
+      expect(find.text(kRefillLoadingNote), findsOneWidget);
+      expect(find.text('Get +1 Hint'), findsNothing);
+      await tester.pump(kAdFallbackDelay);
+      await tester.pump();
+      expect(find.text('One more Hint?'), findsOneWidget);
+      expect(find.text(refillFreeNote(GameAction.hint)), findsOneWidget);
+      expect(find.text(kRefillLoadingNote), findsNothing);
+      expect(game.clockRunning, isFalse, reason: 'the clock still waits behind the card');
+      final before = game.state.history;
+      await tester.tap(find.text('Get +1 Hint'));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 400));
+      expect(ads.shows, 0);
+      expect(game.usesLeft(GameAction.hint), 1);
+      expect(game.state.history, [...before, GameEngine.grantMarker(GameAction.hint)], reason: 'the same path as an ad grant');
+      expect(services.progress.savedGame()!.history, game.state.history);
+      expect(find.text('One more Hint?'), findsNothing);
+      expect(game.clockRunning, isTrue);
+      await tester.pumpWidget(const SizedBox());
+    });
+
+    testWidgets('a failed load is free at once; an ad that fails to show grants free; offline never', (tester) async {
+      await start(tester, adStatus: RewardedAdStatus.loading);
+      await pumpGame(tester);
+      final game = await spendHints(tester);
+      await tester.tap(_action(GameAction.hint));
+      await tester.pump();
+      ads.failLoad();
+      await tester.pump();
+      await tester.pump();
+      expect(find.text('Get +1 Hint'), findsOneWidget);
+      await tester.tap(find.text('Get +1 Hint'));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 400));
+      expect(game.usesLeft(GameAction.hint), 1);
+      expect(game.useHint(), isNotNull);
+      await tester.pump(HintGlowOverlay.duration);
+
+      // A loaded ad that cannot be shown: the use is granted anyway.
+      ads
+        ..setStatus(RewardedAdStatus.ready)
+        ..showResult = RewardedAdResult.failed;
+      await tester.tap(_action(GameAction.hint));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 400));
+      await tester.tap(find.text('Watch ad'));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 400));
+      expect(ads.shows, 1);
+      expect(game.usesLeft(GameAction.hint), 1);
+      expect(game.useHint(), isNotNull);
+      await tester.pump(HintGlowOverlay.duration);
+
+      // Offline: off, however long the card is open.
+      ads.setStatus(RewardedAdStatus.offline);
+      await tester.pump();
+      await tester.tap(_action(GameAction.hint));
+      await tester.pump();
+      await tester.pump(kAdFallbackDelay * 2);
+      expect(find.text(kRefillOfflineNote), findsOneWidget);
+      expect(find.text('Get +1 Hint'), findsNothing);
+      final watch = find.ancestor(of: find.text('Watch ad'), matching: find.byType(InkWell));
+      expect(tester.widget<InkWell>(watch.first).onTap, isNull);
+      expect(game.usesLeft(GameAction.hint), 0);
+      await tester.pumpWidget(const SizedBox());
+    });
+
+    testWidgets('rapid taps grant once', (tester) async {
+      await start(tester, adStatus: RewardedAdStatus.loading);
+      await pumpGame(tester);
+      final game = await spendHints(tester);
+      await tester.tap(_action(GameAction.hint));
+      await tester.pump();
+      await tester.pump(kAdFallbackDelay);
+      await tester.pump();
+      final get = tester.widget<PremiumButton>(find.widgetWithText(PremiumButton, 'Get +1 Hint')).onPressed!;
+      get();
+      get();
+      get();
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 400));
+      expect(game.usesLeft(GameAction.hint), 1);
+      expect(game.state.history.where((h) => h == GameEngine.grantMarker(GameAction.hint)), hasLength(1));
       await tester.pumpWidget(const SizedBox());
     });
 

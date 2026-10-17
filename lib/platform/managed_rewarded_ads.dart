@@ -52,7 +52,8 @@ abstract class AdsBackend {
 
   Future<LoadedRewardedAd> loadRewardedAd(AdAudience audience);
 
-  /// Whether the network is reachable (asked after a failure).
+  /// Whether the network (the ad server) is reachable: asked after a
+  /// failure, and by a card with no ad before it gives its reward free.
   Future<bool> isOnline();
 }
 
@@ -68,6 +69,7 @@ class ManagedRewardedAds implements RewardedAds {
     this.initTimeout = const Duration(seconds: 30),
     this.loadTimeout = const Duration(seconds: 75),
     this.showTimeout = const Duration(minutes: 15),
+    this.onlineTimeout = const Duration(seconds: 6),
     this.retryDelays = defaultRetryDelays,
   });
 
@@ -92,6 +94,9 @@ class ManagedRewardedAds implements RewardedAds {
 
   /// A guard for an ad that never reports closing.
   final Duration showTimeout;
+
+  /// For [checkOnline]: longer than this counts as offline.
+  final Duration onlineTimeout;
 
   /// Waits before each retry after consecutive failures (the last repeats).
   final List<Duration> retryDelays;
@@ -137,7 +142,12 @@ class ManagedRewardedAds implements RewardedAds {
   Future<void> _attempt() async {
     final audience = _audience!;
     // While offline the button keeps saying so during the retry.
-    if (_state.ad != RewardedAdStatus.offline) _setAd(RewardedAdStatus.loading);
+    _set(
+      _state.copyWith(
+        ad: _state.ad == RewardedAdStatus.offline ? RewardedAdStatus.offline : RewardedAdStatus.loading,
+        loadFailed: false,
+      ),
+    );
     try {
       if (!_configured) {
         await _guard(() => backend.configure(audience), callTimeout, 'configure');
@@ -184,7 +194,7 @@ class ManagedRewardedAds implements RewardedAds {
       debugPrint('Rewarded ads: $error');
       final offline = (error is AdsFailure && error.offline) || !await _online();
       if (_disposed) return;
-      _setAd(offline ? RewardedAdStatus.offline : RewardedAdStatus.loading);
+      _set(_state.copyWith(ad: offline ? RewardedAdStatus.offline : RewardedAdStatus.loading, loadFailed: !offline));
       _scheduleRetry();
     }
   }
@@ -263,6 +273,17 @@ class ManagedRewardedAds implements RewardedAds {
       _run();
     }
     return shown;
+  }
+
+  @override
+  Future<bool> checkOnline() async {
+    if (_disposed) return false;
+    try {
+      return await backend.isOnline().timeout(onlineTimeout);
+    } on Object catch (error) {
+      debugPrint('Rewarded ads: online check failed ($error)');
+      return false;
+    }
   }
 
   /// Runs [call] (which may throw at once), timed out, as an [AdsFailure].

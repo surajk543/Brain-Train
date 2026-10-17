@@ -1,5 +1,7 @@
 // The plugin request settings each age group gets (Families policy).
 // ignore_for_file: deprecated_member_use
+import 'dart:io';
+
 import 'package:brain_train/data/age_group.dart';
 import 'package:brain_train/platform/google_mobile_ads_rewarded.dart';
 import 'package:brain_train/platform/rewarded_ads.dart';
@@ -44,5 +46,14 @@ void main() {
 
   test('outside Android and iOS there are no ads', () {
     expect(createRewardedAds(), isA<UnavailableRewardedAds>());
+  });
+
+  test('the online check dials only public addresses (a DNS ad block or a local answer is offline)', () {
+    for (final public in ['142.250.74.66', '8.8.8.8', '2a00:1450:4001:82a::2002', '64:ff9b::8efa:4a42']) {
+      expect(isPublicAddress(InternetAddress(public)), isTrue, reason: public);
+    }
+    for (final local in ['0.0.0.0', '127.0.0.1', '10.0.0.2', '172.16.5.4', '192.168.1.1', '100.64.0.1', '169.254.1.1', '::', '::1', 'fe80::1', 'fd00::1']) {
+      expect(isPublicAddress(InternetAddress(local)), isFalse, reason: local);
+    }
   });
 }

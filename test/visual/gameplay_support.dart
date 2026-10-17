@@ -7,6 +7,7 @@ import 'package:brain_train/features/gameplay/game_controller.dart';
 import 'package:brain_train/features/gameplay/widgets/board_intro.dart';
 import 'package:brain_train/features/gameplay/widgets/board_view.dart';
 import 'package:brain_train/game_engine/geometry/tile_mask.dart';
+import 'package:brain_train/game_engine/state/game_state.dart';
 import 'package:brain_train/game_engine/validation/solver.dart';
 import 'package:brain_train/rendering/tile_style.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -35,13 +36,20 @@ SavedGame solvedSave(ContentSnapshot snapshot, LevelManifestEntry entry, {int? p
 }
 
 /// A line of play that leaves the tray one tile short of full (three of
-/// four, four of five), plus a free board tile that fills it without a match.
-(SavedGame, String) nearlyFullSave(ContentSnapshot snapshot, LevelManifestEntry entry) {
+/// four, four of five), plus a free board tile that fills it without a match;
+/// after [revives] full trays revived.
+(SavedGame, String) nearlyFullSave(ContentSnapshot snapshot, LevelManifestEntry entry, {int revives = 0}) {
   final level = snapshot.levels[entry.levelId]!;
   final engine = engineFor(level, snapshot.registry);
   String unmatched() => (engine.state.free.toList()..sort()).firstWhere(
     (id) => !engine.state.tray.any((t) => engine.rules.matches(engine.indexOf(t)!, engine.indexOf(id)!)),
   );
+  for (var i = 0; i < revives; i++) {
+    while (engine.state.status == GameStatus.playing) {
+      engine.tap(unmatched());
+    }
+    expect(engine.revive(), isNotNull);
+  }
   while (engine.state.tray.length < engine.trayCapacity - 1) {
     engine.tap(unmatched());
   }

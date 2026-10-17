@@ -71,7 +71,9 @@ dart run tool/smoke_remote.dart         # live check: app's content client vs pr
   `AppAppearance.themeMode`), `typography.dart` (`BrainTrainFonts`, `BrainTrainType` builders,
   `BrainTrainTypography` theme extension, `registerFontLicenses`), `brand.dart` (`kDisplayFont` = Playfair, gold),
   `sound_effects.dart`, `play_games_controller.dart` (lobby Play Games state), `rewarded_ads_controller.dart`
-  (`AppServices.ads`: Revive's ad state, show with music/SFX held, privacy options), `app_update_controller.dart`
+  (`AppServices.ads`: Revive's ad state, show with music/SFX held, privacy options, `offer()`),
+  `rewarded_ad_offer.dart` (`RewardedAdOffer`: one card's ad with the no-ad fallback, `kAdFallbackDelay`),
+  `app_update_controller.dart`
   (`AppServices.updates`: the lobby's update card, its check, kept notice, Update / Later).
 - `lib/data/` — `ProgressRepository`, `SettingsRepository` (also the stored `AgeGroup` and `AppAppearance`),
   `age_group.dart`, `appearance.dart`,
@@ -114,8 +116,13 @@ dart run tool/smoke_remote.dart         # live check: app's content client vs pr
   2 for the hardest; docs/level-design-rules.md), 4 when absent; the validator allows 2–5 (`kAllowedTrayCapacities`),
   and `GameEngine`/`GameController`/`TrayController` take it from the level (2/3 slots need content schema 3). A tapped free tile leaves the board for the tray; if it matches a tray tile both clear;
   `capacity` tiles without a match lose (`GameStatus.trayFull`) and show a Revive / Restart card. Revive
-  (`GameEngine.revive`, unlimited, not a move) puts all the tray tiles back in their board places, only after a
-  rewarded ad's reward (see Ads below). Saves (`progress.current.v3` since 1.1.0; `ProgressRepository.open` moves a
+  (`GameEngine.revive`, not a move) puts all the tray tiles back in their board places, only after a
+  rewarded ad's reward (or free when no ad can be had while online; see Ads below). At most `kMaxRevivesPerLevel` = 2
+  revives per level attempt (owner, 2026-10-17; was unlimited), free ones included: counted from the game's `!revive`
+  markers (`GameEngine.revivesUsed/revivesLeft/canRevive`, `GameController.revivesLeft/canRevive`), so a resumed save
+  keeps its count; Restart resets it to 0; Undo never gives one back; `GameEngine.revive` refuses a third (replay
+  still accepts more from a 1.0 save, which then has none left). With none left the Tray full card shows Restart only
+  (primary) and "No revives left. Restart to try again."; no ad is loaded or offered. Saves (`progress.current.v3` since 1.1.0; `ProgressRepository.open` moves a
   1.0 `progress.current.v2` save over, and reads one while no v3 exists) store the tap sequence plus markers:
   `!revive`, `!undo`, `!hint`, `!shuffle:1:<seed>` (planner version 1, pinned), `!grant:<action>`; replaying them
   (`GameEngine.replay`) restores board, tray, shuffled symbols and action uses, and `SavedGame.scoring` keeps the
@@ -184,14 +191,25 @@ dart run tool/smoke_remote.dart         # live check: app's content client vs pr
   the lobby buttons; the library's `PlayGamesInitProvider` is always disabled, and `MainActivity` starts the SDK
   (`initPlayGames` on `brain_train/platform`) only when Dart asks, so nobody is signed in at launch. Release signing reads gitignored `android/key.properties`. iOS min is 15.0 (App Store: ITMS-90068, iOS 15+ required for uploads from April 2027).
 - Ads (owner, docs/ADS.md): Revive shows an AdMob rewarded ad (`GameScreen._revive`); the revive runs only once the
-  ad has closed with its reward earned (and the app is in the foreground). Closed early / failed → no revive, the card
+  ad has closed with its reward earned (and the app is in the foreground). Closed early → no revive, the card
   stays. No ad loaded (loading, no fill, errors) → Revive off with "Loading an ad…"; offline → off with "Connect to the
-  internet to watch an ad and revive"; Restart always works; a resumed tray-full save needs an ad too. Action refills
+  internet to watch an ad and revive"; Restart always works; a resumed tray-full save needs an ad too. No-ad fallback
+  (owner 2026-10-17: no ad available while online → the reward is free after `kAdFallbackDelay`; offline stays blocked;
+  reason: AdMob limited ad serving before store linking): each card gets a `RewardedAdOffer` (`RewardedAdsController.offer()`,
+  created when the Tray full card or the refill card opens, which also preloads). With no ad to show (loading, no
+  fill, load errors, SDK not started) it waits `kAdFallbackDelay` (8 s), or not at all after a failed load
+  (`RewardedAdsState.loadFailed`), then runs a fresh online check (`RewardedAds.checkOnline`: DNS + a TCP connect to
+  the ad server's public addresses, false on failure or after 6 s); online → free ("No ad available right now. This
+  revive is free.", Revive without the video icon), else offline (checked again every 8 s). A loaded ad that fails to
+  show → free if online. Once free, the open card stays free even if an ad loads; the next card needs an ad again.
+  An ad closed early starts the wait over. The offer pays once (rapid taps → one reward) through the same path as an
+  ad (`GameController.revive` / `grant`, same save markers). Ads status `offline` is never free. Action refills
   (1.1.0) work the same way: an Undo / Hint / Shuffle with 0 uses opens "Watch an ad for +1 Hint?" (`ActionRefillCard`,
   clock paused while it is open; Watch ad / Not now; Back closes it); `GameController.grant` only after the reward and
   the app back in the foreground (`GameScreen._watchRefillAd`); closed early → "Watch the ad to the end to get +1
   Hint.", no grant; loading → "Loading an ad…", offline → "Connect to the internet to watch an ad" (Watch ad off);
-  builds without ads grant at once (no card, "+" badge). Never on the
+  free → "One more Hint?" / "Get +1 Hint" / "No ad available right now. This hint is free."; builds without ads grant
+  at once (no card, "+" badge). Never on the
   startup path: the lobby starts ads after its first frame (configuration by age group → UMP consent → `initialize` →
   load); a game opening, the Tray full card and app resume preload; failures retry 5/10/20/30 s then every minute.
   Only `google_mobile_ads_rewarded.dart` imports the plugin; every call is caught and timed out. While an ad shows the
@@ -263,8 +281,10 @@ dart run tool/smoke_remote.dart         # live check: app's content client vs pr
   gold rim + gold fill), Sound Effects, Music and Vibration switches and the app version. Do not add other options.
   One exception (owner): a "Privacy choices" row (Google's UMP privacy options form) shown only when UMP says the
   entry point is required (EEA/UK); hidden everywhere else.
-- Rewarded ads on Revive (owner, 2026-10-16): every Revive plays an AdMob rewarded ad (Revive stays unlimited); no
-  ad, no revive. The audience includes children under 13 (Play Families policy, mixed audience): neutral age screen,
+- Rewarded ads on Revive (owner, 2026-10-16): every Revive plays an AdMob rewarded ad; no ad, no revive. At most 2
+  revives per level attempt (owner, 2026-10-17; was unlimited), then Restart only and no ad. Owner 2026-10-17: no ad
+  available while online → the reward (Revive or a refill) is free after `kAdFallbackDelay`; offline stays blocked;
+  reason: AdMob limited ad serving before store linking (as soon as AdMob serves ads they are required again). The audience includes children under 13 (Play Families policy, mixed audience): neutral age screen,
   child-directed ads for under 13. Rewarded ads only (owner, 2026-10-17, 1.1.0; replaces "No other ads anywhere"):
   on Revive and on action refills (+1 Undo / Hint / Shuffle at 0 uses, see Ads above); never interstitials or banners.
 - Background music `assets/music/water_flowing.mp3` loops at volume 0.4 (owner, 2026-10-17; was 0.6) (`lib/app/background_music.dart`),
@@ -273,7 +293,7 @@ dart run tool/smoke_remote.dart         # live check: app's content client vs pr
   first Sound change pins it, so players who muted Sound before 1.1.0 stay silent). Sound Effects (`settings.sound`)
   gates only the effects (`SoundEffects`). `BackgroundMusic` takes a `MusicPlayer` (audioplayers; a fake in
   `test/app/background_music_test.dart`).
-- Sounds: `assets/sounds/tap.wav` (one tap cut from the owner's Tap.mp3) on every playable tap; `assets/sounds/strike.wav` (one hit cut from the owner's strike.mp3, 0.95 s) is `Sfx.match`, played when a matched pair strikes in the tray; the last pair's strike is followed by `Sfx.win` 450 ms later.
+- Sounds: `assets/sounds/tap.wav` (one tap cut from the owner's Tap.mp3) on every playable tap; `assets/sounds/strike.wav` (the owner's impact.mp3, trimmed to 0.81 s, -6 dB; owner 2026-10-17; was a hit cut from strike.mp3) is `Sfx.match`, played when a matched pair strikes in the tray; the last pair's strike is followed by `Sfx.win` 450 ms later.
 - Game actions (owner, 2026-10-17, 1.1.0; replaces "no Undo and no Hint"): Undo, Hint and Shuffle, 1 / 1 / 1 uses
   per level (`kStartingCharges`), back to 1/1/1 on Restart, unchanged by Revive; with none left the player can watch a
   rewarded ad for +1 of that action (`GameController.grant`, saved as `!grant:<action>`). API:
@@ -458,7 +478,8 @@ dart run tool/smoke_remote.dart         # live check: app's content client vs pr
 - Not yet integrated: 4 IconScout AI images (spring rolls ×2, salad, nachos) — not reachable via the IconScout API.
 - Tray mechanic is integrated (tray at the top, flights, strike-and-shatter matches, Tray full card with
   Revive / Restart), with 2 to 5 slots per level.
-- App version 1.1.0+8 (redesign, `feat/redesign-1.1`, not released yet): Day/Night/System looks, new lobby, Settings, gameplay HUD, Undo / Hint / Shuffle, Level Complete, iOS min 15.0. 1.0.0+7 (2026-10-17): first-play tutorial, Play Games for 13+ only. 1.0.0+6: real AdMob IDs. 1.0.0+5: new content host, update popup, iOS release settings. 1.0.0+4 (`feat/rewarded-ads`, merged into `feat/campaign-v2`): rewarded ads on Revive, age screen,
+- App version 1.1.0+9 (2026-10-17, for App Review and Play): no-ad fallback for rewarded ads (free after
+  `kAdFallbackDelay` while online), at most 2 revives per level attempt, new strike sound. 1.1.0+8 (redesign, `feat/redesign-1.1`): Day/Night/System looks, new lobby, Settings, gameplay HUD, Undo / Hint / Shuffle, Level Complete, iOS min 15.0. 1.0.0+7 (2026-10-17): first-play tutorial, Play Games for 13+ only. 1.0.0+6: real AdMob IDs. 1.0.0+5: new content host, update popup, iOS release settings. 1.0.0+4 (`feat/rewarded-ads`, merged into `feat/campaign-v2`): rewarded ads on Revive, age screen,
   Privacy choices row, built with Google's AdMob test IDs (`google_mobile_ads` 9.1.0). This bundle (66.7 MB AAB,
   19.2 MB install) is the Closed testing - Alpha release in the Play Console.
 - Play Store listing (owner-approved): texts in `art/store/listing-en-US.md`, `art/store/icon-512.png`,
@@ -526,7 +547,8 @@ dart run tool/smoke_remote.dart         # live check: app's content client vs pr
   in Publishing overview, not yet sent for review (owner decides; Google Play Games on PC is opted in by default).
   Production needs 12+ opted-in testers for 14 days, then real AdMob IDs.
 - AdMob (2026-10-17): account ca-app-pub-6766349950907943 (under review; apps "Brain Train - Tile Match" show limited
-  ad serving until linked to a published store listing). iOS app `~6846744759`, rewarded "Revive" unit `/7563920896`
+  ad serving until linked to a published store listing: after each release, AdMob → the app → "Add store" to link it;
+  until then the no-ad fallback makes Revive and refills free while online). iOS app `~6846744759`, rewarded "Revive" unit `/7563920896`
   (in `ios/Runner/Info.plist`); Android app `~8517909911`, rewarded "Revive" unit `/5905943038` (in gitignored
   `android/admob.properties` on the Linux machine; copy it to another machine like `key.properties`).
 - Open work (ads, docs/ADS.md "Owner setup"): AdMob account, app and "Revive" rewarded unit → real IDs in

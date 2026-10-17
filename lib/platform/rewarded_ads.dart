@@ -73,23 +73,36 @@ final class AdAudience {
 /// The ad state and whether the EEA/UK privacy options entry point is
 /// required (then Settings shows "Privacy choices").
 final class RewardedAdsState {
-  const RewardedAdsState(this.ad, {this.privacyOptionsRequired = false});
+  const RewardedAdsState(this.ad, {this.privacyOptionsRequired = false, this.loadFailed = false});
 
   final RewardedAdStatus ad;
   final bool privacyOptionsRequired;
 
-  RewardedAdsState copyWith({RewardedAdStatus? ad, bool? privacyOptionsRequired}) =>
-      RewardedAdsState(ad ?? this.ad, privacyOptionsRequired: privacyOptionsRequired ?? this.privacyOptionsRequired);
+  /// With [RewardedAdStatus.loading]: the last attempt failed for a reason
+  /// other than the network (no fill, an error, no consent yet) and the next
+  /// waits for its backoff. A card waiting for an ad may then give its reward
+  /// free at once instead of after `kAdFallbackDelay`.
+  final bool loadFailed;
+
+  RewardedAdsState copyWith({RewardedAdStatus? ad, bool? privacyOptionsRequired, bool? loadFailed}) => RewardedAdsState(
+    ad ?? this.ad,
+    privacyOptionsRequired: privacyOptionsRequired ?? this.privacyOptionsRequired,
+    loadFailed: loadFailed ?? this.loadFailed,
+  );
 
   @override
   bool operator ==(Object other) =>
-      other is RewardedAdsState && other.ad == ad && other.privacyOptionsRequired == privacyOptionsRequired;
+      other is RewardedAdsState &&
+      other.ad == ad &&
+      other.privacyOptionsRequired == privacyOptionsRequired &&
+      other.loadFailed == loadFailed;
 
   @override
-  int get hashCode => Object.hash(ad, privacyOptionsRequired);
+  int get hashCode => Object.hash(ad, privacyOptionsRequired, loadFailed);
 
   @override
-  String toString() => 'RewardedAdsState(${ad.name}, privacyOptionsRequired: $privacyOptionsRequired)';
+  String toString() =>
+      'RewardedAdsState(${ad.name}, privacyOptionsRequired: $privacyOptionsRequired, loadFailed: $loadFailed)';
 }
 
 abstract class RewardedAds {
@@ -113,6 +126,11 @@ abstract class RewardedAds {
   /// Google's privacy options form (EEA/UK); false when it could not be
   /// shown.
   Future<bool> showPrivacyOptions();
+
+  /// Whether the ad server can be reached now: a fresh check, false when it
+  /// fails or takes too long. A card with no ad to show gives its reward
+  /// free only when this is true (owner, 2026-10-17); offline stays blocked.
+  Future<bool> checkOnline();
 
   void dispose();
 }
@@ -139,6 +157,10 @@ class UnavailableRewardedAds implements RewardedAds {
 
   @override
   Future<bool> showPrivacyOptions() async => false;
+
+  /// Never asked: with ads off every reward is given at once.
+  @override
+  Future<bool> checkOnline() async => true;
 
   @override
   void dispose() {}
