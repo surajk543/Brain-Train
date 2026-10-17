@@ -443,7 +443,10 @@ dart run tool/smoke_remote.dart         # live check: app's content client vs pr
   Originals live in `art/source/` (gitignored). IconScout downloads use the owner's subscription via the iconscout MCP.
 - Art sources: each entry has a `status`; builds take only `integrated` ones. Static: 195 integrated (82 earlier +
   23 owner nano-banana cut-outs + 76 IconScout 3D Sport/Christmas/Tech/Robot/Cinema/Trip + 24 from the Sport, Sport
-  Equipment, Equipment and Medicine packs, minus 2 rejected for 6+ and 8 for 4+), 68 `rejected` (unreadable at 31 px, look-alikes, duplicates; each has a
+  Equipment, Equipment and Medicine packs, minus 2 rejected for 6+ and 8 for 4+) in published content; plus 17 integrated
+  on 2026-10-17 from the User Interface, Shopping And Sale, Internet Marketing, Travel & Holiday and Valentine's Day packs
+  (`SHOP_*`, `UI_*`, `MKT_EMAIL`, `TRIP2_*`, `LOVE2_*`; masters pushed to R2, not yet in a published build), so 212 in
+  `art/asset_sources.json`; 73 `rejected` (unreadable at 31 px, look-alikes, duplicates; each has a
   reason), 16 `awaiting download`. Duplicate subjects are never added (owner). Animated: 111 integrated (2 rejected for 6+; 83 earlier +
   9 owner LottieFiles `LF_*` + India map + 20 country flags `FLAG_*` restyled with a zoom), rejected ones have a
   reason. Check new art at 31 px and 64 px tile width.
@@ -496,6 +499,10 @@ dart run tool/smoke_remote.dart         # live check: app's content client vs pr
   day, but 150 went through on 2026-10-16 evening; stop at the first server error.
 - Open work: 16 static entries `awaiting download` (MED_VIRUS + 15 SCI_, not downloaded on the owner's stop); a frame-time slowdown after hours of play on the emulator (Impeller GLES; watch
   `adb logcat | grep app_time_stats`, app restart resets it) is not explained yet.
+- Open work (2026-10-17): the planned second batch `{"9": 25, "10": 50}` (levels 101-175) is not in the catalog:
+  `scheduleTiers` fails ("batch 2: no tier order satisfies maxTierRun 2"). An order exists (only near-forced
+  `10 10 9` repeats), but the weighted random draw with 10,000 restarts does not find one; with the same code it does at
+  attempt 1,263,281 (~30 s). The unchanged scheduler places `{"9": 27, "10": 48}` or more 9s. Owner to decide.
 - Play Console setup (2026-10-16, docs/PLAY_GAMES.md steps 1–6 done): app "Brain Train" in the sungamestudio.com
   developer account (personal account), Play App Signing on; Games Services project = Play Games app ID `923515226118`
   (in `android/play_games.properties`), linked Cloud project `brain-train-511814` (OAuth consent screen External,
