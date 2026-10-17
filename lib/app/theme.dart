@@ -41,9 +41,14 @@ class FeltFoliage {
     bottomRight: 'assets/decor/foliage_bottom_right.webp',
   );
 
-  // TODO(redesign 1.1, gameplay phase): Day foliage art; Day uses the night
-  // foliage until it exists.
-  static const day = night;
+  /// The same sprays in daylight: sunlit greens, warm rims and a few more
+  /// cream flowers (`tool/lobby_art/make_day_foliage.py`, from the night art).
+  static const day = FeltFoliage(
+    right: 'assets/decor/day/foliage_right.webp',
+    topLeft: 'assets/decor/day/foliage_top_left.webp',
+    bottomLeft: 'assets/decor/day/foliage_bottom_left.webp',
+    bottomRight: 'assets/decor/day/foliage_bottom_right.webp',
+  );
 
   final String right;
   final String topLeft;
@@ -87,6 +92,7 @@ class BrainTrainPalette extends ThemeExtension<BrainTrainPalette> {
     required this.feltGlow,
     required this.feltGlowStrength,
     required this.feltVignette,
+    required this.feltSunPatches,
     required this.feltFoliage,
     required this.panelFill,
     required this.panelRim,
@@ -138,6 +144,7 @@ class BrainTrainPalette extends ThemeExtension<BrainTrainPalette> {
     feltGlow: Color(0xFFFFD98A),
     feltGlowStrength: 0.4,
     feltVignette: 0.34,
+    feltSunPatches: 0,
     feltFoliage: FeltFoliage.night,
     panelFill: [Color(0xD11A5638), Color(0xE00A3322)],
     panelRim: [BrandGold.light, BrandGold.base, BrandGold.deep, BrandGold.base, BrandGold.light],
@@ -186,13 +193,17 @@ class BrainTrainPalette extends ThemeExtension<BrainTrainPalette> {
     orbStrength: 1,
     scrim: Color(0x5904140E),
     background: [Color(0xFF2A7F50), BrainTrainColors.gardenGreen, BrainTrainColors.deepFoliage],
-    feltCenter: Color(0xFF287D4F),
-    feltMid: BrainTrainColors.gardenGreen,
-    feltEdge: BrainTrainColors.deepFoliage,
+    // Sunlit lawn: a warmer, yellower green than Night, light to the edges
+    // (the centre is as light as ivory text on it allows), strong warm sun
+    // from the top-right and patches of light through the leaves.
+    feltCenter: Color(0xFF2E7D46),
+    feltMid: Color(0xFF26703E),
+    feltEdge: Color(0xFF1B5A33),
     feltNap: 0.022,
-    feltGlow: Color(0xFFFFE6A6),
-    feltGlowStrength: 0.46,
-    feltVignette: 0.24,
+    feltGlow: Color(0xFFFFE7A0),
+    feltGlowStrength: 0.62,
+    feltVignette: 0.14,
+    feltSunPatches: 0.16,
     feltFoliage: FeltFoliage.day,
     panelFill: [Color(0xD91A5638), Color(0xE60A3322)],
     panelRim: [BrandGold.light, BrandGold.base, BrandGold.deep, BrandGold.base, BrandGold.light],
@@ -275,6 +286,10 @@ class BrainTrainPalette extends ThemeExtension<BrainTrainPalette> {
   final Color feltGlow;
   final double feltGlowStrength;
   final double feltVignette;
+
+  /// Strength (alpha) of the soft patches of sunlight on the felt, as if
+  /// through leaves (Day); 0 draws none (Night).
+  final double feltSunPatches;
 
   /// Foliage art at the felt's edges.
   final FeltFoliage feltFoliage;

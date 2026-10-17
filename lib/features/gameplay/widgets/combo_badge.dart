@@ -7,7 +7,15 @@ import '../../../app/typography.dart';
 import '../../common/static_layer.dart';
 import '../game_controller.dart';
 
+/// The pill's height, and on compact (short) screens, where the tray's
+/// frame has less room under its wells.
 const double _pillHeight = 24;
+const double _compactPillHeight = 20;
+
+/// Where the badge hangs on the tray's bottom edge: the edge crosses the badge
+/// 30% from its top, so the badge sits a little low and its top stays under
+/// the tray's wells (centred, it covered their bottom by ~5 px at 360x640).
+const Alignment kComboBadgeAnchor = Alignment(0, -0.4);
 
 /// "COMBO ×N · Best ×M" gold pill (from ×2) floating on the tray's bottom
 /// edge; with no combo running, a small "Best ×M" chip once a combo of 2 or
@@ -19,10 +27,13 @@ const double _pillHeight = 24;
 /// one-shot controllers that stop when done. Draws no blur filter, no
 /// `Opacity`, no layers beyond one [StaticLayer].
 class ComboBadge extends StatefulWidget {
-  const ComboBadge({super.key, required this.controller, required this.reduceMotion});
+  const ComboBadge({super.key, required this.controller, required this.reduceMotion, this.compact = false});
 
   final GameController controller;
   final bool reduceMotion;
+
+  /// Short screens: a smaller pill (see `GameLayout.compact`).
+  final bool compact;
 
   @override
   State<ComboBadge> createState() => _ComboBadgeState();
@@ -126,7 +137,7 @@ class _ComboBadgeState extends State<ComboBadge> with TickerProviderStateMixin {
           StaticLayer(
             overflow: const EdgeInsets.fromLTRB(6, 4, 6, 8),
             child: Container(
-              height: _pillHeight,
+              height: widget.compact ? _compactPillHeight : _pillHeight,
               padding: const EdgeInsets.symmetric(horizontal: 12),
               alignment: Alignment.center,
               decoration: ShapeDecoration(
@@ -142,7 +153,8 @@ class _ComboBadgeState extends State<ComboBadge> with TickerProviderStateMixin {
                 'COMBO ×$combo · Best ×${math.max(best, combo)}',
                 maxLines: 1,
                 softWrap: false,
-                style: BrainTrainType.combo(size: 11.5, color: palette.textOnGold).copyWith(letterSpacing: 0.9, height: 1.1),
+                style: BrainTrainType.combo(size: widget.compact ? 10.5 : 11.5, color: palette.textOnGold)
+                    .copyWith(letterSpacing: 0.9, height: 1.1),
               ),
             ),
           ),

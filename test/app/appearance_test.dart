@@ -188,6 +188,18 @@ void main() {
       }
       expect(LobbyTheme.day.decor.where((d) => d.asset.contains('lantern')), isEmpty, reason: 'no lanterns by day');
       expect(BrainTrainPalette.night.feltEdge, kFeltEdge);
+      // Gameplay foliage: Night keeps the 1.0 art, Day has its sunlit copy.
+      expect(BrainTrainPalette.night.feltFoliage.right, 'assets/decor/foliage_right.webp');
+      final pubspec = File('pubspec.yaml').readAsStringSync();
+      for (final palette in [BrainTrainPalette.day, BrainTrainPalette.night]) {
+        final foliage = palette.feltFoliage;
+        for (final asset in [foliage.right, foliage.topLeft, foliage.bottomLeft, foliage.bottomRight]) {
+          expect(File(asset).existsSync(), isTrue, reason: asset);
+          expect(pubspec, contains('- ${asset.substring(0, asset.lastIndexOf('/') + 1)}\n'), reason: asset);
+          if (palette.isDay) expect(asset, startsWith('assets/decor/day/'));
+        }
+      }
+      expect(BrainTrainPalette.night.feltSunPatches, 0, reason: 'Night has no sunlight');
     });
 
     test('the type scale: Playfair for titles, Manrope for UI, within the reference sizes', () {

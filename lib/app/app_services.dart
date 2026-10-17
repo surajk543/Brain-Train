@@ -238,8 +238,9 @@ class AppServices {
     final cache = ContentCache(FileContentStore(Directory('${supportDir.path}/content_cache')));
     final fetcher = ContentFetcher(client: http.Client(), config: contentConfig);
     final resolver = RemoteAssetResolver(contentConfig);
-    // The starter pack (levels 1-5, their art, the manifest and registry).
-    final bundled = BundledContentSource(_loadAsset, prefix: kStarterContentPrefix);
+    // The starter pack (levels 1-5, their art, the manifest and registry),
+    // then the lobby hero's three symbols.
+    final bundled = bundledContent(_loadAsset);
     final coordinator = ContentCoordinator(
       cache: cache,
       bundled: bundled,

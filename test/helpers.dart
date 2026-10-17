@@ -42,4 +42,11 @@ final BundledContentSource repoContent = BundledContentSource((key) async {
   return file.existsSync() ? file.readAsBytesSync() : null;
 }, prefix: 'content/starter/');
 
+/// Everything the app bundles (the starter pack, then the lobby hero's art,
+/// `bundledContent`), read straight from the repository.
+final ContentSource repoBundle = bundledContent((key) async {
+  final file = File(key);
+  return file.existsSync() ? file.readAsBytesSync() : null;
+});
+
 Uint8List bytesOf(String text) => Uint8List.fromList(text.codeUnits);

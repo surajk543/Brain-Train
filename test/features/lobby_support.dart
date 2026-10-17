@@ -50,7 +50,7 @@ Future<AppServices> testServices({
   final content = ContentController(
     ContentCoordinator(
       cache: cache,
-      bundled: repoContent,
+      bundled: repoBundle,
       downloads: AssetDownloadManager(cache: cache, fetcher: fetcher, resolver: resolver),
       manifests: ContentManifestService(fetcher: fetcher, resolver: resolver),
     ),

@@ -80,9 +80,14 @@ flutter:
     - assets/sounds/
     - assets/music/
     - assets/decor/
+    # Day gameplay foliage (tool/lobby_art/make_day_foliage.py).
+    - assets/decor/day/
     - assets/lobby/
     # Day lobby art (tool/lobby_art/make_day_lobby_art.py).
     - assets/lobby/day/
+    # The lobby hero's symbols (PLANT_POT_B, FLOWER_SUNFLOWER, FLOWER_PANSY):
+    # the published files, at their registry paths (kHeroArtPrefix).
+    - assets/lobby/hero/symbols/v1/
     # Level complete trophy (loops while the Level complete card is open).
     - assets/lottie/trophy_cup_rays.json
     # The bundled fonts' licenses (SIL OFL 1.1), for the license registry.
