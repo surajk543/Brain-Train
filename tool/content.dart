@@ -32,9 +32,11 @@ import 'package:brain_train/content/content_validator.dart';
 import 'package:brain_train/content/level_manifest.dart';
 import 'package:brain_train/content/remote_asset_resolver.dart';
 import 'package:brain_train/game_engine/campaign/campaign_config.dart';
+import 'package:brain_train/game_engine/campaign/board_shapes.dart';
 import 'package:brain_train/game_engine/campaign/campaign_generator.dart';
 import 'package:brain_train/game_engine/generator/level_generator.dart';
 import 'package:brain_train/game_engine/geometry/board_geometry.dart';
+import 'package:brain_train/game_engine/geometry/board_grid.dart';
 import 'package:brain_train/game_engine/geometry/tile_availability.dart';
 import 'package:brain_train/game_engine/geometry/tile_mask.dart';
 import 'package:brain_train/game_engine/models/level_definition.dart';
@@ -129,7 +131,7 @@ Future<void> build({required bool force}) async {
     final generator = CampaignGenerator(config: config, staticPool: statics.keys.toList(), animatedPool: animated.keys.toList());
     for (final generated in generator.generate()) {
       final level = generated.level;
-      final report = validator.validateLevel(level, registry, checkSolvable: true, solverNodeBudget: solverBudget);
+      final report = validator.validateLevel(level, registry, checkSolvable: true, solverNodeBudget: solverBudget, checkCampaignRules: true);
       if (!report.isValid) fail('${level.levelId}: ${report.errors.join('; ')}');
       final text = encodeLevel(level);
       final path = contentAddressed('levels', level.levelId, text);
@@ -156,6 +158,10 @@ Future<void> build({required bool force}) async {
       );
     }
     print('campaign  ${levels.length} levels in ${(watch.elapsedMilliseconds / 1000).toStringAsFixed(1)} s');
+    print(
+      'grid      $kBoardGridColumns x $kBoardGridRows tiles, $kBoardGridLayers layers: faces '
+      '${gridFaceWidthIn(kSmallBoardWidth, kSmallBoardHeight).toStringAsFixed(1)} px wide on a 360x640 phone',
+    );
     _printCampaignSummary(config, levels, statics.keys.toSet(), animated.keys.toSet());
   }
 
@@ -494,6 +500,7 @@ Future<bool> validate() async {
           expectedLevelId: entry.levelId,
           checkSolvable: true,
           solverNodeBudget: 2000000,
+          checkCampaignRules: true,
         );
         if (!report.isValid) {
           problem('${entry.levelId}: ${report.errors.join('; ')}');

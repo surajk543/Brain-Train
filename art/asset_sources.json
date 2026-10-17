@@ -1,5 +1,5 @@
 {
-  "_comment": "Static symbol artwork for Brain Train, set v1 (was v4 until 2026-10-16). Two kinds of source: (1) owner-supplied images (Downloads/symbol, generated with Gemini 2.5 Flash Image) on light backgrounds, style \"cutout\": the background is removed by tool/assets/cutout.py; (2) IconScout premium 3D icons and illustrations downloaded with the owner's IconScout subscription: 3D icons are transparent PNGs (trimmed, centred, normalised); illustrations with a scene background use \"cutout\" too. Originals live in art/source/symbols-v1/ (gitignored). Process with `python3 tool/assets/prepare_symbols.py`. Each entry has a `status`: \"integrated\" (WebP written and reviewed; only these go into the registry), \"pending\" (source present, not yet reviewed), \"rejected\" (see its `rejected` reason; unreadable at a 31 px tile) or \"awaiting download\" (IconScout source not downloaded yet; the 3D download quota ran out). Pack items left out as duplicates are not listed. (3) Owner-supplied nano-banana 2.1 renders (2026-10-16; originalFile is the downloaded name): the white, grey or dark backdrop was cut away beforehand (border flood fill, feathered edge), so their sources are transparent PNGs and the entries have no style; near-duplicate renders are not listed. 2026-10-17: the IconScout 3D packs User Interface (375876), Shopping And Sale (381781), Internet Marketing (250877), Travel & Holiday (256432) and Valentine's Day (168294) were screened from their previews; pack items not listed (duplicate subjects, busy scenes, phones and screens, money or trading imagery, look-alikes) were left out without a download.",
+  "_comment": "Static symbol artwork for Brain Train, set v1 (was v4 until 2026-10-16). Two kinds of source: (1) owner-supplied images (Downloads/symbol, generated with Gemini 2.5 Flash Image) on light backgrounds, style \"cutout\": the background is removed by tool/assets/cutout.py; (2) IconScout premium 3D icons and illustrations downloaded with the owner's IconScout subscription: 3D icons are transparent PNGs (trimmed, centred, normalised); illustrations with a scene background use \"cutout\" too. Originals live in art/source/symbols-v1/ (gitignored). Process with `python3 tool/assets/prepare_symbols.py`. Each entry has a `status`: \"integrated\" (WebP written and reviewed; only these go into the registry), \"pending\" (source present, not yet reviewed), \"rejected\" (see its `rejected` reason; unreadable at a 31 px tile) or \"awaiting download\" (IconScout source not downloaded yet; the 3D download quota ran out). Pack items left out as duplicates are not listed. (3) Owner-supplied nano-banana 2.1 renders (2026-10-16; originalFile is the downloaded name): the white, grey or dark backdrop was cut away beforehand (border flood fill, feathered edge), so their sources are transparent PNGs and the entries have no style; near-duplicate renders are not listed. 2026-10-17: the IconScout 3D packs User Interface (375876), Shopping And Sale (381781), Internet Marketing (250877), Travel & Holiday (256432) and Valentine's Day (168294) were screened from their previews; pack items not listed (duplicate subjects, busy scenes, phones and screens, money or trading imagery, look-alikes) were left out without a download. 2026-10-17 (content 2026.10.17.3): the IconScout 3D packs Tree Christmas Decoration (378254), Christmas Light (380145) and Halloween (442948, 229625, 294168, 147248, 89750, 91783), 193 items, were screened from their previews at 31 px and 64 px; 10 candidates were downloaded (9 integrated as HALLOWEEN_* and XMAS2_LIGHTS, 1 rejected). Left out without a download: the 20 Christmas trees (duplicate subject of XMAS_TREE); the other light strings (thin at 31 px, or duplicate subjects of XMAS_BAUBLES, XMAS_HOLLY and the star symbols); anything frightening or unsuitable for a 4+ / under-13 audience (skulls, skeletons and bones, blood, eyeballs, coffins, graves and tombstones, zombies, mummies, vampires, werewolves, devils, grim reapers, monsters, scary or angry faces, haunted houses and trees, a noose, knives, axes, sickles, scythes, a pirate hook, poison and potion bottles, black-magic books, voodoo dolls); ghosts (duplicate subject of MONSTER_GHOST); balloons, calendars, candles, lanterns, cupcakes, cakes, candy canes, headbands and the fox (duplicate subjects); a red-eyed black cat and an owl with an angry brow; look-alikes within the packs (other pumpkins, witch hats, brooms, bats, cauldrons and candies); text art, party scenes and podiums (busy at 31 px).",
   "provider": "Owner-supplied (Gemini 2.5 Flash Image, nano-banana 2.1) + IconScout (premium 3D icons and illustrations)",
   "licenseNote": "Owner-supplied images (AI renders the owner made with Gemini 2.5 Flash Image and nano-banana 2.1): supplied by the owner for use in Brain Train. IconScout assets: downloaded under the owner's IconScout subscription license (commercial use, no attribution required); sourceUrl lists each asset page.",
   "imageSet": "v1",
@@ -2804,6 +2804,97 @@
       "expectedSourceFile": "love2-teddy-bear",
       "outputFile": "love2-teddy-bear.webp",
       "sourceUrl": "https://iconscout.com/3d-icon/teddy-bear-3d-icon_6067891",
+      "status": "integrated"
+    },
+    {
+      "code": "HALLOWEEN_CANDY_BUCKET",
+      "title": "Candy Bucket",
+      "originalFile": "halloween-candy-bag-3d-icon_8196500.png",
+      "expectedSourceFile": "halloween-candy-bucket",
+      "outputFile": "halloween-candy-bucket.webp",
+      "sourceUrl": "https://iconscout.com/3d-icon/halloween-candy-bag-3d-icon_8196500",
+      "status": "integrated"
+    },
+    {
+      "code": "HALLOWEEN_WITCH_HAT",
+      "title": "Witch Hat",
+      "originalFile": "witch-hat-3d-icon_8196498.png",
+      "expectedSourceFile": "halloween-witch-hat",
+      "outputFile": "halloween-witch-hat.webp",
+      "sourceUrl": "https://iconscout.com/3d-icon/witch-hat-3d-icon_8196498",
+      "status": "integrated"
+    },
+    {
+      "code": "HALLOWEEN_BROOM",
+      "title": "Witch Broom",
+      "originalFile": "witch-broomstick-3d-icon_15552988.png",
+      "expectedSourceFile": "halloween-broom",
+      "outputFile": "halloween-broom.webp",
+      "sourceUrl": "https://iconscout.com/3d-icon/witch-broomstick-3d-icon_15552988",
+      "status": "integrated"
+    },
+    {
+      "code": "HALLOWEEN_BROOM_YELLOW",
+      "title": "Yellow Witch Broom",
+      "originalFile": "witch-broomstick-3d-icon_8196490.png",
+      "expectedSourceFile": "halloween-broom-yellow",
+      "outputFile": "halloween-broom-yellow.webp",
+      "sourceUrl": "https://iconscout.com/3d-icon/witch-broomstick-3d-icon_8196490",
+      "status": "rejected",
+      "rejected": "reads as a hand bell at 31 px (yellow flared bristles on a short handle), confusable with XMAS_BELLS; HALLOWEEN_BROOM uses the orange broom of pack 442948 instead"
+    },
+    {
+      "code": "HALLOWEEN_BAT",
+      "title": "Friendly Bat",
+      "originalFile": "halloween-bat-3d-icon_8196521.png",
+      "expectedSourceFile": "halloween-bat",
+      "outputFile": "halloween-bat.webp",
+      "sourceUrl": "https://iconscout.com/3d-icon/halloween-bat-3d-icon_8196521",
+      "status": "integrated"
+    },
+    {
+      "code": "HALLOWEEN_MOON",
+      "title": "Crescent Moon",
+      "originalFile": "halloween-moon-3d-icon_10316167.png",
+      "expectedSourceFile": "halloween-moon",
+      "outputFile": "halloween-moon.webp",
+      "sourceUrl": "https://iconscout.com/3d-icon/halloween-moon-3d-icon_10316167",
+      "status": "integrated"
+    },
+    {
+      "code": "HALLOWEEN_CANDIES",
+      "title": "Wrapped Candies",
+      "originalFile": "halloween-candy-3d-icon_8196510.png",
+      "expectedSourceFile": "halloween-candies",
+      "outputFile": "halloween-candies.webp",
+      "sourceUrl": "https://iconscout.com/3d-icon/halloween-candy-3d-icon_8196510",
+      "status": "integrated"
+    },
+    {
+      "code": "HALLOWEEN_CAULDRON",
+      "title": "Bubbling Cauldron",
+      "originalFile": "witch-cauldron-with-bubbles-3d-icon_10316169.png",
+      "expectedSourceFile": "halloween-cauldron",
+      "outputFile": "halloween-cauldron.webp",
+      "sourceUrl": "https://iconscout.com/3d-icon/witch-cauldron-with-bubbles-3d-icon_10316169",
+      "status": "integrated"
+    },
+    {
+      "code": "HALLOWEEN_LOLLIPOP",
+      "title": "Swirl Lollipop",
+      "originalFile": "halloween-lollipop-3d-icon_8196505.png",
+      "expectedSourceFile": "halloween-lollipop",
+      "outputFile": "halloween-lollipop.webp",
+      "sourceUrl": "https://iconscout.com/3d-icon/halloween-lollipop-3d-icon_8196505",
+      "status": "integrated"
+    },
+    {
+      "code": "XMAS2_LIGHTS",
+      "title": "Christmas Lights",
+      "originalFile": "christmas-light-3d-icon_13470289.png",
+      "expectedSourceFile": "xmas2-lights",
+      "outputFile": "xmas2-lights.webp",
+      "sourceUrl": "https://iconscout.com/3d-icon/christmas-light-3d-icon_13470289",
       "status": "integrated"
     }
   ]

@@ -129,6 +129,12 @@ class JsonReader {
     final reader = object(key);
     return {for (final k in reader.keys) k: reader.stringList(k)};
   }
+
+  /// An object whose values are all strings, e.g. `faceColors`.
+  Map<String, String> stringMap(String key) {
+    final reader = object(key);
+    return {for (final k in reader.keys) k: reader.string(k)};
+  }
 }
 
 /// Writes integral doubles as JSON integers so generated files stay tidy.

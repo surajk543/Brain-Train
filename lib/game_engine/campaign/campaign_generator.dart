@@ -2,6 +2,7 @@ import 'dart:math' as math;
 
 import '../generator/level_generator.dart';
 import '../geometry/board_geometry.dart';
+import '../geometry/board_grid.dart';
 import '../geometry/tile_availability.dart';
 import '../geometry/tile_mask.dart';
 import '../models/board_config.dart';
@@ -97,8 +98,14 @@ class CampaignGenerator {
 
   List<CampaignLevel> generate({void Function(CampaignLevel level)? onLevel}) {
     if (staticPool.isEmpty) throw StateError('no static symbols');
+    // Every board shows at the fixed grid's scale (boardProjectionFor).
+    final face = gridFaceWidthIn(kSmallBoardWidth, kSmallBoardHeight);
+    if (face < config.minFaceWidth) {
+      throw StateError('the ${kBoardGridColumns}x$kBoardGridRows grid gives ${face.toStringAsFixed(1)}-px faces on a '
+          '360x640 phone, below minFaceWidth ${config.minFaceWidth}');
+    }
     final tiers = scheduleTiers(config);
-    final decor = LevelDecor(config.seed);
+    final decor = LevelDecor(config.seed, pinned: config.titles);
     final recentFamilies = <String>[];
     final familyUses = <String, int>{};
     final levels = <CampaignLevel>[];
@@ -137,7 +144,7 @@ class CampaignGenerator {
           if (shape.tileCount >= spec.minTiles &&
               shape.tileCount <= spec.maxTiles &&
               shape.layerCount >= spec.minLayers &&
-              shape.smallPhoneFaceWidth >= config.minFaceWidth &&
+              shape.fitsGrid &&
               shape.freeRatio >= spec.minFreeRatio &&
               shape.freeRatio <= spec.maxFreeRatio)
             shape,
@@ -221,6 +228,7 @@ class CampaignGenerator {
       for (final id in best.tileSymbols) id < best.distinctStatic ? staticCodes[id] : animatedCodes[id - best.distinctStatic],
     ];
     final slots = best.slots;
+    final faceColors = _faceColors(levelId, best, staticCodes);
     final level = LevelDefinition(
       levelId: levelId,
       title: title,
@@ -228,6 +236,7 @@ class CampaignGenerator {
       board: const BoardConfig(),
       rules: LevelRules(trayCapacity: trayCapacity),
       backdrop: LevelBackdrop(colors: backdrop),
+      faceColors: faceColors,
       tiles: [
         for (var i = 0; i < slots.length; i++)
           TileDefinition(
@@ -257,6 +266,28 @@ class CampaignGenerator {
       animatedSymbols: animatedCodes,
       attempts: attempts,
     );
+  }
+
+  /// 1 or 2 single pairs (static symbols with exactly two tiles) get a face
+  /// colour, seeded by the level (owner, 2026-10-17). Picked among abstract
+  /// symbols, so new symbols change which codes are coloured, never which
+  /// pairs.
+  Map<String, String> _faceColors(String levelId, _Built built, List<String> staticCodes) {
+    final tilesOf = <int, int>{};
+    for (final id in built.tileSymbols) {
+      tilesOf[id] = (tilesOf[id] ?? 0) + 1;
+    }
+    final single = [
+      for (var id = 0; id < built.distinctStatic; id++)
+        if (tilesOf[id] == 2) id,
+    ];
+    if (single.isEmpty) return const {};
+    final random = SeededRandom.of(['faces', config.seed, levelId]);
+    final count = math.min(single.length, 1 + random.nextInt(2));
+    random.shuffle(single);
+    final colours = [...kFaceColorNames];
+    random.shuffle(colours);
+    return {for (var i = 0; i < count; i++) staticCodes[single[i]]: colours[i]};
   }
 
   String _weightedFamily(List<String> options, Map<String, int> uses, SeededRandom random) {
@@ -314,10 +345,12 @@ class CampaignGenerator {
     // At least ceil(pairs / maxPairsPerSymbol) symbols, so none repeats more.
     final cap = config.maxPairsPerSymbol;
     int atLeast(int pairs) => cap == null ? 1 : (pairs / cap).ceil();
+    // At least one static symbol has a single pair (fewer than two pairs per
+    // symbol on average), so the level can colour one.
     final distinctStatic = staticPairs == 0
         ? 0
         : math
-              .max((staticPairs / spec.pairsPerStaticSymbol).round(), atLeast(staticPairs))
+              .max(math.max((staticPairs / spec.pairsPerStaticSymbol).round(), atLeast(staticPairs)), staticPairs ~/ 2 + 1)
               .clamp(1, math.min(staticPairs, staticPool.length))
               .toInt();
     final distinctAnimated = animatedPairs == 0

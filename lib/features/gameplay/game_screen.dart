@@ -636,6 +636,7 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
                       ads: _ads,
                       blocked: _cardOpen,
                       compact: layout.compact,
+                      disc: layout.actionDisc,
                       onAction: _onAction,
                       onRestart: _askRestart,
                     ),

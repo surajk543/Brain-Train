@@ -1,4 +1,5 @@
 import 'package:brain_train/game_engine/geometry/board_geometry.dart';
+import 'package:brain_train/game_engine/geometry/board_grid.dart';
 import 'package:brain_train/game_engine/geometry/board_projection.dart';
 import 'package:brain_train/game_engine/geometry/tile_availability.dart';
 import 'package:brain_train/game_engine/geometry/tile_mask.dart';
@@ -81,7 +82,7 @@ void main() {
   });
 
   group('projection and hit testing', () {
-    BoardProjection fit(BoardGeometry g, {double w = 400, double h = 600}) => BoardProjection.fit(
+    BoardProjection fit(BoardGeometry g, {double w = 400, double h = 600, BoardGridSpan? grid}) => BoardProjection.fit(
       geometry: g,
       tileWidth: 2,
       tileHeight: 2,
@@ -92,7 +93,28 @@ void main() {
       layerOffsetX: -0.1,
       layerOffsetY: -0.1,
       padding: 10,
+      grid: grid,
     );
+
+    test('with the fixed grid, every board inside it gets the same tile size, centred', () {
+      final grid = BoardGridSpan.campaign();
+      final small = BoardGeometry.build(level([('a', 'X', 0, 0, 0), ('b', 'X', 2, 0, 0)]));
+      final big = BoardGeometry.build(
+        level([('a', 'X', 0, 0, 0), ('b', 'X', 12, 16, 0), ('c', 'X', 1, 1, 1), ('d', 'X', 2, 2, 2), ('e', 'X', 3, 3, 3)]),
+      );
+      final ps = fit(small, grid: grid), pb = fit(big, grid: grid);
+      expect(ps.faceWidth, closeTo(pb.faceWidth, 1e-9));
+      // The small board sits in the middle, not enlarged.
+      expect(ps.boardRect.centerX, closeTo(200, 1e-6));
+      expect(ps.boardRect.centerY, closeTo(300, 1e-6));
+      expect(ps.faceRect(1).left - ps.faceRect(0).left, closeTo(ps.faceWidth, 1e-9));
+      expect(ps.faceWidth, lessThan(fit(small).faceWidth));
+      // A board larger than the grid (older content) is scaled down to fit.
+      final huge = BoardGeometry.build(level([('a', 'X', 0, 0, 0), ('b', 'X', 30, 30, 0)]));
+      final ph = fit(huge, grid: grid);
+      expect(ph.faceWidth, lessThan(pb.faceWidth));
+      expect(ph.faceRect(1).bottom, lessThanOrEqualTo(590 + 1e-9));
+    });
 
     test('the board fits inside the viewport, negative coordinates included', () {
       final g = BoardGeometry.build(level([('a', 'X', -6, -2, 0), ('b', 'X', 6, 8, 0), ('c', 'X', 0, 0, 0), ('d', 'X', 0, 0, 1)]));

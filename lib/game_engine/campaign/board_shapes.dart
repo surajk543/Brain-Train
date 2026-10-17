@@ -1,6 +1,7 @@
 import 'dart:math' as math;
 
 import '../generator/level_generator.dart';
+import '../geometry/board_grid.dart';
 
 /// A tile position on one layer: logical `x`, `y` of the footprint's
 /// top-left corner (footprints are 2x2, so `+1` is a half-tile offset).
@@ -16,7 +17,7 @@ const double kFitLayerOffset = 0.07;
 /// The gameplay board area of a 360x640 phone (measured in the capture
 /// tests), and the board's padding inside it.
 const double kSmallBoardWidth = 360;
-const double kSmallBoardHeight = 433.5;
+const double kSmallBoardHeight = 439.7;
 const double kBoardPadding = 4;
 
 /// One procedurally built board: a mirror-symmetric base shape and the
@@ -42,7 +43,9 @@ class BoardShape {
   final int columns;
   final int rows;
 
-  /// Layer 0 first. Every cell above layer 0 rests on a cell one layer down.
+  /// Layer 0 first. Every tile above layer 0 sits half a tile off the tiles
+  /// below it (never exactly on one), rests on at least half a tile of the
+  /// layer directly below and lies wholly over lower tiles.
   final List<Set<Cell>> layers;
 
   int get tileCount => layers.fold(0, (sum, layer) => sum + layer.length);
@@ -79,17 +82,26 @@ class BoardShape {
     return (minX, minY, maxX, maxY);
   }
 
+  /// Whether the board, all layers and half offsets included, fits the fixed
+  /// board grid ([kBoardGridColumns] x [kBoardGridRows] tiles,
+  /// [kBoardGridLayers] layers).
+  bool get fitsGrid {
+    final (minX, minY, maxX, maxY) = bounds;
+    return maxX - minX <= 2 * kBoardGridColumns && maxY - minY <= 2 * kBoardGridRows && layers.length <= kBoardGridLayers;
+  }
+
   /// Tile face width (logical px) when the board is fitted into
-  /// [width] x [height] the way `BoardProjection.fit` does it.
+  /// [width] x [height] the way `boardProjectionFor` does it: at the fixed
+  /// grid's scale, or smaller for a board larger than the grid.
   double faceWidthIn(double width, double height) {
     final (minX, minY, maxX, maxY) = bounds;
-    final top = layers.length - 1;
-    const a = kFitFaceAspect, e = kFitEdgeFraction, o = kFitLayerOffset;
-    final perX = a * (maxX - minX) / 2 + a * e + a * o * top;
-    final perY = (maxY - minY) / 2 + a * e + o * top;
-    final availableX = width - 2 * kBoardPadding, availableY = height - 2 * kBoardPadding;
-    final faceHeight = math.min(140.0, math.min(availableX / perX, availableY / perY));
-    return faceHeight * a;
+    return gridFaceWidthIn(
+      width,
+      height,
+      columns: math.max(kBoardGridColumns, (maxX - minX) / 2),
+      rows: math.max(kBoardGridRows, (maxY - minY) / 2),
+      maxLayer: math.max(kBoardGridLayers, layers.length) - 1,
+    );
   }
 
   double get smallPhoneFaceWidth => faceWidthIn(kSmallBoardWidth, kSmallBoardHeight);
@@ -149,52 +161,197 @@ class BoardShape {
   }
 }
 
+/// Tile face width (logical px) of the fixed board grid fitted into
+/// [width] x [height] (the arithmetic of `BoardProjection.fit`).
+double gridFaceWidthIn(
+  double width,
+  double height, {
+  num columns = kBoardGridColumns,
+  num rows = kBoardGridRows,
+  int maxLayer = kBoardGridLayers - 1,
+}) {
+  const a = kFitFaceAspect, e = kFitEdgeFraction, o = kFitLayerOffset;
+  final perX = a * columns + a * e + a * o * maxLayer;
+  final perY = rows + a * e + o * maxLayer;
+  final availableX = width - 2 * kBoardPadding, availableY = height - 2 * kBoardPadding;
+  final faceHeight = math.min(140.0, math.min(availableX / perX, availableY / perY));
+  return faceHeight * a;
+}
+
 int _readingOrder(Cell a, Cell b) => a.$2 != b.$2 ? a.$2.compareTo(b.$2) : a.$1.compareTo(b.$1);
 
 /// Named regions a family hands to its stacking program (corner towers,
 /// bridge piers, a turtle's shell).
 typedef _Regions = Map<String, Set<Cell>>;
 
-typedef _Op = Set<Cell> Function(Set<Cell> below, _Regions regions);
+/// The four 1x1 cells (quarters) of the 2x2 footprint at [c].
+List<Cell> footprintQuarters(Cell c) => [(c.$1, c.$2), (c.$1 + 1, c.$2), (c.$1, c.$2 + 1), (c.$1 + 1, c.$2 + 1)];
 
-bool _has(Set<Cell> s, int x, int y) => s.contains((x, y));
+/// Where a layer's tiles sit relative to the tiles of the layer below.
+enum _Order { centre, outside, reading }
 
-final Map<String, _Op> _ops = {
-  // Aligned, shrinking by one tile on every side: a stepped pyramid.
-  'pyramid': (p, _) => {
-    for (final (x, y) in p)
-      if (_has(p, x - 2, y) && _has(p, x + 2, y) && _has(p, x, y - 2) && _has(p, x, y + 2)) (x, y),
-  },
-  // Aligned, shrinking left and right only: long ridges.
-  'ridge': (p, _) => {
-    for (final (x, y) in p)
-      if (_has(p, x - 2, y) && _has(p, x + 2, y)) (x, y),
-  },
-  // Aligned, shrinking top and bottom only: tall columns.
-  'column': (p, _) => {
-    for (final (x, y) in p)
-      if (_has(p, x, y - 2) && _has(p, x, y + 2)) (x, y),
-  },
-  // Half a tile right and down, one tile on every full 2x2 block: each
-  // upper tile covers four.
-  'stagger': (p, _) => {
-    for (final (x, y) in p)
-      if (_has(p, x + 2, y) && _has(p, x, y + 2) && _has(p, x + 2, y + 2)) (x + 1, y + 1),
-  },
-  // Half a tile right, one tile on every horizontal pair: brickwork.
-  'brick': (p, _) => {
-    for (final (x, y) in p)
-      if (_has(p, x + 2, y)) (x + 1, y),
-  },
-  // The outline: walls.
-  'rim': (p, _) => {
-    for (final (x, y) in p)
-      if (!_has(p, x - 2, y) || !_has(p, x + 2, y) || !_has(p, x, y - 2) || !_has(p, x, y + 2)) (x, y),
-  },
-  'solid': (p, _) => {...p},
-  'towers': (p, r) => p.intersection(r['towers'] ?? const {}),
-  'core': (p, r) => p.intersection(r['core'] ?? const {}),
+/// How one layer is placed on the layers below it (owner, 2026-10-17: depth
+/// must show). Every tile sits half a tile off the tiles under it, never
+/// exactly on top of one; candidates come from [offsets] (mirrored left and
+/// right, so the board stays symmetric) applied to the layer below, are taken
+/// in [order], and a tile is only placed when
+/// - its whole footprint lies over lower tiles (nothing hangs over the felt),
+/// - at least [support] of its quarters lie over the layer directly below,
+/// - no lower tile has the same position, and
+/// - every lower tile it covers keeps at least [minVisible] uncovered
+///   quarters (of four).
+class _Op {
+  const _Op(this.offsets, this.order, {this.minVisible = 2, this.support = 2, this.region});
+
+  final List<Cell> offsets;
+  final _Order order;
+  final int minVisible;
+  final int support;
+  final String? region;
+}
+
+// Half offsets a layer may take from the tiles below it (mirrored left and
+// right). The first ones listed are preferred.
+const List<Cell> _stagger = [(1, 1), (1, -1), (1, 0), (0, 1)];
+const List<Cell> _brick = [(1, 0), (1, 1), (1, -1), (0, 1)];
+const List<Cell> _drop = [(0, 1), (1, 1), (1, -1), (1, 0)];
+const List<Cell> _any = [(1, 1), (1, 0), (0, 1), (1, -1)];
+
+const Map<String, _Op> _ops = {
+  // Half a tile right and down, from the middle out: a mound.
+  'pyramid': _Op(_stagger, _Order.centre),
+  // Half a tile right, from the middle out: long ridges.
+  'ridge': _Op(_brick, _Order.centre),
+  // Half a tile down, from the middle out: columns.
+  'column': _Op(_drop, _Order.centre),
+  // Half a tile right and down, evenly over the board.
+  'stagger': _Op(_stagger, _Order.reading),
+  // Half a tile right, evenly over the board: brickwork.
+  'brick': _Op(_brick, _Order.reading),
+  // Any half offset, outside first: walls along the outline.
+  'rim': _Op(_any, _Order.outside),
+  // Any half offset, as many as fit while one quarter of every tile shows.
+  'solid': _Op(_any, _Order.reading, minVisible: 1),
+  // Any half offset, from the middle out, one quarter showing: a dense heap.
+  'heap': _Op(_any, _Order.centre, minVisible: 1, support: 1),
+  // Half a tile right and down where it fits, one quarter showing.
+  'dense': _Op(_stagger, _Order.reading, minVisible: 1, support: 1),
+  // Inside a family's regions only.
+  'towers': _Op(_any, _Order.reading, minVisible: 1, region: 'towers'),
+  'core': _Op(_any, _Order.centre, region: 'core'),
 };
+
+/// Layers stacked so far, with the topmost tile over every quarter cell.
+class _Stack {
+  _Stack(Set<Cell> base, this.axis2, this.centre2) {
+    layers.add(<Cell>{});
+    for (final cell in base) {
+      _place(0, cell);
+    }
+  }
+
+  /// Twice the mirror axis (`minX + maxX` of the base): `x` mirrors to
+  /// `axis2 - x - 2`.
+  final int axis2;
+
+  /// Twice the base centre.
+  final (int, int) centre2;
+  final List<Set<Cell>> layers = [];
+  final Set<Cell> _used = {};
+  final Map<Cell, (int, Cell)> _top = {};
+  final Map<(int, Cell), int> _visible = {};
+
+  void _place(int layer, Cell cell) {
+    for (final q in footprintQuarters(cell)) {
+      final below = _top[q];
+      if (below != null) _visible[below] = _visible[below]! - 1;
+      _top[q] = (layer, cell);
+    }
+    _visible[(layer, cell)] = 4;
+    layers[layer].add(cell);
+    _used.add(cell);
+  }
+
+  Cell mirror(Cell c) => (axis2 - c.$1 - 2, c.$2);
+
+  /// Adds the next layer with [op]; false when not one tile fits.
+  bool addLayer(_Op op, _Regions regions) {
+    final layer = layers.length;
+    final below = layers.last;
+    final region = op.region == null ? null : {for (final c in regions[op.region] ?? const <Cell>{}) ...footprintQuarters(c)};
+    // Each candidate with the rank of the first offset that reaches it.
+    final rank = <Cell, int>{};
+    for (var i = 0; i < op.offsets.length; i++) {
+      final (dx, dy) = op.offsets[i];
+      for (final (x, y) in below) {
+        rank.putIfAbsent((x + dx, y + dy), () => i);
+        rank.putIfAbsent((x - dx, y + dy), () => i);
+      }
+    }
+    final candidates = [
+      for (final c in rank.keys)
+        if (region == null || footprintQuarters(c).every(region.contains)) c,
+    ];
+    int distance(Cell c) {
+      final dx = 2 * c.$1 + 2 - centre2.$1, dy = 2 * c.$2 + 2 - centre2.$2;
+      return dx * dx + dy * dy;
+    }
+
+    candidates.sort((a, b) {
+      final byRank = rank[a]!.compareTo(rank[b]!);
+      if (byRank != 0) return byRank;
+      final byOrder = switch (op.order) {
+        _Order.centre => distance(a).compareTo(distance(b)),
+        _Order.outside => distance(b).compareTo(distance(a)),
+        _Order.reading => 0,
+      };
+      return byOrder != 0 ? byOrder : _readingOrder(a, b);
+    });
+    layers.add(<Cell>{});
+    final seen = <Cell>{};
+    for (final c in candidates) {
+      if (!seen.add(c)) continue;
+      final m = mirror(c);
+      seen.add(m);
+      final group = m == c ? [c] : [c, m];
+      if (group.length == 2 && _overlap(c, m)) continue;
+      if (_fits(layer, group, op)) {
+        for (final cell in group) {
+          _place(layer, cell);
+        }
+      }
+    }
+    if (layers.last.isEmpty) {
+      layers.removeLast();
+      return false;
+    }
+    return true;
+  }
+
+  static bool _overlap(Cell a, Cell b) => (a.$1 - b.$1).abs() < 2 && (a.$2 - b.$2).abs() < 2;
+
+  bool _fits(int layer, List<Cell> group, _Op op) {
+    final loss = <(int, Cell), int>{};
+    for (final cell in group) {
+      if (_used.contains(cell)) return false;
+      for (final other in layers[layer]) {
+        if (_overlap(cell, other)) return false;
+      }
+      var support = 0;
+      for (final q in footprintQuarters(cell)) {
+        final below = _top[q];
+        if (below == null) return false;
+        if (below.$1 == layer - 1) support++;
+        loss[below] = (loss[below] ?? 0) + 1;
+      }
+      if (support < op.support) return false;
+    }
+    for (final MapEntry(key: tile, value: lost) in loss.entries) {
+      if (_visible[tile]! - lost < op.minVisible) return false;
+    }
+    return true;
+  }
+}
 
 /// One family of mirror-symmetric shapes.
 class _Family {
@@ -233,6 +390,13 @@ Set<Cell> _mask(int c, int r, bool Function(double dc, double dr, double u, doub
           (col * 2, row * 2),
   };
 }
+
+/// Dense programs every family also gets (one quarter of each tile showing),
+/// for the deep boards of the hardest tiers.
+const Map<String, List<String>> _denseStackings = {
+  'heap': ['heap'],
+  'dense': ['dense', 'heap'],
+};
 
 const Map<String, List<String>> _layered = {
   'pyramid': ['pyramid'],
@@ -361,17 +525,13 @@ final List<_Family> _families = [
     return (cells, const {});
   }, minColumns: 7, minRows: 5),
   _Family('turtle', const ['shell'], const {'shell': ['core', 'pyramid'], 'stagger': ['core', 'stagger']}, (c, r, _) {
-    if (r < 4) return null;
-    // Shell, a wider middle (flippers), head and tail.
-    final shell = _mask(c, r, (_, _, _, _, col, row) => col >= 1 && col <= c - 2);
-    final flippers = _mask(c, r, (_, dr, _, _, col, row) => (col == 0 || col == c - 1) && dr.abs() <= r / 2 - 1);
-    final cells = {...shell, ...flippers};
-    final midY = r - 1; // logical y of the middle row (a half offset when r is even)
-    cells
-      ..add((-2, midY))
-      ..add((2 * c, midY));
+    // Seen from above: a shell, four flippers, the head on top and the tail
+    // below, all inside the grid.
+    final shell = _mask(c, r, (_, _, _, _, col, row) => col >= 1 && col <= c - 2 && row >= 1 && row <= r - 2);
+    final flippers = _mask(c, r, (_, _, _, _, col, row) => (col == 0 || col == c - 1) && (row == 1 || row == r - 2));
+    final cells = {...shell, ...flippers, (c - 1, 0), (c - 1, 2 * (r - 1))};
     return (cells, {'core': shell});
-  }, minColumns: 6, minRows: 4),
+  }, minColumns: 5, minRows: 5),
   _Family('lattice', const ['panes'], const {'pyramid': ['solid', 'rim'], 'stagger': ['stagger'], 'rim': ['rim']},
       (c, r, _) {
     if (c % 3 != 0) return null;
@@ -392,14 +552,15 @@ final List<_Family> _families = [
 /// Every family id, in a fixed order.
 List<String> get shapeFamilies => [for (final f in _families) f.id];
 
-/// Largest base grid the generator tries.
-const int kMaxColumns = 11;
-const int kMaxRows = 10;
+/// Largest base grid the generator tries: the fixed board grid.
+const int kMaxColumns = kBoardGridColumns;
+const int kMaxRows = kBoardGridRows;
 
 /// All boards of [familyId] up to [maxLayers] layers, for every grid size,
 /// variant and stacking program; each layer prefix is its own board. Boards
-/// whose base is empty or that cannot be made even are left out.
-Iterable<BoardShape> familyShapes(String familyId, {int maxLayers = 8}) sync* {
+/// whose base is empty, that leave the fixed grid or that cannot be made even
+/// are left out.
+Iterable<BoardShape> familyShapes(String familyId, {int maxLayers = kBoardGridLayers}) sync* {
   final family = _families.firstWhere((f) => f.id == familyId);
   for (var c = family.minColumns; c <= kMaxColumns; c++) {
     for (var r = family.minRows; r <= kMaxRows; r++) {
@@ -407,15 +568,20 @@ Iterable<BoardShape> familyShapes(String familyId, {int maxLayers = 8}) sync* {
         final built = family.base(c, r, variant);
         if (built == null || built.$1.length < 4) continue;
         final (base, regions) = built;
-        for (final MapEntry(key: name, value: program) in family.stackings.entries) {
-          final layers = <Set<Cell>>[base];
+        var minX = 1 << 30, minY = 1 << 30, maxX = -(1 << 30), maxY = -(1 << 30);
+        for (final (x, y) in base) {
+          minX = math.min(minX, x);
+          minY = math.min(minY, y);
+          maxX = math.max(maxX, x + 2);
+          maxY = math.max(maxY, y + 2);
+        }
+        for (final MapEntry(key: name, value: program) in {...family.stackings, ..._denseStackings}.entries) {
+          final stack = _Stack(base, minX + maxX, (minX + maxX, minY + maxY));
           var guard = 0;
-          while (layers.length < maxLayers && guard++ < 32) {
-            final op = _ops[program[(layers.length - 1) % program.length]]!;
-            final next = op(layers.last, regions);
-            if (next.isEmpty) break;
-            layers.add(next);
+          while (stack.layers.length < maxLayers && guard++ < 32) {
+            if (!stack.addLayer(_ops[program[(stack.layers.length - 1) % program.length]]!, regions)) break;
           }
+          final layers = stack.layers;
           for (var count = 1; count <= layers.length; count++) {
             final shape = BoardShape(
               family: family.id,
@@ -425,7 +591,7 @@ Iterable<BoardShape> familyShapes(String familyId, {int maxLayers = 8}) sync* {
               rows: r,
               layers: layers.sublist(0, count),
             ).evened();
-            if (shape != null && shape.layerCount == count) yield shape;
+            if (shape != null && shape.layerCount == count && shape.fitsGrid) yield shape;
           }
         }
       }

@@ -1,4 +1,5 @@
 import 'board_geometry.dart';
+import 'board_grid.dart';
 
 /// A rectangle in logical pixels.
 class PixelRect {
@@ -46,6 +47,10 @@ class BoardProjection {
   /// Fits the whole board, including side walls and layer shifts, into
   /// [width] x [height], centred, keeping the tile face proportions.
   ///
+  /// With a [grid], the scale is the one that fits the grid (or the board, if
+  /// it is larger than the grid), so every board within the grid gets the
+  /// same tile size; a smaller board is centred, not enlarged.
+  ///
   /// [faceAspect] is face width / face height. [edgeFraction] is how far the
   /// tile body and shadow extend past the face (right and bottom), as a
   /// fraction of face width. [layerOffsetX]/[layerOffsetY] are per-layer
@@ -62,18 +67,25 @@ class BoardProjection {
     required double layerOffsetY,
     double padding = 8,
     double maxFaceHeight = 140,
+    BoardGridSpan? grid,
   }) {
     final bounds = geometry.bounds;
     final layers = bounds.maxLayer;
     // Board size per pixel of face height.
-    final perHeightX =
-        faceAspect * (bounds.width / tileWidth) + faceAspect * edgeFraction + faceAspect * layerOffsetX.abs() * layers;
-    final perHeightY = bounds.height / tileHeight + faceAspect * edgeFraction + layerOffsetY.abs() * layers;
+    double perX(double span, int layers) =>
+        faceAspect * (span / tileWidth) + faceAspect * edgeFraction + faceAspect * layerOffsetX.abs() * layers;
+    double perY(double span, int layers) => span / tileHeight + faceAspect * edgeFraction + layerOffsetY.abs() * layers;
+    final perHeightX = perX(bounds.width, layers);
+    final perHeightY = perY(bounds.height, layers);
+    // The scale comes from the grid, or from the board where it is larger.
+    final scaleLayers = grid == null || grid.maxLayer < layers ? layers : grid.maxLayer;
+    final scaleX = grid == null ? perHeightX : perX(grid.width > bounds.width ? grid.width : bounds.width, scaleLayers);
+    final scaleY = grid == null ? perHeightY : perY(grid.height > bounds.height ? grid.height : bounds.height, scaleLayers);
     final availableX = (width - 2 * padding).clamp(1.0, double.infinity);
     final availableY = (height - 2 * padding).clamp(1.0, double.infinity);
     var faceHeight = maxFaceHeight;
-    if (perHeightX > 0) faceHeight = faceHeight < availableX / perHeightX ? faceHeight : availableX / perHeightX;
-    if (perHeightY > 0) faceHeight = faceHeight < availableY / perHeightY ? faceHeight : availableY / perHeightY;
+    if (scaleX > 0) faceHeight = faceHeight < availableX / scaleX ? faceHeight : availableX / scaleX;
+    if (scaleY > 0) faceHeight = faceHeight < availableY / scaleY ? faceHeight : availableY / scaleY;
     final faceWidth = faceHeight * faceAspect;
     final unitX = faceWidth / tileWidth;
     final unitY = faceHeight / tileHeight;

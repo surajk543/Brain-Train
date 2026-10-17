@@ -121,6 +121,62 @@ void main() {
       expect(validator.validate(withColors(['red', '#AABBCC'])).hasError('invalid_backdrop'), isTrue);
     });
 
+    group('campaign rules (checkCampaignRules)', () {
+      LevelDefinition withFaces(LevelDefinition base, Map<String, String> faces) => LevelDefinition(
+        levelId: base.levelId,
+        title: base.title,
+        board: base.board,
+        tiles: base.tiles,
+        faceColors: faces,
+      );
+      LevelValidationReport check(LevelDefinition l) =>
+          LevelValidator(registry: reg).validate(l, checkCampaignRules: true);
+
+      test('accept a half-offset board with a coloured single pair, and the client never applies them', () {
+        // B sits half a tile right of the two A tiles: both keep half their face.
+        final ok = withFaces(level([('a1', 'A', 0, 0, 0), ('a2', 'A', 2, 0, 0), ('b1', 'B', 1, 0, 1), ('b2', 'B', 6, 0, 0)]), {'B': 'gold'});
+        expect(check(ok).errors, isEmpty);
+        final stacked = level([('a1', 'A', 0, 0, 0), ('a2', 'A', 2, 0, 0), ('b1', 'B', 0, 0, 1), ('b2', 'B', 6, 0, 0)]);
+        expect(LevelValidator(registry: reg).validate(stacked).isValid, isTrue);
+      });
+
+      test('reject a tile exactly on top of another, and a tile with no quarter showing', () {
+        final stacked = withFaces(level([('a1', 'A', 0, 0, 0), ('a2', 'A', 2, 0, 0), ('b1', 'B', 0, 0, 1), ('b2', 'B', 6, 0, 0)]), {'B': 'sky'});
+        expect(check(stacked).hasError('stacked_tile'), isTrue);
+        expect(check(stacked).hasError('hidden_tile'), isTrue);
+        // A at (2, 2) is covered by four offset tiles above, one quarter each.
+        final hidden = withFaces(
+          level([
+            for (final (i, (x, y)) in [(0, 0), (2, 0), (4, 0), (0, 2), (2, 2), (4, 2), (0, 4), (2, 4), (4, 4)].indexed)
+              ('t$i', i == 4 ? 'C' : (i.isEven ? 'A' : 'B'), x.toDouble(), y.toDouble(), 0),
+            ('u1', 'A', 1, 1, 1), ('u2', 'B', 3, 1, 1), ('u3', 'A', 1, 3, 1), ('u4', 'B', 3, 3, 1), ('c2', 'C', 8, 0, 0),
+          ]),
+          {'C': 'peach'},
+        );
+        final report = check(hidden);
+        expect(report.hasError('hidden_tile'), isTrue);
+        expect(report.errors.where((e) => e.code == 'hidden_tile').single.message, contains('t4'));
+        expect(report.hasError('stacked_tile'), isFalse);
+      });
+
+      test('reject boards outside the 7x9 grid', () {
+        final wide = withFaces(level([('a1', 'A', 0, 0, 0), ('a2', 'A', 14, 0, 0)]), {'A': 'gold'});
+        expect(check(wide).hasError('outside_grid'), isTrue);
+        final fits = withFaces(level([('a1', 'A', 0, 0, 0), ('a2', 'A', 12, 16, 0)]), {'A': 'gold'});
+        expect(check(fits).hasError('outside_grid'), isFalse);
+      });
+
+      test('need 1-2 coloured single pairs with palette names', () {
+        final base = level([('a1', 'A', 0, 0, 0), ('a2', 'A', 2, 0, 0), ('a3', 'A', 4, 0, 0), ('a4', 'A', 6, 0, 0), ('b1', 'B', 0, 2, 0), ('b2', 'B', 2, 2, 0), ('c1', 'C', 4, 2, 0), ('c2', 'C', 6, 2, 0)]);
+        expect(check(withFaces(base, {})).hasError('face_colors'), isTrue, reason: 'none');
+        expect(check(withFaces(base, {'B': 'gold'})).errors, isEmpty);
+        expect(check(withFaces(base, {'B': 'gold', 'C': 'lavender'})).errors, isEmpty);
+        expect(check(withFaces(base, {'A': 'gold'})).hasError('face_colors'), isTrue, reason: 'A has two pairs');
+        expect(check(withFaces(base, {'B': 'green'})).hasError('face_colors'), isTrue, reason: 'not in the palette');
+        expect(check(withFaces(base, {'B': 'gold', 'C': 'sky', 'A': 'peach'})).hasError('face_colors'), isTrue, reason: 'three');
+      });
+    });
+
     test('accepts a solvable level and attaches the proof', () {
       final ok = level([('a1', 'A', 0, 0, 0), ('a2', 'A', 2, 0, 0)]);
       final report = LevelValidator(registry: reg).validate(ok, checkSolvable: true);

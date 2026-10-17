@@ -63,6 +63,7 @@ typedef _Phone = ({String name, double width, double height, double dpr, double 
 const _Phone _large = (name: '411x914', width: 411, height: 914, dpr: 2.625, top: 24, bottom: 16);
 const _Phone _small = (name: '360x640', width: 360, height: 640, dpr: 2, top: 24, bottom: 0);
 const _Phone _ipad = (name: 'ipad-13', width: 1032, height: 1376, dpr: 2, top: 24, bottom: 20);
+const _Phone _iphone = (name: '393x852', width: 393, height: 852, dpr: 3, top: 59, bottom: 34);
 
 /// The full generated tree (gitignored; present where `dart run
 /// tool/content.dart build` ran). Tests of levels beyond the starter pack
@@ -71,7 +72,15 @@ final bool _hasFullTree = File('content/brain-train/manifest.json').existsSync()
 final BundledContentSource _fullTree = BundledContentSource((key) async {
   final file = File(key);
   return file.existsSync() ? file.readAsBytesSync() : null;
-}, prefix: 'content/brain-train/');
+}, prefix: '$_treeRoot/');
+
+/// `PREVIEW_TREE=<content root>` (with CAPTURE_DIR) captures every level of
+/// that tree, or the PREVIEW_LEVELS=level-0001,... among them, at 393x852
+/// and 360x640, or the PREVIEW_PHONES=393x852,360x640,ipad-13 given ("board
+/// previews"); the full tree's tests then read it instead of
+/// content/brain-train.
+final String? _previewTree = Platform.environment['PREVIEW_TREE'];
+final String _treeRoot = _previewTree ?? 'content/brain-train';
 
 /// Offline services on the starter pack (levels 1-5), or on every level
 /// with [full]. Games open as for a returning player (the first-play
@@ -310,7 +319,7 @@ void main() {
       services = await _services(full: full, ads: ads);
       snapshot = services.content.snapshot;
       // A difficulty-4 level: 4-slot tray, enough distinct symbols to fill it.
-      meadow = snapshot.playableEntries.firstWhere((e) => e.difficulty == '4');
+      meadow = snapshot.playableEntries.firstWhere((e) => e.difficulty == '4', orElse: () => snapshot.playableEntries.first);
     });
   }
 
@@ -776,6 +785,26 @@ void main() {
     await _leave(tester);
   });
 
+  // Board previews of a scratch content tree (PREVIEW_TREE), every level at
+  // both phone sizes, after the intro.
+  testWidgets('board previews', skip: _previewTree == null || _captureDir == null, (tester) async {
+    await start(tester, full: true);
+    final only = Platform.environment['PREVIEW_LEVELS']?.split(',').toSet();
+    final phones = Platform.environment['PREVIEW_PHONES']?.split(',').toSet();
+    for (final entry in snapshot.playableEntries) {
+      if (only != null && !only.contains(entry.levelId)) continue;
+      for (final phone in [_iphone, _small, _ipad]) {
+        if (phones == null ? phone == _ipad : !phones.contains(phone.name)) continue;
+        await _pumpGame(tester, services: services, entry: entry, phone: phone);
+        for (var i = 0; i < 3; i++) {
+          await _settle(tester);
+        }
+        await _capture(tester, 'preview_${entry.levelId}_d${entry.difficulty}_${phone.name}', phone.dpr);
+        await _leave(tester);
+      }
+    }
+  });
+
   // One board per tier, the largest of each, at both phone sizes.
   for (final tier in ['1', '4', '7', '10']) {
     for (final phone in [_small, _large]) {
@@ -936,7 +965,7 @@ void main() {
       await start(tester, full: true);
       final hard = firstOf('10');
       await _pumpGame(tester, services: services, entry: hard, phone: _large);
-      expect(snapshot.levels[hard.levelId]!.tiles.length, greaterThan(140));
+      expect(snapshot.levels[hard.levelId]!.tiles.length, greaterThanOrEqualTo(80), reason: 'a big board on the 7x9 grid');
       final hardFrames = await sequence(tester, 'intro_${hard.levelId}_411x914');
       await _leave(tester);
       final easy = firstOf('1');

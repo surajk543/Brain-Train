@@ -1,10 +1,12 @@
 import '../geometry/board_geometry.dart';
+import '../geometry/board_grid.dart';
 import '../geometry/tile_availability.dart';
 import '../geometry/tile_mask.dart';
 import '../models/level_definition.dart';
 import '../models/level_rules.dart';
 import '../models/symbol_registry.dart';
 import '../rules/match_rules.dart';
+import 'depth_rules.dart';
 import 'solver.dart';
 
 final RegExp _levelIdPattern = RegExp(r'^[a-z0-9][a-z0-9-]{0,63}$');
@@ -42,6 +44,12 @@ class LevelValidationReport {
 /// The client runs it with `checkSolvable: false` on every level it loads;
 /// the content tool and tests run it with the solver before publishing.
 ///
+/// `checkCampaignRules` adds the rules new campaign content must meet and
+/// older content may break (so the client never applies them): the board
+/// fits the fixed grid ([kBoardGridColumns] x [kBoardGridRows] tiles,
+/// [kBoardGridLayers] layers), depth shows (`depth_rules.dart`), and 1-2
+/// single pairs have a face colour from [kFaceColorNames].
+///
 /// Play and solvability checks use the pair model (two free tiles with the
 /// same match key leave together). The game itself plays through a tray
 /// (see `GameEngine`), which accepts every pair-removal order as taps
@@ -67,6 +75,7 @@ class LevelValidator {
     String? expectedLevelId,
     bool checkSolvable = false,
     int solverNodeBudget = 500000,
+    bool checkCampaignRules = false,
   }) {
     final errors = <ValidationIssue>[];
     void error(String code, String message) => errors.add(ValidationIssue(code, message));
@@ -144,6 +153,7 @@ class LevelValidator {
     for (final index in geometry.unsupportedTiles) {
       error('floating_tile', '${tiles[index].tileId} on layer ${tiles[index].layer} rests on nothing');
     }
+    if (checkCampaignRules) _checkCampaignRules(level, geometry, error);
 
     final rules = MatchRules(level: level, registry: registry);
     rules.keyCounts().forEach((key, count) {
@@ -167,6 +177,41 @@ class LevelValidator {
       }
     }
     return LevelValidationReport(level.levelId, errors, solve);
+  }
+
+  static void _checkCampaignRules(
+    LevelDefinition level,
+    BoardGeometry geometry,
+    void Function(String code, String message) error,
+  ) {
+    final tiles = level.tiles;
+    final bounds = geometry.bounds;
+    final maxWidth = kBoardGridColumns * level.board.tileWidth, maxHeight = kBoardGridRows * level.board.tileHeight;
+    if (bounds.width > maxWidth + 1e-6 || bounds.height > maxHeight + 1e-6 || bounds.maxLayer >= kBoardGridLayers) {
+      error(
+        'outside_grid',
+        'board spans ${bounds.width} x ${bounds.height} units and ${bounds.maxLayer + 1} layers; the grid is '
+            '$maxWidth x $maxHeight units and $kBoardGridLayers layers',
+      );
+    }
+    for (final (a, b) in stackedTiles(geometry)) {
+      error('stacked_tile', '${tiles[a].tileId} and ${tiles[b].tileId} sit exactly on top of each other');
+    }
+    final visible = visibleQuarters(geometry);
+    for (var i = 0; i < tiles.length; i++) {
+      if (visible[i] < kMinVisibleQuarters) {
+        error('hidden_tile', '${tiles[i].tileId} shows ${visible[i]} of 4 quarters (at least $kMinVisibleQuarters)');
+      }
+    }
+    final colours = level.faceColors;
+    if (colours.isEmpty || colours.length > 2) {
+      error('face_colors', '${colours.length} coloured pairs; every level has 1 or 2');
+    }
+    for (final MapEntry(key: code, value: name) in colours.entries) {
+      if (!kFaceColorNames.contains(name)) error('face_colors', '$code has unknown face colour "$name"');
+      final count = tiles.where((t) => t.symbolCode == code).length;
+      if (count != 2) error('face_colors', '$code is coloured but has $count tiles; only single pairs are');
+    }
   }
 
   /// Whether two tiles that are free at the start share a match key.

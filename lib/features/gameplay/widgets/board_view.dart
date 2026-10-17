@@ -6,6 +6,7 @@ import 'package:flutter/widgets.dart';
 
 import '../../../content/content_sources.dart';
 import '../../../game_engine/geometry/board_geometry.dart';
+import '../../../game_engine/geometry/board_grid.dart';
 import '../../../game_engine/geometry/board_projection.dart';
 import '../../../game_engine/models/level_definition.dart';
 import '../../../rendering/board_renderer.dart';
@@ -18,8 +19,11 @@ import 'board_intro.dart';
 import 'tile_art.dart';
 import '../../../app/tablet_scale.dart';
 
-/// How [BoardView] lays out [level] in a viewport of [size]: the board fills
-/// the area edge to edge (a small margin for shadows), centred.
+/// How [BoardView] lays out [level] in a viewport of [size]: the fixed
+/// board grid ([kBoardGridColumns] x [kBoardGridRows], [kBoardGridLayers]
+/// layers) fills the area edge to edge (a small margin for shadows), so every
+/// level has the same tile size; the board is centred in it. A board larger
+/// than the grid (older content) is scaled down to fit.
 BoardProjection boardProjectionFor(LevelDefinition level, BoardGeometry geometry, TileStyle style, Size size) =>
     BoardProjection.fit(
       geometry: geometry,
@@ -32,6 +36,7 @@ BoardProjection boardProjectionFor(LevelDefinition level, BoardGeometry geometry
       layerOffsetX: level.board.layerOffsetX,
       layerOffsetY: level.board.layerOffsetY,
       padding: 4,
+      grid: BoardGridSpan.campaign(tileWidth: level.board.tileWidth, tileHeight: level.board.tileHeight),
     );
 
 /// The interactive Mahjong board.
@@ -246,12 +251,21 @@ class BoardViewState extends State<BoardView> with SingleTickerProviderStateMixi
     final registry = widget.controller.registry;
     final codes = {for (final tile in level.tiles) tile.symbolCode};
     final body = await renderer.renderBody(face, pixelRatio);
+    // Coloured pairs: one body per face colour, baked once. Keyed by symbol,
+    // so a tile keeps the colour of the symbol it shows.
+    final faceBodies = await renderer.renderFaceBodies(face, pixelRatio, level.faceColors);
     final raised = level.tiles.any((t) => t.layer > 0) ? await renderer.renderRaisedShadow(face, pixelRatio) : null;
     final symbols = {
       for (final code in codes)
         code: await widget.symbolArt.resolve(registry[code]!, widget.artwork, symbolBox, pixelRatio),
     };
-    final art = BoardArt(body: body, symbols: symbols, raisedShadow: raised);
+    final art = BoardArt(
+      body: body,
+      symbols: symbols,
+      raisedShadow: raised,
+      faceBodies: faceBodies,
+      faceColors: level.faceColors,
+    );
     if (!mounted || key != _artKey) {
       art.dispose();
       return;
@@ -327,7 +341,15 @@ class BoardViewState extends State<BoardView> with SingleTickerProviderStateMixi
   TileArt? get tileArt {
     final art = _art;
     if (art == null) return null;
-    return _tileArt ??= TileArt(style: _style, face: _artFace, body: art.body, symbols: art.symbols, ownsBody: false);
+    return _tileArt ??= TileArt(
+      style: _style,
+      face: _artFace,
+      body: art.body,
+      symbols: art.symbols,
+      faceBodies: art.faceBodies,
+      faceColors: art.faceColors,
+      ownsBody: false,
+    );
   }
 
   /// Where the tile [tileId] shows its face right now, in global (screen)

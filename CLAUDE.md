@@ -30,6 +30,7 @@ python3 -I tool/lobby_art/make_day_foliage.py    # Day gameplay foliage: assets/
 python3 tool/assets/make_sounds.py      # sound effects -> assets/sounds/
 CAPTURE_DIR=/tmp/x flutter test test/visual/   # write screenshots of lobby/gameplay at phone sizes
 CAPTURE_DIR=/tmp/x flutter test test/visual/theme_capture_test.dart   # the same screens in Day and Night
+CAPTURE_DIR=/tmp/x flutter test test/visual/tile_closeup_capture_test.dart   # tile close-ups: 3 layers, Day/Night felt, 64/31-px faces
 CAPTURE_DIR=/tmp/x flutter test test/visual/gameplay_redesign_capture_test.dart   # gameplay 1.1.0: combo+hint, hint hand, cards, Level Complete
 STORE_DIR=art/store flutter test test/visual/store_screenshots_test.dart   # 6 store scenes -> phone/, ios/iphone-6.9/, ios/ipad-13/
 python3 tool/store/make_store_shots.py  # framed marketing shots (headline, gold rim) -> art/store/styled/<target>/
@@ -105,6 +106,14 @@ dart run tool/smoke_remote.dart         # live check: app's content client vs pr
 - Geometry: tile `(x, y)` = top-left of footprint in logical units; footprint = `board.tileWidth × tileHeight`
   (levels use 2×2 so half offsets are integers). Layer offsets are rendering-only.
   Renderer, hit tester and rules must all use `BoardGeometry`/`BoardProjection`.
+- Board grid and depth (owner, 2026-10-17): every campaign board fits a fixed grid of 7 × 9 tiles and 4 layers
+  (`kBoardGridColumns/Rows/Layers`, `lib/game_engine/geometry/board_grid.dart`), and `boardProjectionFor` fits that
+  grid, not the level, into the board area: one tile size on every level (34.8 px at 360x640, 44.3 px at 393x852;
+  tablets through `TabletScale` ~78 dp on iPad 13, 69 on iPad 11, 75 on a 10-inch, 55 on a 7-inch; smaller boards
+  centred, larger old boards scaled down; `game_actions_ui_test` checks phone and tablet sizes). Depth shows: upper tiles sit half a tile off the tiles below,
+  never exactly on one (`stackedTiles`), and every tile keeps >= 1 uncovered quarter (`visibleQuarters`,
+  `depth_rules.dart`); `board_shapes.dart` builds layers that way (`_Stack`). `LevelValidator(checkCampaignRules:
+  true)` (build, validate) enforces grid, depth and coloured pairs; the app never does (older cached boards play).
 - Free tile = no remaining higher-layer tile overlaps it AND left or right same-layer side is open.
 - Matching uses symbol codes / match groups, never artwork.
 - Rendering: Impeller has no raster cache, so while anything animates (leaves, fireflies, Lottie) every layer
@@ -131,9 +140,9 @@ dart run tool/smoke_remote.dart         # live check: app's content client vs pr
   never wipes the highest level's game (an unfinished replay is dropped). Solver/generator still prove
   pair-removal orders, which are valid tray orders (tap a, then b). Screen (1.1.0, `GameLayout`): HUD at the top,
   the combo timer row, the tray, the board (all the rest) and the action bar at the bottom; nothing between tray and
-  board. On a 360x640 phone the layout is compact and the board gets 360x433.9 (>= `kSmallBoardWidth` x
-  `kSmallBoardHeight`, the room the campaign's >= 31-px faces were generated for; `published_content_test` checks
-  every level on the real `GameLayout` board, smallest face 31.15 px). The board drops a tile at the tap; `TileFlightOverlay` draws it until it lands (ticks only during
+  board. The tray is low (32-px tray tiles, 30 compact) and the action bar one row of 44-px discs with labels beside
+  (owner, 2026-10-17), so the fixed board grid gets the height. On a 360x640 phone the layout is compact and the board
+  gets 360x439.8 (>= `kSmallBoardWidth` x `kSmallBoardHeight`; the grid's faces there are 34.8 px). The board drops a tile at the tap; `TileFlightOverlay` draws it until it lands (ticks only during
   flights); revived tiles fly back one by one, slowly (owner: 700 ms each, 300 ms apart, lower tiles first) and
   stay hidden on the board until they land; an undone tile flies back the same way (`kTileUndoDuration`, 450 ms) from
   its slot or from mid-air, an undone pair's strike is cancelled and its twin stays in the tray
@@ -172,7 +181,14 @@ dart run tool/smoke_remote.dart         # live check: app's content client vs pr
   a seeded shuffle (level 1 is difficulty 1, never 3 of a tier in a row) that depends only on earlier batches:
   add levels by appending a batch, never by editing one. A dead end restarts the batch, at most `maxScheduleAttempts`
   (2,000,000, `tier_schedule.dart`) times; batch 2 needs 1,263,282 restarts (~2 s). The draw is pinned
-  (`campaign_test.dart` pins both batches' orders): never change how it draws, only the restart limit.
+  (`campaign_test.dart` pins the batches' orders): never change how it draws, only the restart limit. Published
+  titles are pinned in `campaign.titles` (level 1 first; `LevelDecor`), so a change to board building never renames a
+  level: append a batch's titles once it is published.
+- Coloured pairs (owner, 2026-10-17): every level colours 1–2 single pairs (static symbols with exactly two tiles),
+  level file `faceColors: {"CODE": "gold"}` (`gold`, `sky`, `blush`, `lavender`, `peach`; optional, older builds ignore
+  it). Rendering: `TileStyle.namedFaceColors`, one body per colour from `MahjongTileRenderer(style.withFace(c))`,
+  baked once and picked per symbol (`BoardArt`/`TileArt` `faceBodies`): board cache, intro atlas, tray, flights,
+  shatters. Never green; never a per-frame tint.
 - Content delivery (owner): R2 is the source of truth; static and animated symbol files live only there (plus the
   starter pack's). The app downloads the manifest (every level's title, tier, tile count and `trayCapacity`, so
   lists and panels never need level files) and the registry in the background, and keeps a rolling window of the
@@ -234,7 +250,7 @@ dart run tool/smoke_remote.dart         # live check: app's content client vs pr
   at x1; only `TapOutcome.matched` scores; a blocked-tile tap costs 1 (never below 0) and ends the combo; Revive ends
   the combo; Restart resets. State is `SavedGame.scoring`; `LevelRecord.bestScore/bestCombo` only go up. The combo badge
   floats on the tray's bottom edge, a little low (`kComboBadgeAnchor`; 20 px high on compact screens) so it never covers
-  the wells: never add layout space between tray and board (31-px faces).
+  the wells: never add layout space between tray and board (the fixed grid's tile size).
 - The app never holds R2 keys or `ASSET_TOKEN_SECRET`. `.env` is gitignored and used only by tools.
 - Content host (versionCode 5+) is `ContentConfig.production` = `https://braintrain-cdn.sungamestudio.com/`: the R2
   bucket `braintrain-public` on a custom domain (min TLS 1.2), which holds ONLY `brain-train/` (everything in it is
@@ -384,8 +400,13 @@ dart run tool/smoke_remote.dart         # live check: app's content client vs pr
 - App icon = the round emblem of the official logo (`art/branding/brain-train-logo.jpg`), adaptive on
   Android 8+. Regenerate with `python3 tool/assets/make_app_icon.py`.
 - No "Mahjong Solitaire" subtitle on the lobby.
-- Look: emerald felt + botanical foliage, dark-green panels with fine gold borders, warm ivory tiles with olive-green
-  underside. Fonts (bundled, redesign 1.1.0): Playfair Display (title, level names, headings; `kDisplayFont`,
+- Look: emerald felt + botanical foliage, dark-green panels with fine gold borders, thick 3D tiles (owner, 2026-10-17):
+  warm ivory face with a soft top-left-lit rim and fine inner edge, a light wall over an olive/emerald-green base on
+  the right and bottom, a fine dark outline, a soft cast shadow down-right and a longer one under upper layers onto the
+  tiles below. All baked once per face size (`MahjongTileRenderer.renderBody` / `renderRaisedShadow`), never blurred
+  per frame. The face colour is one input, `TileStyle.faceColor` (`withFace(Color)`; highlight, rim and wall shades
+  derive from it). Walls and shadows stay inside `TileStyle.edgeFraction` (fixed 0.2999 = `kFitEdgeFraction`, a test
+  checks), so retuning the look never moves tiles. Fonts (bundled, redesign 1.1.0): Playfair Display (title, level names, headings; `kDisplayFont`,
   `displayText`) and Manrope (buttons, HUD, numbers, body; the theme's default text), the official variable TTFs from
   google/fonts in `assets/fonts/` (unmodified, OFL 1.1 with `OFL.txt` next to each; Playfair has a Reserved Font Name,
   so never make modified instances). Flutter sets the `wght` axis from `fontWeight`; no runtime download. Lobby buttons
@@ -419,7 +440,7 @@ dart run tool/smoke_remote.dart         # live check: app's content client vs pr
   idle in lobby and game (SurfaceFlinger latency: median 16.7 ms, p99 19-26 ms), a few 30-87 ms frames when a game
   opens (art decoding).
 
-- Published content 2026.10.17.2 on `braintrain-public` (manifest `minClientContentSchema: 3`): 175 levels
+- Previous content 2026.10.17.2 (superseded by .17.3 below; its old R2 objects were deleted): 175 levels
   (`catalog.json` `campaign`, seed 20261641, chosen so levels 1–10 open 1 2 1 4 4 5 2 6 1 1): batch 1 = levels
   1–100, 10 per difficulty 1–10; batch 2 = levels 101–175, `{"9": 25, "10": 50}` (only fits as `10 10 9` repeats),
   added on 2026-10-17 with 16 new static symbols; levels 1–100 kept their boards, tiers, trays, titles and win rates
@@ -430,7 +451,18 @@ dart run tool/smoke_remote.dart         # live check: app's content client vs pr
   alcohol, crude humour, weapon; IARC) and 8 in .17.1 for a 4+ App Store rating (WEAPON_* swords, ray guns, blaster,
   war hammer, EQUIP_CUTTER, EQUIP_STAPLE_GUN: "guns or other weapons"). Never add weapons, alcohol, tobacco, drugs or
   crude humour. The private bucket's frozen .12 copy (old Worker) is unchanged.
-- Simulated random-player win rate per difficulty (200 games per level): 1 98%, 2 90%, 3 68%, 4 52%, 5 29%, 6 12%,
+- Published content 2026.10.17.3 on `braintrain-public` (live since 2026-10-17, manifest `minClientContentSchema: 3`,
+  grid 7x9; all 675 titles pinned in `campaign.titles`; `r2_prune --delete` removed the 372 objects of older versions
+  the same day, so the bucket holds only .17.3 plus `app-update.json`): 675 levels, batch 3 = levels 176–675 `{"5": 84, "6": 84, "7": 83, "8": 83, "9": 83,
+  "10": 83}`; every level regenerated for the fixed 7x9 grid, depth and coloured pairs (levels 1–175 keep difficulty,
+  tray and title); tier bands in docs/level-design-rules.md (difficulty 10: 84–126 tiles, 4 layers); registry
+  `registries/symbols-08ab2ec20da3.json`, 331 symbols (220 static, 61–62 levels each; 111 animated, 21–22 each). Random
+  player: 1 99%, 2 92%, 3 70%, 4 46%, 5 35%, 6 15%, 7 4%, 8 0.1%, 9–10 0% (5 levels of difficulty 7 at 1.0–1.5%, just
+  under the 2% floor); pair-seeking 64–69% at 8–10. The build takes ~32 s. Families per tier: 9 at difficulty 10, 12
+  at 9, 13 at 8, 15–19 at 5–7; no family on two of three neighbouring levels; 675 unique titles. Previews:
+  `PREVIEW_TREE=content/brain-train PREVIEW_LEVELS=level-0001,... [PREVIEW_PHONES=393x852,360x640,ipad-13]
+  CAPTURE_DIR=<dir> flutter test test/visual/gameplay_capture_test.dart --plain-name "board previews"`.
+- Simulated random-player win rate per difficulty (published .17.2, 200 games per level): 1 98%, 2 90%, 3 68%, 4 52%, 5 29%, 6 12%,
   7 2%, 8–10 0% (all 35 levels of 9 and all 60 of 10, batch 2 included; a pair-seeking player still wins ~40–50% of
   8–10, some star/towers boards under 3%). Every level is solver-proven and keeps tile faces
   >= 31 px wide on a 360x640 phone.
@@ -466,13 +498,15 @@ dart run tool/smoke_remote.dart         # live check: app's content client vs pr
   (image set renamed v4 → v1 on 2026-10-16: `art/source/symbols-v1/`, `art/masters/v1/`, `art/review/v1-contact-sheet.png`).
   Animated: `art/animated_sources.json` → `python3 tool/assets/prepare_animated.py` → `content/brain-train/animated-symbols/`.
   Originals live in `art/source/` (gitignored). IconScout downloads use the owner's subscription via the iconscout MCP.
-- Art sources: each entry has a `status`; builds take only `integrated` ones. Static: 211 integrated (82 earlier +
+- Art sources: each entry has a `status`; builds take only `integrated` ones. Static: 220 integrated (82 earlier +
   23 owner nano-banana cut-outs + 76 IconScout 3D Sport/Christmas/Tech/Robot/Cinema/Trip + 24 from the Sport, Sport
   Equipment, Equipment and Medicine packs, minus 2 rejected for 6+ and 8 for 4+; + 16 on 2026-10-17 from the User
   Interface, Shopping And Sale, Internet Marketing, Travel & Holiday and Valentine's Day 3D packs: `SHOP_*`, `UI_*`,
-  `MKT_EMAIL`, `TRIP2_*`, `LOVE2_*`; the rest of those packs was screened out from previews), 74 `rejected`
-  (unreadable at 31 px, look-alikes, duplicates, `SHOP_CREDIT_CARD` as a payment card for under-13 players; each has a
-  reason), 16 `awaiting download`. Duplicate subjects are never added (owner). Animated: 111 integrated (2 rejected for 6+; 83 earlier +
+  `MKT_EMAIL`, `TRIP2_*`, `LOVE2_*`; the rest of those packs was screened out from previews; + 9 seasonal on
+  2026-10-17 from 8 Christmas/Halloween 3D packs: `HALLOWEEN_*` candy bucket, witch hat, broom, bat, moon, candies,
+  cauldron, lollipop and `XMAS2_LIGHTS`, friendly items only, nothing scary), 75 `rejected` (unreadable at 31 px,
+  look-alikes, duplicates, `SHOP_CREDIT_CARD` as a payment card for under-13 players, `HALLOWEEN_BROOM_YELLOW` reading
+  as a bell; each has a reason), 16 `awaiting download`. Duplicate subjects are never added (owner). Animated: 111 integrated (2 rejected for 6+; 83 earlier +
   9 owner LottieFiles `LF_*` + India map + 20 country flags `FLAG_*` restyled with a zoom), rejected ones have a
   reason. Check new art at 31 px and 64 px tile width.
 - Not yet integrated: 4 IconScout AI images (spring rolls ×2, salad, nachos) — not reachable via the IconScout API.
@@ -502,7 +536,7 @@ dart run tool/smoke_remote.dart         # live check: app's content client vs pr
   `/opt/homebrew/share/android-commandlinetools`, AVD `Pixel_9` = Play Store image (use for Play Games), `TP_*` AVDs
   have no Play Store, `Pixel_6_API_34` does not exist. Python 3 + Pillow for `tool/assets/*.py`, ffmpeg for audio.
 - `flutter analyze` and `flutter test` work on a fresh clone (tests use fixtures and `content/starter/`); on the Linux
-  machine 724 pass, 26 skip without the full content tree (2026-10-17, redesign 1.1.0 with phase 6); on the Mac 6 failed before
+  machine 817 pass and 17 skip with the full content tree (2026-10-17, content 2026.10.17.3 draft); on the Mac 6 failed before
   (see Open work).
 - Run on a Mac (iPhone simulator) or any machine with no secrets: `flutter pub get && flutter run`. Debug builds read
   content from the public host, use Google's test AdMob IDs, skip Play Games (Android only) and use debug signing;

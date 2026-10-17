@@ -420,10 +420,10 @@ void main() {
       expect(e.findHint()!.reason, HintReason.completesPair);
     });
 
-    test('following hints wins the hardest boards (2-slot trays, 144+ tiles)', () {
+    test('following hints wins the hardest boards (2-slot trays, difficulty 10)', () {
       for (final hard in hardLevels()) {
         expect(hard.rules.trayCapacity, 2);
-        expect(hard.tiles.length, greaterThanOrEqualTo(144));
+        expect(hard.tiles.length, greaterThanOrEqualTo(hardMinTiles()));
         final e = engine(hard, symbols: hardRegistry);
         final reasons = <HintReason>{};
         var steps = 0;
@@ -517,7 +517,9 @@ void main() {
         // Mid-game, one tile waiting in the tray.
         final mid = engine(hard, symbols: hardRegistry);
         final plan = TraySolver.forRules(mid.geometry, mid.rules, capacity: 2).solve(TileMask.all(hard.tiles.length));
-        for (final index in plan.taps.take(plan.taps.length ~/ 2 + 1)) {
+        // Play half the plan, then on to the first moment one tile waits.
+        for (final (i, index) in plan.taps.indexed) {
+          if (i > plan.taps.length ~/ 2 && mid.state.tray.length == 1) break;
           mid.tap(hard.tiles[index].tileId);
         }
         expect(mid.state.tray, hasLength(1));

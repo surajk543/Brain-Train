@@ -158,7 +158,9 @@ class CampaignConfig {
     this.minFaceWidth = 31,
     this.solverBudget = 500000,
     this.category = 'nature',
-  }) : batches = List.unmodifiable([
+    List<String> titles = const [],
+  }) : titles = List.unmodifiable(titles),
+       batches = List.unmodifiable([
          for (final batch in batches ?? [{for (final t in tiers) t.id: t.count}])
            Map<String, int>.unmodifiable(batch),
        ]);
@@ -184,6 +186,7 @@ class CampaignConfig {
       minFaceWidth: json.numberOr('minFaceWidth', 31),
       solverBudget: json.optInt('solverBudget') ?? 500000,
       category: json.optString('category') ?? 'nature',
+      titles: json.has('titles') ? json.stringList('titles') : const [],
     );
     final problems = config.problems();
     if (problems.isNotEmpty) throw JsonFormatException(json.path, problems.join('; '));
@@ -229,6 +232,11 @@ class CampaignConfig {
   final int solverBudget;
   final String category;
 
+  /// Titles of published levels, by level order (`titles[0]` is level 1),
+  /// pinned so a change to how boards are built never renames a level. Later
+  /// levels get generated titles that repeat none of these.
+  final List<String> titles;
+
   int get levelCount => batches.fold(0, (sum, b) => sum + b.values.fold(0, (s, n) => s + n));
 
   /// Levels of [tierId] in batch [batch].
@@ -247,6 +255,7 @@ class CampaignConfig {
     if (tiers.map((t) => t.id).toSet().length != tiers.length) 'duplicate tier ids',
     if (!tiers.any((t) => t.id == firstTier)) 'firstTier $firstTier is not a tier',
     if (batches.isEmpty || levelCount < 1) 'no levels',
+    if (titles.toSet().length != titles.length) 'duplicate pinned titles',
     for (var b = 0; b < batches.length; b++)
       for (final MapEntry(:key, :value) in batches[b].entries)
         if (value < 0) 'batch ${b + 1}: $key count must not be negative',

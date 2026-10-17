@@ -233,6 +233,7 @@ class GameEngine {
           ],
           rules: level.rules,
           backdrop: level.backdrop,
+          faceColors: level.faceColors,
         );
 
   /// The winning tap order (tile indices) the last shuffle was built along;

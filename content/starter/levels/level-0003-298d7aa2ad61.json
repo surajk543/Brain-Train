@@ -1,0 +1,53 @@
+{
+  "schemaVersion": 1,
+  "levelId": "level-0003",
+  "title": "Pine Bridge",
+  "difficulty": "1",
+  "tileSetId": "classic-ivory",
+  "board": {
+    "tileWidth": 2,
+    "tileHeight": 2,
+    "layerOffsetX": -0.07,
+    "layerOffsetY": -0.07
+  },
+  "rules": {
+    "matchingMode": "same_symbol",
+    "requireSolvable": true,
+    "trayCapacity": 5
+  },
+  "backdrop": {
+    "colors": [
+      "#1E5631",
+      "#4C9A2A",
+      "#A4DE02"
+    ]
+  },
+  "faceColors": {
+    "TRIP_HOTEL": "sky",
+    "EQUIP_DRILL": "lavender"
+  },
+  "tiles": [
+    {"tileId":"t001","symbolCode":"HALLOWEEN_MOON","x":0,"y":0,"layer":0},
+    {"tileId":"t002","symbolCode":"ICE_CREAM_BOWL","x":2,"y":0,"layer":0},
+    {"tileId":"t003","symbolCode":"TRIP_MAP_PHONE","x":4,"y":0,"layer":0},
+    {"tileId":"t004","symbolCode":"JULY4_FLAG_BALLOONS","x":6,"y":0,"layer":0},
+    {"tileId":"t005","symbolCode":"TRIP_HOTEL","x":8,"y":0,"layer":0},
+    {"tileId":"t006","symbolCode":"TRIP_MAP_PHONE","x":10,"y":0,"layer":0},
+    {"tileId":"t007","symbolCode":"HALLOWEEN_MOON","x":2,"y":2,"layer":0},
+    {"tileId":"t008","symbolCode":"TRIP_MAP_PHONE","x":4,"y":2,"layer":0},
+    {"tileId":"t009","symbolCode":"TRIP_MAP_PHONE","x":6,"y":2,"layer":0},
+    {"tileId":"t010","symbolCode":"ICE_CREAM_BOWL","x":8,"y":2,"layer":0},
+    {"tileId":"t011","symbolCode":"EQUIP_DRILL","x":4,"y":4,"layer":0},
+    {"tileId":"t012","symbolCode":"ICE_CREAM_BOWL","x":6,"y":4,"layer":0},
+    {"tileId":"t013","symbolCode":"HALLOWEEN_MOON","x":2,"y":6,"layer":0},
+    {"tileId":"t014","symbolCode":"EQUIP_DRILL","x":4,"y":6,"layer":0},
+    {"tileId":"t015","symbolCode":"HALLOWEEN_MOON","x":6,"y":6,"layer":0},
+    {"tileId":"t016","symbolCode":"EMOJI_FLEXED_BICEPS","x":8,"y":6,"layer":0},
+    {"tileId":"t017","symbolCode":"EMOJI_FLEXED_BICEPS","x":0,"y":8,"layer":0},
+    {"tileId":"t018","symbolCode":"JULY4_FLAG_BALLOONS","x":2,"y":8,"layer":0},
+    {"tileId":"t019","symbolCode":"ICE_CREAM_BOWL","x":4,"y":8,"layer":0},
+    {"tileId":"t020","symbolCode":"JULY4_FLAG_BALLOONS","x":6,"y":8,"layer":0},
+    {"tileId":"t021","symbolCode":"TRIP_HOTEL","x":8,"y":8,"layer":0},
+    {"tileId":"t022","symbolCode":"JULY4_FLAG_BALLOONS","x":10,"y":8,"layer":0}
+  ]
+}

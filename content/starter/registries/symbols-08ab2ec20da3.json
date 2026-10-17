@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "registryVersion": "brain-train-symbols-39ee55e5",
+  "registryVersion": "brain-train-symbols-45dafa9a",
   "symbols": {
     "COSMIC_CHESTNUT": {
       "type": "image",
@@ -1657,6 +1657,78 @@
       "label": "Teddy Bear",
       "sha256": "899ec805057ebf597927d81de7f2b95f9af12ccdc9b5b5865ccb7a6d587bc373",
       "source": "https://iconscout.com/3d-icon/teddy-bear-3d-icon_6067891"
+    },
+    "HALLOWEEN_CANDY_BUCKET": {
+      "type": "image",
+      "assetPath": "symbols/v1/halloween-candy-bucket.webp",
+      "matchGroup": "HALLOWEEN_CANDY_BUCKET",
+      "label": "Candy Bucket",
+      "sha256": "2bf9d6a56d830bf3accbd32436703639c46f81fe8033c81ddf663f7292e6f212",
+      "source": "https://iconscout.com/3d-icon/halloween-candy-bag-3d-icon_8196500"
+    },
+    "HALLOWEEN_WITCH_HAT": {
+      "type": "image",
+      "assetPath": "symbols/v1/halloween-witch-hat.webp",
+      "matchGroup": "HALLOWEEN_WITCH_HAT",
+      "label": "Witch Hat",
+      "sha256": "6514040b9d3dfcdbf18536382f40ec6695decc42ece7df03563bc17c8ae67b30",
+      "source": "https://iconscout.com/3d-icon/witch-hat-3d-icon_8196498"
+    },
+    "HALLOWEEN_BROOM": {
+      "type": "image",
+      "assetPath": "symbols/v1/halloween-broom.webp",
+      "matchGroup": "HALLOWEEN_BROOM",
+      "label": "Witch Broom",
+      "sha256": "f78db8e761121392bca65023175876a532b7baccba2fd18c46212b46d096e46f",
+      "source": "https://iconscout.com/3d-icon/witch-broomstick-3d-icon_15552988"
+    },
+    "HALLOWEEN_BAT": {
+      "type": "image",
+      "assetPath": "symbols/v1/halloween-bat.webp",
+      "matchGroup": "HALLOWEEN_BAT",
+      "label": "Friendly Bat",
+      "sha256": "daf349172f4cf5a1e278b9ace697dae810ea486a9f617be4c82c3e6257e7f6f2",
+      "source": "https://iconscout.com/3d-icon/halloween-bat-3d-icon_8196521"
+    },
+    "HALLOWEEN_MOON": {
+      "type": "image",
+      "assetPath": "symbols/v1/halloween-moon.webp",
+      "matchGroup": "HALLOWEEN_MOON",
+      "label": "Crescent Moon",
+      "sha256": "bdd83e0304e515dfa1e4da4a70ba4c27b4597545e1394f9ebe6c080ec294fcf2",
+      "source": "https://iconscout.com/3d-icon/halloween-moon-3d-icon_10316167"
+    },
+    "HALLOWEEN_CANDIES": {
+      "type": "image",
+      "assetPath": "symbols/v1/halloween-candies.webp",
+      "matchGroup": "HALLOWEEN_CANDIES",
+      "label": "Wrapped Candies",
+      "sha256": "256b73cc6b0908eb8398eb6f338628c6f1d02d15446b6caa073caed2ae7cd932",
+      "source": "https://iconscout.com/3d-icon/halloween-candy-3d-icon_8196510"
+    },
+    "HALLOWEEN_CAULDRON": {
+      "type": "image",
+      "assetPath": "symbols/v1/halloween-cauldron.webp",
+      "matchGroup": "HALLOWEEN_CAULDRON",
+      "label": "Bubbling Cauldron",
+      "sha256": "1523132a8e3e843ac004fff4c96875a53fe4a37be7527be154975e05254fb5c1",
+      "source": "https://iconscout.com/3d-icon/witch-cauldron-with-bubbles-3d-icon_10316169"
+    },
+    "HALLOWEEN_LOLLIPOP": {
+      "type": "image",
+      "assetPath": "symbols/v1/halloween-lollipop.webp",
+      "matchGroup": "HALLOWEEN_LOLLIPOP",
+      "label": "Swirl Lollipop",
+      "sha256": "7f4e904c8618c475f0702cc8ac96a391f14722645dd42d19a037122e8d884b4b",
+      "source": "https://iconscout.com/3d-icon/halloween-lollipop-3d-icon_8196505"
+    },
+    "XMAS2_LIGHTS": {
+      "type": "image",
+      "assetPath": "symbols/v1/xmas2-lights.webp",
+      "matchGroup": "XMAS2_LIGHTS",
+      "label": "Christmas Lights",
+      "sha256": "acc029d6ee07ba4ef68b0b85f3b264b5e8a0b2c11579fb6cc26e1cd3221ce4f1",
+      "source": "https://iconscout.com/3d-icon/christmas-light-3d-icon_13470289"
     },
     "EMOJI_FIRE": {
       "type": "lottie",

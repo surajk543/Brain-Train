@@ -9,14 +9,14 @@ import 'widgets/tray_view.dart';
 /// ([timerRow]), the tray, the board (all the rest) and the action bar
 /// ([actionBarHeight], then [bottomGap] above the bottom safe area).
 ///
-/// The board must keep the room the campaign was built for: a 360x640 phone
-/// gives it at least [kSmallBoardWidth] x [kSmallBoardHeight] (every level's
-/// tile faces are then 31 px or wider; `test/content/published_content_test`
+/// The board shows the fixed board grid (`boardProjectionFor`), so the tile
+/// size grows with the board's height: the tray is low and the action bar
+/// one row of round buttons with their labels beside them. A 360x640 phone
+/// gives the board at least [kSmallBoardWidth] x [kSmallBoardHeight] (the
+/// grid's faces are then 31 px or wider; `test/content/published_content_test`
 /// and `test/features/game_layout_test` check it). So the screen is
-/// [compact] (slimmer HUD, smaller tray, action labels beside their buttons)
-/// whenever the roomy layout would leave the board less than
-/// [kSmallBoardHeight]; the roomy layout puts labels under the buttons like
-/// the reference board.
+/// [compact] (slimmer HUD and tray) whenever the roomy layout would leave
+/// the board less than [kSmallBoardHeight].
 @immutable
 class GameLayout {
   const GameLayout._({
@@ -27,22 +27,25 @@ class GameLayout {
     required this.trayFaceWidth,
     required this.trayPadV,
     required this.actionBarHeight,
+    required this.actionDisc,
     required this.bottomGap,
   });
 
   /// The layout for a screen (canvas, on tablets) of [size] with [safe]
   /// insets.
   factory GameLayout.of(Size size, EdgeInsets safe) {
-    final roomy = GameLayout._(
+    // Owner (2026-10-17): a low tray and a compact action bar, so the fixed
+    // board grid (boardProjectionFor) gets as much height as possible.
+    const roomy = GameLayout._(
       compact: false,
       topGap: 6,
       hudHeight: 56,
       timerRow: 18,
-      // Tray tiles: smaller on short screens, so the board keeps its room.
-      trayFaceWidth: (size.height * 0.062).clamp(34.0, 46.0),
-      trayPadV: TrayLayout.defaultPadV,
-      actionBarHeight: 84,
-      bottomGap: 6,
+      trayFaceWidth: 32,
+      trayPadV: 6,
+      actionBarHeight: 50,
+      actionDisc: 44,
+      bottomGap: 4,
     );
     if (roomy.boardHeight(size, safe) >= kSmallBoardHeight) return roomy;
     return const GameLayout._(
@@ -50,9 +53,10 @@ class GameLayout {
       topGap: 4,
       hudHeight: 46,
       timerRow: 12,
-      trayFaceWidth: 34,
-      trayPadV: 7,
-      actionBarHeight: 44,
+      trayFaceWidth: 30,
+      trayPadV: 5,
+      actionBarHeight: 48,
+      actionDisc: 44,
       bottomGap: 4,
     );
   }
@@ -68,6 +72,9 @@ class GameLayout {
   final double trayFaceWidth;
   final double trayPadV;
   final double actionBarHeight;
+
+  /// The action buttons' round discs (labels beside them).
+  final double actionDisc;
   final double bottomGap;
 
   /// Space above and below the HUD row's panel, left and right.
