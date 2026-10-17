@@ -97,6 +97,8 @@ android {
 
     buildTypes {
         release {
+            // Our keep rules on top of Flutter's (R8 shrinks every release build).
+            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
             signingConfig = if (uploadKey.isEmpty()) {
                 logger.warn("android/key.properties not found: release builds are signed with the debug key (not for Play).")
                 signingConfigs.getByName("debug")
