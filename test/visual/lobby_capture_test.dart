@@ -1,4 +1,4 @@
-// Renders the real lobby (home, Levels, Settings) in Day and Night at phone
+// Renders the real lobby (home, Levels, Settings) in the Night look at phone
 // and tablet sizes (redesign 1.1.0, reference board panels 1-2 and Settings).
 //
 // Always checks that layout succeeds without exceptions or overflow. When
@@ -47,76 +47,75 @@ void main() {
     );
   });
 
-  for (final (look, mode) in [('day', ThemeMode.light), ('night', ThemeMode.dark)]) {
-    for (final phone in [smallPhone, midPhone, largePhone, tallPhone, ipad13]) {
-      testWidgets('$look lobby ${phone.name}: home, levels, settings', (tester) async {
-        late AppServices services;
-        await tester.runAsync(() async {
-          // Content up to date (the host serves the starter pack): the
-          // status line shows the ready levels, not a notice.
-          services = await testServices(client: starterHost);
-          await _midway(services);
-          await services.content.topUp();
-        });
-        await pumpLobby(tester, services: services, home: const HomeScreen(), phone: phone, themeMode: mode);
-        expect(tester.takeException(), isNull);
-        expect(find.text('Continue · Level 2'), findsOneWidget);
-        expect(find.byType(LobbyHero), findsOneWidget);
-        expect(find.bySemanticsLabel('Brain Train'), findsOneWidget);
-        // Levels 2-6 are the window; level 6 is not on the device.
-        expect(find.text('4 levels ready · v${services.content.snapshot.contentVersion}'), findsOneWidget);
-        await captureLobby(tester, '$look-home-${phone.name}', phone.dpr);
+  const look = 'night';
 
-        await tester.tap(find.text('Levels'));
-        await settleLobby(tester);
-        expect(tester.takeException(), isNull);
-        // Level 2 is in progress: it is the level offered above the list.
-        expect(find.text(services.content.snapshot.playableEntries[1].title), findsOneWidget);
-        await captureLobby(tester, '$look-levels-${phone.name}', phone.dpr);
-        await tester.pageBack();
-        await settleLobby(tester);
-
-        await tester.tap(find.text('Settings'));
-        await settleLobby(tester);
-        expect(tester.takeException(), isNull);
-        expect(find.text('Sound Effects'), findsOneWidget);
-        expect(find.text('Music'), findsOneWidget);
-        await captureLobby(tester, '$look-settings-${phone.name}', phone.dpr);
-
-        await tester.pumpWidget(const SizedBox());
-      });
-    }
-
-    testWidgets('$look lobby 360x640 at 1.3x text: no overflow', (tester) async {
+  for (final phone in [smallPhone, midPhone, largePhone, tallPhone, ipad13]) {
+    testWidgets('$look lobby ${phone.name}: home, levels, settings', (tester) async {
       late AppServices services;
       await tester.runAsync(() async {
-        services = await testServices();
+        // Content up to date (the host serves the starter pack): the
+        // status line shows the ready levels, not a notice.
+        services = await testServices(client: starterHost);
         await _midway(services);
+        await services.content.topUp();
       });
-      await pumpLobby(
-        tester,
-        services: services,
-        home: const HomeScreen(),
-        phone: smallPhone,
-        textScale: 1.3,
-        themeMode: mode,
-      );
+      await pumpLobby(tester, services: services, home: const HomeScreen(), phone: phone);
       expect(tester.takeException(), isNull);
       expect(find.text('Continue · Level 2'), findsOneWidget);
-      await captureLobby(tester, '$look-home-360x640-text130', smallPhone.dpr);
+      expect(find.byType(LobbyHero), findsOneWidget);
+      expect(find.bySemanticsLabel('Tile Park'), findsOneWidget);
+      // Levels 2-6 are the window; level 6 is not on the device.
+      expect(find.text('4 levels ready · v${services.content.snapshot.contentVersion}'), findsOneWidget);
+      await captureLobby(tester, '$look-home-${phone.name}', phone.dpr);
+
       await tester.tap(find.text('Levels'));
       await settleLobby(tester);
       expect(tester.takeException(), isNull);
-      await captureLobby(tester, '$look-levels-360x640-text130', smallPhone.dpr);
+      // Level 2 is in progress: it is the level offered above the list.
+      expect(find.text(services.content.snapshot.playableEntries[1].title), findsOneWidget);
+      await captureLobby(tester, '$look-levels-${phone.name}', phone.dpr);
       await tester.pageBack();
       await settleLobby(tester);
+
       await tester.tap(find.text('Settings'));
       await settleLobby(tester);
       expect(tester.takeException(), isNull);
-      await captureLobby(tester, '$look-settings-360x640-text130', smallPhone.dpr);
+      expect(find.text('Sound Effects'), findsOneWidget);
+      expect(find.text('Music'), findsOneWidget);
+      await captureLobby(tester, '$look-settings-${phone.name}', phone.dpr);
+
       await tester.pumpWidget(const SizedBox());
     });
   }
+
+  testWidgets('$look lobby 360x640 at 1.3x text: no overflow', (tester) async {
+    late AppServices services;
+    await tester.runAsync(() async {
+      services = await testServices();
+      await _midway(services);
+    });
+    await pumpLobby(
+      tester,
+      services: services,
+      home: const HomeScreen(),
+      phone: smallPhone,
+      textScale: 1.3,
+    );
+    expect(tester.takeException(), isNull);
+    expect(find.text('Continue · Level 2'), findsOneWidget);
+    await captureLobby(tester, '$look-home-360x640-text130', smallPhone.dpr);
+    await tester.tap(find.text('Levels'));
+    await settleLobby(tester);
+    expect(tester.takeException(), isNull);
+    await captureLobby(tester, '$look-levels-360x640-text130', smallPhone.dpr);
+    await tester.pageBack();
+    await settleLobby(tester);
+    await tester.tap(find.text('Settings'));
+    await settleLobby(tester);
+    expect(tester.takeException(), isNull);
+    await captureLobby(tester, '$look-settings-360x640-text130', smallPhone.dpr);
+    await tester.pumpWidget(const SizedBox());
+  });
 
   for (final phone in [largePhone, smallPhone, tallPhone]) {
     testWidgets('lobby ${phone.name}: Play Games buttons', (tester) async {

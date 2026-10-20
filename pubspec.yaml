@@ -16,7 +16,7 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 # https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
 # In Windows, build-name is used as the major, minor, and patch parts
 # of the product and file versions while build-number is used as the build suffix.
-version: 1.1.0+11
+version: 1.1.0+13
 
 environment:
   sdk: ^3.12.2
@@ -75,16 +75,12 @@ flutter:
   # network. Mirrors the R2 keys under brain-train/ (see docs/CONTENT_PUBLISHING.md).
   assets:
     - assets/video/sun_game_studio_intro.mp4
-    - assets/branding/brain_train_logo.jpg
+    - assets/branding/tile_park_logo.jpg
     - assets/branding/brain_train_logo_transparent.webp
     - assets/sounds/
     - assets/music/
     - assets/decor/
-    # Day gameplay foliage (tool/lobby_art/make_day_foliage.py).
-    - assets/decor/day/
     - assets/lobby/
-    # Day lobby art (tool/lobby_art/make_day_lobby_art.py).
-    - assets/lobby/day/
     # The lobby hero's symbols (PLANT_POT_B, FLOWER_SUNFLOWER, FLOWER_PANSY):
     # the published files, at their registry paths (kHeroArtPrefix).
     - assets/lobby/hero/symbols/v1/

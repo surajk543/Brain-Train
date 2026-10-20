@@ -25,7 +25,7 @@ enum LevelState { open, inProgress, completed, locked }
 /// the top, and below it only the levels already completed (owner: no list
 /// of all levels, no locked levels), in order, as a lazily built list to
 /// replay from, each with its best time and when it was completed. A level
-/// unlocks when the previous one is won. Day and Night take every colour from
+/// unlocks when the previous one is won. Every colour comes from
 /// [LobbyTheme].
 ///
 /// Each row is flattened by its own [StaticLayer] (the leaves keep moving

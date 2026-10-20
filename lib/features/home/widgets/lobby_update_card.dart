@@ -28,11 +28,11 @@ class LobbyUpdateCard extends StatelessWidget {
   final AppUpdatePrompt prompt;
 
   static const String optionalTitle = 'Update available';
-  static const String optionalBody = 'A new version of Brain Train is ready.';
+  static const String optionalBody = 'A new version of Tile Park is ready.';
   static const String requiredTitle = 'Update required';
   static const String requiredBody =
-      'This version of Brain Train is no longer supported. Please update to keep playing.';
-  static const String failedNote = "Couldn't open the store. Please update Brain Train from your app store.";
+      'This version of Tile Park is no longer supported. Please update to keep playing.';
+  static const String failedNote = "Couldn't open the store. Please update Tile Park from your app store.";
 
   /// Between the lobby and the card (also the frost's tint).
   static const Color scrim = Color(0x9C020D08);

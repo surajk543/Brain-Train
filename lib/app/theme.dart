@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 
-import '../data/appearance.dart';
 import 'brand.dart';
 import 'typography.dart';
 
@@ -11,13 +10,10 @@ abstract final class BrainTrainColors {
   static const Color goldDeep = Color(0xFFB8892B);
   static const Color ink = Color(0xFF12261D);
 
-  /// Reference board (redesign 1.1.0): Day.
-  static const Color gardenGreen = Color(0xFF1D6B43);
-  static const Color deepFoliage = Color(0xFF104B34);
-  static const Color dayGold = Color(0xFFF2C96B);
+  /// Switch thumb when on (Settings).
   static const Color warmIvory = Color(0xFFFFF6DF);
 
-  /// Dark green text on gold and ivory (both looks).
+  /// Dark green text on gold and ivory.
   static const Color darkGreenText = Color(0xFF183D2D);
 
   /// Reference board: Night.
@@ -41,15 +37,6 @@ class FeltFoliage {
     bottomRight: 'assets/decor/foliage_bottom_right.webp',
   );
 
-  /// The same sprays in daylight: sunlit greens, warm rims and a few more
-  /// cream flowers (`tool/lobby_art/make_day_foliage.py`, from the night art).
-  static const day = FeltFoliage(
-    right: 'assets/decor/day/foliage_right.webp',
-    topLeft: 'assets/decor/day/foliage_top_left.webp',
-    bottomLeft: 'assets/decor/day/foliage_bottom_left.webp',
-    bottomRight: 'assets/decor/day/foliage_bottom_right.webp',
-  );
-
   final String right;
   final String topLeft;
   final String bottomLeft;
@@ -61,15 +48,13 @@ class FeltFoliage {
 /// screens take colours from here (and the lobby scene from [LobbyTheme])
 /// instead of hard-coding them.
 ///
-/// Two looks (owner, 2026-10-17, redesign 1.1.0): [day] (garden green) and
-/// [night] (deep emerald), chosen by the Appearance setting (Day, Night or
-/// the phone's setting). Panels are dark translucent green with a fine gold
-/// rim in both, so text on panels is ivory in both; only text on gold or
-/// ivory surfaces is dark green ([textOnGold]). Tiles look the same in both.
+/// One look, [night] (deep emerald; owner, 2026-10-20: Day and System were
+/// removed). Panels are dark translucent green with a fine gold rim, so text
+/// on panels is ivory; only text on gold or ivory surfaces is dark green
+/// ([textOnGold]).
 @immutable
 class BrainTrainPalette extends ThemeExtension<BrainTrainPalette> {
   const BrainTrainPalette({
-    required this.isNight,
     required this.feltLight,
     required this.felt,
     required this.feltDark,
@@ -77,7 +62,6 @@ class BrainTrainPalette extends ThemeExtension<BrainTrainPalette> {
     required this.textMuted,
     required this.accent,
     required this.panel,
-    required this.glassTint,
     required this.glassShade,
     required this.glassBorder,
     required this.backdropBase,
@@ -92,7 +76,6 @@ class BrainTrainPalette extends ThemeExtension<BrainTrainPalette> {
     required this.feltGlow,
     required this.feltGlowStrength,
     required this.feltVignette,
-    required this.feltSunPatches,
     required this.feltFoliage,
     required this.panelFill,
     required this.panelRim,
@@ -121,7 +104,6 @@ class BrainTrainPalette extends ThemeExtension<BrainTrainPalette> {
 
   /// Deep emerald (the look before 1.1.0, unchanged).
   static const night = BrainTrainPalette(
-    isNight: true,
     feltLight: Color(0xFF1E6B4E),
     felt: Color(0xFF14513B),
     feltDark: Color(0xFF0A2E22),
@@ -129,7 +111,6 @@ class BrainTrainPalette extends ThemeExtension<BrainTrainPalette> {
     textMuted: Color(0xA6F6ECD4),
     accent: BrainTrainColors.gold,
     panel: Color(0xCC0B2A20),
-    glassTint: 0.10,
     glassShade: 0.16,
     glassBorder: Color(0x38FFFFFF),
     backdropBase: Color(0xFF06120D),
@@ -144,7 +125,6 @@ class BrainTrainPalette extends ThemeExtension<BrainTrainPalette> {
     feltGlow: Color(0xFFFFD98A),
     feltGlowStrength: 0.4,
     feltVignette: 0.34,
-    feltSunPatches: 0,
     feltFoliage: FeltFoliage.night,
     panelFill: [Color(0xD11A5638), Color(0xE00A3322)],
     panelRim: [BrandGold.light, BrandGold.base, BrandGold.deep, BrandGold.base, BrandGold.light],
@@ -174,79 +154,13 @@ class BrainTrainPalette extends ThemeExtension<BrainTrainPalette> {
     overlayScrim: Color(0x8C020D08),
   );
 
-  /// Garden green by day: a brighter felt and background, warm sunlight;
-  /// the same dark-green gold-rimmed panels, gold buttons and ivory text.
-  static const day = BrainTrainPalette(
-    isNight: false,
-    feltLight: Color(0xFF2B7F52),
-    felt: BrainTrainColors.gardenGreen,
-    feltDark: BrainTrainColors.deepFoliage,
-    text: BrainTrainColors.warmIvory,
-    textMuted: Color(0xB8FFF6DF),
-    accent: BrainTrainColors.dayGold,
-    panel: Color(0xD90C3A28),
-    glassTint: 0.10,
-    glassShade: 0.18,
-    glassBorder: Color(0x38FFFFFF),
-    backdropBase: Color(0xFF0C3A28),
-    backdropMix: 0.7,
-    orbStrength: 1,
-    scrim: Color(0x5904140E),
-    background: [Color(0xFF2A7F50), BrainTrainColors.gardenGreen, BrainTrainColors.deepFoliage],
-    // Sunlit lawn: a warmer, yellower green than Night, light to the edges
-    // (the centre is as light as ivory text on it allows), strong warm sun
-    // from the top-right and patches of light through the leaves.
-    feltCenter: Color(0xFF2E7D46),
-    feltMid: Color(0xFF26703E),
-    feltEdge: Color(0xFF1B5A33),
-    feltNap: 0.022,
-    feltGlow: Color(0xFFFFE7A0),
-    feltGlowStrength: 0.62,
-    feltVignette: 0.14,
-    feltSunPatches: 0.16,
-    feltFoliage: FeltFoliage.day,
-    panelFill: [Color(0xD91A5638), Color(0xE60A3322)],
-    panelRim: [BrandGold.light, BrandGold.base, BrandGold.deep, BrandGold.base, BrandGold.light],
-    panelSheen: Color(0x12FFFFFF),
-    panelHighlight: Color(0x42FFFFFF),
-    panelShadows: [
-      BoxShadow(color: Color(0x4D000000), blurRadius: 24, offset: Offset(0, 10)),
-      BoxShadow(color: Color(0x2E000000), blurRadius: 4, offset: Offset(0, 2)),
-    ],
-    hudFill: [Color(0xD91A5638), Color(0xE60A3322)],
-    hudSeparator: BrandGold.base,
-    hudLabel: Color(0xCCFFF6DF),
-    hudValue: BrainTrainColors.warmIvory,
-    primaryButtonFill: [BrandGold.light, BrainTrainColors.dayGold, BrandGold.base],
-    primaryButtonEdge: Color(0xFFFFF1C4),
-    primaryButtonText: BrainTrainColors.ink,
-    primaryButtonShadow: Color(0x4D000000),
-    secondaryButtonFill: Color(0x0AFFFFFF),
-    secondaryButtonBorder: BrandGold.base,
-    secondaryButtonText: BrainTrainColors.warmIvory,
-    quietButtonText: BrandGold.light,
-    textOnGold: BrainTrainColors.darkGreenText,
-    accentLight: BrandGold.light,
-    accentDeep: BrandGold.deep,
-    textShadow: Color(0xA6000000),
-    shadow: Color(0x4D000000),
-    overlayScrim: Color(0x80041A10),
-  );
-
-  /// The look for a brightness: light is Day, dark is Night.
-  static BrainTrainPalette forBrightness(Brightness brightness) => brightness == Brightness.light ? day : night;
-
-  /// True for [night], false for [day].
-  final bool isNight;
-  bool get isDay => !isNight;
-
   final Color feltLight;
   final Color felt;
 
   /// Scaffold background under every screen.
   final Color feltDark;
 
-  /// Main text and icon colour on felt, panels and glass (ivory in both looks).
+  /// Main text and icon colour on felt, panels and glass (ivory).
   final Color text;
   final Color textMuted;
 
@@ -255,9 +169,6 @@ class BrainTrainPalette extends ThemeExtension<BrainTrainPalette> {
 
   /// Opaque-ish card fill.
   final Color panel;
-
-  /// White frosting strength of glass panels (0-1).
-  final double glassTint;
 
   /// Extra darkening of the board's glass tray, for tile contrast.
   final double glassShade;
@@ -286,10 +197,6 @@ class BrainTrainPalette extends ThemeExtension<BrainTrainPalette> {
   final Color feltGlow;
   final double feltGlowStrength;
   final double feltVignette;
-
-  /// Strength (alpha) of the soft patches of sunlight on the felt, as if
-  /// through leaves (Day); 0 draws none (Night).
-  final double feltSunPatches;
 
   /// Foliage art at the felt's edges.
   final FeltFoliage feltFoliage;
@@ -350,62 +257,28 @@ class BrainTrainPalette extends ThemeExtension<BrainTrainPalette> {
   BrainTrainPalette lerp(BrainTrainPalette? other, double t) => t < 0.5 || other == null ? this : other;
 }
 
-/// How [MaterialApp.themeMode] follows the Appearance setting.
-extension AppAppearanceThemeMode on AppAppearance {
-  ThemeMode get themeMode => switch (this) {
-    AppAppearance.system => ThemeMode.system,
-    AppAppearance.day => ThemeMode.light,
-    AppAppearance.night => ThemeMode.dark,
-  };
-}
+/// The app theme (Night, the only look): carries [BrainTrainPalette],
+/// [LobbyTheme] and [BrainTrainTypography]. Body text is Manrope and display
+/// styles Playfair Display (bundled).
+ThemeData buildBrainTrainTheme() => _theme;
 
-/// The app theme for [brightness]: [Brightness.light] is Day, dark is Night
-/// (the default, for existing callers). Both carry [BrainTrainPalette],
-/// [LobbyTheme] and [BrainTrainTypography] for their look. The app passes
-/// both to `MaterialApp` (`theme` = Day, `darkTheme` = Night) with the
-/// Appearance setting's `themeMode`.
-///
-/// Body text is Manrope and display styles Playfair Display (bundled). Day
-/// keeps dark-green surfaces (panels, dialogs) with ivory text, like the
-/// reference board, so nothing renders gold or ivory on a light surface.
-ThemeData buildBrainTrainTheme([Brightness brightness = Brightness.dark]) =>
-    brightness == Brightness.light ? _dayTheme : _nightTheme;
+final ThemeData _theme = _buildTheme();
 
-final ThemeData _nightTheme = _buildTheme(Brightness.dark);
-final ThemeData _dayTheme = _buildTheme(Brightness.light);
-
-ThemeData _buildTheme(Brightness brightness) {
-  final palette = BrainTrainPalette.forBrightness(brightness);
-  final lobby = LobbyTheme.forBrightness(brightness);
-  final type = brightness == Brightness.light ? BrainTrainTypography.day : BrainTrainTypography.night;
-  var scheme = ColorScheme.fromSeed(seedColor: palette.felt, brightness: brightness).copyWith(
+ThemeData _buildTheme() {
+  const palette = BrainTrainPalette.night;
+  const lobby = LobbyTheme.night;
+  final type = BrainTrainTypography.night;
+  final scheme = ColorScheme.fromSeed(seedColor: palette.felt, brightness: Brightness.dark).copyWith(
     primary: palette.accent,
     onPrimary: BrainTrainColors.ink,
     secondary: palette.text,
     surface: palette.feltDark,
     onSurface: palette.text,
   );
-  if (brightness == Brightness.light) {
-    // Day: the seed's light surfaces would put ivory and gold on white;
-    // dialogs, menus and sheets stay dark green as in the reference.
-    scheme = scheme.copyWith(
-      onSurfaceVariant: palette.textMuted,
-      surfaceContainerLowest: const Color(0xFF0B3826),
-      surfaceContainerLow: const Color(0xFF0E412C),
-      surfaceContainer: const Color(0xFF104B34),
-      surfaceContainerHigh: const Color(0xFF14553B),
-      surfaceContainerHighest: const Color(0xFF185F42),
-      surfaceTint: palette.accent,
-      outline: palette.accent.withValues(alpha: 0.6),
-      outlineVariant: palette.accent.withValues(alpha: 0.3),
-      inverseSurface: palette.text,
-      onInverseSurface: BrainTrainColors.ink,
-    );
-  }
   final base = ThemeData(
     colorScheme: scheme,
     useMaterial3: true,
-    brightness: brightness,
+    brightness: Brightness.dark,
     fontFamily: BrainTrainFonts.ui,
     fontFamilyFallback: BrainTrainFonts.uiFallback,
   );
@@ -499,8 +372,8 @@ class LobbyGlow {
   final double squash;
 }
 
-/// One bundled art layer of the lobby scene (Night: tool/assets/make_lobby_art.py;
-/// Day and the hero ledges: tool/lobby_art/make_day_lobby_art.py).
+/// One bundled art layer of the lobby scene (tool/assets/make_lobby_art.py; the
+/// hero ledge: tool/lobby_art/make_day_lobby_art.py).
 @immutable
 class LobbyDecor {
   const LobbyDecor(
@@ -540,8 +413,7 @@ class LobbyDecor {
 
 /// Everything the lobby (home, Levels, Settings) needs to look right: the
 /// garden's art layers, lighting, ambient particles, the hero ledge and
-/// title, buttons, panels and text colours, for Day ([day]) and Night
-/// ([night]). Read with `LobbyTheme.of(context)`; widgets take all colours
+/// title, buttons, panels and text colours ([night], the only look). Read with `LobbyTheme.of(context)`; widgets take all colours
 /// and assets from here instead of hard-coding them.
 @immutable
 class LobbyTheme extends ThemeExtension<LobbyTheme> {
@@ -717,123 +589,6 @@ class LobbyTheme extends ThemeExtension<LobbyTheme> {
     textShadow: Color(0xB3000000),
   );
 
-  /// The garden by day (tool/lobby_art/make_day_lobby_art.py): sun through
-  /// the leaves from the top right, cream flowers, a mossy stone path, no
-  /// lanterns; a few drifting pollen motes instead of fireflies. The same
-  /// dark-green glass with fine gold rims, a little denser so ivory and gold
-  /// keep their contrast on the brighter scene.
-  static const day = LobbyTheme(
-    baseAsset: 'assets/lobby/day/day_base.webp',
-    baseAspect: 2340 / 1080,
-    baseFallback: [Color(0xFF9CC27A), Color(0xFF3E8A55), BrainTrainColors.gardenGreen, BrainTrainColors.deepFoliage],
-    decor: [
-      LobbyDecor(
-        'assets/lobby/day/day_path.webp',
-        anchor: LobbyAnchor.bottomCenter,
-        width: 1.04,
-        aspect: 640 / 1080,
-        dy: -0.1,
-      ),
-      LobbyDecor(
-        'assets/lobby/day/day_foliage_ml.webp',
-        anchor: LobbyAnchor.topLeft,
-        width: 0.42,
-        aspect: 900 / 520,
-        dx: -0.12,
-        dy: 0.34,
-      ),
-      LobbyDecor(
-        'assets/lobby/day/day_foliage_mr.webp',
-        anchor: LobbyAnchor.topRight,
-        width: 0.42,
-        aspect: 900 / 520,
-        dx: -0.12,
-        dy: 0.44,
-      ),
-      LobbyDecor(
-        'assets/lobby/day/day_foliage_tr.webp',
-        anchor: LobbyAnchor.topRight,
-        width: 0.66,
-        aspect: 1000 / 780,
-        dx: -0.12,
-        dy: -0.035,
-      ),
-      LobbyDecor(
-        'assets/lobby/day/day_foliage_tl.webp',
-        anchor: LobbyAnchor.topLeft,
-        width: 0.62,
-        aspect: 900 / 760,
-        dx: -0.08,
-        dy: -0.03,
-      ),
-      LobbyDecor(
-        'assets/lobby/day/day_foliage_bl.webp',
-        anchor: LobbyAnchor.bottomLeft,
-        width: 0.62,
-        aspect: 1,
-        dx: -0.08,
-        dy: -0.04,
-      ),
-      LobbyDecor(
-        'assets/lobby/day/day_foliage_br.webp',
-        anchor: LobbyAnchor.bottomRight,
-        width: 0.64,
-        aspect: 1,
-        dx: -0.09,
-        dy: -0.045,
-      ),
-    ],
-    lights: [
-      LobbyGlow(center: Alignment(0.6, -1.05), radius: 1.05, color: Color(0x66FFE8A6), squash: 0.9),
-      LobbyGlow(center: Alignment(0, 1.05), radius: 0.7, color: Color(0x24FFE7A6), squash: 0.45),
-    ],
-    contentScrim: Color(0x47052A1A),
-    edgeVignette: Color(0x59021A12),
-    subScreenScrim: Color(0x9E05281C),
-    particleCount: 14,
-    particleColor: Color(0xFFFFF6D2),
-    particleSize: 1.9,
-    leafCount: 12,
-    subScreenLeafCount: 8,
-    leafOpacity: 0.95,
-    glassBlur: 14,
-    glassHighlight: Color(0x38FFFFFF),
-    glassShadow: Color(0x80021A0E),
-    heroLedgeAsset: 'assets/lobby/day/day_ledge.webp',
-    heroLedgeAspect: 360 / 1080,
-    titleGradient: [Color(0xFFFFF4CC), Color(0xFFF8DA8C), Color(0xFFF2C96B), Color(0xFFB98328)],
-    titleGlow: Color(0x40FFE9A8),
-    titleShadow: Color(0xD9021A0E),
-    buttonLeafAsset: 'assets/lobby/button_leaf.webp',
-    buttonLeafAspect: 170 / 240,
-    primaryFill: [Color(0xFFFAE0A0), BrainTrainColors.dayGold, Color(0xFFCF9E42)],
-    primaryEdge: Color(0xFFFFEDB8),
-    primaryText: BrainTrainColors.darkGreenText,
-    primaryShadow: Color(0x80000000),
-    primaryGlow: Color(0x40F2C96B),
-    secondaryFill: [Color(0xE00E4A34), Color(0xEB0A3F2D)],
-    secondaryBorder: Color(0xCCF2C96B),
-    secondaryText: BrainTrainColors.warmIvory,
-    secondaryIcon: BrainTrainColors.dayGold,
-    secondaryShadow: Color(0x73000000),
-    primaryGlassFill: [Color(0xFFFFE8A8), Color(0xFFF4C966), Color(0xFFD6A042)],
-    primaryGlassRim: [Color(0xFFFFF4CC), Color(0xCCF2C96B), Color(0x66C08A2C), Color(0xE6F8DA8C)],
-    primaryGlassText: BrainTrainColors.darkGreenText,
-    primaryGlassGlow: Color(0x73F2C96B),
-    secondaryGlassFill: [Color(0xD1124A36), Color(0xC70C4230), Color(0xD90A3829)],
-    secondaryGlassRim: [Color(0xE6FFF0C4), Color(0xD9F2C96B), Color(0x80C08A2C), Color(0xD9F2C96B)],
-    footerText: Color(0xE6FFF6DF),
-    panelFill: Color(0xE00A3F2D),
-    panelBorder: Color(0x99F2C96B),
-    panelText: BrainTrainColors.warmIvory,
-    panelMuted: Color(0xB8FFF6DF),
-    panelAccent: BrainTrainColors.dayGold,
-    textShadow: Color(0xB3000000),
-  );
-
-  /// The lobby for a brightness: light is Day, dark is Night.
-  static LobbyTheme forBrightness(Brightness brightness) => brightness == Brightness.light ? day : night;
-
   /// Opaque garden backdrop (cover fit; height / width), and the gradient
   /// shown under it while it decodes so the lobby is never blank.
   final String baseAsset;
@@ -853,7 +608,7 @@ class LobbyTheme extends ThemeExtension<LobbyTheme> {
   /// Extra shade over the scene on the Levels and Settings screens.
   final Color subScreenScrim;
 
-  /// Ambient particles on home: fireflies at night, pollen by day.
+  /// Ambient particles on home: fireflies.
   final int particleCount;
   final Color particleColor;
   final double particleSize;

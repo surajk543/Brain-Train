@@ -117,9 +117,6 @@ class GlassPanel extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final palette = BrainTrainPalette.of(context);
-    // Day glass is milkier and barely shaded; night glass is smoky.
-    final tint = palette.isNight ? this.tint : this.tint + palette.glassTint;
-    final shade = palette.isNight ? this.shade : this.shade * 0.2;
     final borderRadius = BorderRadius.circular(radius);
     return ClipRRect(
       borderRadius: borderRadius,

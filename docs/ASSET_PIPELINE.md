@@ -94,4 +94,4 @@ All of these are drawn by scripts (Pillow, no licensed art) and bundled, so the 
 | Lobby night scene (forest, lanterns, path, ledge, foliage, button leaves) | `python3 tool/assets/make_lobby_art.py` | `assets/lobby/` |
 | Gameplay edge foliage | `python3 tool/assets/make_foliage.py` | `assets/decor/` |
 | Sound effects | `python3 tool/assets/make_sounds.py` | `assets/sounds/` |
-| Launcher icons (from the logo emblem) | `python3 tool/assets/make_app_icon.py` | Android mipmaps, iOS AppIcon |
+| Launcher icons, Play icon, logo screen (Tile Park logo) | `python3 tool/branding/make_tile_park_icons.py` | Android mipmaps, iOS AppIcon, `art/store/icon-512.png`, `assets/branding/tile_park_logo.jpg` |

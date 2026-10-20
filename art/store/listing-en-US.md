@@ -1,13 +1,13 @@
-# Brain Train — Google Play store listing (en-US)
+# Tile Park — Google Play store listing (en-US)
 
 ## App name (max 30)
-Brain Train - Tile Match
+Tile Park: Puzzles
 
 ## Short description (max 80)
 Relaxing Mahjong tile puzzle: match pairs in the tray across 675 levels.
 
 ## Full description (max 4000)
-Train your brain with a calm, beautiful twist on Mahjong solitaire.
+Relax with a calm, beautiful twist on Mahjong solitaire.
 
 Tap a free tile and it drops into your tray. Find its twin and the pair strikes and clears. Fill the tray without a match and the round is over — so plan a few moves ahead, and keep your tray clear.
 
@@ -24,8 +24,8 @@ FEATURES
 • Combos and speed bonuses: match quickly to multiply your score.
 • Stuck? Use Hint, Undo or Shuffle.
 • Every level is proven solvable.
-• Day, Night or System theme: a sunlit garden or a peaceful night garden, with gentle music and sound.
+• A peaceful night garden, with gentle music and sound.
 • Levels download in the background, and the ones on your phone play offline.
 • Levels: replay any completed level to beat your best time, score and combo.
 
-Brain Train is free to play. It shows a short video ad only when you choose to revive a game or get an extra Hint, Undo or Shuffle.
+Tile Park is free to play. It shows a short video ad only when you choose to revive a game or get an extra Hint, Undo or Shuffle.

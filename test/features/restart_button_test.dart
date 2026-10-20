@@ -68,7 +68,7 @@ Future<void> _pumpGame(
     AppScope(
       services: services,
       child: MaterialApp(
-        theme: buildBrainTrainTheme(Brightness.dark),
+        theme: buildBrainTrainTheme(),
         home: GameScreen(
           snapshot: snapshot,
           entry: entry,

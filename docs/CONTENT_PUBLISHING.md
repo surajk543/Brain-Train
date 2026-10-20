@@ -115,8 +115,8 @@ that use a rejected symbol are skipped. `placeholder: true` marks stand-in art.
   negative or irregular.
 - `layer`: 0 is the table. A tile above layer 0 must rest on a tile one layer below it.
 - `layerOffsetX/Y`: visual shift per layer, as a fraction of the face size. Rendering only.
-- `backdrop.colors` (optional): 2–4 `#RRGGBB` colours for the level's glass background, in both
-  day and night mode. Set it in the layout file; the build copies it into the level.
+- `backdrop.colors` (optional): 2–4 `#RRGGBB` colours for the level's glass background
+  (it tints the gameplay ambient light). Set it in the layout file; the build copies it into the level.
 - `matchingMode`: `same_symbol` (default) or `match_group` (uses registry `matchGroup`).
 - `rules.trayCapacity` (optional): tray slots, `4` (default, written only when different) or `5`.
   Hard and very hard levels use 5. Builds that predate the field ignore it (JSON readers skip unknown

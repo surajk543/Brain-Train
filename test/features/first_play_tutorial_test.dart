@@ -49,7 +49,7 @@ void main() {
       AppScope(
         services: services,
         child: MaterialApp(
-          theme: buildBrainTrainTheme(Brightness.dark),
+          theme: buildBrainTrainTheme(),
           home: GameScreen(snapshot: services.content.snapshot, entry: first()),
         ),
       ),

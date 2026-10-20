@@ -12,7 +12,6 @@ flutter analyze                         # must be clean
 flutter test                            # unit + widget tests, no network
 flutter run -d emulator-5554            # AVDs (this Mac): Pixel_9 (Play Store), TP_API36/TP_Small/TP_Tall
                                         #   (Linux: Pixel7_Play_API36 is the owner's; agents use TP_* on their own -port, adb -s)
-flutter run --dart-define=BRAIN_TRAIN_APPEARANCE=day   # debug only: force day|night|system over the setting
 flutter build appbundle                 # Play upload; needs android/key.properties (+ play_games.properties for Play Games,
                                         #   admob.properties for real ads: warns while it uses AdMob test IDs)
 dart run tool/content.dart build        # content-src/ -> content/brain-train/ (campaign: generate + solve + simulate + hash)
@@ -22,15 +21,13 @@ dart run tool/publish.dart --dry-run    # then without --dry-run to upload to R2
 dart run tool/r2_prune.dart             # list R2 objects the live manifest no longer uses, never app-update.json (--delete: owner only)
 dart run tool/r2_art.dart push|pull     # symbol masters art/masters/ <-> R2 (private keys art/masters/..., not in git)
 python3 tool/assets/prepare_symbols.py [--placeholders]   # art -> WebP symbols
-python3 tool/assets/make_app_icon.py    # launcher icons from the logo emblem (Android + iOS)
+python3 tool/branding/make_tile_park_icons.py   # Tile Park icons (Android + iOS), Play icon-512, logo screen image
 python3 tool/assets/make_foliage.py     # gameplay edge foliage -> assets/decor/
 python3 tool/assets/make_lobby_art.py   # lobby night art -> assets/lobby/
-python3 -I tool/lobby_art/make_day_lobby_art.py  # Day lobby art -> assets/lobby/day/ + hero ledges (Day, Night)
-python3 -I tool/lobby_art/make_day_foliage.py    # Day gameplay foliage: assets/decor/ repainted -> assets/decor/day/
+python3 -I tool/lobby_art/make_day_lobby_art.py  # hero ledge assets/lobby/night_ledge.webp (+ unused Day art: delete assets/lobby/day/)
 python3 tool/assets/make_sounds.py      # sound effects -> assets/sounds/
 CAPTURE_DIR=/tmp/x flutter test test/visual/   # write screenshots of lobby/gameplay at phone sizes
-CAPTURE_DIR=/tmp/x flutter test test/visual/theme_capture_test.dart   # the same screens in Day and Night
-CAPTURE_DIR=/tmp/x flutter test test/visual/tile_closeup_capture_test.dart   # tile close-ups: 3 layers, Day/Night felt, 64/31-px faces
+CAPTURE_DIR=/tmp/x flutter test test/visual/tile_closeup_capture_test.dart   # tile close-ups: 3 layers on the felt, 64/31-px faces
 CAPTURE_DIR=/tmp/x flutter test test/visual/gameplay_redesign_capture_test.dart   # gameplay 1.1.0: combo+hint, hint hand, cards, Level Complete, spent action
 STORE_DIR=art/store flutter test test/visual/store_screenshots_test.dart   # 6 store scenes -> phone/, ios/iphone-6.9/, ios/ipad-13/
 python3 tool/store/make_store_shots.py  # framed marketing shots (headline, gold rim) -> art/store/styled/<target>/
@@ -69,8 +66,7 @@ dart run tool/smoke_remote.dart         # live check: app's content client vs pr
   `widgets/first_play_tutorial.dart` first-play coach marks); `common/` shared lobby chrome, `glass_painters.dart` (`GlassRimPainter`/`GlassShadowPainter`), `PremiumMahjongTile`,
   lobby background + fireflies; `intro/` studio video + logo screen + `age_screen.dart` (neutral age screen).
 - `lib/app/` — `AppServices` (wiring), `AppScope` (above `MaterialApp`), `theme.dart`
-  (`BrainTrainPalette.day/night`, `LobbyTheme.day/night`, `FeltFoliage`, `buildBrainTrainTheme(brightness)`,
-  `AppAppearance.themeMode`), `typography.dart` (`BrainTrainFonts`, `BrainTrainType` builders,
+  (`BrainTrainPalette.night`, `LobbyTheme.night`, `FeltFoliage`, `buildBrainTrainTheme()`), `typography.dart` (`BrainTrainFonts`, `BrainTrainType` builders,
   `BrainTrainTypography` theme extension, `registerFontLicenses`), `brand.dart` (`kDisplayFont` = Playfair, gold),
   `sound_effects.dart`, `play_games_controller.dart` (lobby Play Games / Game Center state, win reports, catch-up),
   `play_games_reports.dart` (`WonGame`, `reportForWin`, `reportForProgress`, `leaderboardTime`), `rewarded_ads_controller.dart`
@@ -78,8 +74,7 @@ dart run tool/smoke_remote.dart         # live check: app's content client vs pr
   `rewarded_ad_offer.dart` (`RewardedAdOffer`: one card's ad with the no-ad fallback, `kAdFallbackDelay`),
   `app_update_controller.dart`
   (`AppServices.updates`: the lobby's update card, its check, kept notice, Update / Later).
-- `lib/data/` — `ProgressRepository`, `SettingsRepository` (also the stored `AgeGroup` and `AppAppearance`),
-  `age_group.dart`, `appearance.dart`,
+- `lib/data/` — `ProgressRepository`, `SettingsRepository` (also the stored `AgeGroup`), `age_group.dart`,
   `app_update_cache.dart` (last good update notice).
 - `lib/platform/` — `play_games.dart` (`PlayGames` interface, `GamesService`, statuses, `UnavailablePlayGames`, pure
   Dart); `game_services_ids.dart` (every achievement and leaderboard ID: `GameAchievement`, `GameLeaderboard`, Play
@@ -283,35 +278,25 @@ dart run tool/smoke_remote.dart         # live check: app's content client vs pr
 
 ## Product decisions (from the owner)
 
-- Day, Night and System looks (owner, 2026-10-17, redesign 1.1.0; replaces "Night look only"). Setting
-  `SettingsRepository.appearance` (`settings.appearance` = `system` | `day` | `night`, default `system` for new
-  installs, `setAppearance` notifies). The game's `MaterialApp` (`lib/app/app.dart`) has `theme` = Day, `darkTheme` =
-  Night and `themeMode` from the setting (System follows the platform brightness), rebuilt by `_AppearanceBuilder` only
-  when the appearance changes: no restart. No flash: that `MaterialApp` is built only once `AppServices` (and the stored
-  setting) are loaded and reads the platform brightness on its first frame; the studio video and white logo screens stay
-  fixed. Chosen in Settings (Game Theme cards Day / Night / System, applied at once); debug builds can force a look
-  with `--dart-define=BRAIN_TRAIN_APPEARANCE=day|night|system`.
+- Night look only (owner, 2026-10-20; replaces the 1.1.0 Day / Night / System looks): the game's `MaterialApp`
+  (`lib/app/app.dart`) has one theme, `buildBrainTrainTheme()` (Night), whatever the phone's brightness; no theme
+  setting and no Game Theme cards. A `settings.appearance` value stored by 1.1.0 is ignored. The Day palette, lobby,
+  foliage, sun patches, dark status bar icons and Day art (`assets/lobby/day/`, `assets/decor/day/`, ~545 KB) were
+  removed; do not bring back a light look without the owner.
 - Design tokens (redesign 1.1.0): screens take every colour from `BrainTrainPalette.of(context)` (felt, background,
   panels `panelFill/panelRim/panelSheen/panelHighlight/panelShadows`, HUD `hudFill/hudSeparator/hudLabel/hudValue`,
   buttons `primaryButton*`/`secondaryButton*`/`quietButtonText`, text `text/textMuted/textOnGold`, golds
   `accent/accentLight/accentDeep`, `textShadow/shadow/overlayScrim`, `feltFoliage` assets) and the lobby scene from
   `LobbyTheme.of(context)` (art assets, lights, particles, hero ledge, title golds, glass, buttons, panels); text from
   `BrainTrainTypography.of(context)` (`title`, `levelName`, `heading`, `button`, `scoreValue`, `combo`, `hudLabel`,
-  `body`, `bodyMuted`) or `BrainTrainType.*(size:, color:)`. Both looks keep dark translucent green panels with fine
-  gold rims and ivory text (reference board); dark green text (`textOnGold`) only on gold or ivory, never gold on ivory.
-  Day is garden green (#1D6B43 / #104B34, gold #F2C96B, ivory #FFF6DF); Night keeps the 1.0 look (#062C25 / #0A4433,
-  panel #08392F, gold #F4CB72, ivory #FFF3D8). Tiles are the same in both. The Day lobby has its own art
-  (`tool/lobby_art/make_day_lobby_art.py` -> `assets/lobby/day/`: sunlit garden, cream flowers, mossy stone path, side
-  sprays, no lanterns; pollen instead of fireflies). Day gameplay is the same sunlit garden: `FeltFoliage.day` =
-  `assets/decor/day/` (`tool/lobby_art/make_day_foliage.py`: the night edge foliage repainted in the Day lobby's sunlit
-  greens with warm rims and a few more cream flowers), a warmer felt (centre #2E7D46, as light as ivory text on it
-  allows), a stronger sun and soft patches of sunlight (`feltSunPatches`, drawn once in the static felt layer; 0 at
-  Night). Status bar icons are dark over the bright Day home scene (`LobbyBackground`, `kStatusBarDarkIcons`) and light
-  everywhere else. Missing lobby art falls back to the scene gradient. `test/app/appearance_test.dart` checks the setting, the
-  app following it, the look's assets and WCAG contrast of the tokens.
+  `body`, `bodyMuted`) or `BrainTrainType.*(size:, color:)`. Dark translucent green panels with fine gold rims and
+  ivory text (reference board); dark green text (`textOnGold`) only on gold or ivory, never gold on ivory. Night is the
+  1.0 look (#062C25 / #0A4433, panel #08392F, gold #F4CB72, ivory #FFF3D8). Status bar icons are light everywhere
+  (`kStatusBarLightIcons`). Missing lobby art falls back to the scene gradient. `test/app/appearance_test.dart` checks
+  the app stays Night, the bundled art and WCAG contrast of the tokens.
 - Settings (redesign 1.1.0, reference panel; `settings_screen.dart`): one dark translucent gold-rimmed panel with a
-  header (gear, "Settings", close X; a route, back/close pop it), Game Theme cards (Day / Night / System, selected =
-  gold rim + gold fill), Sound Effects, Music and Vibration switches and the app version. Do not add other options.
+  header (gear, "Settings", close X; a route, back/close pop it), Sound Effects, Music and Vibration switches and the
+  app version (owner, 2026-10-20: the Game Theme cards were removed with Day). Do not add other options.
   One exception (owner): a "Privacy choices" row (Google's UMP privacy options form) shown only when UMP says the
   entry point is required (EEA/UK); hidden everywhere else.
 - Rewarded ads on Revive (owner, 2026-10-16): every Revive plays an AdMob rewarded ad; no ad, no revive. At most 2
@@ -419,14 +404,17 @@ dart run tool/smoke_remote.dart         # live check: app's content client vs pr
   (done 2026-10-17: 9 achievements, 23 leaderboards; see the Play Games rule above), 3 cloud save. Two phones on one
   account must never clash: piece 3 merges (union of wins, fastest time) before play; no hard one-device lock.
 - Every launch: navy native screen (no icon) → `assets/video/sun_game_studio_intro.mp4`
-  (Sun Game Studio) → Brain Train logo on white (`assets/branding/brain_train_logo.jpg`, at least
+  (Sun Game Studio) → Tile Park logo on white (`assets/branding/tile_park_logo.jpg`, at least
   2.2 s and until content is loaded) → lobby. Sequence lives in `lib/app/app.dart`. Once, at first launch (and
   once after updating from a version without it), the neutral age screen (`AgeScreen`: "What year were you born?",
   decade then year, nothing preselected, no hint of why) comes between the logo and the lobby; only the derived group
   (`privacy.ageGroup` = `under13` / `13plus`; the year someone may still be 12 counts as under 13) is stored, on the
   phone, never sent.
-- App icon = the round emblem of the official logo (`art/branding/brain-train-logo.jpg`), adaptive on
-  Android 8+. Regenerate with `python3 tool/assets/make_app_icon.py`.
+- App icon (owner, 2026-10-20; was the Brain Train emblem) = the Tile Park logo (`art/branding/tile-park-logo.png`,
+  purple-framed board of tiles): cropped to its frame, corners filled with the frame purple #7432F4 (iOS, Play
+  `art/store/icon-512.png`, legacy Android); Android 8+ adaptive = the board on a purple background, sized for the
+  circle mask. Regenerate with `python3 tool/branding/make_tile_park_icons.py` (needs Pillow); never with
+  `tool/assets/make_app_icon.py`, which still draws the old Brain Train emblem.
 - No "Mahjong Solitaire" subtitle on the lobby.
 - Look: emerald felt + botanical foliage, dark-green panels with fine gold borders, thick 3D tiles (owner, 2026-10-17):
   warm ivory face with a soft top-left-lit rim and fine inner edge, a light wall over an olive/emerald-green base on
@@ -451,8 +439,11 @@ dart run tool/smoke_remote.dart         # live check: app's content client vs pr
 - Portrait only (owner, 2026-10-17): iOS `UISupportedInterfaceOrientations` portrait (iPad portrait + upside down,
   `UIRequiresFullScreen`), Android `MainActivity` `screenOrientation="portrait"`. iPhone and iPad are both supported
   (`TARGETED_DEVICE_FAMILY = "1,2"`).
-- Store names (owner, 2026-10-17): "Brain Train - Tile Match" on the App Store (the name "Brain Train" was taken) and on
-  Google Play; the home-screen name stays "Brain Train".
+- Store names (owner, 2026-10-20; was "Brain Train - Tile Match"): "Tile Park: Puzzles" on Google Play and the App
+  Store; the home-screen name is "Tile Park" (`android:label`, iOS `CFBundleDisplayName`/`CFBundleName`; the long name
+  would be cut off under the icon). The package / bundle ID stays `com.sungamestudio.braintrain` (Play never allows a
+  change; a new ID would be a new app). The player sees Tile Park everywhere (lobby title, logo screen, update card,
+  Settings version line); code identifiers, docs and tools still say Brain Train. Shipped as 1.1.0+13 (2026-10-20).
 
 ## Current state (2026-10-16)
 
@@ -501,7 +492,7 @@ dart run tool/smoke_remote.dart         # live check: app's content client vs pr
   ~3.4 MB). A fresh install downloads only the manifest at first launch (its window is the starter pack); each win
   then fetches about one level file and its new symbols. With no starter pack, the window 1–5 is 5 level files +
   47 symbol files (~1.8 MB). Besides it, the lobby hero's 3 symbols (below) are bundled (55 KB).
-- Lobby (redesign 1.1.0, reference panels 1-2, same layout in Day and Night): three hero tiles on a mossy ledge
+- Lobby (redesign 1.1.0, reference panels 1-2): three hero tiles on a mossy ledge
   (`LobbyHero`: left leaf, middle sunflower forward and larger, right purple flower; real registry symbols drawn by
   `PremiumMahjongTile`, each slot the first code of `LobbyHero.slots` whose art is on the device, never the network:
   PLANT_POT_B / FLOWER_SUNFLOWER / FLOWER_PANSY, whose published files are bundled at their registry paths under

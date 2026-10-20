@@ -108,7 +108,6 @@ void main() {
     double textScale = 1,
     SavedGame? resume,
     LevelManifestEntry? open,
-    ThemeMode themeMode = ThemeMode.dark,
     bool overLobby = false,
   }) async {
     final game = open ?? entry;
@@ -126,9 +125,7 @@ void main() {
       AppScope(
         services: services,
         child: MaterialApp(
-          theme: buildBrainTrainTheme(Brightness.light),
-          darkTheme: buildBrainTrainTheme(),
-          themeMode: themeMode,
+          theme: buildBrainTrainTheme(),
           navigatorKey: navigator,
           builder: (context, child) => TabletScale(child: child!),
           home: overLobby
@@ -869,34 +866,31 @@ void main() {
       await tester.pumpWidget(const SizedBox());
     });
 
-    for (final look in [ThemeMode.dark, ThemeMode.light]) {
-      testWidgets('360x640 at 1.3x text (${look.name}): no overflow, the board keeps its room', (tester) async {
-        await start(tester, adStatus: RewardedAdStatus.ready);
-        await pumpGame(
-          tester,
-          phone: smallPhone,
-          textScale: 1.3,
-          themeMode: look,
-          open: LevelManifestEntry(
-            levelId: entry.levelId,
-            order: 128,
-            title: 'Moonlit Standing Stones',
-            ref: entry.ref,
-          ),
-        );
-        expect(tester.takeException(), isNull);
-        expect(tester.getRect(find.byType(BoardView)).height, greaterThanOrEqualTo(kSmallBoardHeight));
-        expect(find.text('Level 128'), findsOneWidget);
-        // Cards fit too.
-        await tester.tap(find.byTooltip('Restart'));
-        await _settle(tester, rounds: 4);
-        expect(find.text('Restart this level?'), findsOneWidget);
-        expect(tester.takeException(), isNull);
-        await tester.tap(find.text('Keep playing'));
-        await _settle(tester, rounds: 4);
-        await tester.pumpWidget(const SizedBox());
-      });
-    }
+    testWidgets('360x640 at 1.3x text: no overflow, the board keeps its room', (tester) async {
+      await start(tester, adStatus: RewardedAdStatus.ready);
+      await pumpGame(
+        tester,
+        phone: smallPhone,
+        textScale: 1.3,
+        open: LevelManifestEntry(
+          levelId: entry.levelId,
+          order: 128,
+          title: 'Moonlit Standing Stones',
+          ref: entry.ref,
+        ),
+      );
+      expect(tester.takeException(), isNull);
+      expect(tester.getRect(find.byType(BoardView)).height, greaterThanOrEqualTo(kSmallBoardHeight));
+      expect(find.text('Level 128'), findsOneWidget);
+      // Cards fit too.
+      await tester.tap(find.byTooltip('Restart'));
+      await _settle(tester, rounds: 4);
+      expect(find.text('Restart this level?'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+      await tester.tap(find.text('Keep playing'));
+      await _settle(tester, rounds: 4);
+      await tester.pumpWidget(const SizedBox());
+    });
 
     testWidgets('tablet: the screen lays out on the 600-px canvas without overflow', (tester) async {
       await start(tester);

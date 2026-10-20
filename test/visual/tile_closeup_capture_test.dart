@@ -1,6 +1,6 @@
 // Close-ups of the tile look (body, side walls, cast shadows, face finish):
 // a small three-layer board drawn exactly as the board's cached image draws it,
-// on the Day and the Night felt, with 64-px and 31-px faces.
+// on the felt, with 64-px and 31-px faces.
 //
 // Always checks that the tiles render. When CAPTURE_DIR is set, also writes
 // `tiles-<look>-<face>px.png` there (3x pixels):
@@ -28,14 +28,13 @@ const double _dpr = 3;
 
 /// Felt centre and edge colours of the gameplay screen (`BrainTrainPalette`).
 const _felts = {
-  'day': (Color(0xFF2E7D46), Color(0xFF26703E)),
   'night': (Color(0xFF1B6B45), Color(0xFF0E4A2F)),
 };
 
 void main() {
   setUp(() => SharedPreferences.setMockInitialValues({}));
 
-  testWidgets('tile close-ups: three layers on both felts at 64 px and 31 px', (tester) async {
+  testWidgets('tile close-ups: three layers on the felt at 64 px and 31 px', (tester) async {
     await tester.runAsync(() async {
       final AppServices services = await testServices();
       final snapshot = services.content.snapshot;

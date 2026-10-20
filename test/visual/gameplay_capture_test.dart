@@ -174,7 +174,7 @@ Future<void> _pumpGame(
         services: services,
         child: MaterialApp(
           debugShowCheckedModeBanner: false,
-          theme: buildBrainTrainTheme(Brightness.dark),
+          theme: buildBrainTrainTheme(),
           builder: (context, child) => TabletScale(child: child!),
           home: GameScreen(snapshot: services.content.snapshot, entry: entry, resume: resume, stopwatch: stopwatch),
         ),

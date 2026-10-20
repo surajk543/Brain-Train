@@ -153,7 +153,7 @@ abstract final class BrainTrainType {
       MediaQuery.textScalerOf(context).clamp(maxScaleFactor: max);
 }
 
-/// [BrainTrainType]'s styles in the current theme's colours (Day or Night).
+/// [BrainTrainType]'s styles in the theme's colours.
 /// Read with `BrainTrainTypography.of(context)`, then `copyWith` for a
 /// different size or colour:
 ///
@@ -192,7 +192,6 @@ class BrainTrainTypography extends ThemeExtension<BrainTrainTypography> {
   );
 
   static final BrainTrainTypography night = BrainTrainTypography.forPalette(BrainTrainPalette.night);
-  static final BrainTrainTypography day = BrainTrainTypography.forPalette(BrainTrainPalette.day);
 
   final TextStyle title;
   final TextStyle levelName;
