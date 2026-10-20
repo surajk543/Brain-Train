@@ -620,6 +620,9 @@ dart run tool/smoke_remote.dart         # live check: app's content client vs pr
   `android/admob.properties` and `ios/Runner/Info.plist`; app-ads.txt on sungamestudio.com; AdMob Families /
   mixed-audience settings and a published GDPR consent message; Play Console Ads, Advertising ID, Target audience and
   Data safety answers. The iOS `AppDelegate.swift` channel (`rewardedAdUnitId`) is untested until the first Xcode build.
+- Open work (owner, 2026-10-20): App Store screenshots still show Brain Train (Apple locks them while 1.1.0 build 13 is
+  in review); upload `art/store/styled/iphone-6.9/` and `art/store/styled/ipad-13/` (Tile Park, Night) with the next
+  iOS version. Google Play's screenshots and feature graphic are already Tile Park.
 - Open work: Play Games piece 3 (cloud save). Piece 2 (achievements + leaderboards, Play Games and Game Center) is
   implemented (2026-10-17); the owner still publishes the Play Games configuration (Play Console → Play Games
   Services → Publishing; only testers see it until then) and finishes Game Center in App Store Connect. The iOS
