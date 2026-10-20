@@ -1,12 +1,10 @@
-// Settings (redesign 1.1.0): the Game Theme cards store the choice and the
-// app switches look at once; Sound Effects and Music are separate switches.
+// Settings: no theme choice (Night only, owner 2026-10-20); Sound Effects and
+// Music are separate switches.
 import 'package:brain_train/app/app.dart';
 import 'package:brain_train/app/app_services.dart';
 import 'package:brain_train/app/theme.dart';
 import 'package:brain_train/data/age_group.dart';
-import 'package:brain_train/data/appearance.dart';
 import 'package:brain_train/data/settings_repository.dart';
-import 'package:brain_train/features/home/home_screen.dart';
 import 'package:brain_train/features/settings/settings_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -40,52 +38,14 @@ void main() {
     return services;
   }
 
-  LobbyTheme lookOf(WidgetTester tester) => LobbyTheme.of(tester.element(find.byType(SettingsScreen)));
-
-  Future<void> choose(WidgetTester tester, String label) async {
-    await tester.tap(find.text(label));
-    await tester.pump();
-    await tester.pump(const Duration(milliseconds: 400));
-  }
-
-  testWidgets('theme cards: the choice is stored, shown as selected and applied at once', (tester) async {
-    tester.platformDispatcher.platformBrightnessTestValue = Brightness.dark;
-    addTearDown(tester.platformDispatcher.clearPlatformBrightnessTestValue);
-    final handle = tester.ensureSemantics();
-    final services = await openSettings(tester);
-
-    // New installs follow the phone: dark here, so Night.
-    expect(services.settings.appearance, AppAppearance.system);
-    expect(tester.getSemantics(find.byKey(const ValueKey('theme-system'))), isSemantics(isSelected: true));
-    expect(lookOf(tester), same(LobbyTheme.night));
-
-    await choose(tester, 'Day');
-    expect(services.settings.appearance, AppAppearance.day);
-    expect(lookOf(tester), same(LobbyTheme.day), reason: 'applied without a restart');
-    expect(find.byType(SettingsScreen), findsOneWidget, reason: 'still on Settings');
-    expect(tester.getSemantics(find.byKey(const ValueKey('theme-day'))), isSemantics(isSelected: true));
-    expect(tester.getSemantics(find.byKey(const ValueKey('theme-system'))), isSemantics(isSelected: false));
-    expect((await SettingsRepository.open()).appearance, AppAppearance.day, reason: 'stored');
-
-    await choose(tester, 'Night');
-    expect(services.settings.appearance, AppAppearance.night);
-    expect(lookOf(tester), same(LobbyTheme.night));
-
-    await choose(tester, 'System');
-    expect(services.settings.appearance, AppAppearance.system);
-    expect(lookOf(tester), same(LobbyTheme.night), reason: 'the phone is dark');
+  testWidgets('no theme choice: Settings is in the Night look', (tester) async {
     tester.platformDispatcher.platformBrightnessTestValue = Brightness.light;
-    await tester.pump();
-    await tester.pump(const Duration(milliseconds: 400));
-    expect(lookOf(tester), same(LobbyTheme.day), reason: 'System follows the phone');
-
-    // Close returns to the lobby, in the chosen look.
-    await tester.tap(find.byKey(const ValueKey('settings-close')));
-    await tester.pump();
-    await tester.pump(const Duration(milliseconds: 500));
-    expect(find.byType(SettingsScreen), findsNothing);
-    expect(LobbyTheme.of(tester.element(find.byType(HomeScreen))), same(LobbyTheme.day));
-    handle.dispose();
+    addTearDown(tester.platformDispatcher.clearPlatformBrightnessTestValue);
+    await openSettings(tester);
+    expect(LobbyTheme.of(tester.element(find.byType(SettingsScreen))), same(LobbyTheme.night));
+    for (final gone in ['Game Theme', 'Day', 'Night', 'System']) {
+      expect(find.text(gone), findsNothing, reason: gone);
+    }
     await tester.pumpWidget(const SizedBox());
   });
 
@@ -133,23 +93,14 @@ void main() {
   });
 
   for (final phone in [smallPhone, largePhone]) {
-    testWidgets('fits ${phone.name} at 1.3x text in both looks', (tester) async {
+    testWidgets('fits ${phone.name} at 1.3x text', (tester) async {
       late AppServices services;
       await tester.runAsync(() async => services = await testServices());
-      for (final mode in [ThemeMode.light, ThemeMode.dark]) {
-        await pumpLobby(
-          tester,
-          services: services,
-          home: const SettingsScreen(),
-          phone: phone,
-          textScale: 1.3,
-          themeMode: mode,
-        );
-        expect(tester.takeException(), isNull);
-        expect(find.text('Game Theme'), findsOneWidget);
-        await tester.scrollUntilVisible(find.text('Vibration'), 100);
-        expect(find.text('Vibration'), findsOneWidget);
-      }
+      await pumpLobby(tester, services: services, home: const SettingsScreen(), phone: phone, textScale: 1.3);
+      expect(tester.takeException(), isNull);
+      expect(find.text('Sound Effects'), findsOneWidget);
+      await tester.scrollUntilVisible(find.text('Vibration'), 100);
+      expect(find.text('Vibration'), findsOneWidget);
       await tester.pumpWidget(const SizedBox());
     });
   }

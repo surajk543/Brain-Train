@@ -18,11 +18,10 @@ enum LobbySceneVariant {
   subScreen,
 }
 
-/// The garden (Day or Night) behind the home, Levels and Settings screens, as
+/// The night garden behind the home, Levels and Settings screens, as
 /// described by [LobbyTheme]: bundled art layers, Flutter-drawn lighting
-/// (sun or lantern glow, calm centre, vignette), drifting leaves and, on home,
-/// fireflies (Night) or pollen (Day). All of it stays behind the child and
-/// never takes taps.
+/// (lantern glow, calm centre, vignette), drifting leaves and, on home,
+/// fireflies. All of it stays behind the child and never takes taps.
 ///
 /// Everything is bundled, so the scene is complete offline; a gradient in
 /// the scene's colours shows for the first frames while the art decodes.
@@ -54,11 +53,9 @@ class _LobbyBackgroundState extends State<LobbyBackground> {
     final lobby = LobbyTheme.of(context);
     final home = widget.variant == LobbySceneVariant.home;
     final child = widget.child;
-    // Status bar icons: dark over the bright sky of the Day home scene, light
-    // everywhere else (Night, and the shaded Day sub-screens).
-    final darkIcons = home && !BrainTrainPalette.of(context).isNight;
+    // Light status bar icons over the dark scene.
     return AnnotatedRegion<SystemUiOverlayStyle>(
-      value: darkIcons ? kStatusBarDarkIcons : kStatusBarLightIcons,
+      value: kStatusBarLightIcons,
       child: Stack(
         fit: StackFit.expand,
         children: [
@@ -85,15 +82,8 @@ class _LobbyBackgroundState extends State<LobbyBackground> {
   }
 }
 
-/// Transparent status bar with dark icons (over a bright scene). Only the
+/// Transparent status bar with light icons (over a dark scene). Only the
 /// status bar: the navigation bar keeps the platform's colours.
-const SystemUiOverlayStyle kStatusBarDarkIcons = SystemUiOverlayStyle(
-  statusBarColor: Color(0x00000000),
-  statusBarIconBrightness: Brightness.dark,
-  statusBarBrightness: Brightness.light,
-);
-
-/// Transparent status bar with light icons (over a dark scene).
 const SystemUiOverlayStyle kStatusBarLightIcons = SystemUiOverlayStyle(
   statusBarColor: Color(0x00000000),
   statusBarIconBrightness: Brightness.light,

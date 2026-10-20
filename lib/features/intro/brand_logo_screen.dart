@@ -4,7 +4,7 @@ import 'package:flutter/services.dart';
 /// The logo's own background colour.
 const Color kBrandLogoBackground = Colors.white;
 
-/// The Brain Train logo, shown after the studio intro while the game loads.
+/// The Tile Park logo, shown after the studio intro while the game loads.
 class BrandLogoScreen extends StatelessWidget {
   const BrandLogoScreen({super.key, this.loading = false, this.failed = false, this.onRetry});
 
@@ -34,12 +34,12 @@ class BrandLogoScreen extends StatelessWidget {
               ),
               child: ConstrainedBox(
                 constraints: BoxConstraints(maxWidth: MediaQuery.sizeOf(context).shortestSide * 0.78, maxHeight: 360),
-                child: Image.asset('assets/branding/brain_train_logo.jpg', semanticLabel: 'Brain Train'),
+                child: Image.asset('assets/branding/tile_park_logo.jpg', semanticLabel: 'Tile Park'),
               ),
             ),
             const SizedBox(height: 32),
             if (failed) ...[
-              const Text('Brain Train could not load its levels.', style: TextStyle(color: Color(0xFF1B2E5A))),
+              const Text('Tile Park could not load its levels.', style: TextStyle(color: Color(0xFF1B2E5A))),
               TextButton(onPressed: onRetry, child: const Text('Try again')),
             ] else
               SizedBox(
@@ -48,7 +48,7 @@ class BrandLogoScreen extends StatelessWidget {
                     ? const Center(
                         child: SizedBox.square(
                           dimension: 22,
-                          child: CircularProgressIndicator(strokeWidth: 2.5, color: Color(0xFF1F3A8A)),
+                          child: CircularProgressIndicator(strokeWidth: 2.5, color: Color(0xFF7432F4)),
                         ),
                       )
                     : null,

@@ -1,4 +1,4 @@
-// The redesigned gameplay screen (1.1.0) in both looks at phone and tablet
+// The redesigned gameplay screen (1.1.0, Night) at phone and tablet
 // sizes: mid-combo with the timer bar and a hint's glow, a hint's hand in
 // progress (on the tile, mid-blink, gliding, on the twin, a tray twin; 360x640
 // and 411x914), the Tray full card,
@@ -58,8 +58,7 @@ void main() {
 
   Future<void> open(
     WidgetTester tester,
-    Phone phone,
-    ThemeMode mode, {
+    Phone phone, {
     required SavedGame resume,
     Stopwatch? clock,
     double textScale = 1,
@@ -70,7 +69,6 @@ void main() {
       home: GameScreen(snapshot: snapshot, entry: meadow, resume: resume, stopwatch: clock),
       phone: phone,
       textScale: textScale,
-      themeMode: mode,
     );
     await finishIntro(tester);
   }
@@ -100,18 +98,15 @@ void main() {
   }
 
   final cases = [
-    for (final look in ['night', 'day'])
-      for (final phone in [_small, _iphone, _large, _ipad]) (look, phone, 1.0),
+    for (final phone in [_small, _iphone, _large, _ipad]) ('night', phone, 1.0),
     ('night', _small, 1.3),
-    ('day', _small, 1.3),
   ];
 
-  for (final (look, phone) in [('night', _large), ('day', _small)]) {
-    final mode = look == 'day' ? ThemeMode.light : ThemeMode.dark;
+  for (final (look, phone) in [('night', _large), ('night', _small)]) {
     testWidgets('$look shuffle turning tiles, then the shuffled board ${phone.name}', (tester) async {
       await start(tester);
       final clock = FakeStopwatch();
-      await open(tester, phone, mode, resume: solvedSave(snapshot, meadow, pairs: 2), clock: clock);
+      await open(tester, phone, resume: solvedSave(snapshot, meadow, pairs: 2), clock: clock);
       final game = gameOf(tester);
       final before = {for (final id in game.state.remaining) id: game.symbolCodeOf(id)};
       await tester.tap(find.byKey(const ValueKey('action-shuffle')));
@@ -132,12 +127,11 @@ void main() {
 
   // The action bar once Hint's free use is gone (the badge offers an ad), then
   // once its ad use is gone too: no Hint button, the others in their places.
-  for (final look in ['night', 'day']) {
+  for (final look in ['night']) {
     for (final phone in [_small, _iphone]) {
-      final mode = look == 'day' ? ThemeMode.light : ThemeMode.dark;
       testWidgets('$look action bar with Hint spent ${phone.name}', (tester) async {
         await start(tester);
-        await open(tester, phone, mode, resume: solvedSave(snapshot, meadow, pairs: 2), clock: FakeStopwatch());
+        await open(tester, phone, resume: solvedSave(snapshot, meadow, pairs: 2), clock: FakeStopwatch());
         final game = gameOf(tester);
         Rect place(String key) => tester.getRect(find.byKey(ValueKey(key)));
         final places = [for (final key in ['action-undo', 'action-hint', 'action-shuffle', 'action-restart']) place(key)];
@@ -171,12 +165,11 @@ void main() {
   // A hint in progress: the hand taps the tile (bright, then mid-blink),
   // glides and taps its twin on the board; then a hint whose twin waits in
   // the tray (the hand stays on the tile, the tray twin blinks).
-  for (final look in ['night', 'day']) {
+  for (final look in ['night']) {
     for (final phone in [_small, _large]) {
-      final mode = look == 'day' ? ThemeMode.light : ThemeMode.dark;
       testWidgets('$look hint hand ${phone.name}', (tester) async {
         await start(tester);
-        await open(tester, phone, mode, resume: solvedSave(snapshot, meadow, pairs: 2), clock: FakeStopwatch());
+        await open(tester, phone, resume: solvedSave(snapshot, meadow, pairs: 2), clock: FakeStopwatch());
         final game = gameOf(tester);
         await tester.tap(find.byKey(const ValueKey('action-hint')));
         await tester.pump();
@@ -235,7 +228,6 @@ void main() {
   }
 
   for (final (look, phone, textScale) in cases) {
-    final mode = look == 'day' ? ThemeMode.light : ThemeMode.dark;
     final suffix = '${phone.name}${textScale == 1 ? '' : '-text130'}';
 
     testWidgets('$look gameplay $suffix: combo, hint, cards, level complete', (tester) async {
@@ -243,7 +235,7 @@ void main() {
 
       // Mid-combo: three quick pairs, then a hint.
       final clock = FakeStopwatch();
-      await open(tester, phone, mode, resume: solvedSave(snapshot, meadow, pairs: 2), clock: clock, textScale: textScale);
+      await open(tester, phone, resume: solvedSave(snapshot, meadow, pairs: 2), clock: clock, textScale: textScale);
       await playPairs(tester, clock, 3);
       await settle(tester);
       expect(gameOf(tester).activeCombo, 3);
@@ -279,7 +271,7 @@ void main() {
 
       // Tray full.
       final (save, last) = nearlyFullSave(snapshot, meadow);
-      await open(tester, phone, mode, resume: save, textScale: textScale);
+      await open(tester, phone, resume: save, textScale: textScale);
       await tapBoardTile(tester, snapshot, meadow, save.history, last);
       await settle(tester);
       await settle(tester);
@@ -294,7 +286,6 @@ void main() {
       await open(
         tester,
         phone,
-        mode,
         resume: solvedSave(snapshot, meadow, pairs: total - 1, elapsedMs: 134000),
         clock: winClock,
         textScale: textScale,

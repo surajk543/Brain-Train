@@ -13,7 +13,7 @@ import '../../common/static_layer.dart';
 
 /// The lobby's centrepiece (reference board): three Mahjong tiles standing
 /// on a mossy ledge, a leaf on the left, a sunflower forward and larger in
-/// the middle, a purple flower on the right, and "Brain Train" in gold
+/// the middle, a purple flower on the right, and "Tile Park" in gold
 /// beneath them.
 ///
 /// The tiles are real registry symbols drawn by [PremiumMahjongTile] (the
@@ -24,7 +24,7 @@ import '../../common/static_layer.dart';
 ///
 /// Static once drawn: tiles, ledge and title are one [StaticLayer] image.
 /// They fade and rise in once when the lobby first appears (not with reduced
-/// motion). Screen readers hear one header, "Brain Train".
+/// motion). Screen readers hear one header, "Tile Park".
 class LobbyHero extends StatefulWidget {
   const LobbyHero({
     super.key,
@@ -34,7 +34,7 @@ class LobbyHero extends StatefulWidget {
     required this.titleSize,
   });
 
-  static const String title = 'Brain Train';
+  static const String title = 'Tile Park';
 
   /// Width of the hero's own box (the title fits it).
   final double width;
@@ -244,9 +244,9 @@ class _LobbyHeroState extends State<LobbyHero> with SingleTickerProviderStateMix
   }
 }
 
-/// "Brain Train" in gold Playfair Display: the letters filled with the
+/// "Tile Park" in gold Playfair Display: the letters filled with the
 /// look's gold gradient over a fine dark edge, a soft warm glow and a drop
-/// shadow, for depth on the bright Day scene and the dark Night one. Scales
+/// shadow, for depth on the dark scene. Scales
 /// down to fit its width (large text included).
 class _Title extends StatelessWidget {
   const _Title({required this.size});

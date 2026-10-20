@@ -2,7 +2,7 @@
 
 Premium Mahjong Solitaire for Android and iOS, built with Flutter by Sun Game Studio.
 
-- 3D-look tiles with arbitrary multi-layer layouts, glass UI, day and night modes.
+- 3D-look tiles with arbitrary multi-layer layouts, glass UI, a night garden look.
 - Levels, symbols and artwork are data: published to Cloudflare R2, cached for offline play, with
   the current levels bundled in the app.
 

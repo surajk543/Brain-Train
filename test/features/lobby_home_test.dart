@@ -257,7 +257,7 @@ void main() {
     });
   });
 
-  testWidgets('status bar icons: dark over the Day home sky, light on Night and sub-screens', (tester) async {
+  testWidgets('status bar icons: light over the night scene, on home and sub-screens', (tester) async {
     final services = await _start(tester);
     Brightness? iconsOf(Widget screen) => tester
         .widgetList<AnnotatedRegion<SystemUiOverlayStyle>>(
@@ -266,16 +266,11 @@ void main() {
         .first
         .value
         .statusBarIconBrightness;
-    for (final (mode, home, settings) in [
-      (ThemeMode.light, Brightness.dark, Brightness.light),
-      (ThemeMode.dark, Brightness.light, Brightness.light),
-    ]) {
-      await pumpLobby(tester, services: services, home: const HomeScreen(), themeMode: mode);
-      expect(iconsOf(const HomeScreen()), home, reason: '$mode home');
-      await pumpLobby(tester, services: services, home: const SettingsScreen(), themeMode: mode);
-      expect(iconsOf(const SettingsScreen()), settings, reason: '$mode settings');
-      await _leave(tester);
-    }
+    await pumpLobby(tester, services: services, home: const HomeScreen());
+    expect(iconsOf(const HomeScreen()), Brightness.light, reason: 'home');
+    await pumpLobby(tester, services: services, home: const SettingsScreen());
+    expect(iconsOf(const SettingsScreen()), Brightness.light, reason: 'settings');
+    await _leave(tester);
   });
 
   testWidgets('home works offline on bundled content', (tester) async {
@@ -286,7 +281,7 @@ void main() {
     expect(snapshot.playableEntries, hasLength(snapshot.manifest.levels.length));
     expect(services.content.status, ContentSyncStatus.offline);
     expect(find.byType(LobbyHero), findsOneWidget);
-    expect(find.bySemanticsLabel('Brain Train'), findsOneWidget);
+    expect(find.bySemanticsLabel('Tile Park'), findsOneWidget);
     expect(
       find.descendant(of: find.byType(LobbyHero), matching: find.byType(PremiumMahjongTile)),
       findsNWidgets(3),
@@ -294,7 +289,7 @@ void main() {
     );
     expect(find.byType(BackdropFilter), findsNothing, reason: 'no live backdrop blur behind the ambient animation');
     expect(
-      find.byType(Image).evaluate().where((e) => '${(e.widget as Image).image}'.contains('brain_train_logo')),
+      find.byType(Image).evaluate().where((e) => '${(e.widget as Image).image}'.contains('tile_park_logo')),
       isEmpty,
     );
     expect(find.text('Play · Level 1'), findsOneWidget);
@@ -408,7 +403,7 @@ void main() {
     expect(find.bySemanticsLabel('Play, Level 1'), findsOneWidget);
     expect(find.bySemanticsLabel('Levels'), findsOneWidget);
     expect(find.bySemanticsLabel('Settings'), findsOneWidget);
-    expect(find.bySemanticsLabel('Brain Train'), findsOneWidget);
+    expect(find.bySemanticsLabel('Tile Park'), findsOneWidget);
     for (final key in ['lobby-play', 'lobby-levels', 'lobby-settings']) {
       expect(tester.getSize(find.byKey(ValueKey(key))).height, greaterThanOrEqualTo(48), reason: key);
     }

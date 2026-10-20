@@ -138,9 +138,6 @@ Future<void> pumpLobby(
   required Widget home,
   Phone phone = largePhone,
   double textScale = 1,
-  /// Like the app's Appearance setting: dark is Night, light Day, system
-  /// follows the test's platform brightness.
-  ThemeMode themeMode = ThemeMode.dark,
 }) async {
   tester.view
     ..physicalSize = Size(phone.width * phone.dpr, phone.height * phone.dpr)
@@ -157,9 +154,7 @@ Future<void> pumpLobby(
         services: services,
         child: MaterialApp(
           debugShowCheckedModeBanner: false,
-          theme: buildBrainTrainTheme(Brightness.light),
-          darkTheme: buildBrainTrainTheme(),
-          themeMode: themeMode,
+          theme: buildBrainTrainTheme(),
           // Like the app: tablets scale the UI from a 600-px canvas.
           builder: (context, child) => TabletScale(child: child!),
           home: home,

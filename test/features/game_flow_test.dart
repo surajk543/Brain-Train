@@ -130,7 +130,7 @@ void main() {
     expect(reopened.haptics, isFalse);
   });
 
-  testWidgets('settings shows only the theme, sound effects, music, vibration and the version', (tester) async {
+  testWidgets('settings shows only sound effects, music, vibration and the version', (tester) async {
     PackageInfo.setMockInitialValues(
       appName: 'Brain Train',
       packageName: 'com.sungamestudio.braintrain',
@@ -147,18 +147,18 @@ void main() {
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 400));
     for (final label in [
-      'Game Theme',
-      'Day',
-      'Night',
-      'System',
       'Sound Effects',
       'Music',
       'Vibration',
-      'Brain Train · Version 1.0.0 (1)',
+      'Tile Park · Version 1.0.0 (1)',
     ]) {
       expect(find.text(label), findsOneWidget, reason: label);
     }
     for (final removed in [
+      'Game Theme',
+      'Day',
+      'Night',
+      'System',
       'Appearance',
       'Sound',
       'Dim blocked tiles',
@@ -174,7 +174,7 @@ void main() {
     await tester.pumpWidget(const SizedBox());
   });
 
-  // Day / Night / System and the theme tokens: test/app/appearance_test.dart.
+  // The one look (Night) and the theme tokens: test/app/appearance_test.dart.
 
   testWidgets('launch: intro (unplayable here) falls through to the logo, then home', (tester) async {
     late AppServices services;
@@ -186,7 +186,7 @@ void main() {
     await tester.runAsync(() => Future<void>.delayed(const Duration(milliseconds: 100)));
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 50));
-    expect(find.bySemanticsLabel('Brain Train'), findsWidgets);
+    expect(find.bySemanticsLabel('Tile Park'), findsWidgets);
     expect(find.text('Levels'), findsNothing);
     await tester.pump(const Duration(milliseconds: 400));
     await tester.pump(const Duration(milliseconds: 600));

@@ -35,7 +35,7 @@ MAX_BYTES = 8_000_000
 
 # Captions: (headline, subline) per shot, in shot order.
 CAPTIONS = {
-    "01": ("Relax with Mahjong tiles", "A calm garden of puzzles, day or night"),
+    "01": ("Relax with Mahjong tiles", "A calm night garden of puzzles"),
     "02": ("Tap tiles into your tray", "Two of a kind clear together"),
     "03": ("Match fast for big combos", "Stuck? Hint, Undo and Shuffle help"),
     "04": ("675 levels to master", "From relaxed 1/10 to fiendish 10/10"),

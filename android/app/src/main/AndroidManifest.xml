@@ -5,7 +5,7 @@
          (docs/ADS.md); the app itself never reads the ID. -->
     <uses-permission android:name="com.google.android.gms.permission.AD_ID" />
     <application
-        android:label="Brain Train"
+        android:label="Tile Park"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity

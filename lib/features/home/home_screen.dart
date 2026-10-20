@@ -19,8 +19,8 @@ import 'widgets/lobby_hero.dart';
 import 'widgets/lobby_update_card.dart';
 
 /// The lobby (reference board): three hero tiles on a mossy ledge and the
-/// gold "Brain Train" title, Play/Continue, Levels and Settings, and the
-/// status line ("5 levels ready · v2026.10.17.1"), over the Day or Night
+/// gold "Tile Park" title, Play/Continue, Levels and Settings, and the
+/// status line ("5 levels ready · v2026.10.17.1"), over the night
 /// garden. An update card ([LobbyUpdateCard]) covers it when a new app
 /// version is out.
 class HomeScreen extends StatefulWidget {
