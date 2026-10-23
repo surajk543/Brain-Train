@@ -16,14 +16,41 @@ enum GameAchievement {
   /// Tile Collector: complete 50 levels.
   levels50('CgkIhpCwrvAaEAIQBQ', 'bt.ach.levels_50', levelsWon: 50),
 
+  /// Complete 75, 150, 200, 300, 350, 400 or 600 levels (owner, 2026-10-23;
+  /// Path Finder, Park Ranger, Double Century, Tile Sage, Grove Guardian,
+  /// Puzzle Veteran, Park Legend). Game Center only.
+  levels75(null, 'bt.ach.levels_75', levelsWon: 75),
+
   /// Centurion: complete 100 levels.
   levels100('CgkIhpCwrvAaEAIQBg', 'bt.ach.levels_100', levelsWon: 100),
+  levels150(null, 'bt.ach.levels_150', levelsWon: 150),
+  levels200(null, 'bt.ach.levels_200', levelsWon: 200),
 
   /// Garden Keeper: complete 250 levels.
   levels250('CgkIhpCwrvAaEAIQBw', 'bt.ach.levels_250', levelsWon: 250),
+  levels300(null, 'bt.ach.levels_300', levelsWon: 300),
+  levels350(null, 'bt.ach.levels_350', levelsWon: 350),
+  levels400(null, 'bt.ach.levels_400', levelsWon: 400),
 
   /// Grand Master: complete 500 levels.
   levels500('CgkIhpCwrvAaEAIQCA', 'bt.ach.levels_500', levelsWon: 500),
+  levels600(null, 'bt.ach.levels_600', levelsWon: 600),
+
+  /// Total score (the sum of the best scores of all won levels, the Total
+  /// Score leaderboard) of 2k to 50k (owner, 2026-10-23; "2K Club" to "50K
+  /// Club"). Game Center only.
+  score2k(null, 'bt.ach.score_2k', totalScore: 2000),
+  score5k(null, 'bt.ach.score_5k', totalScore: 5000),
+  score8k(null, 'bt.ach.score_8k', totalScore: 8000),
+  score10k(null, 'bt.ach.score_10k', totalScore: 10000),
+  score12k(null, 'bt.ach.score_12k', totalScore: 12000),
+  score15k(null, 'bt.ach.score_15k', totalScore: 15000),
+  score20k(null, 'bt.ach.score_20k', totalScore: 20000),
+  score25k(null, 'bt.ach.score_25k', totalScore: 25000),
+  score30k(null, 'bt.ach.score_30k', totalScore: 30000),
+  score35k(null, 'bt.ach.score_35k', totalScore: 35000),
+  score40k(null, 'bt.ach.score_40k', totalScore: 40000),
+  score50k(null, 'bt.ach.score_50k', totalScore: 50000),
 
   /// Combo Master: reach a x5 combo.
   combo5('CgkIhpCwrvAaEAIQCQ', 'bt.ach.combo_5', combo: 5),
@@ -48,7 +75,7 @@ enum GameAchievement {
   /// Shuffle.
   pureSkill('CgkIhpCwrvAaEAIQCw', 'bt.ach.pure_skill');
 
-  const GameAchievement(this.androidId, this.iosId, {this.levelsWon, this.combo});
+  const GameAchievement(this.androidId, this.iosId, {this.levelsWon, this.combo, this.totalScore});
 
   /// Google Play Games ID; null when Play Games does not have it.
   final String? androidId;
@@ -63,6 +90,10 @@ enum GameAchievement {
   /// For the combo achievements: the best combo that earns it; null for the
   /// others.
   final int? combo;
+
+  /// For the score achievements: the total score (sum of the best scores of
+  /// all won levels) that earns it; null for the others.
+  final int? totalScore;
 
   /// Lowest difficulty a level needs for [pureSkill].
   static const int pureSkillMinDifficulty = 7;

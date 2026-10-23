@@ -109,19 +109,21 @@ List<(GameLeaderboard, int)> _totals(Map<String, LevelRecord> completed) {
   if (completed.isEmpty) return const [];
   final combo = _bestCombo(completed);
   return [
-    (GameLeaderboard.totalScore, completed.values.fold(0, (sum, record) => sum + (record.bestScore ?? 0))),
+    (GameLeaderboard.totalScore, _totalScore(completed)),
     (GameLeaderboard.levelsCompleted, completed.length),
     if (combo > 0) (GameLeaderboard.bestCombo, combo),
   ];
 }
 
-/// The level-count and combo achievements reached that [service] has (Play
-/// Games only those with an ID there).
+/// The level-count, combo and total-score achievements reached that
+/// [service] has (Play Games only those with an ID there).
 List<GameAchievement> _progressAchievements(Map<String, LevelRecord> completed, GamesService service) {
   final bestCombo = _bestCombo(completed);
+  final totalScore = _totalScore(completed);
   bool reached(GameAchievement achievement) => switch (achievement) {
     GameAchievement(levelsWon: final target?) => completed.length >= target,
     GameAchievement(combo: final target?) => bestCombo >= target,
+    GameAchievement(totalScore: final target?) => totalScore >= target,
     _ => false,
   };
   return [
@@ -129,6 +131,10 @@ List<GameAchievement> _progressAchievements(Map<String, LevelRecord> completed, 
       if ((service == GamesService.gameCenter || achievement.androidId != null) && reached(achievement)) achievement,
   ];
 }
+
+/// The sum of the best scores of all won levels (Total Score).
+int _totalScore(Map<String, LevelRecord> completed) =>
+    completed.values.fold(0, (sum, record) => sum + (record.bestScore ?? 0));
 
 int _bestCombo(Map<String, LevelRecord> completed) =>
     completed.values.fold(0, (best, record) => math.max(best, record.bestCombo ?? 0));
