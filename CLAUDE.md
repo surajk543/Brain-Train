@@ -341,7 +341,8 @@ dart run tool/smoke_remote.dart         # live check: app's content client vs pr
   `Sfx.match` a pair striking at x1, `Sfx.combo` (brighter) in its place from x2, `Sfx.invalid` a blocked tap,
   `Sfx.hint`, `Sfx.undo` (at once, as the tile flies back), `Sfx.shuffle`, `Sfx.lose` (tray full), `Sfx.select` (soft
   tick: intro layers, revived tiles landing); the last pair's strike is followed by `Sfx.win` (a rising jingle) 450 ms
-  later. All behind the Sound Effects switch; no volume sliders (owner: keep the switches).
+  later. All behind the Sound Effects switch; no volume sliders (owner: keep the switches). The owner listened to the
+  set in 1.2.0 and approved it (2026-10-24).
 - Game actions (owner, 2026-10-17, 1.1.0; replaces "no Undo and no Hint"): Undo, Hint and Shuffle, 1 / 1 / 1 uses
   per level attempt (`kStartingCharges`), back to 1/1/1 on Restart, unchanged by Revive; with none left the player can
   watch a rewarded ad for +1 of that action (`GameController.grant`, saved as `!grant:<action>`), at most once per
