@@ -26,7 +26,20 @@ enum GameAchievement {
   levels500('CgkIhpCwrvAaEAIQCA', 'bt.ach.levels_500', levelsWon: 500),
 
   /// Combo Master: reach a x5 combo.
-  combo5('CgkIhpCwrvAaEAIQCQ', 'bt.ach.combo_5'),
+  combo5('CgkIhpCwrvAaEAIQCQ', 'bt.ach.combo_5', combo: 5),
+
+  /// Combo x6 to x15 (owner, 2026-10-23): reach that combo. Game Center
+  /// only; Play Games has no such achievements yet.
+  combo6(null, 'bt.ach.combo_6', combo: 6),
+  combo7(null, 'bt.ach.combo_7', combo: 7),
+  combo8(null, 'bt.ach.combo_8', combo: 8),
+  combo9(null, 'bt.ach.combo_9', combo: 9),
+  combo10(null, 'bt.ach.combo_10', combo: 10),
+  combo11(null, 'bt.ach.combo_11', combo: 11),
+  combo12(null, 'bt.ach.combo_12', combo: 12),
+  combo13(null, 'bt.ach.combo_13', combo: 13),
+  combo14(null, 'bt.ach.combo_14', combo: 14),
+  combo15(null, 'bt.ach.combo_15', combo: 15),
 
   /// Summit: complete a level of difficulty 10.
   summit('CgkIhpCwrvAaEAIQCg', 'bt.ach.summit'),
@@ -35,10 +48,10 @@ enum GameAchievement {
   /// Shuffle.
   pureSkill('CgkIhpCwrvAaEAIQCw', 'bt.ach.pure_skill');
 
-  const GameAchievement(this.androidId, this.iosId, {this.levelsWon});
+  const GameAchievement(this.androidId, this.iosId, {this.levelsWon, this.combo});
 
-  /// Google Play Games ID.
-  final String androidId;
+  /// Google Play Games ID; null when Play Games does not have it.
+  final String? androidId;
 
   /// Apple Game Center ID.
   final String iosId;
@@ -47,8 +60,9 @@ enum GameAchievement {
   /// it; null for the others.
   final int? levelsWon;
 
-  /// Best combo that earns [combo5].
-  static const int comboTarget = 5;
+  /// For the combo achievements: the best combo that earns it; null for the
+  /// others.
+  final int? combo;
 
   /// Lowest difficulty a level needs for [pureSkill].
   static const int pureSkillMinDifficulty = 7;

@@ -57,7 +57,7 @@ PlayGamesReport reportForWin(WonGame game, Map<String, LevelRecord> completed, G
       ..._totals(completed),
     ],
     achievements: [
-      ..._progressAchievements(completed),
+      ..._progressAchievements(completed, service),
       if (difficulty == GameAchievement.summitDifficulty) GameAchievement.summit,
       if (difficulty != null && difficulty >= GameAchievement.pureSkillMinDifficulty && !game.usedHelpers)
         GameAchievement.pureSkill,
@@ -99,7 +99,7 @@ PlayGamesReport reportForProgress(
       ],
       ..._totals(completed),
     ],
-    achievements: [..._progressAchievements(completed), if (summit) GameAchievement.summit],
+    achievements: [..._progressAchievements(completed, service), if (summit) GameAchievement.summit],
   );
 }
 
@@ -115,12 +115,20 @@ List<(GameLeaderboard, int)> _totals(Map<String, LevelRecord> completed) {
   ];
 }
 
-/// The level-count achievements reached and Combo Master.
-List<GameAchievement> _progressAchievements(Map<String, LevelRecord> completed) => [
-  for (final achievement in GameAchievement.values)
-    if (achievement.levelsWon case final target? when completed.length >= target) achievement,
-  if (_bestCombo(completed) >= GameAchievement.comboTarget) GameAchievement.combo5,
-];
+/// The level-count and combo achievements reached that [service] has (Play
+/// Games only those with an ID there).
+List<GameAchievement> _progressAchievements(Map<String, LevelRecord> completed, GamesService service) {
+  final bestCombo = _bestCombo(completed);
+  bool reached(GameAchievement achievement) => switch (achievement) {
+    GameAchievement(levelsWon: final target?) => completed.length >= target,
+    GameAchievement(combo: final target?) => bestCombo >= target,
+    _ => false,
+  };
+  return [
+    for (final achievement in GameAchievement.values)
+      if ((service == GamesService.gameCenter || achievement.androidId != null) && reached(achievement)) achievement,
+  ];
+}
 
 int _bestCombo(Map<String, LevelRecord> completed) =>
     completed.values.fold(0, (best, record) => math.max(best, record.bestCombo ?? 0));

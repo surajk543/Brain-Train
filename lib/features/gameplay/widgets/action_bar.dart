@@ -36,8 +36,9 @@ extension GameActionLook on GameAction {
 const Duration kSpentFadeDuration = Duration(milliseconds: 240);
 
 /// The bottom action bar (redesign 1.1.0, reference board): Undo, Hint and
-/// Shuffle as gold-outlined round buttons with their labels and a badge with
-/// the uses left; with none left the badge shows a play mark (a rewarded ad
+/// Shuffle as gold-outlined round buttons with their labels (beside them: in
+/// a gold-rimmed pill behind the label, premium pass 2026-10-23) and a badge
+/// with the uses left; with none left the badge shows a play mark (a rewarded ad
 /// gives one more; a "+" in builds without ads). Restart sits at the right
 /// end as a smaller, quieter round button without a badge (it asks first).
 ///
@@ -322,17 +323,44 @@ class GameActionButton extends StatelessWidget {
     final content = text == null
         ? discWidget
         : _beside
-        ? Row(
-            mainAxisSize: MainAxisSize.min,
+        ? Stack(
             children: [
-              discWidget,
-              const SizedBox(width: 6),
-              // Shrinks rather than clips on a narrow phone at a large text size.
-              Flexible(
-                child: MediaQuery.withClampedTextScaling(
-                  maxScaleFactor: 1.15,
-                  child: FittedBox(fit: BoxFit.scaleDown, child: text),
+              // The pill: from the disc's centre to past the label, a little
+              // lower than the disc, dark green with a fine gold rim.
+              Positioned(
+                left: _disc / 2,
+                right: 0,
+                top: _disc * 0.12,
+                bottom: _disc * 0.12,
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(_disc),
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [
+                        faded(palette.hudFill.first.withValues(alpha: enabled ? 0.88 : 0.6)),
+                        faded(palette.hudFill.last.withValues(alpha: enabled ? 0.94 : 0.66)),
+                      ],
+                    ),
+                    border: Border.all(color: faded(gold.withValues(alpha: enabled ? 0.7 : 0.24)), width: 1.1),
+                  ),
                 ),
+              ),
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  discWidget,
+                  const SizedBox(width: 6),
+                  // Shrinks rather than clips on a narrow phone at a large text size.
+                  Flexible(
+                    child: MediaQuery.withClampedTextScaling(
+                      maxScaleFactor: 1.15,
+                      child: FittedBox(fit: BoxFit.scaleDown, child: text),
+                    ),
+                  ),
+                  SizedBox(width: compact ? 10 : 12),
+                ],
               ),
             ],
           )

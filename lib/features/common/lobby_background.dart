@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import '../../app/theme.dart';
 import 'flowing_leaves.dart';
 import 'frosted_glass.dart';
+import 'lobby_ambience.dart';
 import 'lobby_particles.dart';
 import 'static_layer.dart';
 
@@ -21,7 +22,8 @@ enum LobbySceneVariant {
 /// The night garden behind the home, Levels and Settings screens, as
 /// described by [LobbyTheme]: bundled art layers, Flutter-drawn lighting
 /// (lantern glow, calm centre, vignette), drifting leaves and, on home,
-/// fireflies. All of it stays behind the child and never takes taps.
+/// fireflies, breathing lantern glows and a few butterflies
+/// ([LobbyAmbience]). All of it stays behind the child and never takes taps.
 ///
 /// Everything is bundled, so the scene is complete offline; a gradient in
 /// the scene's colours shows for the first frames while the art decodes.
@@ -69,6 +71,19 @@ class _LobbyBackgroundState extends State<LobbyBackground> {
               opacity: lobby.leafOpacity * (home ? 1 : 0.8),
             ),
           ),
+          if (home && (lobby.butterflyCount > 0 || lobby.lanternFlicker > 0))
+            IgnorePointer(
+              child: RepaintBoundary(
+                child: LayoutBuilder(
+                  builder: (context, constraints) => LobbyAmbience(
+                    lanterns: [
+                      for (final decor in lobby.decor)
+                        if (decor.glow case final glow?) (glow, placeLobbyDecor(decor, constraints.biggest)),
+                    ],
+                  ),
+                ),
+              ),
+            ),
           if (home && lobby.particleCount > 0)
             IgnorePointer(
               child: RepaintBoundary(
@@ -103,7 +118,7 @@ class _Scene extends StatelessWidget {
       final dpr = MediaQuery.devicePixelRatioOf(context);
       // Cover fit: the base is scaled by whichever side needs more.
       final baseWidth = math.max(size.width, size.height / lobby.baseAspect);
-      final placed = [for (final decor in lobby.decor) _place(decor, size)];
+      final placed = [for (final decor in lobby.decor) (decor, placeLobbyDecor(decor, size))];
       return Stack(
         fit: StackFit.expand,
         children: [
@@ -161,21 +176,22 @@ class _Scene extends StatelessWidget {
   );
 
   static Widget _missing(BuildContext context, Object error, StackTrace? stack) => const SizedBox.shrink();
+}
 
-  static (LobbyDecor, Rect) _place(LobbyDecor decor, Size size) {
-    final w = decor.width * size.width;
-    final h = w * decor.aspect;
-    final dx = decor.dx * size.width;
-    final dy = decor.dy * size.height;
-    final (left, top) = switch (decor.anchor) {
-      LobbyAnchor.topLeft => (dx, dy),
-      LobbyAnchor.topRight => (size.width - w - dx, dy),
-      LobbyAnchor.bottomLeft => (dx, size.height - h - dy),
-      LobbyAnchor.bottomRight => (size.width - w - dx, size.height - h - dy),
-      LobbyAnchor.bottomCenter => ((size.width - w) / 2, size.height - h - dy),
-    };
-    return (decor, Rect.fromLTWH(left, top, w, h));
-  }
+/// Where [decor] sits in a scene of [size].
+Rect placeLobbyDecor(LobbyDecor decor, Size size) {
+  final w = decor.width * size.width;
+  final h = w * decor.aspect;
+  final dx = decor.dx * size.width;
+  final dy = decor.dy * size.height;
+  final (left, top) = switch (decor.anchor) {
+    LobbyAnchor.topLeft => (dx, dy),
+    LobbyAnchor.topRight => (size.width - w - dx, dy),
+    LobbyAnchor.bottomLeft => (dx, size.height - h - dy),
+    LobbyAnchor.bottomRight => (size.width - w - dx, size.height - h - dy),
+    LobbyAnchor.bottomCenter => ((size.width - w) / 2, size.height - h - dy),
+  };
+  return Rect.fromLTWH(left, top, w, h);
 }
 
 /// Lighting above the art: lantern, sun and ambient glows (screen blend), a

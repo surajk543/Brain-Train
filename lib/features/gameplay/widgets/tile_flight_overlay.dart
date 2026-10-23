@@ -340,7 +340,13 @@ class _FlightPainter extends CustomPainter {
     final seconds = clock != null && clock.motion ? clock.seconds : null;
     for (final flight in controller.flights) {
       if (!flight.started) continue;
-      art.paint(canvas, flight.symbolCode, flight.rect.shift(shift), seconds: seconds);
+      final rect = flight.rect.shift(shift);
+      // Lifting off the board toward the tray: a soft gold glow under the
+      // tile for the first half of the flight (the pre-rendered glow, no blur).
+      if (flight.kind == FlightKind.toTray && flight.progress < 0.5) {
+        art.paintGlow(canvas, rect, 0.6 * math.sin(math.pi * flight.progress * 2));
+      }
+      art.paint(canvas, flight.symbolCode, rect, seconds: seconds);
     }
   }
 

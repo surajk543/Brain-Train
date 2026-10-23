@@ -281,7 +281,7 @@ void main() {
     expect(snapshot.playableEntries, hasLength(snapshot.manifest.levels.length));
     expect(services.content.status, ContentSyncStatus.offline);
     expect(find.byType(LobbyHero), findsOneWidget);
-    expect(find.bySemanticsLabel('Tile Park'), findsOneWidget);
+    expect(find.bySemanticsLabel('Tile Park: Puzzles'), findsOneWidget);
     expect(
       find.descendant(of: find.byType(LobbyHero), matching: find.byType(PremiumMahjongTile)),
       findsNWidgets(3),
@@ -403,7 +403,7 @@ void main() {
     expect(find.bySemanticsLabel('Play, Level 1'), findsOneWidget);
     expect(find.bySemanticsLabel('Levels'), findsOneWidget);
     expect(find.bySemanticsLabel('Settings'), findsOneWidget);
-    expect(find.bySemanticsLabel('Tile Park'), findsOneWidget);
+    expect(find.bySemanticsLabel('Tile Park: Puzzles'), findsOneWidget);
     for (final key in ['lobby-play', 'lobby-levels', 'lobby-settings']) {
       expect(tester.getSize(find.byKey(ValueKey(key))).height, greaterThanOrEqualTo(48), reason: key);
     }

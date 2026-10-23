@@ -21,9 +21,12 @@ String formatDuration(Duration d) {
 }
 
 /// The gameplay HUD (redesign 1.1.0, reference board): a compact dark-green
-/// panel with a fine gold rim at the top of the screen. Back, `Level N` over
-/// the level's name, then SCORE, COMBO, PAIRS and TIME in tabular Manrope
-/// figures between fine gold separators.
+/// panel with a fine gold rim at the top of the screen. Back (a round
+/// gold-rimmed button), `Level N` over the level's name, then SCORE, COMBO,
+/// PAIRS and TIME in tabular Manrope figures between fine gold separators,
+/// and Pause at the right end (owner, 2026-10-23; when [onPause] is set: on
+/// only while [canPause] answers true, re-asked when [pauseListenable] or the
+/// controller changes).
 ///
 /// Narrow screens: the statistics take at most [_statsShare] of the width
 /// and shrink (never wrap) before the name gets too small; the name shrinks
@@ -33,11 +36,29 @@ String formatDuration(Duration d) {
 ///
 /// Only the statistics rebuild on moves, and only the clock every second.
 class GameHud extends StatelessWidget {
-  const GameHud({super.key, required this.entry, required this.controller, required this.onBack, this.compact = false});
+  const GameHud({
+    super.key,
+    required this.entry,
+    required this.controller,
+    required this.onBack,
+    this.onPause,
+    this.canPause,
+    this.pauseListenable,
+    this.compact = false,
+  });
 
   final LevelManifestEntry entry;
   final GameController controller;
   final VoidCallback onBack;
+
+  /// Opens the pause card; null: no Pause button.
+  final VoidCallback? onPause;
+
+  /// Whether Pause is on now (null: always).
+  final bool Function()? canPause;
+
+  /// Changes that may turn Pause on or off, besides the controller's.
+  final Listenable? pauseListenable;
 
   /// Short screens: smaller type (see `GameLayout.compact`).
   final bool compact;
@@ -72,14 +93,24 @@ class GameHud extends StatelessWidget {
   Widget _content() => LayoutBuilder(
     builder: (context, constraints) {
       final width = constraints.maxWidth;
-      final back = compact ? 40.0 : 48.0;
+      final back = _HudRoundButton.boxWidth(compact);
+      final pause = onPause == null ? 0.0 : back;
       // The name at its smallest size, capped at its share: the statistics
       // take the rest (shrinking a little for a long name).
       final title = math.min(_LevelTitle.minWidth(context, entry, compact: compact), width * _titleShare);
-      final stats = (width - back - (compact ? 10 : 16) - title).clamp(width * _statsMinShare, width * _statsShare);
+      final stats = (width - back - pause - (compact ? 10 : 16) - title).clamp(
+        width * _statsMinShare,
+        width * _statsShare,
+      );
       return Row(
         children: [
-          _HudBackButton(onPressed: onBack, compact: compact),
+          _HudRoundButton(
+            icon: Icons.arrow_back_rounded,
+            label: 'Back',
+            onPressed: onBack,
+            compact: compact,
+            key: const ValueKey('hud-back'),
+          ),
           Expanded(child: _LevelTitle(entry: entry, compact: compact)),
           SizedBox(width: compact ? 4 : 8),
           const _HudSeparator(),
@@ -122,30 +153,62 @@ class GameHud extends StatelessWidget {
               ),
             ),
           ),
-          SizedBox(width: compact ? 4 : 6),
+          if (onPause case final onPause?)
+            ListenableBuilder(
+              listenable: Listenable.merge([controller, pauseListenable]),
+              builder: (context, _) => _HudRoundButton(
+                key: const ValueKey('hud-pause'),
+                icon: Icons.pause_rounded,
+                label: 'Pause',
+                gold: true,
+                compact: compact,
+                onPressed: (canPause?.call() ?? true) ? onPause : null,
+              ),
+            )
+          else
+            SizedBox(width: compact ? 4 : 6),
         ],
       );
     },
   );
 }
 
-/// The HUD's back arrow: a plain gold-ivory arrow with a 44-px target.
-class _HudBackButton extends StatelessWidget {
-  const _HudBackButton({required this.onPressed, required this.compact});
+/// A round HUD button (Back, Pause): a dark disc with a fine gold rim and an
+/// ivory icon ([gold]: a gold icon), in a 44-px target. [onPressed] null:
+/// off, dimmed (colours, not an Opacity layer).
+class _HudRoundButton extends StatelessWidget {
+  const _HudRoundButton({
+    super.key,
+    required this.icon,
+    required this.label,
+    required this.onPressed,
+    required this.compact,
+    this.gold = false,
+  });
 
-  final VoidCallback onPressed;
+  final IconData icon;
+  final String label;
+  final VoidCallback? onPressed;
   final bool compact;
+  final bool gold;
+
+  /// The button's box in the HUD row.
+  static double boxWidth(bool compact) => compact ? 40 : 48;
 
   @override
   Widget build(BuildContext context) {
     final palette = BrainTrainPalette.of(context);
+    final enabled = onPressed != null;
+    final disc = compact ? 32.0 : 36.0;
+    final ink = (gold ? palette.accentLight : palette.text).withValues(alpha: enabled ? 1 : 0.35);
     return Semantics(
       button: true,
-      label: 'Back',
+      enabled: enabled,
+      label: label,
       excludeSemantics: true,
       onTap: onPressed,
       child: Tooltip(
-        message: 'Back',
+        message: label,
         excludeFromSemantics: true,
         child: Material(
           type: MaterialType.transparency,
@@ -154,9 +217,26 @@ class _HudBackButton extends StatelessWidget {
             radius: 22,
             highlightShape: BoxShape.circle,
             child: SizedBox(
-              width: compact ? 40 : 48,
+              width: boxWidth(compact),
               height: 44,
-              child: Icon(Icons.arrow_back_rounded, color: palette.text, size: compact ? 22 : 25),
+              child: Center(
+                child: Container(
+                  width: disc,
+                  height: disc,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    gradient: RadialGradient(
+                      center: const Alignment(-0.3, -0.4),
+                      colors: [
+                        palette.hudFill.first.withValues(alpha: 0.95),
+                        palette.hudFill.last.withValues(alpha: 0.98),
+                      ],
+                    ),
+                    border: Border.all(color: palette.accent.withValues(alpha: enabled ? 0.9 : 0.3), width: 1.4),
+                  ),
+                  child: Icon(icon, color: ink, size: disc * 0.6),
+                ),
+              ),
             ),
           ),
         ),

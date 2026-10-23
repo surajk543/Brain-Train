@@ -28,19 +28,37 @@ abstract final class BrainTrainColors {
 /// tool/assets/make_foliage.py).
 @immutable
 class FeltFoliage {
-  const FeltFoliage({required this.right, required this.topLeft, required this.bottomLeft, required this.bottomRight});
+  const FeltFoliage({
+    required this.right,
+    required this.topLeft,
+    required this.bottomLeft,
+    required this.bottomRight,
+    required this.lantern,
+    required this.lanternGlow,
+    required this.path,
+  });
 
   static const night = FeltFoliage(
     right: 'assets/decor/foliage_right.webp',
     topLeft: 'assets/decor/foliage_top_left.webp',
     bottomLeft: 'assets/decor/foliage_bottom_left.webp',
     bottomRight: 'assets/decor/foliage_bottom_right.webp',
+    lantern: 'assets/lobby/night_lantern.webp',
+    lanternGlow: Color(0x4DFFB65C),
+    path: 'assets/lobby/night_path.webp',
   );
 
   final String right;
   final String topLeft;
   final String bottomLeft;
   final String bottomRight;
+
+  /// Premium pass (2026-10-23, mockup): the lobby's lantern (two small ones
+  /// at the edges, with [lanternGlow]) and its cobblestone path under the
+  /// action bar.
+  final String lantern;
+  final Color lanternGlow;
+  final String path;
 }
 
 /// Colours for Brain Train's custom surfaces (felt, panels, HUD, buttons,
@@ -440,6 +458,12 @@ class LobbyTheme extends ThemeExtension<LobbyTheme> {
     required this.titleGradient,
     required this.titleGlow,
     required this.titleShadow,
+    required this.plaqueFill,
+    required this.plaqueRim,
+    required this.plaqueText,
+    required this.butterflyCount,
+    required this.butterflyColor,
+    required this.lanternFlicker,
     required this.buttonLeafAsset,
     required this.buttonLeafAspect,
     required this.primaryFill,
@@ -539,6 +563,17 @@ class LobbyTheme extends ThemeExtension<LobbyTheme> {
         dy: 0.1,
         glow: _lanternLight,
       ),
+      // And one high on the left, under the foliage (premium mockup,
+      // 2026-10-23).
+      LobbyDecor(
+        'assets/lobby/night_lantern.webp',
+        anchor: LobbyAnchor.topLeft,
+        width: 0.16,
+        aspect: 820 / 360,
+        dx: -0.035,
+        dy: 0.13,
+        glow: _lanternLight,
+      ),
       ..._nightFoliage,
     ],
     lights: [
@@ -562,6 +597,12 @@ class LobbyTheme extends ThemeExtension<LobbyTheme> {
     titleGradient: [Color(0xFFFFF4CC), Color(0xFFF8DA8C), Color(0xFFF4CB72), Color(0xFFC08A2C)],
     titleGlow: Color(0x4DF4CB72),
     titleShadow: Color(0xCC000000),
+    plaqueFill: [Color(0xFF7A4E26), Color(0xFF5A3618), Color(0xFF3E2410)],
+    plaqueRim: [Color(0xFFFFE9A8), Color(0xFFF4CB72), Color(0xFFB07A2A)],
+    plaqueText: Color(0xFFFFF0C8),
+    butterflyCount: 2,
+    butterflyColor: Color(0xFFFFD979),
+    lanternFlicker: 0.22,
     buttonLeafAsset: 'assets/lobby/button_leaf.webp',
     buttonLeafAspect: 170 / 240,
     primaryFill: [Color(0xFFFAE0A0), Color(0xFFF4CB72), Color(0xFFCF9E42)],
@@ -630,11 +671,25 @@ class LobbyTheme extends ThemeExtension<LobbyTheme> {
   final String heroLedgeAsset;
   final double heroLedgeAspect;
 
-  /// The "Brain Train" title: gold top to bottom, the warm halo behind it
+  /// The "Tile Park" title: gold top to bottom, the warm halo behind it
   /// and its drop shadow.
   final List<Color> titleGradient;
   final Color titleGlow;
   final Color titleShadow;
+
+  /// The "PUZZLES" plaque under the title: a wooden sign (fill top to
+  /// bottom) with a gold rim (top to bottom) and ivory letters.
+  final List<Color> plaqueFill;
+  final List<Color> plaqueRim;
+  final Color plaqueText;
+
+  /// Glowing butterflies drifting over home (0: none).
+  final int butterflyCount;
+  final Color butterflyColor;
+
+  /// How much the lantern glows flicker on home (extra glow alpha at most;
+  /// 0: still).
+  final double lanternFlicker;
 
   /// Leaves tucked behind the Play button's ends.
   final String buttonLeafAsset;

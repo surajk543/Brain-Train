@@ -483,6 +483,7 @@ class GameController extends ChangeNotifier {
       case TapOutcome.toTray:
         _tapFeedback();
         _emit(TileToTray(tileId, result.slot!));
+        _afterArrival(() => sounds?.play(Sfx.tray), move: tileId);
       case TapOutcome.matched:
         _tapFeedback();
         _emit(TileToTray(tileId, result.slot!));
@@ -502,12 +503,13 @@ class GameController extends ChangeNotifier {
             result.partnerTileId!,
             award: matchFeedbackOnImpact ? award : null,
             awaitsImpact: matchFeedbackOnImpact,
+            combo: award.score.combo,
           ),
         );
         _scheduleComboEnd();
         if (!matchFeedbackOnImpact) {
           final won = state.status == GameStatus.won;
-          _afterArrival(() => _matchFeedback(won: won), move: tileId);
+          _afterArrival(() => _matchFeedback(won: won, combo: award.score.combo), move: tileId);
         }
       case TapOutcome.trayFull:
         _tapFeedback();
@@ -540,12 +542,15 @@ class GameController extends ChangeNotifier {
       match = _unstruck.removeAt(at);
     }
     if (match?.award case final award?) _emitScore(award);
-    _matchFeedback(won: state.status == GameStatus.won && !_unstruck.any((m) => m.awaitsImpact));
+    final won = state.status == GameStatus.won && !_unstruck.any((m) => m.awaitsImpact);
+    _matchFeedback(won: won, combo: match?.combo ?? 1);
   }
 
-  void _matchFeedback({required bool won}) {
+  /// The match sound ([Sfx.combo] when the match continued a combo, x2 and
+  /// up) and haptic, and the win sound after the last pair.
+  void _matchFeedback({required bool won, required int combo}) {
     _haptic(HapticFeedback.mediumImpact);
-    sounds?.play(Sfx.match);
+    sounds?.play(combo >= 2 ? Sfx.combo : Sfx.match);
     if (won) _later(winSoundDelay, () => sounds?.play(Sfx.win));
   }
 
@@ -609,8 +614,8 @@ class GameController extends ChangeNotifier {
         pointsTakenBack: scoreBefore - scoring.score,
       ),
     );
-    // One soft sound as the tile lands.
-    _afterArrival(() => sounds?.play(Sfx.select));
+    // A gentle swish as the tile flies back.
+    sounds?.play(Sfx.undo);
     _afterMove();
     _changed();
     return result;
@@ -623,7 +628,7 @@ class GameController extends ChangeNotifier {
     if (!canUse(GameAction.hint)) return null;
     final hint = engine.useHint();
     if (hint == null) return null;
-    sounds?.play(Sfx.select);
+    sounds?.play(Sfx.hint);
     _emit(TileHinted(hint));
     _save();
     _changed();
@@ -649,7 +654,7 @@ class GameController extends ChangeNotifier {
     _symbolsSerial++;
     _scheduleComboEnd();
     _haptic(HapticFeedback.selectionClick);
-    sounds?.play(Sfx.select);
+    sounds?.play(Sfx.shuffle);
     _emit(BoardShuffled(result.changes, seed: result.seed!));
     _save();
     _changed();
@@ -860,7 +865,7 @@ class GameController extends ChangeNotifier {
 
 /// A match whose strike has not hit yet.
 class _Unstruck {
-  _Unstruck(this.tileId, this.partnerId, {required this.award, required this.awaitsImpact});
+  _Unstruck(this.tileId, this.partnerId, {required this.award, required this.awaitsImpact, required this.combo});
 
   /// The tapped tile, and the tray tile it cleared.
   final String tileId;
@@ -871,6 +876,9 @@ class _Unstruck {
 
   /// Its sound waits for the strike ([GameController.matchFeedbackOnImpact]).
   final bool awaitsImpact;
+
+  /// The combo this match reached (its sound: [Sfx.combo] from x2).
+  final int combo;
 
   bool involves(String id) => id == tileId || id == partnerId;
 }

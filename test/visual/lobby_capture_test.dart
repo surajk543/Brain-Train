@@ -63,7 +63,7 @@ void main() {
       expect(tester.takeException(), isNull);
       expect(find.text('Continue · Level 2'), findsOneWidget);
       expect(find.byType(LobbyHero), findsOneWidget);
-      expect(find.bySemanticsLabel('Tile Park'), findsOneWidget);
+      expect(find.bySemanticsLabel('Tile Park: Puzzles'), findsOneWidget);
       // Levels 2-6 are the window; level 6 is not on the device.
       expect(find.text('4 levels ready · v${services.content.snapshot.contentVersion}'), findsOneWidget);
       await captureLobby(tester, '$look-home-${phone.name}', phone.dpr);
