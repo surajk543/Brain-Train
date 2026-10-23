@@ -22,11 +22,14 @@ import '../content/file_content_store.dart';
 import '../content/level_manifest.dart';
 import '../content/remote_asset_resolver.dart';
 import '../data/app_update_cache.dart';
+import '../data/cloud_progress_sync.dart';
 import '../data/progress_repository.dart';
 import '../data/settings_repository.dart';
 import '../platform/app_updates.dart';
+import '../platform/cloud_store.dart';
 import '../platform/games_services_play_games.dart';
 import '../platform/google_mobile_ads_rewarded.dart';
+import '../platform/icloud_store.dart';
 import '../platform/play_games.dart';
 import '../platform/play_in_app_update.dart';
 import '../platform/rewarded_ads.dart';
@@ -205,9 +208,11 @@ class AppServices {
     PlayGamesController? playGames,
     RewardedAdsController? ads,
     AppUpdateController? updates,
+    CloudStore cloud = const UnavailableCloudStore(),
   }) : playGames = playGames ?? PlayGamesController(const UnavailablePlayGames()),
        ads = ads ?? RewardedAdsController(const UnavailableRewardedAds()),
-       updates = updates ?? AppUpdateController(updater: const UnavailableAppUpdater()) {
+       updates = updates ?? AppUpdateController(updater: const UnavailableAppUpdater()),
+       cloudSync = CloudProgressSync(progress: progress, settings: settings, cloud: cloud) {
     // The level window follows this player's progress.
     content.attachProgress(progress);
     // Leaderboards and achievements read the wins and each level's tier
@@ -238,6 +243,10 @@ class AppServices {
 
   /// The lobby's update card (Android and iOS); never asks elsewhere.
   final AppUpdateController updates;
+
+  /// The progress in the player's iCloud (iOS), so it survives a reinstall;
+  /// does nothing elsewhere. The lobby starts it after its first frame.
+  final CloudProgressSync cloudSync;
 
   static Future<AppServices> create({ContentConfig? config}) async {
     final contentConfig = config ?? ContentConfig.production;
@@ -278,6 +287,8 @@ class AppServices {
         fetch: AppUpdateConfigService(fetcher: fetcher, resolver: resolver).fetch,
         cache: await AppUpdateCache.open(),
       ),
+      // Nothing runs yet: the lobby starts the cloud save after its first frame.
+      cloud: createCloudStore(),
     );
   }
 

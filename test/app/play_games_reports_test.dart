@@ -35,12 +35,29 @@ void main() {
       expect(GameAchievement.values.map((a) => a.iosId), everyElement(matches(RegExp(r'^bt\.ach\.[a-z0-9_]+$'))));
       expect(GameAchievement.values.map((a) => a.iosId).toSet(), hasLength(GameAchievement.values.length));
       expect(GameLeaderboard.values.map((b) => b.iosId), everyElement(matches(RegExp(r'^bt\.lb\.[a-z0-9_]+$'))));
-      expect(GameAchievement.values, hasLength(19));
+      expect(GameAchievement.values, hasLength(38));
       // Combo x5 to x15; Play Games has only x5.
       final combos = [for (final a in GameAchievement.values) if (a.combo != null) a];
       expect([for (final a in combos) a.combo], [for (var n = 5; n <= 15; n++) n]);
       expect([for (final a in combos) a.iosId], [for (var n = 5; n <= 15; n++) 'bt.ach.combo_$n']);
-      expect([for (final a in GameAchievement.values) if (a.androidId == null) a], combos.skip(1));
+      // Level counts in order; Play Games has 1, 10, 50, 100, 250 and 500.
+      const playGamesLevels = [1, 10, 50, 100, 250, 500];
+      final levels = [for (final a in GameAchievement.values) if (a.levelsWon != null) a];
+      expect([for (final a in levels) a.levelsWon], [1, 10, 50, 75, 100, 150, 200, 250, 300, 350, 400, 500, 600]);
+      for (final a in levels.skip(1)) {
+        expect(a.iosId, 'bt.ach.levels_${a.levelsWon}');
+      }
+      // Total score 2k to 50k.
+      final scores = [for (final a in GameAchievement.values) if (a.totalScore != null) a];
+      const thousands = [2, 5, 8, 10, 12, 15, 20, 25, 30, 35, 40, 50];
+      expect([for (final a in scores) a.totalScore], [for (final k in thousands) k * 1000]);
+      expect([for (final a in scores) a.iosId], [for (final k in thousands) 'bt.ach.score_${k}k']);
+      // Game Center only: combo x6+, the new level counts, every score one.
+      expect([for (final a in GameAchievement.values) if (a.androidId == null) a], unorderedEquals([
+        ...combos.skip(1),
+        for (final a in levels) if (!playGamesLevels.contains(a.levelsWon)) a,
+        ...scores,
+      ]));
       expect(GameLeaderboard.values, hasLength(23));
       expect(GameAchievement.pureSkill.iosId, 'bt.ach.pure_skill');
       expect(GameLeaderboard.levelsCompleted.iosId, 'bt.lb.levels');
@@ -115,6 +132,31 @@ void main() {
       expect(reportForWin(_game(), _wins(3, combo: 9), GamesService.googlePlayGames).achievements, contains(GameAchievement.combo5));
     });
 
+    test('more level counts and the total-score ladder on Game Center only', () {
+      List<GameAchievement> earned(int count, {int score = 1000, GamesService service = GamesService.gameCenter}) => [
+        for (final a in reportForWin(_game(), _wins(count, score: score), service).achievements)
+          if (a.levelsWon != null || a.totalScore != null) a,
+      ];
+      // 160 wins of 1,000 points: levels up to 150, total 160,000.
+      expect(earned(160), [
+        GameAchievement.firstWin,
+        GameAchievement.levels10,
+        GameAchievement.levels50,
+        GameAchievement.levels75,
+        GameAchievement.levels100,
+        GameAchievement.levels150,
+        for (final a in GameAchievement.values)
+          if (a.totalScore != null) a,
+      ]);
+      // 3 wins of 3,000 points: 9,000 in total.
+      expect([for (final a in earned(3, score: 3000)) if (a.totalScore != null) a],
+          [GameAchievement.score2k, GameAchievement.score5k, GameAchievement.score8k]);
+      expect(earned(1, score: 1999), [GameAchievement.firstWin]);
+      expect(earned(600, score: 100), contains(GameAchievement.levels600));
+      expect(earned(160, service: GamesService.googlePlayGames),
+          [GameAchievement.firstWin, GameAchievement.levels10, GameAchievement.levels50, GameAchievement.levels100]);
+    });
+
     test('combo x6 to x15 on Game Center only', () {
       List<GameAchievement> combos(int best, GamesService service) => [
         for (final a in reportForWin(_game(), _wins(3, combo: best), service).achievements)
@@ -178,6 +220,8 @@ void main() {
       final iOS = reportForProgress(completed, tiers, GamesService.gameCenter);
       expect(iOS.achievements, [
         GameAchievement.firstWin,
+        GameAchievement.score2k,
+        GameAchievement.score5k,
         GameAchievement.combo5,
         GameAchievement.combo6,
         GameAchievement.summit,

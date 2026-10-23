@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Android 6 to 11: Google's automatic backup keeps only the app's preferences (progress, settings),
+     so a reinstall restores them; the content cache downloads again. -->
+<full-backup-content>
+    <include domain="sharedpref" path="FlutterSharedPreferences.xml" />
+</full-backup-content>

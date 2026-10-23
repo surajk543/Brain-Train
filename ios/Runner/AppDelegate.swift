@@ -4,6 +4,9 @@ import UIKit
 
 @main
 @objc class AppDelegate: FlutterAppDelegate, FlutterImplicitEngineDelegate {
+  /// Keeps the iCloud change observer alive (cloud save, `brain_train/cloud`).
+  private var cloudObserver: NSObjectProtocol?
+
   override func application(
     _ application: UIApplication,
     didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
@@ -45,6 +48,40 @@ import UIKit
           result(FlutterMethodNotImplemented)
         }
       }
+    }
+    // Cloud save: the progress in the player's iCloud key-value storage, so it
+    // survives a reinstall (lib/platform/icloud_store.dart). Tells Dart when
+    // the values change from outside (the first sync after an install,
+    // another device).
+    if let registrar = engineBridge.pluginRegistry.registrar(forPlugin: "BrainTrainCloud") {
+      let cloud = FlutterMethodChannel(name: "brain_train/cloud", binaryMessenger: registrar.messenger())
+      let store = NSUbiquitousKeyValueStore.default
+      cloud.setMethodCallHandler { call, result in
+        let args = call.arguments as? [String: Any]
+        switch call.method {
+        case "read":
+          guard let key = args?["key"] as? String else {
+            result(nil)
+            return
+          }
+          result(store.string(forKey: key))
+        case "write":
+          guard let key = args?["key"] as? String, let value = args?["value"] as? String else {
+            result(false)
+            return
+          }
+          store.set(value, forKey: key)
+          result(store.synchronize())
+        default:
+          result(FlutterMethodNotImplemented)
+        }
+      }
+      cloudObserver = NotificationCenter.default.addObserver(
+        forName: NSUbiquitousKeyValueStore.didChangeExternallyNotification, object: store, queue: .main
+      ) { _ in
+        cloud.invokeMethod("changed", arguments: nil)
+      }
+      store.synchronize()
     }
   }
 

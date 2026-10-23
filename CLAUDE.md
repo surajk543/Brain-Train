@@ -75,7 +75,9 @@ dart run tool/smoke_remote.dart         # live check: app's content client vs pr
   `app_update_controller.dart`
   (`AppServices.updates`: the lobby's update card, its check, kept notice, Update / Later).
 - `lib/data/` — `ProgressRepository`, `SettingsRepository` (also the stored `AgeGroup`), `age_group.dart`,
-  `app_update_cache.dart` (last good update notice).
+  `app_update_cache.dart` (last good update notice), `cloud_progress_sync.dart` (`CloudProgressSync`,
+  `CloudProgress`: the cloud save). `lib/platform/cloud_store.dart` (`CloudStore`, `UnavailableCloudStore`, pure
+  Dart) and `icloud_store.dart` (`ICloudStore` on the `brain_train/cloud` channel, `createCloudStore()`).
 - `lib/platform/` — `play_games.dart` (`PlayGames` interface, `GamesService`, statuses, `UnavailablePlayGames`, pure
   Dart); `game_services_ids.dart` (every achievement and leaderboard ID: `GameAchievement`, `GameLeaderboard`, Play
   Games + Game Center, pure Dart); `games_services_play_games.dart` (the only file importing `games_services`;
@@ -198,6 +200,23 @@ dart run tool/smoke_remote.dart         # live check: app's content client vs pr
   update too (from its older cached file, `CachedLevel` index, until the new file is cached). Other levels download
   on demand when opened. A newer manifest becomes active only once its registry and its window are cached; never a
   downgrade. Startup never waits for the network (`loadInitial` + `warmUp` read only cache and bundle).
+- Cloud save (owner, 2026-10-23: progress survives an uninstall + reinstall; 1.2.0+15): iOS keeps one JSON value,
+  `progress.v1` (`CloudProgress`: `{"v": 1, "completed": {levelId: LevelRecord}, "settings": {key: bool}}`, keys
+  sorted), in the player's iCloud key-value storage (`NSUbiquitousKeyValueStore`, `brain_train/cloud` channel in
+  `AppDelegate.swift`, entitlement `com.apple.developer.ubiquity-kvstore-identifier`; no sign-in, works for under 13;
+  without iCloud the value stays on the device). Synced: won levels with their best results (the next level follows
+  from them), the Sound / Music / Vibration switches the player set and the tutorial flag; not the unfinished game and
+  never the age group. Every sync reads, merges into the device (`ProgressRepository.mergeCompleted`: union of wins,
+  per level `LevelRecord.merge` = fastest time with its date, fewest moves, highest score, longest combo;
+  `SettingsRepository.restoreSynced`: a switch only where unset here, the tutorial flag once done anywhere) and writes
+  the merged copy back unless the cloud already holds it, so two devices never clash or overwrite each other and
+  never take turns rewriting. A copy with a higher `v` (a newer build) is neither read nor overwritten; a damaged one
+  is replaced. Started by the lobby after its first frame (never on the startup path), then after every progress or
+  settings change and on iCloud's external-change notification (the first sync after an install, another device):
+  restored levels appear in the lobby when they arrive. Android: no code; Google's automatic backup restores
+  `FlutterSharedPreferences.xml` (progress, settings, also the age group) after a reinstall when the phone's backup
+  is on (`android:fullBackupContent` / `android:dataExtractionRules` in `res/xml/`: only that file, never the content
+  cache). The privacy policy source (`website/brain-train/privacy/index.html`) describes both copies.
 - Play Games (Google Play Games on Android, Game Center on iOS; docs/PLAY_GAMES.md): optional and never on the
   startup path (a local channel check in `AppServices.create`; sign-in starts after the lobby's first frame). Only
   `games_services_play_games.dart` imports the plugin; every call is caught and timed out. The Android app ID comes
@@ -212,9 +231,11 @@ dart run tool/smoke_remote.dart         # live check: app's content client vs pr
   (`GameController.onWin` → `PlayGamesController.reportWin`, fire and forget, never blocks the win card): Best Score
   and Fastest Time of its difficulty (none for named tiers; time in ms on Play Games (Duration), hundredths on Game
   Center), Total Score (sum of `bestScore`), Levels Completed, Best Combo, and the achievements earned (1/10/50/100/
-  250/500 wins, combo ×5, combo ×6 to ×15 on Game Center only (owner, 2026-10-23; `GameAchievement.combo6..combo15`,
-  no Play Games ID, so Android never sends them), Summit = a difficulty-10 win, Pure Skill = difficulty 7+ with no
-  Hint/Undo/Shuffle). Once
+  250/500 wins, combo ×5, Summit = a difficulty-10 win, Pure Skill = difficulty 7+ with no Hint/Undo/Shuffle; Game
+  Center only (owner, 2026-10-23; no Play Games ID, so Android never sends them): combo ×6 to ×15
+  (`GameAchievement.combo6..combo15`), 75/150/200/300/350/400/600 wins (`levels75`..`levels600`) and Total Score
+  2k/5k/8k/10k/12k/15k/20k/25k/30k/35k/40k/50k (`score2k`..`score50k`, field `totalScore`: the sum of `bestScore`,
+  the Total Score leaderboard's number; one game tops out near 33,000, so these count the total)). Once
   per app run at the first sign-in a catch-up sends what the records earned (per-difficulty bests from the manifest's
   tiers, totals, counts, combo, Summit; never Pure Skill), unlocking without Game Center banners; each achievement
   goes at most once per run. Release signing reads gitignored `android/key.properties`. iOS min is 15.0 (App Store: ITMS-90068, iOS 15+ required for uploads from April 2027).
@@ -416,8 +437,9 @@ dart run tool/smoke_remote.dart         # live check: app's content client vs pr
 - Google Play Games (owner, 2026-10-16) and Game Center (owner, 2026-10-17): Play Games on Android, Game Center on
   iOS; silent sign-in; two round lobby buttons top-right (Achievements, Leaderboards) open Google's / Apple's
   screens, signing in first when needed; no Settings entry. Pieces: 1 sign-in (done), 2 achievements + leaderboards
-  (done 2026-10-17: 9 achievements, 23 leaderboards; see the Play Games rule above), 3 cloud save. Two phones on one
-  account must never clash: piece 3 merges (union of wins, fastest time) before play; no hard one-device lock.
+  (done 2026-10-17: 9 achievements, 23 leaderboards; see the Play Games rule above), 3 cloud save (done 2026-10-23
+  without Play Games / Game Center: iCloud key-value storage and Android backup, see the Cloud save rule). Two phones
+  on one account must never clash: the sync merges (union of wins, fastest time); no hard one-device lock.
 - Every launch: navy native screen (no icon) → `assets/video/sun_game_studio_intro.mp4`
   (Sun Game Studio) → Tile Park logo on white (`assets/branding/tile_park_logo.jpg`, at least
   2.2 s and until content is loaded) → lobby. Sequence lives in `lib/app/app.dart`. Once, at first launch (and
@@ -551,7 +573,12 @@ dart run tool/smoke_remote.dart         # live check: app's content client vs pr
 - Not yet integrated: 4 IconScout AI images (spring rolls ×2, salad, nachos) — not reachable via the IconScout API.
 - Tray mechanic is integrated (tray at the top, flights, strike-and-shatter matches, Tray full card with
   Revive / Restart), with 2 to 5 slots per level.
-- App version 1.1.0+11 (2026-10-17, `feat/action-cap`): each of Undo, Hint and Shuffle at most 2 uses per level
+- App version 1.2.0+16 (2026-10-23, `release/1.2.0`): premium UI, Pause, Kenney sounds, cloud save, 29 new Game Center
+  achievements; submitted to App Review with them on 2026-10-23 (automatic release, all users at once; builds 14 and
+  15 were uploaded but not used). Force update: once 1.2.0 is live on the App Store, set `ios` `latestBuild` and
+  `minBuild` to 16 and `storeUrl` to `https://apps.apple.com/app/id6823729570` in `content-src/app-update.json`,
+  then `dart run tool/publish.dart --app-update-only` (never before it is live). Android not released yet.
+  1.1.0+11 (2026-10-17, `feat/action-cap`): each of Undo, Hint and Shuffle at most 2 uses per level
   attempt (1 free + 1 after an ad), then its button disappears (see Game actions).
   1.1.0+10 (2026-10-17): fixes a launch crash of every Android release build ("Failed to create an instance
   of androidx.work.impl.WorkDatabase": R8 full mode removed `WorkDatabase_Impl`'s no-arg constructor, which the
@@ -627,7 +654,14 @@ dart run tool/smoke_remote.dart         # live check: app's content client vs pr
   Combo ×6 to ×15 (2026-10-23): `bt.ach.combo_6`..`combo_15` created (Combo Streak, Combo Spark, Combo Climber, Combo
   Blaze, Perfect Ten, Combo Storm, Combo Wizard, Combo Legend, Combo Titan, Combo Champion; 15, 15, 20, 20, 25, 25,
   30, 30, 35, 40 points, 445 of 1,000 left; "Reach a ×N combo." / "You reached a ×N combo."; icons = `combo_5.png`
-  with a ×N tag), "Prepare for Submission": add them to the next app version's review (1.1.0 cannot unlock them).
+  with a ×N tag). Also created 2026-10-23: `bt.ach.levels_75/150/200/300/350/400/600` (Path Finder, Park Ranger,
+  Double Century, Tile Sage, Grove Guardian, Puzzle Veteran, Park Legend; 15, 20, 20, 25, 25, 30, 40; "Complete N
+  levels." / "You completed N levels."; icons = the level icons re-tagged) and `bt.ach.score_2k`..`score_50k` ("2K
+  Club".."50K Club"; 5, 5, 5, 10, 10, 10, 15, 15, 20, 20, 25, 30; "Reach a total score of N." / "You reached a total
+  score of N."; icons = the Pure Skill rosette tagged 2K..50K). 100 of 1,000 points left. All 29 went to App Review
+  with 1.2.0 on 2026-10-23. ASC image uploads often stick when several run close together (the thumbnail stays a
+  placeholder and "Add for Review" says "There are still achievement image uploads in progress"): re-upload that
+  achievement's image. Icons are generated in a scratch dir from `art/play-games/` bases (not committed).
 - Play Console release state (2026-10-16): every App content declaration is done (privacy policy, ads = yes,
   Advertising ID, content rating, target audience 6+ incl. under 13 (Families), Data safety, Health/Financial/
   Government); category Puzzle; store listing saved. Closed testing - Alpha: versionCode 4 (1.0.0), all countries,
@@ -637,9 +671,10 @@ dart run tool/smoke_remote.dart         # live check: app's content client vs pr
 - AdMob (2026-10-17): account ca-app-pub-6766349950907943 (under review; apps "Brain Train - Tile Match" show limited
   ad serving until linked to a published store listing: after each release, AdMob → the app → "Add store" to link it;
   until then the no-ad fallback makes Revive and refills free while online). 2026-10-23: the iOS AdMob app is linked
-  to the App Store listing (id6823729570) and now waits on "Verify app", which needs
-  `https://sungamestudio.com/app-ads.txt` (404 so far; its one line is in `website/app-ads.txt`): deploy it on
-  game-server-01, then AdMob → the app → Verify app. The Android AdMob app is not linked yet (Play listing not public).
+  to the App Store listing (id6823729570) and waits on AdMob's re-crawl of `https://sungamestudio.com/app-ads.txt`
+  ("Verify app"). That file is served by Cloudflare Worker `sungamestudio-app-ads` (route
+  `sungamestudio.com/app-ads.txt`, fail open; source `infra/cloudflare/sungamestudio-app-ads/worker.js`, same line as
+  `website/app-ads.txt`), not by nginx. The Android AdMob app is not linked yet (Play listing not public).
   iOS app `~6846744759`, rewarded "Revive" unit `/7563920896`
   (in `ios/Runner/Info.plist`); Android app `~8517909911`, rewarded "Revive" unit `/5905943038` (in gitignored
   `android/admob.properties` on the Linux machine; copy it to another machine like `key.properties`).
@@ -647,7 +682,7 @@ dart run tool/smoke_remote.dart         # live check: app's content client vs pr
   `android/admob.properties` and `ios/Runner/Info.plist`; app-ads.txt on sungamestudio.com; AdMob Families /
   mixed-audience settings and a published GDPR consent message; Play Console Ads, Advertising ID, Target audience and
   Data safety answers. The iOS `AppDelegate.swift` channel (`rewardedAdUnitId`) is untested until the first Xcode build.
-- Open work: Play Games piece 3 (cloud save). Piece 2 (achievements + leaderboards, Play Games and Game Center) is
+- Open work: deploy the updated privacy policy (cloud copies, 2026-10-23) to sungamestudio.com. Piece 2 (achievements + leaderboards, Play Games and Game Center) is
   implemented (2026-10-17); the owner still publishes the Play Games configuration (Play Console → Play Games
   Services → Publishing; only testers see it until then) and finishes Game Center in App Store Connect. The iOS
   Game Center path is untested until the first Xcode build. Scoring + combo is implemented (4 s window).

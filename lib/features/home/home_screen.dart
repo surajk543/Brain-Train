@@ -99,11 +99,13 @@ class _HomeScreenState extends State<HomeScreen> {
     _servicesScheduled = true;
     final services = AppScope.of(context);
     // After the first frame: the lobby never waits for Play Games, ads (SDK
-    // start, consent, the first rewarded ad) or the app update notice.
+    // start, consent, the first rewarded ad), the app update notice or the
+    // cloud save (restored progress shows when it arrives).
     WidgetsBinding.instance.addPostFrameCallback((_) {
       services.playGames.start(services.settings.ageGroup);
       services.ads.start(services.settings.ageGroup);
       services.updates.start();
+      services.cloudSync.start();
     });
   }
 
