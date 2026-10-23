@@ -433,7 +433,7 @@ dart run tool/smoke_remote.dart         # live check: app's content client vs pr
   most once per launch (Later or back hides it until the next launch; needs a `storeUrl`). Below its min → "Update
   required" / "This version of Brain Train is no longer supported. Please update to keep playing.", Update only, not
   dismissible (back does nothing), Play / Continue / Levels unreachable; still there after a trip to the
-  store. Lobby only, never over a game. The live notice (2026-10-17): Android latest 10, min 10 (forced, after build 10 went live: 1.1.0+9 crashed at launch on Android); iOS unset.
+  store. Lobby only, never over a game. The live notice: Android latest 10, min 10 (2026-10-17, forced, after build 10 went live: 1.1.0+9 crashed at launch on Android); iOS latest 16, min 16 (2026-10-24, forced once 1.2.0 was live in every store; `storeUrl` `https://apps.apple.com/app/id6823729570`, with a 1.2.0 `message`).
 - Google Play Games (owner, 2026-10-16) and Game Center (owner, 2026-10-17): Play Games on Android, Game Center on
   iOS; silent sign-in; two round lobby buttons top-right (Achievements, Leaderboards) open Google's / Apple's
   screens, signing in first when needed; no Settings entry. Pieces: 1 sign-in (done), 2 achievements + leaderboards
@@ -574,10 +574,9 @@ dart run tool/smoke_remote.dart         # live check: app's content client vs pr
 - Tray mechanic is integrated (tray at the top, flights, strike-and-shatter matches, Tray full card with
   Revive / Restart), with 2 to 5 slots per level.
 - App version 1.2.0+16 (2026-10-23, `release/1.2.0`): premium UI, Pause, Kenney sounds, cloud save, 29 new Game Center
-  achievements; submitted to App Review with them on 2026-10-23 (automatic release, all users at once; builds 14 and
-  15 were uploaded but not used). Force update: once 1.2.0 is live on the App Store, set `ios` `latestBuild` and
-  `minBuild` to 16 and `storeUrl` to `https://apps.apple.com/app/id6823729570` in `content-src/app-update.json`,
-  then `dart run tool/publish.dart --app-update-only` (never before it is live). Android not released yet.
+  achievements; approved and live on the App Store since 2026-10-23 18:57 UTC (automatic release, all users at once;
+  builds 14 and 15 were uploaded but not used). iOS force update to build 16 published 2026-10-24 (the live notice
+  above). Android not released yet.
   1.1.0+11 (2026-10-17, `feat/action-cap`): each of Undo, Hint and Shuffle at most 2 uses per level
   attempt (1 free + 1 after an ad), then its button disappears (see Game actions).
   1.1.0+10 (2026-10-17): fixes a launch crash of every Android release build ("Failed to create an instance
@@ -671,8 +670,9 @@ dart run tool/smoke_remote.dart         # live check: app's content client vs pr
 - AdMob (2026-10-17): account ca-app-pub-6766349950907943 (under review; apps "Brain Train - Tile Match" show limited
   ad serving until linked to a published store listing: after each release, AdMob → the app → "Add store" to link it;
   until then the no-ad fallback makes Revive and refills free while online). 2026-10-23: the iOS AdMob app is linked
-  to the App Store listing (id6823729570) and waits on AdMob's re-crawl of `https://sungamestudio.com/app-ads.txt`
-  ("Verify app"). That file is served by Cloudflare Worker `sungamestudio-app-ads` (route
+  to the App Store listing (id6823729570); on 2026-10-24 AdMob's app-ads.txt page showed the file "found and
+  verified" for the App Store and Play apps, while the app list still said "Verify app" (AdMob: up to 7 days for App
+  Store apps), then AdMob's app review. That file is served by Cloudflare Worker `sungamestudio-app-ads` (route
   `sungamestudio.com/app-ads.txt`, fail open; source `infra/cloudflare/sungamestudio-app-ads/worker.js`, same line as
   `website/app-ads.txt`), not by nginx. The Android AdMob app is not linked yet (Play listing not public).
   iOS app `~6846744759`, rewarded "Revive" unit `/7563920896`

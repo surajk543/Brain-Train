@@ -6,8 +6,9 @@
     "storeUrl": "https://play.google.com/store/apps/details?id=com.sungamestudio.braintrain"
   },
   "ios": {
-    "latestBuild": 0,
-    "minBuild": 0,
-    "storeUrl": ""
+    "latestBuild": 16,
+    "minBuild": 16,
+    "storeUrl": "https://apps.apple.com/app/id6823729570",
+    "message": "Tile Park 1.2.0 is here: a fresh new look, a Pause button, new achievements, and your progress saved to iCloud. Please update to keep playing."
   }
 }
