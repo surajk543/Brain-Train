@@ -203,4 +203,25 @@ void main() {
     expect(old.scoring, isNull);
     expect(old.toJson().containsKey('scoring'), isFalse);
   });
+
+  test('merging wins (cloud save) keeps the best of each level and notifies only on a change', () async {
+    SharedPreferences.setMockInitialValues({});
+    final progress = await ProgressRepository.open();
+    await progress.recordWin('level-0001', moves: 12, timeMs: 80000, score: 900, bestCombo: 6);
+    var notified = 0;
+    progress.addListener(() => notified++);
+    final faster = DateTime(2026, 10, 2);
+    final changed = await progress.mergeCompleted({
+      'level-0001': LevelRecord(bestMoves: 15, bestTimeMs: 50000, completedAt: faster, bestScore: 1400, bestCombo: 3),
+      'level-0002': LevelRecord(bestMoves: 20, bestTimeMs: 60000, completedAt: faster),
+    });
+    expect(changed, isTrue);
+    expect(notified, 1);
+    final level1 = (await ProgressRepository.open()).completed()['level-0001']!;
+    expect([level1.bestMoves, level1.bestTimeMs, level1.bestScore, level1.bestCombo], [12, 50000, 1400, 6]);
+    expect(level1.completedAt, faster, reason: 'the date belongs to the fastest win');
+    expect(progress.isCompleted('level-0002'), isTrue);
+    expect(await progress.mergeCompleted({'level-0002': LevelRecord(bestMoves: 25, bestTimeMs: 70000, completedAt: faster)}), isFalse);
+    expect(notified, 1);
+  });
 }

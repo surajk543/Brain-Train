@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:math' as math;
 
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -39,6 +40,22 @@ class LevelRecord {
     if (bestScore != null) 'bestScore': bestScore,
     if (bestCombo != null) 'bestCombo': bestCombo,
   };
+
+  /// The best of this record and [other] (the same level won on another
+  /// device, or before a reinstall), kept as [ProgressRepository.recordWin]
+  /// keeps a replay: the fastest time with its date, and the fewest moves,
+  /// highest score and longest combo each on their own.
+  LevelRecord merge(LevelRecord other) {
+    final faster = other.bestTimeMs < bestTimeMs;
+    int? higher(int? a, int? b) => a == null ? b : (b == null ? a : math.max(a, b));
+    return LevelRecord(
+      bestMoves: math.min(bestMoves, other.bestMoves),
+      bestTimeMs: faster ? other.bestTimeMs : bestTimeMs,
+      completedAt: faster ? other.completedAt : completedAt,
+      bestScore: higher(bestScore, other.bestScore),
+      bestCombo: higher(bestCombo, other.bestCombo),
+    );
+  }
 }
 
 /// A game in progress, saved after every accepted tap (and every Undo,
@@ -158,10 +175,33 @@ class ProgressRepository extends ChangeNotifier {
       bestCombo: higher(previous?.bestCombo, bestCombo),
     );
     all[levelId] = record;
-    await _prefs.setString(_completedKey, jsonEncode({for (final e in all.entries) e.key: e.value.toJson()}));
+    await _writeCompleted(all);
     notifyListeners();
     return record;
   }
+
+  /// Adds [other]'s wins (the cloud save's) to this device's: new levels
+  /// as they are, levels won on both with the best of each
+  /// ([LevelRecord.merge]). Notifies and returns true only when something
+  /// changed.
+  Future<bool> mergeCompleted(Map<String, LevelRecord> other) async {
+    final all = completed();
+    var changed = false;
+    for (final MapEntry(key: levelId, value: record) in other.entries) {
+      final previous = all[levelId];
+      final merged = previous == null ? record : previous.merge(record);
+      if (previous != null && jsonEncode(merged.toJson()) == jsonEncode(previous.toJson())) continue;
+      all[levelId] = merged;
+      changed = true;
+    }
+    if (!changed) return false;
+    await _writeCompleted(all);
+    notifyListeners();
+    return true;
+  }
+
+  Future<void> _writeCompleted(Map<String, LevelRecord> all) =>
+      _prefs.setString(_completedKey, jsonEncode({for (final e in all.entries) e.key: e.value.toJson()}));
 
   SavedGame? savedGame() {
     final raw = _prefs.getString(_savedGameKey) ?? _prefs.getString(_v2SavedGameKey);

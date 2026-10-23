@@ -26,7 +26,9 @@ class SettingsRepository extends ChangeNotifier {
   static const String musicKey = 'settings.music';
 
   /// Vibration (haptic feedback) on tile picks and matches.
-  bool get haptics => _prefs.getBool('settings.haptics') ?? true;
+  bool get haptics => _prefs.getBool(hapticsKey) ?? true;
+
+  static const String hapticsKey = 'settings.haptics';
 
   /// From the age screen at first launch; null until it is answered. Kept
   /// on the device only (never sent anywhere).
@@ -58,7 +60,33 @@ class SettingsRepository extends ChangeNotifier {
   }
 
   Future<void> setMusic(bool value) => _setBool(musicKey, value);
-  Future<void> setHaptics(bool value) => _setBool('settings.haptics', value);
+  Future<void> setHaptics(bool value) => _setBool(hapticsKey, value);
+
+  /// What the cloud save keeps (`CloudProgressSync`): the switches the
+  /// player has set and the tutorial flag. Not the age group, which never
+  /// leaves the device.
+  static const List<String> syncedKeys = [soundKey, musicKey, hapticsKey, firstPlayTutorialKey];
+
+  /// The [syncedKeys] this install has a value for (an unset switch keeps
+  /// its default and is left out).
+  Map<String, bool> syncedValues() => {for (final key in syncedKeys) key: ?_prefs.getBool(key)};
+
+  /// Takes the cloud save's [values]: a switch only where this install has
+  /// not set it (a reinstall has set none; another device keeps its own),
+  /// the tutorial flag once it is done anywhere. Notifies and returns true
+  /// only when something changed.
+  Future<bool> restoreSynced(Map<String, bool> values) async {
+    var changed = false;
+    for (final MapEntry(key: key, value: value) in values.entries) {
+      if (!syncedKeys.contains(key)) continue;
+      final take = key == firstPlayTutorialKey ? value && !firstPlayTutorialDone : !_prefs.containsKey(key);
+      if (!take) continue;
+      await _prefs.setBool(key, value);
+      changed = true;
+    }
+    if (changed) notifyListeners();
+    return changed;
+  }
 
   Future<void> _setBool(String key, bool value) async {
     await _prefs.setBool(key, value);

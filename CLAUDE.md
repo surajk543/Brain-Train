@@ -75,7 +75,9 @@ dart run tool/smoke_remote.dart         # live check: app's content client vs pr
   `app_update_controller.dart`
   (`AppServices.updates`: the lobby's update card, its check, kept notice, Update / Later).
 - `lib/data/` — `ProgressRepository`, `SettingsRepository` (also the stored `AgeGroup`), `age_group.dart`,
-  `app_update_cache.dart` (last good update notice).
+  `app_update_cache.dart` (last good update notice), `cloud_progress_sync.dart` (`CloudProgressSync`,
+  `CloudProgress`: the cloud save). `lib/platform/cloud_store.dart` (`CloudStore`, `UnavailableCloudStore`, pure
+  Dart) and `icloud_store.dart` (`ICloudStore` on the `brain_train/cloud` channel, `createCloudStore()`).
 - `lib/platform/` — `play_games.dart` (`PlayGames` interface, `GamesService`, statuses, `UnavailablePlayGames`, pure
   Dart); `game_services_ids.dart` (every achievement and leaderboard ID: `GameAchievement`, `GameLeaderboard`, Play
   Games + Game Center, pure Dart); `games_services_play_games.dart` (the only file importing `games_services`;
@@ -198,6 +200,23 @@ dart run tool/smoke_remote.dart         # live check: app's content client vs pr
   update too (from its older cached file, `CachedLevel` index, until the new file is cached). Other levels download
   on demand when opened. A newer manifest becomes active only once its registry and its window are cached; never a
   downgrade. Startup never waits for the network (`loadInitial` + `warmUp` read only cache and bundle).
+- Cloud save (owner, 2026-10-23: progress survives an uninstall + reinstall; 1.2.0+15): iOS keeps one JSON value,
+  `progress.v1` (`CloudProgress`: `{"v": 1, "completed": {levelId: LevelRecord}, "settings": {key: bool}}`, keys
+  sorted), in the player's iCloud key-value storage (`NSUbiquitousKeyValueStore`, `brain_train/cloud` channel in
+  `AppDelegate.swift`, entitlement `com.apple.developer.ubiquity-kvstore-identifier`; no sign-in, works for under 13;
+  without iCloud the value stays on the device). Synced: won levels with their best results (the next level follows
+  from them), the Sound / Music / Vibration switches the player set and the tutorial flag; not the unfinished game and
+  never the age group. Every sync reads, merges into the device (`ProgressRepository.mergeCompleted`: union of wins,
+  per level `LevelRecord.merge` = fastest time with its date, fewest moves, highest score, longest combo;
+  `SettingsRepository.restoreSynced`: a switch only where unset here, the tutorial flag once done anywhere) and writes
+  the merged copy back unless the cloud already holds it, so two devices never clash or overwrite each other and
+  never take turns rewriting. A copy with a higher `v` (a newer build) is neither read nor overwritten; a damaged one
+  is replaced. Started by the lobby after its first frame (never on the startup path), then after every progress or
+  settings change and on iCloud's external-change notification (the first sync after an install, another device):
+  restored levels appear in the lobby when they arrive. Android: no code; Google's automatic backup restores
+  `FlutterSharedPreferences.xml` (progress, settings, also the age group) after a reinstall when the phone's backup
+  is on (`android:fullBackupContent` / `android:dataExtractionRules` in `res/xml/`: only that file, never the content
+  cache). The privacy policy source (`website/brain-train/privacy/index.html`) describes both copies.
 - Play Games (Google Play Games on Android, Game Center on iOS; docs/PLAY_GAMES.md): optional and never on the
   startup path (a local channel check in `AppServices.create`; sign-in starts after the lobby's first frame). Only
   `games_services_play_games.dart` imports the plugin; every call is caught and timed out. The Android app ID comes
@@ -416,8 +435,9 @@ dart run tool/smoke_remote.dart         # live check: app's content client vs pr
 - Google Play Games (owner, 2026-10-16) and Game Center (owner, 2026-10-17): Play Games on Android, Game Center on
   iOS; silent sign-in; two round lobby buttons top-right (Achievements, Leaderboards) open Google's / Apple's
   screens, signing in first when needed; no Settings entry. Pieces: 1 sign-in (done), 2 achievements + leaderboards
-  (done 2026-10-17: 9 achievements, 23 leaderboards; see the Play Games rule above), 3 cloud save. Two phones on one
-  account must never clash: piece 3 merges (union of wins, fastest time) before play; no hard one-device lock.
+  (done 2026-10-17: 9 achievements, 23 leaderboards; see the Play Games rule above), 3 cloud save (done 2026-10-23
+  without Play Games / Game Center: iCloud key-value storage and Android backup, see the Cloud save rule). Two phones
+  on one account must never clash: the sync merges (union of wins, fastest time); no hard one-device lock.
 - Every launch: navy native screen (no icon) → `assets/video/sun_game_studio_intro.mp4`
   (Sun Game Studio) → Tile Park logo on white (`assets/branding/tile_park_logo.jpg`, at least
   2.2 s and until content is loaded) → lobby. Sequence lives in `lib/app/app.dart`. Once, at first launch (and
@@ -647,7 +667,7 @@ dart run tool/smoke_remote.dart         # live check: app's content client vs pr
   `android/admob.properties` and `ios/Runner/Info.plist`; app-ads.txt on sungamestudio.com; AdMob Families /
   mixed-audience settings and a published GDPR consent message; Play Console Ads, Advertising ID, Target audience and
   Data safety answers. The iOS `AppDelegate.swift` channel (`rewardedAdUnitId`) is untested until the first Xcode build.
-- Open work: Play Games piece 3 (cloud save). Piece 2 (achievements + leaderboards, Play Games and Game Center) is
+- Open work: deploy the updated privacy policy (cloud copies, 2026-10-23) to sungamestudio.com. Piece 2 (achievements + leaderboards, Play Games and Game Center) is
   implemented (2026-10-17); the owner still publishes the Play Games configuration (Play Console → Play Games
   Services → Publishing; only testers see it until then) and finishes Game Center in App Store Connect. The iOS
   Game Center path is untested until the first Xcode build. Scoring + combo is implemented (4 s window).

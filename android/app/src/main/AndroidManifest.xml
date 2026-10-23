@@ -4,10 +4,15 @@
          it too). Under 13 every ad request is tagged child-directed
          (docs/ADS.md); the app itself never reads the ID. -->
     <uses-permission android:name="com.google.android.gms.permission.AD_ID" />
+    <!-- Google's automatic backup restores the progress after a reinstall (cloud save, owner 2026-10-23):
+         only the preferences (progress, settings), not the downloaded content cache. -->
     <application
         android:label="Tile Park"
         android:name="${applicationName}"
-        android:icon="@mipmap/ic_launcher">
+        android:icon="@mipmap/ic_launcher"
+        android:allowBackup="true"
+        android:fullBackupContent="@xml/backup_rules"
+        android:dataExtractionRules="@xml/data_extraction_rules">
         <activity
             android:name=".MainActivity"
             android:exported="true"
