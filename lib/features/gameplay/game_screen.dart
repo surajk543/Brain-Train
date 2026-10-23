@@ -97,12 +97,15 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
   /// Whether the "Restart this level?" card is open (the clock is paused).
   final ValueNotifier<bool> _confirmingRestart = ValueNotifier(false);
 
+  /// Whether the Pause card is open (the clock is paused).
+  final ValueNotifier<bool> _paused = ValueNotifier(false);
+
   /// The action whose "Watch an ad for +1 …?" card is open (the clock is
   /// paused), or null.
   final ValueNotifier<GameAction?> _refill = ValueNotifier(null);
 
-  /// A card is open over the board (restart, ad offer): the action bar is
-  /// off and Back closes the card.
+  /// A card is open over the board (pause, restart, ad offer): the action bar
+  /// is off and Back closes the card.
   final ValueNotifier<bool> _cardOpen = ValueNotifier(false);
 
   /// The Tray full card's rewarded ad (with its no-ad fallback) while the
@@ -201,6 +204,7 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
       _flights.addListener(_syncResult);
       _shatters.addListener(_syncResult);
       _confirmingRestart.addListener(_syncCardOpen);
+      _paused.addListener(_syncCardOpen);
       _refill.addListener(_syncCardOpen);
       WidgetsBinding.instance.addObserver(this);
       _syncResult();
@@ -211,7 +215,7 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
     }
   }
 
-  void _syncCardOpen() => _cardOpen.value = _confirmingRestart.value || _refill.value != null;
+  void _syncCardOpen() => _cardOpen.value = _confirmingRestart.value || _paused.value || _refill.value != null;
 
   /// Shows the result card once the game is over and the tray is still:
   /// after the last pair's burst, or after the full tray's shake.
@@ -223,8 +227,9 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
       _closeReviveOffer();
       return;
     }
-    // The game ended: no card about helpers stays open.
+    // The game ended: no card about helpers (or Pause) stays open.
     _closeRefill(resume: false);
+    _paused.value = false;
     if (_resultShown.value || _resultTimer != null || _busy) return;
     final delay = _reduceMotion
         ? Duration.zero
@@ -454,6 +459,43 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
     _confirmingRestart.value = true;
   }
 
+  /// Pause is on while a game is being played: not during the intro or the
+  /// tutorial, not over a result card or another card.
+  bool _canPause() =>
+      controller.state.status == GameStatus.playing &&
+      !controller.introPlaying &&
+      _tutorial == null &&
+      !_resultShown.value &&
+      !_cardOpen.value;
+
+  /// The HUD's Pause: the Pause card, the clock stopped until Resume.
+  void _pause() {
+    if (!_canPause()) return;
+    controller.pauseClock();
+    _paused.value = true;
+  }
+
+  void _resume() {
+    if (!_paused.value) return;
+    _paused.value = false;
+    controller.resumeClock();
+  }
+
+  /// Restart from the Pause card asks first (the clock stays stopped).
+  void _restartFromPause() {
+    if (!_paused.value) return;
+    _paused.value = false;
+    _confirmingRestart.value = true;
+  }
+
+  /// Lobby from the Pause card: the game is saved after every move, so it
+  /// can be continued from the lobby.
+  void _lobbyFromPause() {
+    if (!_paused.value) return;
+    _paused.value = false;
+    _openLobby();
+  }
+
   void _keepPlaying() {
     if (!_confirmingRestart.value) return;
     _confirmingRestart.value = false;
@@ -469,6 +511,10 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
   void _closeCard() {
     if (_refill.value != null) {
       if (_refillOffer?.mode != AdOfferMode.busy) _closeRefill();
+      return;
+    }
+    if (_paused.value) {
+      _resume();
       return;
     }
     _keepPlaying();
@@ -536,6 +582,7 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
     _intro.dispose();
     _resultShown.dispose();
     _confirmingRestart.dispose();
+    _paused.dispose();
     _refill.dispose();
     _cardOpen.dispose();
     _reviveOffer?.dispose();
@@ -594,6 +641,9 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
                       controller: controller,
                       compact: layout.compact,
                       onBack: () => Navigator.of(context).maybePop(),
+                      onPause: _pause,
+                      canPause: _canPause,
+                      pauseListenable: Listenable.merge([_cardOpen, _resultShown]),
                     ),
                   ),
                 ),
@@ -735,17 +785,23 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
                       GameStatus.playing => const SizedBox.shrink(),
                     },
             ),
-            // "Restart this level?" and the ad offer for one more Undo, Hint or
-            // Shuffle, under the HUD; the HUD's Back closes them (PopScope)
-            // instead of leaving, and the action bar is off meanwhile.
+            // Pause, "Restart this level?" and the ad offer for one more Undo,
+            // Hint or Shuffle, under the HUD; the HUD's Back closes them
+            // (PopScope) instead of leaving, and the action bar is off meanwhile.
             Positioned(
               left: 0,
               right: 0,
               bottom: 0,
               top: hudBottom,
               child: ListenableBuilder(
-                listenable: Listenable.merge([_confirmingRestart, _refill]),
+                listenable: Listenable.merge([_confirmingRestart, _paused, _refill]),
                 builder: (context, _) {
+                  if (_paused.value) {
+                    return ResultOverlay(
+                      dense: true,
+                      child: PauseCard(onResume: _resume, onRestart: _restartFromPause, onLobby: _lobbyFromPause),
+                    );
+                  }
                   if (_confirmingRestart.value) {
                     return ResultOverlay(
                       child: RestartConfirmCard(onRestart: _confirmRestart, onKeepPlaying: _keepPlaying),

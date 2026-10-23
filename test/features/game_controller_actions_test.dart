@@ -118,7 +118,7 @@ void main() {
       expect(c.actions.undosLeft, 0);
       expect(c.actions.undosUsed, 1);
       expect(progress.savedGame()!.history, ['a1', 'b1', GameEngine.undoMarker]);
-      expect(sounds.played.last, Sfx.select);
+      expect(sounds.played.last, Sfx.undo);
       await stop();
       c.dispose();
     });
@@ -219,7 +219,7 @@ void main() {
       c.pairImpact('a1', 'a2'); // the strike the screen was still playing
       await settle();
       expect(scores, isEmpty);
-      expect(sounds.played, [Sfx.select], reason: 'only the undo, no match sound');
+      expect(sounds.played, [Sfx.undo], reason: 'only the undo, no match sound');
       expect(c.score, 0);
       // Made again: one strike, one award.
       c.tapTile('a2');
@@ -257,7 +257,11 @@ void main() {
       sounds.played.clear();
       c.undo();
       await Future<void>.delayed(const Duration(milliseconds: 40));
-      expect(sounds.played, [Sfx.select], reason: 'the undo landed; the match sound never played');
+      expect(
+        sounds.played,
+        [Sfx.undo, Sfx.tray],
+        reason: 'the undo swishes, a1 still lands in the tray; the match sound never plays',
+      );
       c.dispose();
     });
 
@@ -336,6 +340,45 @@ void main() {
         ..tapTile('c1');
       expect(c.isAvailable(GameAction.hint), isTrue);
       expect(c.useHint()!.reason, HintReason.completesPair);
+      c.dispose();
+    });
+  });
+
+  group('sounds (premium pass)', () {
+    test('a match sounds plain at x1 and brighter while a combo runs (x2 and up)', () async {
+      final c = controllerFor();
+      c
+        ..tapTile('a1')
+        ..tapTile('a2');
+      expect(sounds.played.last, Sfx.match, reason: 'x1');
+      clock.advance(s(1));
+      c
+        ..tapTile('b1')
+        ..tapTile('b2');
+      expect(sounds.played.last, Sfx.combo, reason: 'x2 within the window');
+      clock.advance(s(10));
+      c
+        ..tapTile('c1')
+        ..tapTile('c2');
+      expect(sounds.played.last, Sfx.match, reason: 'the window closed: x1 again');
+      c.dispose();
+    });
+
+    test('a tile that lands without a match pops; Hint rings, Undo swishes, Shuffle sweeps', () async {
+      final c = controllerFor();
+      sounds.played.clear();
+      c.tapTile('a1');
+      expect(sounds.played, [Sfx.tap, Sfx.tray]);
+      expect(c.useHint(), isNotNull);
+      expect(sounds.played.last, Sfx.hint);
+      expect(c.undo(), isNotNull);
+      expect(sounds.played.last, Sfx.undo);
+      c
+        ..tapTile('a1')
+        ..tapTile('a2')
+        ..tapTile('b1');
+      expect(c.shuffle(seed: 4).shuffled, isTrue);
+      expect(sounds.played.last, Sfx.shuffle);
       c.dispose();
     });
   });

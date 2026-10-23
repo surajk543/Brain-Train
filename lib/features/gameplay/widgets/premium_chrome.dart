@@ -15,7 +15,10 @@ import '../../common/static_layer.dart';
 const Color kFeltEdge = Color(0xFF062618);
 
 /// Gameplay background: deep emerald felt, warm ambient light tinted by the
-/// level's palette, and botanical decoration at the edges.
+/// level's palette, botanical decoration at the edges, and (premium pass) a
+/// faint cobblestone path under the action bar and two small glowing lanterns
+/// at the edges, where the board seldom reaches: beside the tray on the left,
+/// low on the right.
 ///
 /// The felt and foliage are flattened into one image by a [StaticLayer]
 /// (re-rendered only when an image arrives or the size changes), so board
@@ -82,6 +85,32 @@ class _EmeraldBackdropState extends State<EmeraldBackdrop> {
       );
     }
 
+    Widget lantern(Rect box, {bool flipX = false}) => Positioned.fromRect(
+      rect: box,
+      child: IgnorePointer(
+        child: Transform.flip(
+          flipX: flipX,
+          child: Image.asset(
+            foliage.lantern,
+            fit: BoxFit.fill,
+            cacheWidth: (box.width * dpr).round(),
+            excludeFromSemantics: true,
+            errorBuilder: (context, error, stack) => const SizedBox.shrink(),
+          ),
+        ),
+      ),
+    );
+
+    // The two lanterns' boxes (for their glows): image aspect 820 / 360.
+    const lanternAspect = 820 / 360;
+    final leftLantern = Rect.fromLTWH(-unit * 0.04, size.height * 0.12, unit * 0.15, unit * 0.15 * lanternAspect);
+    final rightLantern = Rect.fromLTWH(
+      size.width - unit * 0.13,
+      size.height * 0.86 - unit * 0.16 * lanternAspect,
+      unit * 0.16,
+      unit * 0.16 * lanternAspect,
+    );
+
     // Light status bar icons over the felt.
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: kStatusBarLightIcons,
@@ -94,10 +123,32 @@ class _EmeraldBackdropState extends State<EmeraldBackdrop> {
               fit: StackFit.expand,
               children: [
                 CustomPaint(painter: _FeltPainter(accent: widget.accent, palette: palette)),
+                Positioned(
+                  left: -size.width * 0.02,
+                  right: -size.width * 0.02,
+                  bottom: -size.width * 0.12,
+                  child: IgnorePointer(
+                    // Faint: the image's own paint alpha, not an Opacity layer.
+                    child: Image.asset(
+                      foliage.path,
+                      fit: BoxFit.fitWidth,
+                      opacity: const AlwaysStoppedAnimation(0.5),
+                      cacheWidth: (size.width * 1.04 * dpr).round(),
+                      excludeFromSemantics: true,
+                      errorBuilder: (context, error, stack) => const SizedBox.shrink(),
+                    ),
+                  ),
+                ),
                 decor(foliage.right, 0.3, right: -0.06, topOfHeight: 0.19),
                 decor(foliage.topLeft, 0.7, left: -0.08, top: -0.07),
                 decor(foliage.bottomLeft, 0.7, left: -0.1, bottom: -0.08),
                 decor(foliage.bottomRight, 0.72, right: -0.1, bottom: -0.09),
+                // The lanterns hang in front of the leaves, lighting them.
+                CustomPaint(
+                  painter: _LanternGlowPainter(color: foliage.lanternGlow, lanterns: [leftLantern, rightLantern]),
+                ),
+                lantern(leftLantern, flipX: true),
+                lantern(rightLantern),
               ],
             ),
           ),
@@ -107,6 +158,38 @@ class _EmeraldBackdropState extends State<EmeraldBackdrop> {
       ),
     );
   }
+}
+
+/// Warm light around the backdrop's lanterns (screen blend, drawn once in the
+/// static layer).
+class _LanternGlowPainter extends CustomPainter {
+  _LanternGlowPainter({required this.color, required this.lanterns});
+
+  final Color color;
+  final List<Rect> lanterns;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    for (final box in lanterns) {
+      // The flame sits a little below the lantern's middle.
+      final center = Offset(box.center.dx, box.top + box.height * 0.62);
+      final radius = box.width * 1.7;
+      canvas.drawCircle(
+        center,
+        radius,
+        Paint()
+          ..blendMode = BlendMode.screen
+          ..shader = RadialGradient(
+            colors: [color, color.withValues(alpha: color.a * 0.4), color.withValues(alpha: 0)],
+            stops: const [0, 0.4, 1],
+          ).createShader(Rect.fromCircle(center: center, radius: radius)),
+      );
+    }
+  }
+
+  @override
+  bool shouldRepaint(_LanternGlowPainter old) => old.color != color || old.lanterns.length != lanterns.length ||
+      [for (var i = 0; i < lanterns.length; i++) old.lanterns[i] != lanterns[i]].any((changed) => changed);
 }
 
 class _FeltPainter extends CustomPainter {

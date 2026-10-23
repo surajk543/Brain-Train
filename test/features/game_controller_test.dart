@@ -80,14 +80,14 @@ void main() {
     return events;
   }
 
-  test('a free tile goes to the tray: TileToTray with its slot, a tap sound, an autosave', () async {
+  test('a free tile goes to the tray: TileToTray with its slot, a tap and a landing sound, an autosave', () async {
     final controller = controllerFor();
     final events = await tap(controller, ['a1', 'b1']);
     expect(events, [
       isA<TileToTray>().having((e) => e.tileId, 'tileId', 'a1').having((e) => e.slot, 'slot', 0),
       isA<TileToTray>().having((e) => e.tileId, 'tileId', 'b1').having((e) => e.slot, 'slot', 1),
     ]);
-    expect(sounds.played, [Sfx.tap, Sfx.tap]);
+    expect(sounds.played, [Sfx.tap, Sfx.tray, Sfx.tap, Sfx.tray]);
     expect(controller.state.tray, ['a1', 'b1']);
     expect(controller.state.moveCount, 2);
     expect(progress.savedGame()!.history, ['a1', 'b1']);
@@ -243,12 +243,16 @@ void main() {
     );
     await tap(controller, ['a1', 'a2', 'b1', 'b2']);
     expect(controller.state.status, GameStatus.won);
-    expect(sounds.played, [Sfx.tap, Sfx.tap, Sfx.tap, Sfx.tap], reason: 'only the taps so far');
+    expect(
+      sounds.played,
+      [Sfx.tap, Sfx.tray, Sfx.tap, Sfx.tap, Sfx.tray, Sfx.tap],
+      reason: 'only the taps and the unmatched tiles landing so far',
+    );
     controller.pairImpact();
     expect(sounds.played.last, Sfx.match, reason: 'the last pair has not hit yet');
     controller.pairImpact();
-    expect(sounds.played.sublist(sounds.played.length - 3), [Sfx.match, Sfx.match, Sfx.win],
-        reason: 'the last pair strikes too, then the win sound follows');
+    expect(sounds.played.sublist(sounds.played.length - 3), [Sfx.match, Sfx.combo, Sfx.win],
+        reason: 'the last pair strikes too (a x2 combo: the brighter sound), then the win sound follows');
     controller.dispose();
   });
 
@@ -355,7 +359,7 @@ void main() {
     await tap(controller, ['a1', 'a2']);
     expect(sounds.played, [Sfx.tap, Sfx.tap]);
     await Future<void>.delayed(const Duration(milliseconds: 60));
-    expect(sounds.played, [Sfx.tap, Sfx.tap, Sfx.match]);
+    expect(sounds.played, [Sfx.tap, Sfx.tap, Sfx.tray, Sfx.match], reason: 'a1 lands, then a2 matches it');
     // Restart drops feedback that has not played yet.
     await tap(controller, ['b1', 'b2']);
     controller.restart();

@@ -227,8 +227,8 @@ class _LobbyPill extends StatelessWidget {
 }
 
 /// The main call to action ("Continue · Level 2"): gold glass with a bright
-/// gold rim and a soft glow, dark-green Manrope label, chevron, leaves at both
-/// ends.
+/// gold rim and a soft glow, a dark-green play mark, Manrope label and
+/// chevron, leaves at both ends. It presses in a little under the finger.
 class LobbyPrimaryButton extends StatelessWidget {
   const LobbyPrimaryButton({
     super.key,
@@ -247,7 +247,7 @@ class LobbyPrimaryButton extends StatelessWidget {
   Widget build(BuildContext context) {
     final lobby = LobbyTheme.of(context);
     final fontSize = (height * 0.3).clamp(17.0, 21.0);
-    return _LobbyPill(
+    final pill = _LobbyPill(
       semanticLabel: semanticLabel ?? label,
       onPressed: onPressed,
       height: height,
@@ -266,7 +266,7 @@ class LobbyPrimaryButton extends StatelessWidget {
         children: [
           // Label centred on the pill, on one line (scaled down if needed).
           Padding(
-            padding: EdgeInsets.symmetric(horizontal: height * 0.3 + fontSize * 1.4, vertical: 8),
+            padding: EdgeInsets.symmetric(horizontal: height * 0.3 + fontSize * 1.7, vertical: 8),
             child: FittedBox(
               fit: BoxFit.scaleDown,
               child: Text(
@@ -281,6 +281,14 @@ class LobbyPrimaryButton extends StatelessWidget {
             ),
           ),
           Positioned(
+            left: height * 0.3,
+            top: 0,
+            bottom: 0,
+            child: Center(
+              child: Icon(Icons.play_arrow_rounded, size: fontSize * 1.6, color: lobby.primaryGlassText),
+            ),
+          ),
+          Positioned(
             right: height * 0.3,
             top: 0,
             bottom: 0,
@@ -291,7 +299,41 @@ class LobbyPrimaryButton extends StatelessWidget {
         ],
       ),
     );
+    return _PressIn(enabled: onPressed != null, child: pill);
   }
+}
+
+/// Shrinks [child] a little while a finger is down on it (press feedback),
+/// and springs back. Instant with reduced motion; no ticker otherwise.
+class _PressIn extends StatefulWidget {
+  const _PressIn({required this.enabled, required this.child});
+
+  final bool enabled;
+  final Widget child;
+
+  @override
+  State<_PressIn> createState() => _PressInState();
+}
+
+class _PressInState extends State<_PressIn> {
+  bool _down = false;
+
+  void _set(bool down) {
+    if (_down != down && mounted) setState(() => _down = down);
+  }
+
+  @override
+  Widget build(BuildContext context) => Listener(
+    onPointerDown: widget.enabled ? (_) => _set(true) : null,
+    onPointerUp: (_) => _set(false),
+    onPointerCancel: (_) => _set(false),
+    child: AnimatedScale(
+      scale: _down ? 0.97 : 1,
+      duration: MediaQuery.disableAnimationsOf(context) ? Duration.zero : const Duration(milliseconds: 110),
+      curve: Curves.easeOut,
+      child: widget.child,
+    ),
+  );
 }
 
 /// Secondary lobby action (Levels, Settings): dark-green frosted glass, fine

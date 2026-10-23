@@ -1,5 +1,6 @@
 import 'dart:math' as math;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import '../../../app/app_services.dart';
@@ -13,8 +14,8 @@ import '../../common/static_layer.dart';
 
 /// The lobby's centrepiece (reference board): three Mahjong tiles standing
 /// on a mossy ledge, a leaf on the left, a sunflower forward and larger in
-/// the middle, a purple flower on the right, and "Tile Park" in gold
-/// beneath them.
+/// the middle, a purple flower on the right, and beneath them a big gold
+/// "Tile Park" over a wooden "PUZZLES" plaque (premium mockup, 2026-10-23).
 ///
 /// The tiles are real registry symbols drawn by [PremiumMahjongTile] (the
 /// board's renderer). Each slot takes the first symbol of its list whose
@@ -24,7 +25,7 @@ import '../../common/static_layer.dart';
 ///
 /// Static once drawn: tiles, ledge and title are one [StaticLayer] image.
 /// They fade and rise in once when the lobby first appears (not with reduced
-/// motion). Screen readers hear one header, "Tile Park".
+/// motion). Screen readers hear one header, "Tile Park: Puzzles".
 class LobbyHero extends StatefulWidget {
   const LobbyHero({
     super.key,
@@ -34,7 +35,12 @@ class LobbyHero extends StatefulWidget {
     required this.titleSize,
   });
 
-  static const String title = 'Tile Park';
+  static const String title = 'Tile Park: Puzzles';
+
+  /// The gold title's words and the plaque's word under them ([title] read
+  /// as one header).
+  static const String titleWords = 'Tile Park';
+  static const String plaqueWord = 'PUZZLES';
 
   /// Width of the hero's own box (the title fits it).
   final double width;
@@ -213,7 +219,12 @@ class _LobbyHeroState extends State<LobbyHero> with SingleTickerProviderStateMix
         SizedBox(height: gap),
         SizedBox(
           width: widget.width,
-          child: _Title(size: widget.titleSize),
+          child: _Title(size: widget.titleSize * 1.26),
+        ),
+        // The plaque tucks up under the title's baseline.
+        Transform.translate(
+          offset: Offset(0, -widget.titleSize * 0.1),
+          child: _Plaque(size: widget.titleSize, maxWidth: widget.width),
         ),
       ],
     );
@@ -272,7 +283,7 @@ class _Title extends StatelessWidget {
       var merged = defaults.style.merge(style);
       if (bold) merged = merged.merge(const TextStyle(fontWeight: FontWeight.bold));
       return RichText(
-        text: TextSpan(text: LobbyHero.title, style: merged),
+        text: TextSpan(text: LobbyHero.titleWords, style: merged),
         maxLines: 1,
         softWrap: false,
         textScaler: scaler,
@@ -315,4 +326,145 @@ class _Title extends StatelessWidget {
       ),
     );
   }
+}
+
+/// "PUZZLES" on a small wooden sign under the title: pointed ends, a gold
+/// rim with a fine inner line, ivory Playfair capitals, and a leaf tucked
+/// behind each end. Static (drawn into the hero's [StaticLayer]).
+class _Plaque extends StatelessWidget {
+  const _Plaque({required this.size, required this.maxWidth});
+
+  /// The title's font size: the plaque scales with it.
+  final double size;
+  final double maxWidth;
+
+  @override
+  Widget build(BuildContext context) {
+    final lobby = LobbyTheme.of(context);
+    final height = size * 0.62;
+    final text = Text(
+      LobbyHero.plaqueWord,
+      maxLines: 1,
+      softWrap: false,
+      style: BrainTrainType.title(size: size * 0.34, color: lobby.plaqueText).copyWith(
+        fontWeight: FontWeight.w700,
+        letterSpacing: size * 0.11,
+        height: 1,
+        shadows: [Shadow(color: lobby.titleShadow, blurRadius: 2, offset: Offset(0, size * 0.025))],
+      ),
+    );
+    final leaf = height * 1.15;
+    final leafWidth = leaf / lobby.buttonLeafAspect;
+    Widget endLeaf(bool flip) => Transform.flip(
+      flipX: flip,
+      child: Image.asset(
+        lobby.buttonLeafAsset,
+        width: leafWidth,
+        height: leaf,
+        cacheWidth: (leafWidth * MediaQuery.devicePixelRatioOf(context)).round(),
+        excludeFromSemantics: true,
+        errorBuilder: (context, error, stack) => const SizedBox.shrink(),
+      ),
+    );
+    return ConstrainedBox(
+      constraints: BoxConstraints(maxWidth: maxWidth),
+      child: FittedBox(
+        fit: BoxFit.scaleDown,
+        child: Stack(
+          clipBehavior: Clip.none,
+          alignment: Alignment.center,
+          children: [
+            Positioned(left: -leafWidth * 0.55, child: endLeaf(false)),
+            Positioned(right: -leafWidth * 0.55, child: endLeaf(true)),
+            CustomPaint(
+              painter: _PlaquePainter(fill: lobby.plaqueFill, rim: lobby.plaqueRim, shadow: lobby.titleShadow),
+              child: SizedBox(
+                height: height,
+                child: Padding(
+                  // Letter spacing trails the last letter: balance it on the left.
+                  padding: EdgeInsets.only(left: height * 0.9 + size * 0.11, right: height * 0.9),
+                  child: Center(widthFactor: 1, child: text),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _PlaquePainter extends CustomPainter {
+  const _PlaquePainter({required this.fill, required this.rim, required this.shadow});
+
+  final List<Color> fill;
+  final List<Color> rim;
+  final Color shadow;
+
+  /// The sign's outline in [r]: a long panel whose ends come to soft points.
+  static Path _outline(Rect r) {
+    final h = r.height;
+    final point = h * 0.42;
+    return Path()
+      ..moveTo(r.left + point, r.top)
+      ..lineTo(r.right - point, r.top)
+      ..quadraticBezierTo(r.right - point * 0.25, r.top + h * 0.1, r.right, r.center.dy)
+      ..quadraticBezierTo(r.right - point * 0.25, r.bottom - h * 0.1, r.right - point, r.bottom)
+      ..lineTo(r.left + point, r.bottom)
+      ..quadraticBezierTo(r.left + point * 0.25, r.bottom - h * 0.1, r.left, r.center.dy)
+      ..quadraticBezierTo(r.left + point * 0.25, r.top + h * 0.1, r.left + point, r.top)
+      ..close();
+  }
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final rect = Offset.zero & size;
+    final outline = _outline(rect);
+    // Drop shadow: the outline, offset and darkened (no blur).
+    canvas.drawPath(outline.shift(Offset(0, size.height * 0.08)), Paint()..color = shadow.withValues(alpha: 0.55));
+    canvas.drawPath(
+      outline,
+      Paint()
+        ..shader = LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: fill,
+        ).createShader(rect),
+    );
+    // Wood grain: a few faint lines along the sign.
+    final grain = Paint()
+      ..color = shadow.withValues(alpha: 0.16)
+      ..strokeWidth = size.height * 0.025;
+    canvas.save();
+    canvas.clipPath(outline);
+    for (final y in const [0.3, 0.55, 0.78]) {
+      canvas.drawLine(Offset(0, size.height * y), Offset(size.width, size.height * (y + 0.04)), grain);
+    }
+    canvas.restore();
+    final rimShader = LinearGradient(
+      begin: Alignment.topCenter,
+      end: Alignment.bottomCenter,
+      colors: rim,
+    ).createShader(rect);
+    canvas.drawPath(
+      outline,
+      Paint()
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = size.height * 0.075
+        ..strokeJoin = StrokeJoin.round
+        ..shader = rimShader,
+    );
+    final inset = size.height * 0.14;
+    canvas.drawPath(
+      _outline(rect.deflate(inset)),
+      Paint()
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = size.height * 0.02
+        ..color = rim[1].withValues(alpha: 0.55),
+    );
+  }
+
+  @override
+  bool shouldRepaint(_PlaquePainter old) =>
+      !listEquals(old.fill, fill) || !listEquals(old.rim, rim) || old.shadow != shadow;
 }

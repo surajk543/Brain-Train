@@ -27,14 +27,20 @@ void main() {
   group('IDs', () {
     test('every ID is set, unique, and Game Center IDs follow bt.ach.<key> / bt.lb.<key>', () {
       final android = [
-        for (final a in GameAchievement.values) a.androidId,
+        for (final a in GameAchievement.values) ?a.androidId,
         for (final b in GameLeaderboard.values) b.androidId,
       ];
       expect(android.toSet(), hasLength(android.length));
       expect(android, everyElement(startsWith('CgkIhpCwrvAaEAIQ')));
       expect(GameAchievement.values.map((a) => a.iosId), everyElement(matches(RegExp(r'^bt\.ach\.[a-z0-9_]+$'))));
+      expect(GameAchievement.values.map((a) => a.iosId).toSet(), hasLength(GameAchievement.values.length));
       expect(GameLeaderboard.values.map((b) => b.iosId), everyElement(matches(RegExp(r'^bt\.lb\.[a-z0-9_]+$'))));
-      expect(GameAchievement.values, hasLength(9));
+      expect(GameAchievement.values, hasLength(19));
+      // Combo x5 to x15; Play Games has only x5.
+      final combos = [for (final a in GameAchievement.values) if (a.combo != null) a];
+      expect([for (final a in combos) a.combo], [for (var n = 5; n <= 15; n++) n]);
+      expect([for (final a in combos) a.iosId], [for (var n = 5; n <= 15; n++) 'bt.ach.combo_$n']);
+      expect([for (final a in GameAchievement.values) if (a.androidId == null) a], combos.skip(1));
       expect(GameLeaderboard.values, hasLength(23));
       expect(GameAchievement.pureSkill.iosId, 'bt.ach.pure_skill');
       expect(GameLeaderboard.levelsCompleted.iosId, 'bt.lb.levels');
@@ -109,6 +115,24 @@ void main() {
       expect(reportForWin(_game(), _wins(3, combo: 9), GamesService.googlePlayGames).achievements, contains(GameAchievement.combo5));
     });
 
+    test('combo x6 to x15 on Game Center only', () {
+      List<GameAchievement> combos(int best, GamesService service) => [
+        for (final a in reportForWin(_game(), _wins(3, combo: best), service).achievements)
+          if (a.combo != null) a,
+      ];
+      expect(combos(9, GamesService.gameCenter), [
+        GameAchievement.combo5,
+        GameAchievement.combo6,
+        GameAchievement.combo7,
+        GameAchievement.combo8,
+        GameAchievement.combo9,
+      ]);
+      expect(combos(15, GamesService.gameCenter), hasLength(11));
+      expect(combos(40, GamesService.gameCenter).last, GameAchievement.combo15);
+      expect(combos(4, GamesService.gameCenter), isEmpty);
+      expect(combos(15, GamesService.googlePlayGames), [GameAchievement.combo5]);
+    });
+
     test('Pure Skill: difficulty 7+ without Hint, Undo or Shuffle', () {
       bool pure(WonGame game) => reportForWin(game, _wins(1), GamesService.googlePlayGames).achievements.contains(GameAchievement.pureSkill);
       expect(pure(_game(difficulty: '7')), isTrue);
@@ -152,6 +176,12 @@ void main() {
       ]);
       expect(android.achievements, [GameAchievement.firstWin, GameAchievement.combo5, GameAchievement.summit]);
       final iOS = reportForProgress(completed, tiers, GamesService.gameCenter);
+      expect(iOS.achievements, [
+        GameAchievement.firstWin,
+        GameAchievement.combo5,
+        GameAchievement.combo6,
+        GameAchievement.summit,
+      ]);
       expect(_scores(iOS)[GameLeaderboard.timeD10], 3001);
       expect(_scores(iOS)[GameLeaderboard.timeD2], 5000);
     });

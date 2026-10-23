@@ -52,19 +52,19 @@ dart run tool/smoke_remote.dart         # live check: app's content client vs pr
 - `lib/rendering/` — tile body rasterizer, symbol art cache, board painter, effects.
 - `lib/features/` — screens. `levels/` Levels (`LevelSelectScreen`), `LevelLoaderScreen`
   (`level_loader.dart`: every game opens through it — the game at once when the level is on the device, else
-  "Downloading level…", or offline "Connect to the internet to download this level"), `DifficultyStyle`; `home/` lobby (`widgets/lobby_hero.dart` hero tiles on the mossy ledge + gold "Brain Train" title, `widgets/lobby_footer.dart` status line; `widgets/lobby_buttons.dart` glass buttons via `_LobbyGlass`;
+  "Downloading level…", or offline "Connect to the internet to download this level"), `DifficultyStyle`; `home/` lobby (`widgets/lobby_hero.dart` hero tiles on the mossy ledge + gold "Tile Park" title over a "PUZZLES" plaque, `widgets/lobby_footer.dart` status line; `widgets/lobby_buttons.dart` glass buttons via `_LobbyGlass`;
   `widgets/lobby_play_games.dart` round Play Games buttons; `widgets/lobby_update_card.dart` update card);
   `gameplay/` (`game_controller.dart` glues engine + UI; `game_layout.dart` (`GameLayout`: the screen's heights,
-  compact on short screens); `widgets/game_hud.dart` top HUD + `ComboTimerBar`; `widgets/action_bar.dart` Undo / Hint /
+  compact on short screens); `widgets/game_hud.dart` top HUD (round Back and Pause) + `ComboTimerBar`; `widgets/action_bar.dart` Undo / Hint /
   Shuffle / Restart; `widgets/hint_glow.dart` hint overlay (blinking glow + hand); `widgets/hint_hand.dart` the hint's
   pointing hand (`HintHand` geometry, `HintHandMotion`); `widgets/result_cards.dart` Level Complete, Tray full,
-  Restart and ad-offer cards; `widgets/premium_chrome.dart` felt backdrop, panels, buttons;
+  Pause, Restart and ad-offer cards; `widgets/premium_chrome.dart` felt backdrop, panels, buttons;
   `widgets/tray_view.dart` tray + `TrayController`; `widgets/tile_flight_overlay.dart`
   board↔tray flights + `TrayFlightDirector`; `widgets/tile_shatter.dart` match strike + shards;
   `widgets/tile_art.dart` single-tile art; `widgets/board_intro.dart` level-start intro; `widgets/win_trophy.dart` trophy Lottie
   on the win card; `widgets/combo_badge.dart`, `widgets/score_popups.dart`;
   `widgets/first_play_tutorial.dart` first-play coach marks); `common/` shared lobby chrome, `glass_painters.dart` (`GlassRimPainter`/`GlassShadowPainter`), `PremiumMahjongTile`,
-  lobby background + fireflies; `intro/` studio video + logo screen + `age_screen.dart` (neutral age screen).
+  lobby background + fireflies, `lobby_ambience.dart` (home's butterflies + lantern flicker); `intro/` studio video + logo screen + `age_screen.dart` (neutral age screen).
 - `lib/app/` — `AppServices` (wiring), `AppScope` (above `MaterialApp`), `theme.dart`
   (`BrainTrainPalette.night`, `LobbyTheme.night`, `FeltFoliage`, `buildBrainTrainTheme()`), `typography.dart` (`BrainTrainFonts`, `BrainTrainType` builders,
   `BrainTrainTypography` theme extension, `registerFontLicenses`), `brand.dart` (`kDisplayFont` = Playfair, gold),
@@ -212,7 +212,9 @@ dart run tool/smoke_remote.dart         # live check: app's content client vs pr
   (`GameController.onWin` → `PlayGamesController.reportWin`, fire and forget, never blocks the win card): Best Score
   and Fastest Time of its difficulty (none for named tiers; time in ms on Play Games (Duration), hundredths on Game
   Center), Total Score (sum of `bestScore`), Levels Completed, Best Combo, and the achievements earned (1/10/50/100/
-  250/500 wins, combo ×5, Summit = a difficulty-10 win, Pure Skill = difficulty 7+ with no Hint/Undo/Shuffle). Once
+  250/500 wins, combo ×5, combo ×6 to ×15 on Game Center only (owner, 2026-10-23; `GameAchievement.combo6..combo15`,
+  no Play Games ID, so Android never sends them), Summit = a difficulty-10 win, Pure Skill = difficulty 7+ with no
+  Hint/Undo/Shuffle). Once
   per app run at the first sign-in a catch-up sends what the records earned (per-difficulty bests from the manifest's
   tiers, totals, counts, combo, Summit; never Pure Skill), unlocking without Game Center banners; each achievement
   goes at most once per run. Release signing reads gitignored `android/key.properties`. iOS min is 15.0 (App Store: ITMS-90068, iOS 15+ required for uploads from April 2027).
@@ -312,7 +314,13 @@ dart run tool/smoke_remote.dart         # live check: app's content client vs pr
   first Sound change pins it, so players who muted Sound before 1.1.0 stay silent). Sound Effects (`settings.sound`)
   gates only the effects (`SoundEffects`). `BackgroundMusic` takes a `MusicPlayer` (audioplayers; a fake in
   `test/app/background_music_test.dart`).
-- Sounds: `assets/sounds/tap.wav` (one tap cut from the owner's Tap.mp3) on every playable tap; `assets/sounds/strike.wav` (the owner's impact.mp3, trimmed to 0.81 s, -6 dB; owner 2026-10-17; was a hit cut from strike.mp3) is `Sfx.match`, played when a matched pair strikes in the tray; the last pair's strike is followed by `Sfx.win` 450 ms later.
+- Sounds (owner, 2026-10-23: replace them all; was the owner's Tap.mp3 / impact.mp3 cuts): Kenney CC0 sounds
+  (Interface Sounds, Music Jingles), trimmed, mono WAV, credited in `assets/sounds/SOURCES.md` (every file there, a
+  test checks): `Sfx.tap` every playable tap, `Sfx.tray` a tile landing in the tray without a match (after the flight),
+  `Sfx.match` a pair striking at x1, `Sfx.combo` (brighter) in its place from x2, `Sfx.invalid` a blocked tap,
+  `Sfx.hint`, `Sfx.undo` (at once, as the tile flies back), `Sfx.shuffle`, `Sfx.lose` (tray full), `Sfx.select` (soft
+  tick: intro layers, revived tiles landing); the last pair's strike is followed by `Sfx.win` (a rising jingle) 450 ms
+  later. All behind the Sound Effects switch; no volume sliders (owner: keep the switches).
 - Game actions (owner, 2026-10-17, 1.1.0; replaces "no Undo and no Hint"): Undo, Hint and Shuffle, 1 / 1 / 1 uses
   per level attempt (`kStartingCharges`), back to 1/1/1 on Restart, unchanged by Revive; with none left the player can
   watch a rewarded ad for +1 of that action (`GameController.grant`, saved as `!grant:<action>`), at most once per
@@ -324,7 +332,8 @@ dart run tool/smoke_remote.dart         # live check: app's content client vs pr
   or offered for it. API: `GameController.isAvailable` / `canUse` / `usesLeft` / `grantsLeft` / `isSpent`, `undo`,
   `useHint`, `shuffle`, `grant`; events `MoveUndone`, `TileHinted`, `BoardShuffled`; `winSummary` counts the uses. UI
   (`widgets/action_bar.dart`, under the board): gold-outlined round buttons with labels (under them; beside them on
-  compact screens) and a gold badge with the uses left, a play mark at 0 while the grant is left (an ad offer; "+"
+  compact screens and in the game, inside a dark gold-rimmed pill from the disc's centre: premium mockup, 2026-10-23)
+  and a gold badge with the uses left, a play mark at 0 while the grant is left (an ad offer; "+"
   without ads); a button is on only while `isAvailable` and no card is open (off = dimmed colours, no ad offer). A
   spent action's button fades out (`kSpentFadeDuration` 240 ms, colour alphas, no Opacity layer; at once with reduce
   motion or in a resumed save) and leaves an invisible placeholder of the same size (laid out, not painted, no taps,
@@ -361,11 +370,17 @@ dart run tool/smoke_remote.dart         # live check: app's content client vs pr
   only while playing, not during the intro, result cards or another card) with a confirm card "Restart this level?" /
   "Your score and time start over." (Restart / Keep playing; clock paused, Android back closes it), from the Tray full
   card and from Level Complete (Replay).
-- HUD (1.1.0, `widgets/game_hud.dart`, top of the screen): back arrow, "Level N" (gold) over the level's name
+- Pause (owner, 2026-10-23, premium mockup): a round gold-rimmed button at the right end of the HUD (tooltip "Pause";
+  on only while playing: not during the intro or tutorial, nor over a result or other card) opens `PauseCard`
+  ("Paused" / "The clock waits until you resume.", Resume gold, Restart and Lobby side by side) on a dense scrim that
+  hides the board (`ResultOverlay(dense: true)`); the clock is paused, Android back and the HUD's Back resume, Restart
+  opens the Restart confirm card (clock still paused), Lobby pops to the first route (the game is saved after every
+  move). No pause on the lobby; no auto-pause when the app leaves the foreground (the clock just stops).
+- HUD (1.1.0, `widgets/game_hud.dart`, top of the screen): round Back (dark disc, gold rim), "Level N" (gold) over the level's name
   (Playfair, shrinks to 72% then ellipsizes; the statistics shrink first, down to 46% of the width; 1 of the 100 names,
   "Moonlit Standing Stones", still ends in "…" on phones), then SCORE (counts
   up), COMBO ×N (gold on a gold cell from ×2, a quiet ×1 otherwise), PAIRS a/b and TIME, Manrope tabular figures
-  between fine gold separators; text scales up to 1.3x in a fixed-height panel. Under it `ComboTimerBar`: a gold bar
+  between fine gold separators, then round Pause; text scales up to 1.3x in a fixed-height panel. Under it `ComboTimerBar`: a gold bar
   draining with "2.1s", read from `GameController.comboTimeLeft` (the `ScoreKeeper` window on the game clock, no timer
   of its own), shown from a match until its window closes, ticking only while the clock runs. The "COMBO ×N · Best
   ×M" badge still floats on the tray's bottom edge (no ring any more); score popups unchanged.
@@ -416,7 +431,11 @@ dart run tool/smoke_remote.dart         # live check: app's content client vs pr
   circle mask. Regenerate with `python3 tool/branding/make_tile_park_icons.py` (needs Pillow); never with
   `tool/assets/make_app_icon.py`, which still draws the old Brain Train emblem.
 - No "Mahjong Solitaire" subtitle on the lobby.
-- Look: emerald felt + botanical foliage, dark-green panels with fine gold borders, thick 3D tiles (owner, 2026-10-17):
+- Look: emerald felt + botanical foliage (premium mockup, 2026-10-23: gameplay adds a faint cobblestone path under the
+  action bar and two small glowing lanterns at the edges, all in the backdrop's static layer, `FeltFoliage`; the lobby
+  has three lanterns whose glows breathe and two glowing butterflies, `LobbyAmbience`, one `AmbientClock`, still with
+  reduce motion; a tile flying to the tray glows gold for the first half of its flight), dark-green panels with fine
+  gold borders, thick 3D tiles (owner, 2026-10-17):
   warm ivory face with a soft top-left-lit rim and fine inner edge, a light wall over an olive/emerald-green base on
   the right and bottom, a fine dark outline, a soft cast shadow down-right and a longer one under upper layers onto the
   tiles below. All baked once per face size (`MahjongTileRenderer.renderBody` / `renderRaisedShadow`), never blurred
@@ -499,8 +518,9 @@ dart run tool/smoke_remote.dart         # live check: app's content client vs pr
   `assets/lobby/hero/symbols/v1/` (`kHeroArtPrefix`, 55,494 bytes; the app's bundled source `bundledContent` reads the
   starter pack, then them, sha256-checked against the registry), so a fresh install shows them; the starter pack's
   XMAS_TREE / BIRD_PEACOCK / GALAXY_POMEGRANATE only if a later registry changes their art before it is cached), the
-  gold Playfair title "Brain Train" (replaces the "Train your
-  brain" tagline), then Play/Continue/Replay · Level N (always the first level not won; "Continue" only for a saved
+  gold Playfair title "Tile Park" over a wooden "PUZZLES" plaque with a gold rim and a leaf at each end (premium
+  mockup, 2026-10-23; read as one header "Tile Park: Puzzles", `LobbyHero.title`), then Play/Continue/Replay · Level N
+  (gold, with a play mark; presses in a little) (always the first level not won; "Continue" only for a saved
   game of that level), "Levels", "Settings". Footer status line (owner, replaces "no N levels ready footer"): "N levels
   ready · v<contentVersion>" with N = window levels on the device now (`ContentController.windowReadiness`); a content
   notice (offline / update skipped / new content installed) takes the count's place; a Play Games notice replaces the
@@ -604,6 +624,10 @@ dart run tool/smoke_remote.dart         # live check: app's content client vs pr
   `bt.ach.*` (300 points) and 23 Classic leaderboards `bt.lb.*` of `lib/platform/game_services_ids.dart` are created
   with en-US texts and the `art/play-games/` icons (Fastest Time: Elapsed Time to the hundredth, low to high; the rest
   Integer, high to low); still to do: turn on Game Center for the version and add them there for review.
+  Combo ×6 to ×15 (2026-10-23): `bt.ach.combo_6`..`combo_15` created (Combo Streak, Combo Spark, Combo Climber, Combo
+  Blaze, Perfect Ten, Combo Storm, Combo Wizard, Combo Legend, Combo Titan, Combo Champion; 15, 15, 20, 20, 25, 25,
+  30, 30, 35, 40 points, 445 of 1,000 left; "Reach a ×N combo." / "You reached a ×N combo."; icons = `combo_5.png`
+  with a ×N tag), "Prepare for Submission": add them to the next app version's review (1.1.0 cannot unlock them).
 - Play Console release state (2026-10-16): every App content declaration is done (privacy policy, ads = yes,
   Advertising ID, content rating, target audience 6+ incl. under 13 (Families), Data safety, Health/Financial/
   Government); category Puzzle; store listing saved. Closed testing - Alpha: versionCode 4 (1.0.0), all countries,
@@ -612,7 +636,11 @@ dart run tool/smoke_remote.dart         # live check: app's content client vs pr
   Production needs 12+ opted-in testers for 14 days, then real AdMob IDs.
 - AdMob (2026-10-17): account ca-app-pub-6766349950907943 (under review; apps "Brain Train - Tile Match" show limited
   ad serving until linked to a published store listing: after each release, AdMob → the app → "Add store" to link it;
-  until then the no-ad fallback makes Revive and refills free while online). iOS app `~6846744759`, rewarded "Revive" unit `/7563920896`
+  until then the no-ad fallback makes Revive and refills free while online). 2026-10-23: the iOS AdMob app is linked
+  to the App Store listing (id6823729570) and now waits on "Verify app", which needs
+  `https://sungamestudio.com/app-ads.txt` (404 so far; its one line is in `website/app-ads.txt`): deploy it on
+  game-server-01, then AdMob → the app → Verify app. The Android AdMob app is not linked yet (Play listing not public).
+  iOS app `~6846744759`, rewarded "Revive" unit `/7563920896`
   (in `ios/Runner/Info.plist`); Android app `~8517909911`, rewarded "Revive" unit `/5905943038` (in gitignored
   `android/admob.properties` on the Linux machine; copy it to another machine like `key.properties`).
 - Open work (ads, docs/ADS.md "Owner setup"): AdMob account, app and "Revive" rewarded unit → real IDs in

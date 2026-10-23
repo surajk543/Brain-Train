@@ -5,13 +5,38 @@ import 'package:audioplayers/audioplayers.dart';
 import '../data/settings_repository.dart';
 
 enum Sfx {
-  /// The player tapped a tile that can be played (it goes to the tray).
+  /// The player tapped a tile that can be played (it goes to the tray): a
+  /// soft, tactile click.
   tap('sounds/tap.wav'),
+
+  /// A soft tick: intro layers and revived tiles landing.
   select('sounds/select.wav'),
-  /// Two matched tiles strike each other in the tray (the owner's
-  /// impact.mp3, trimmed to 0.81 s and lowered 6 dB; owner, 2026-10-17).
-  match('sounds/strike.wav'),
+
+  /// A tile landed in the tray without a match: a gentle pop with a faint
+  /// chime.
+  tray('sounds/tray.wav'),
+
+  /// Two matched tiles strike each other in the tray: a rising chime over a
+  /// soft whoosh (the shards).
+  match('sounds/match.wav'),
+
+  /// A match that continues a combo (x2 and up): a brighter rising chime in
+  /// place of [match].
+  combo('sounds/combo.wav'),
+
+  /// A blocked tile was tapped: a low, soft thud.
   invalid('sounds/invalid.wav'),
+
+  /// Hint: a crystal bell.
+  hint('sounds/hint.wav'),
+
+  /// Undo: a gentle falling swish as the tile flies back.
+  undo('sounds/undo.wav'),
+
+  /// Shuffle: a rising sweep with a leafy rustle.
+  shuffle('sounds/shuffle.wav'),
+
+  /// The level is won: a short rising fanfare.
   win('sounds/win.wav'),
 
   /// The tray filled up: the level is lost.
@@ -23,7 +48,8 @@ enum Sfx {
   final String asset;
 }
 
-/// Short game sound effects, gated by the Sound setting.
+/// Short game sound effects, gated by the Sound setting. The files are
+/// Kenney CC0 sounds (assets/sounds/SOURCES.md).
 ///
 /// Mixes with other audio instead of taking audio focus, so a player's music
 /// keeps playing. Playback problems are swallowed: sound is never allowed to

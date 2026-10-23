@@ -41,13 +41,24 @@ String refillFreeNote(GameAction action) => 'No ad available right now. This ${a
 /// (a [PremiumPanel], or the bare [child] for [bare] screens such as Level
 /// Complete) is centred and scrolls if the screen is too short.
 class ResultOverlay extends StatelessWidget {
-  const ResultOverlay({super.key, required this.child, this.bare = false, this.topInset = 0, this.maxWidth = 380});
+  const ResultOverlay({
+    super.key,
+    required this.child,
+    this.bare = false,
+    this.dense = false,
+    this.topInset = 0,
+    this.maxWidth = 380,
+  });
 
   final Widget child;
 
   /// No card panel: [child] sits straight on a deeper scrim with a warm
   /// light behind its top (the Level Complete screen).
   final bool bare;
+
+  /// A scrim that hides what is under it (the Pause card: no studying the
+  /// board while the clock waits).
+  final bool dense;
 
   /// Status bar height the overlay extends under; the content stays below.
   final double topInset;
@@ -89,6 +100,8 @@ class ResultOverlay extends StatelessWidget {
                   scrim.withValues(alpha: 0.82),
                   scrim.withValues(alpha: 0.9),
                 ]
+              : dense
+              ? [scrim.withValues(alpha: 0.9), scrim.withValues(alpha: 0.96), scrim.withValues(alpha: 0.96)]
               : [scrim.withValues(alpha: scrim.a * 0.7), scrim, scrim],
           stops: bare ? const [0, 0.5, 1] : const [0, 0.02, 1],
         ),
@@ -582,6 +595,57 @@ class RestartConfirmCard extends StatelessWidget {
       PremiumButton(label: 'Restart', primary: true, expand: true, onPressed: onRestart),
       const SizedBox(height: 4),
       PremiumButton(label: 'Keep playing', quiet: true, expand: true, onPressed: onKeepPlaying),
+    ],
+  );
+}
+
+/// The Pause card (owner, 2026-10-23), from the HUD's Pause button: the clock
+/// waits while it is open and a dense scrim hides the board. Resume (gold),
+/// then Restart (asks first: [RestartConfirmCard]) and Lobby side by side.
+class PauseCard extends StatelessWidget {
+  const PauseCard({super.key, required this.onResume, required this.onRestart, required this.onLobby});
+
+  final VoidCallback onResume;
+  final VoidCallback onRestart;
+  final VoidCallback onLobby;
+
+  @override
+  Widget build(BuildContext context) => Column(
+    mainAxisSize: MainAxisSize.min,
+    children: [
+      const _CardHeader(icon: Icons.pause_rounded, title: 'Paused', body: 'The clock waits until you resume.'),
+      PremiumButton(
+        key: const ValueKey('pause-resume'),
+        label: 'Resume',
+        icon: Icons.play_arrow_rounded,
+        primary: true,
+        expand: true,
+        onPressed: onResume,
+      ),
+      const SizedBox(height: 10),
+      Row(
+        children: [
+          Expanded(
+            child: PremiumButton(
+              key: const ValueKey('pause-restart'),
+              label: 'Restart',
+              icon: Icons.restart_alt_rounded,
+              expand: true,
+              onPressed: onRestart,
+            ),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: PremiumButton(
+              key: const ValueKey('pause-lobby'),
+              label: 'Lobby',
+              icon: Icons.home_rounded,
+              expand: true,
+              onPressed: onLobby,
+            ),
+          ),
+        ],
+      ),
     ],
   );
 }

@@ -30,7 +30,7 @@ class PlayGamesBackend {
   /// The plugin sends the ID of the platform it runs on.
   Future<void> unlock(GameAchievement achievement, {required bool showBanner}) => Achievements.unlock(
     achievement: Achievement(
-      androidID: achievement.androidId,
+      androidID: achievement.androidId ?? '',
       iOSID: achievement.iosId,
       showsCompletionBanner: showBanner,
     ),
