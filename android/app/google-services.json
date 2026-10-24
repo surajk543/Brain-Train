@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "973411839288",
+    "project_id": "tile-park-6853a",
+    "storage_bucket": "tile-park-6853a.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:973411839288:android:a98a7f78f22c41ca6ae5cd",
+        "android_client_info": {
+          "package_name": "com.sungamestudio.braintrain"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBQlUa-rZUHOhE5oT_WVEXd9Tb5QULmZx4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

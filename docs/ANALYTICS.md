@@ -51,16 +51,24 @@ Firebase adds `first_open`, `session_start`, `user_engagement` and `app_update` 
 by level or difficulty, register `level`, `difficulty`, `success` and `action` as event-scoped custom dimensions
 (Firebase console → Analytics → Custom definitions). Never add the age group or anything that identifies a player.
 
-## Firebase project setup (owner)
+## Firebase project
 
-1. https://console.firebase.google.com → Add project "Tile Park" (Google Analytics on; its account, data location
-   your country). Then Google Analytics → Admin → Data collection and modification → Data retention: 2 months
-   (the privacy policy says so), and Google signals: off.
-2. Add an iOS app: bundle ID `com.sungamestudio.braintrain`, App Store ID `6823729570`. Download
-   `GoogleService-Info.plist` into `ios/Runner/` (it must be in the Runner target: the Xcode project lists it).
-3. Add an Android app: package `com.sungamestudio.braintrain`. Download `google-services.json` into
-   `android/app/`; Gradle applies the google-services plugin only when that file exists.
-4. Both files are committed (they identify the project; they are not secrets, and the apps carry them anyway).
+Project "Tile Park", ID `tile-park-6853a` (number 973411839288), in the Firebase console of
+contact@sungamestudio.com (`console.firebase.google.com/u/1/` on the owner's Mac), Spark plan (no cost), created
+2026-10-25; Google Analytics on, in that account's "Default Account for Firebase"; Gemini in Firebase off.
+
+- iOS app "Tile Park iOS": bundle ID `com.sungamestudio.braintrain`, App Store ID `6823729570`, app ID
+  `1:973411839288:ios:580c0542d2dab4006ae5cd`; its `GoogleService-Info.plist` is in `ios/Runner/` and in the Runner
+  target's resources (`project.pbxproj`).
+- Android app "Tile Park Android": package `com.sungamestudio.braintrain`, app ID
+  `1:973411839288:android:a98a7f78f22c41ca6ae5cd`; its `google-services.json` is in `android/app/` (Gradle applies the
+  google-services plugin only when that file exists).
+- Both files are committed (they identify the project; they are not secrets, and the apps carry them anyway).
+- Google Analytics → Admin → Data collection and modification: Data retention 2 months (the privacy policy says so;
+  the default) and Google signals off (the default). Keep them so.
+- Checked 2026-10-25 on the iPhone 17 Pro simulator: collection off at launch, on after the lobby's first frame;
+  DebugView got `screen_view` and `user_engagement` with `non_personalized_ads = 1`; the SDK logged "IDFA will not be
+  accessible" and "Ad storage consent is denied".
 
 ## Seeing it
 

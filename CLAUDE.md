@@ -292,7 +292,8 @@ dart run tool/smoke_remote.dart         # live check: app's content client vs pr
   (the app instance ID) granted except in the EEA/UK (`RewardedAdsController.privacyRegion` from UMP, kept in
   `privacy.consentRegion`; first launch waits for it at most 10 s, then starts without the ID). Native flags
   (Info.plist, AndroidManifest) keep collection off and every consent denied until the lobby starts the controller
-  after its first frame (never on the startup path). The Firebase project comes from the native files
+  after its first frame (never on the startup path). Firebase project "Tile Park" `tile-park-6853a` in
+  contact@sungamestudio.com's console (Spark plan; Analytics in "Default Account for Firebase"). It comes from the native files
   `ios/Runner/GoogleService-Info.plist` and `android/app/google-services.json` (Gradle applies google-services only
   when it exists); without them nothing is sent. Only `firebase_app_analytics.dart` imports the plugins; every call
   is caught and timed out; tests use `UnavailableAnalytics` or `test/platform/fake_analytics.dart`.
