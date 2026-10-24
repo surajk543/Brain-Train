@@ -10,6 +10,7 @@ import 'package:brain_train/app/tablet_scale.dart';
 import 'package:brain_train/app/theme.dart';
 import 'package:brain_train/content/level_manifest.dart';
 import 'package:brain_train/data/progress_repository.dart';
+import 'package:brain_train/data/settings_repository.dart';
 import 'package:brain_train/features/gameplay/game_controller.dart';
 import 'package:brain_train/features/gameplay/game_layout.dart';
 import 'package:brain_train/features/gameplay/game_screen.dart';
@@ -35,6 +36,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../helpers/fake_stopwatch.dart';
+import '../platform/fake_analytics.dart';
 import '../platform/fake_rewarded_ads.dart';
 import 'lobby_support.dart';
 
@@ -77,13 +79,18 @@ void main() {
   late AppServices services;
   late FakeStopwatch clock;
   late FakeRewardedAds ads;
+  late FakeAnalytics analytics;
   late LevelManifestEntry entry;
+
+  /// The analytics events' names, in order.
+  List<String> logged() => [for (final (name, _) in analytics.events) name];
 
   // Real glyphs: text widths as on a phone (the layout checks need them).
   setUpAll(loadCaptureFonts);
 
   setUp(() {
-    SharedPreferences.setMockInitialValues({});
+    // Outside the EEA/UK: analytics collects at once.
+    SharedPreferences.setMockInitialValues({SettingsRepository.privacyRegionKey: false});
     clock = FakeStopwatch();
   });
 
@@ -93,11 +100,13 @@ void main() {
     // Built on the test's fake clock (not in runAsync): its stream callbacks
     // and the no-ad fallback's online check then run when the test pumps.
     final controller = adStatus == null ? null : RewardedAdsController(ads);
+    analytics = FakeAnalytics();
     await tester.runAsync(() async {
-      services = await testServices(ads: controller);
+      services = await testServices(ads: controller, analytics: analytics);
       // A difficulty-4 level: 4-slot tray.
       entry = services.content.snapshot.playableEntries.firstWhere((e) => e.difficulty == '4');
     });
+    services.analytics.start();
   }
 
   /// Opens [entry] (or [open]) on the hand-driven clock and waits for the
@@ -197,6 +206,8 @@ void main() {
       // A restart replays the intro: every button is off meanwhile.
       game.restart();
       await tester.pump();
+      expect(logged(), ['level_start', 'action_used', 'action_used', 'level_restart']);
+      expect([for (final (_, p) in analytics.events.skip(1).take(2)) p['action']], ['undo', 'hint']);
       expect(game.introPlaying, isTrue);
       for (final action in GameAction.values) {
         expect(_button(tester, action).onPressed, isNull, reason: '$action during the intro');
@@ -394,6 +405,8 @@ void main() {
       expect(find.text('Watch an ad for +1 Hint?'), findsNothing);
       expect(game.clockRunning, isTrue);
       expect(game.state.moveCount, 0, reason: 'a grant uses nothing');
+      expect(logged().last, 'action_refill');
+      expect(analytics.events.last.$2, {'level': entry.order, 'difficulty': '4', 'action': 'hint', 'ad': 1});
       await tester.pumpWidget(const SizedBox());
     });
 
@@ -797,6 +810,15 @@ void main() {
       expect(find.bySemanticsLabel('Best Combo ×${summary.bestCombo}'), findsOneWidget);
       expect(find.bySemanticsLabel('Completion Time ${formatDuration(summary.time)}'), findsOneWidget);
       expect(find.text('Replay'), findsOneWidget);
+      expect(logged(), ['level_start', 'action_used', 'action_used', 'level_end']);
+      expect(analytics.events.last.$2, {
+        'level': entry.order,
+        'difficulty': '4',
+        'success': 1,
+        'score': summary.score,
+        'seconds': summary.time.inSeconds,
+        'pairs': level.pairCount,
+      });
 
       // Two quick taps: one navigation.
       final next = find.text('Next Level');

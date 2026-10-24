@@ -73,7 +73,8 @@ dart run tool/smoke_remote.dart         # live check: app's content client vs pr
   (`AppServices.ads`: Revive's ad state, show with music/SFX held, privacy options, `offer()`),
   `rewarded_ad_offer.dart` (`RewardedAdOffer`: one card's ad with the no-ad fallback, `kAdFallbackDelay`),
   `app_update_controller.dart`
-  (`AppServices.updates`: the lobby's update card, its check, kept notice, Update / Later).
+  (`AppServices.updates`: the lobby's update card, its check, kept notice, Update / Later),
+  `analytics_controller.dart` (`AppServices.analytics`: event names, the EEA/UK consent decision, early-log queue).
 - `lib/data/` — `ProgressRepository`, `SettingsRepository` (also the stored `AgeGroup`), `age_group.dart`,
   `app_update_cache.dart` (last good update notice), `cloud_progress_sync.dart` (`CloudProgressSync`,
   `CloudProgress`: the cloud save). `lib/platform/cloud_store.dart` (`CloudStore`, `UnavailableCloudStore`, pure
@@ -86,7 +87,9 @@ dart run tool/smoke_remote.dart         # live check: app's content client vs pr
   Dart); `managed_rewarded_ads.dart` (`ManagedRewardedAds` over an `AdsBackend`: consent, one ad kept loaded,
   backoff, timeouts); `google_mobile_ads_rewarded.dart` (the only file importing `google_mobile_ads`;
   `createRewardedAds()`); `app_updates.dart` (`AppUpdater` interface, `UnavailableAppUpdater`, store links, pure
-  Dart); `play_in_app_update.dart` (the only file importing `in_app_update`; `createAppUpdater()`).
+  Dart); `play_in_app_update.dart` (the only file importing `in_app_update`; `createAppUpdater()`);
+  `analytics.dart` (`Analytics` interface, `UnavailableAnalytics`, pure Dart); `firebase_app_analytics.dart` (the only
+  file importing `firebase_core` / `firebase_analytics`; `createAnalytics()`).
 - `content-src/` — authoring: `catalog.json` (`campaign`: seed, tiers, counts, bands). `layouts/*.layout.json`
   are the old hand layouts (not in the catalog; the tool still accepts catalog `levels` entries).
   `app-update.json` is the app update notice (mutable key `brain-train/app-update.json`, docs/APP_UPDATES.md).
@@ -100,7 +103,8 @@ dart run tool/smoke_remote.dart         # live check: app's content client vs pr
 - `infra/cloudflare/braintrain-assets/worker.js` — the deployed Worker's source of truth.
 - `docs/` — `level-design-rules.md` (all level rules: difficulty 1–10, tray 2–5, 85/15, batches),
   `CONTENT_PUBLISHING.md`, `ASSET_PIPELINE.md`, `PLAY_GAMES.md`, `ADS.md` (AdMob setup, IDs, age screen, consent),
-  `APP_UPDATES.md` (update card, force update, the notice).
+  `APP_UPDATES.md` (update card, force update, the notice), `ANALYTICS.md` (Firebase setup, events, consent,
+  Realtime).
 
 ## Rules that are easy to break
 
@@ -280,6 +284,19 @@ dart run tool/smoke_remote.dart         # live check: app's content client vs pr
   (`market://` first; `openUrl` on the `brain_train/platform` channel). Only `play_in_app_update.dart` imports the
   plugin; builds without it (tests) use `UnavailableAppUpdater` (never asks). Raise `latestVersionCode` /
   `minVersionCode` only once the new build is live on Play.
+- Analytics (owner, 2026-10-24, 1.2.1; docs/ANALYTICS.md): Google Analytics for Firebase counts players (Realtime:
+  who plays now) and logs `level_start`, `level_end` (success, score, seconds, pairs), `level_restart`, `revive`,
+  `action_used`, `action_refill` (each with `level` = number and `difficulty`) and screen views (lobby, levels,
+  settings, game). Every player, under 13 too, minimally: never the age group or anything identifying; ad storage,
+  ad user data and ad personalization always denied, advertising ID / IDFV / SSAID collection off; analytics storage
+  (the app instance ID) granted except in the EEA/UK (`RewardedAdsController.privacyRegion` from UMP, kept in
+  `privacy.consentRegion`; first launch waits for it at most 10 s, then starts without the ID). Native flags
+  (Info.plist, AndroidManifest) keep collection off and every consent denied until the lobby starts the controller
+  after its first frame (never on the startup path). Firebase project "Tile Park" `tile-park-6853a` in
+  contact@sungamestudio.com's console (Spark plan; Analytics in "Default Account for Firebase"). It comes from the native files
+  `ios/Runner/GoogleService-Info.plist` and `android/app/google-services.json` (Gradle applies google-services only
+  when it exists); without them nothing is sent. Only `firebase_app_analytics.dart` imports the plugins; every call
+  is caught and timed out; tests use `UnavailableAnalytics` or `test/platform/fake_analytics.dart`.
 - Scoring (owner): a match scores `100 x min(combo, 5)` + speed bonus (+50 gap < 1 s, +25 < 2 s, +10 for 2-4 s);
   combo window 4 s on the game clock (pauses with it), every match restarts it from that match, a gap > 4 s starts over
   at x1; only `TapOutcome.matched` scores; a blocked-tile tap costs 1 (never below 0) and ends the combo; Revive ends
@@ -574,7 +591,9 @@ dart run tool/smoke_remote.dart         # live check: app's content client vs pr
 - Not yet integrated: 4 IconScout AI images (spring rolls ×2, salad, nachos) — not reachable via the IconScout API.
 - Tray mechanic is integrated (tray at the top, flights, strike-and-shatter matches, Tray full card with
   Revive / Restart), with 2 to 5 slots per level.
-- App version 1.2.0+16 (2026-10-23, `release/1.2.0`): premium UI, Pause, Kenney sounds, cloud save, 29 new Game Center
+- App version 1.2.1+17 (2026-10-24, `feat/firebase-analytics`, in progress): Firebase Analytics (see Analytics above);
+  iOS first, Android with its first store release.
+  1.2.0+16 (2026-10-23, `release/1.2.0`): premium UI, Pause, Kenney sounds, cloud save, 29 new Game Center
   achievements; approved and live on the App Store since 2026-10-23 18:57 UTC (automatic release, all users at once;
   builds 14 and 15 were uploaded but not used). iOS force update to build 16 published 2026-10-24 (the live notice
   above). Android not released yet.
@@ -609,8 +628,12 @@ dart run tool/smoke_remote.dart         # live check: app's content client vs pr
   `/opt/homebrew/share/android-commandlinetools`, AVD `Pixel_9` = Play Store image (use for Play Games), `TP_*` AVDs
   have no Play Store, `Pixel_6_API_34` does not exist. Python 3 + Pillow for `tool/assets/*.py`, ffmpeg for audio.
 - `flutter analyze` and `flutter test` work on a fresh clone (tests use fixtures and `content/starter/`); on the Linux
-  machine 817 pass and 17 skip with the full content tree (2026-10-17, content 2026.10.17.3 draft); on the Mac 6 failed before
-  (see Open work).
+  machine 817 pass and 17 skip with the full content tree (2026-10-17, content 2026.10.17.3 draft); on this Mac 857 pass
+  and 28 skip (2026-10-25).
+- Xcode 27.1 (this Mac): `flutter build ios --simulator` fails in `debug_unpack_ios` ("does not contain architectures
+  \"arm64 x86_64\""): its `lipo -verify_arch` takes one architecture per call now, and Flutter 3.44.7 passes both.
+  Device builds (`flutter build ios|ipa`, arm64 only) and `flutter run` on one simulator are not affected; the CI
+  workflow's simulator build will fail once its runner has Xcode 27.1.
 - Run on a Mac (iPhone simulator) or any machine with no secrets: `flutter pub get && flutter run`. Debug builds read
   content from the public host, use Google's test AdMob IDs, skip Play Games (no app ID; iOS uses Game Center) and
   use debug signing;
@@ -689,9 +712,5 @@ dart run tool/smoke_remote.dart         # live check: app's content client vs pr
   Game Center path is untested until the first Xcode build. Scoring + combo is implemented (4 s window).
 - Open work: Play Games / scoring follow-ups after the PR #2 merge: run an iOS build on a Mac with full Xcode (iOS min
   15.0, never built yet).
-- Open work: 5–6 tests fail on this Mac (predate PR #2): RenderFlex overflow of 4.4 px at
-  `lib/features/levels/level_select_screen.dart:232` (Completed Levels row) — level_select_test (2), level_loader_test (1),
-  lobby_capture_test (2, per-phone "home, levels, settings"), gameplay_capture_test ("tray-full overlay 360x640 at 1.3x
-  text"). Owner to decide.
 
 Keep this file current when commands, layout, or these rules change.

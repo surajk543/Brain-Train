@@ -18,6 +18,7 @@ import 'package:brain_train/content/content_repositories.dart';
 import 'package:brain_train/content/remote_asset_resolver.dart';
 import 'package:brain_train/data/progress_repository.dart';
 import 'package:brain_train/data/settings_repository.dart';
+import 'package:brain_train/platform/analytics.dart';
 import 'package:brain_train/rendering/symbol_art.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
@@ -37,6 +38,7 @@ Future<AppServices> testServices({
   PlayGamesController? playGames,
   RewardedAdsController? ads,
   AppUpdateController? updates,
+  Analytics analytics = const UnavailableAnalytics(),
   http.Client? client,
   bool tutorialDone = true,
   /// The answered age group; null leaves the age screen unanswered.
@@ -67,6 +69,7 @@ Future<AppServices> testServices({
     playGames: playGames,
     ads: ads,
     updates: updates,
+    analytics: analytics,
   );
 }
 

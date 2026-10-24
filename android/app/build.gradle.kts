@@ -6,6 +6,10 @@ plugins {
     id("dev.flutter.flutter-gradle-plugin")
 }
 
+// Firebase Analytics (docs/ANALYTICS.md): the project's android/app/google-services.json. Without it the
+// app builds as before and analytics stays off.
+if (file("google-services.json").exists()) apply(plugin = "com.google.gms.google-services")
+
 /** android/<name> as properties, empty when the file does not exist. */
 fun localProperties(name: String): Properties = Properties().apply {
     val file = rootProject.file(name)

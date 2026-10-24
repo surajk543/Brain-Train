@@ -204,7 +204,12 @@ void main() {
     await _until(ads, RewardedAdStatus.offline);
     await _until(ads, RewardedAdStatus.ready);
     expect(backend.calls.where((c) => c == 'load'), hasLength(3));
-    expect(seen, [RewardedAdStatus.offline, RewardedAdStatus.ready], reason: 'no flicker back to loading while offline');
+    // (The first attempt's consent check may report while still loading.)
+    expect(
+      seen.skipWhile((s) => s == RewardedAdStatus.loading),
+      [RewardedAdStatus.offline, RewardedAdStatus.ready],
+      reason: 'no flicker back to loading while offline',
+    );
   });
 
   test('a failure while the network is down counts as offline', () async {

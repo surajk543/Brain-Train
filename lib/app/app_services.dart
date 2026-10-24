@@ -25,8 +25,10 @@ import '../data/app_update_cache.dart';
 import '../data/cloud_progress_sync.dart';
 import '../data/progress_repository.dart';
 import '../data/settings_repository.dart';
+import '../platform/analytics.dart';
 import '../platform/app_updates.dart';
 import '../platform/cloud_store.dart';
+import '../platform/firebase_app_analytics.dart';
 import '../platform/games_services_play_games.dart';
 import '../platform/google_mobile_ads_rewarded.dart';
 import '../platform/icloud_store.dart';
@@ -34,6 +36,7 @@ import '../platform/play_games.dart';
 import '../platform/play_in_app_update.dart';
 import '../platform/rewarded_ads.dart';
 import '../rendering/symbol_art.dart';
+import 'analytics_controller.dart';
 import 'app_update_controller.dart';
 import 'background_music.dart';
 import 'play_games_controller.dart';
@@ -209,10 +212,12 @@ class AppServices {
     RewardedAdsController? ads,
     AppUpdateController? updates,
     CloudStore cloud = const UnavailableCloudStore(),
+    Analytics analytics = const UnavailableAnalytics(),
   }) : playGames = playGames ?? PlayGamesController(const UnavailablePlayGames()),
        ads = ads ?? RewardedAdsController(const UnavailableRewardedAds()),
        updates = updates ?? AppUpdateController(updater: const UnavailableAppUpdater()),
        cloudSync = CloudProgressSync(progress: progress, settings: settings, cloud: cloud) {
+    this.analytics = AnalyticsController(analytics, settings: settings, ads: this.ads);
     // The level window follows this player's progress.
     content.attachProgress(progress);
     // Leaderboards and achievements read the wins and each level's tier
@@ -247,6 +252,11 @@ class AppServices {
   /// The progress in the player's iCloud (iOS), so it survives a reinstall;
   /// does nothing elsewhere. The lobby starts it after its first frame.
   final CloudProgressSync cloudSync;
+
+  /// Player counts and game events (Firebase Analytics on Android and iOS,
+  /// with the project's config files); nothing elsewhere. The lobby starts it
+  /// after its first frame.
+  late final AnalyticsController analytics;
 
   static Future<AppServices> create({ContentConfig? config}) async {
     final contentConfig = config ?? ContentConfig.production;
@@ -289,6 +299,8 @@ class AppServices {
       ),
       // Nothing runs yet: the lobby starts the cloud save after its first frame.
       cloud: createCloudStore(),
+      // Nothing runs yet: the lobby starts analytics after its first frame.
+      analytics: createAnalytics(),
     );
   }
 

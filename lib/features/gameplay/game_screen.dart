@@ -132,6 +132,9 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
   /// is due (flag unset, no level won yet).
   bool _tutorialCheck = true;
   late final AppServices _services;
+
+  /// The board's events, for analytics ([_logEvent]).
+  StreamSubscription<BoardEvent>? _analyticsEvents;
   late final TrayFlightDirector _director;
   bool _reduceMotion = false;
   Timer? _resultTimer;
@@ -170,16 +173,25 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
         // Every game opens with the board intro, unless motion is reduced.
         playIntro: !reduceMotion,
         // Leaderboards and achievements (13+ and signed in; fire and forget).
-        onWin: (summary) => services.playGames.reportWin(
-          WonGame(
-            difficulty: widget.entry.difficulty,
+        onWin: (summary) {
+          services.analytics.levelEnd(
+            widget.entry,
+            won: true,
             score: summary.score,
             time: summary.time,
-            hintsUsed: summary.hintsUsed,
-            undosUsed: summary.undosUsed,
-            shufflesUsed: summary.shufflesUsed,
-          ),
-        ),
+            pairs: summary.matchedPairs,
+          );
+          services.playGames.reportWin(
+            WonGame(
+              difficulty: widget.entry.difficulty,
+              score: summary.score,
+              time: summary.time,
+              hintsUsed: summary.hintsUsed,
+              undosUsed: summary.undosUsed,
+              shufflesUsed: summary.shufflesUsed,
+            ),
+          );
+        },
       );
       _tray = TrayController(capacity: controller.trayCapacity);
       _flights = TileFlightController(duration: _flightTime(reduceMotion));
@@ -200,6 +212,10 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
         ..addListener(_syncResult)
         ..addListener(_syncIntro)
         ..addListener(_syncTutorial);
+      _analyticsEvents = controller.events.listen(_logEvent);
+      services.analytics
+        ..screen('game')
+        ..levelStart(widget.entry, resumed: widget.resume != null);
       _tray.addListener(_syncResult);
       _flights.addListener(_syncResult);
       _shatters.addListener(_syncResult);
@@ -359,14 +375,17 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
   Future<void> _revive() async {
     if (controller.state.status != GameStatus.trayFull || !controller.canRevive) return;
     if (_ads.off) {
-      controller.revive();
+      if (controller.revive()) _services.analytics.revive(widget.entry, ad: false);
       return;
     }
     final offer = _reviveOffer;
+    final ad = offer?.mode == AdOfferMode.ad;
     if (offer == null || !await offer.claim() || !mounted) return;
     await _untilResumed();
     if (!mounted) return;
-    if (controller.state.status == GameStatus.trayFull) controller.revive();
+    if (controller.state.status == GameStatus.trayFull && controller.revive()) {
+      _services.analytics.revive(widget.entry, ad: ad);
+    }
   }
 
   /// The ad was a separate screen: wait (briefly) for the app to be in the
@@ -399,7 +418,7 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
       return;
     }
     if (_ads.off) {
-      controller.grant(action);
+      if (controller.grant(action)) _services.analytics.actionRefill(widget.entry, action, ad: false);
       return;
     }
     controller.pauseClock();
@@ -435,11 +454,12 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
   Future<void> _watchRefillAd() async {
     final action = _refill.value;
     final offer = _refillOffer;
+    final ad = offer?.mode == AdOfferMode.ad;
     if (action == null || offer == null || !await offer.claim() || !mounted) return;
     await _untilResumed();
     if (!mounted) return;
     if (_refill.value == action && identical(_refillOffer, offer)) {
-      controller.grant(action);
+      if (controller.grant(action)) _services.analytics.actionRefill(widget.entry, action, ad: ad);
       _closeRefill();
     }
   }
@@ -544,6 +564,7 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
   void _openLevelSelect() {
     if (_leaving) return;
     _leaving = true;
+    _services.analytics.screen('levels');
     Navigator.of(context).pushAndRemoveUntil(
       MaterialPageRoute<void>(builder: (_) => const LevelSelectScreen()),
       (route) => route.isFirst,
@@ -563,9 +584,38 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
     controller.restart();
   }
 
+  /// Analytics for the board's events: a lost game, the actions used and
+  /// restarts (wins are logged by `onWin`, revives and refills where they are
+  /// paid out).
+  void _logEvent(BoardEvent event) {
+    final analytics = _services.analytics;
+    switch (event) {
+      case TrayFull():
+        final summary = controller.summary;
+        analytics.levelEnd(
+          widget.entry,
+          won: false,
+          score: summary.score,
+          time: summary.time,
+          pairs: summary.matchedPairs,
+        );
+      case MoveUndone():
+        analytics.actionUsed(widget.entry, GameAction.undo);
+      case TileHinted():
+        analytics.actionUsed(widget.entry, GameAction.hint);
+      case BoardShuffled():
+        analytics.actionUsed(widget.entry, GameAction.shuffle);
+      case BoardReset():
+        analytics.levelRestart(widget.entry);
+      case TileToTray() || TrayPairCleared() || TrayReturned() || TileRejected():
+        break;
+    }
+  }
+
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
+    unawaited(_analyticsEvents?.cancel());
     _resultTimer?.cancel();
     if (_controller != null) {
       controller
