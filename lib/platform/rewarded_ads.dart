@@ -73,10 +73,19 @@ final class AdAudience {
 /// The ad state and whether the EEA/UK privacy options entry point is
 /// required (then Settings shows "Privacy choices").
 final class RewardedAdsState {
-  const RewardedAdsState(this.ad, {this.privacyOptionsRequired = false, this.loadFailed = false});
+  const RewardedAdsState(
+    this.ad, {
+    this.privacyOptionsRequired = false,
+    this.privacyOptionsChecked = false,
+    this.loadFailed = false,
+  });
 
   final RewardedAdStatus ad;
   final bool privacyOptionsRequired;
+
+  /// True once the consent SDK has said whether [privacyOptionsRequired]
+  /// (this run); until then it reads false without being known.
+  final bool privacyOptionsChecked;
 
   /// With [RewardedAdStatus.loading]: the last attempt failed for a reason
   /// other than the network (no fill, an error, no consent yet) and the next
@@ -84,9 +93,15 @@ final class RewardedAdsState {
   /// free at once instead of after `kAdFallbackDelay`.
   final bool loadFailed;
 
-  RewardedAdsState copyWith({RewardedAdStatus? ad, bool? privacyOptionsRequired, bool? loadFailed}) => RewardedAdsState(
+  RewardedAdsState copyWith({
+    RewardedAdStatus? ad,
+    bool? privacyOptionsRequired,
+    bool? privacyOptionsChecked,
+    bool? loadFailed,
+  }) => RewardedAdsState(
     ad ?? this.ad,
     privacyOptionsRequired: privacyOptionsRequired ?? this.privacyOptionsRequired,
+    privacyOptionsChecked: privacyOptionsChecked ?? this.privacyOptionsChecked,
     loadFailed: loadFailed ?? this.loadFailed,
   );
 
@@ -95,14 +110,16 @@ final class RewardedAdsState {
       other is RewardedAdsState &&
       other.ad == ad &&
       other.privacyOptionsRequired == privacyOptionsRequired &&
+      other.privacyOptionsChecked == privacyOptionsChecked &&
       other.loadFailed == loadFailed;
 
   @override
-  int get hashCode => Object.hash(ad, privacyOptionsRequired, loadFailed);
+  int get hashCode => Object.hash(ad, privacyOptionsRequired, privacyOptionsChecked, loadFailed);
 
   @override
   String toString() =>
-      'RewardedAdsState(${ad.name}, privacyOptionsRequired: $privacyOptionsRequired, loadFailed: $loadFailed)';
+      'RewardedAdsState(${ad.name}, privacyOptionsRequired: $privacyOptionsRequired, '
+      'privacyOptionsChecked: $privacyOptionsChecked, loadFailed: $loadFailed)';
 }
 
 abstract class RewardedAds {

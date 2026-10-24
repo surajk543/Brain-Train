@@ -26,7 +26,7 @@
 <header class="doc-head">
   <h1>Privacy Policy</h1>
   <p class="meta">Brain Train &middot; Sun Game Studio<br>
-  Effective 16 October 2026 &middot; Last updated 23 October 2026</p>
+  Effective 16 October 2026 &middot; Last updated 24 October 2026</p>
 </header>
 <div class="prose">
 
@@ -38,7 +38,8 @@ actually behaves. If we change what the app collects, we change this page and th
   or Google backup so a reinstall can restore it; we never receive it. The
   app downloads levels and pictures from our content server. Ads appear only when you choose to watch one to revive
   a game, and they are served by Google AdMob. If you say you are under 13, ads are child-directed and not
-  personalized. Google Play Games sign-in is optional.</p>
+  personalized. We count how many people play and how levels go with Google Analytics for Firebase, without
+  advertising identifiers and without your age answer. Google Play Games sign-in is optional.</p>
 </div>
 
 <h2>1. Who we are</h2>
@@ -95,37 +96,59 @@ apps that use its services</a>.</p>
   settings.</li>
 </ul>
 
-<h2>5. Google Play Games (optional, Android)</h2>
+<h2>5. Usage statistics (Google Analytics for Firebase)</h2>
+<p>To see how many people are playing and how the levels go (which are too hard, where players give up), the app
+sends usage events to Google Analytics for Firebase: when a level starts and ends (won or lost, with its score,
+time and pairs matched), when you restart, revive or use Undo, Hint or Shuffle, which screen is open, and the
+app's session start and length. Google's SDK adds the device model, operating system, app version, language and
+your IP address, from which Google derives an approximate location (country or city) and then discards it.</p>
+<ul>
+  <li>Events are tied to a random app identifier created on your device (it is reset when you reinstall the app),
+  never to your name, email or advertising ID. The app turns off advertising ID collection and every use of these
+  statistics for ads.</li>
+  <li>The statistics are the same for every player and never include your age answer.</li>
+  <li>In the European Economic Area, the United Kingdom and Switzerland, the app does not store that identifier:
+  events are sent without it.</li>
+</ul>
+<p>We use the statistics only in aggregate, to improve the game. Google processes them under the
+<a href="https://policies.google.com/privacy" rel="noopener">Google Privacy Policy</a>; event-level data is kept
+for 2 months (Google Analytics' shortest setting) and only totals are kept longer. See also
+<a href="https://firebase.google.com/support/privacy" rel="noopener">privacy and security in Firebase</a>.</p>
+
+<h2>6. Google Play Games (optional, Android)</h2>
 <p>If you are signed in to Google Play Games on your phone, Brain Train can show your achievements and
 leaderboards. Your Play Games profile and the scores and achievements the game reports are handled by Google
 under the <a href="https://policies.google.com/privacy" rel="noopener">Google Privacy Policy</a>. We do not
 receive your email address. You can play without signing in.</p>
 
-<h2>6. What we do not collect</h2>
+<h2>7. What we do not collect</h2>
 <ul>
   <li>No account, name, email address or phone number.</li>
   <li>No location permission, contacts, photos, camera or microphone.</li>
-  <li>No analytics or tracking SDKs of our own, and no crash-reporting service.</li>
+  <li>No tracking: nothing the app collects is used to follow you across other companies' apps or websites,
+  and the usage statistics (section 5) carry no advertising identifier. No crash-reporting service.</li>
   <li>No in-app purchases and no payment details.</li>
   <li>No chat or other content shared with other players.</li>
 </ul>
 
-<h2>7. Children</h2>
+<h2>8. Children</h2>
 <p>Brain Train is suitable for all ages, including children. At first launch it asks for the player's birth year
 with a neutral question. If the answer is under 13, the app treats the player as a child: ads are child-directed,
-non-personalized and rated G (section 4). The app collects no personal information from children for itself.
+non-personalized and rated G (section 4). The usage statistics (section 5) are the same for everyone: they carry
+no name, contact details or advertising identifier. The app collects no personal information from children for
+itself.
 Parents or guardians who have a question can write to
 <a href="mailto:contact@sungamestudio.com">contact@sungamestudio.com</a>.</p>
 
-<h2>8. Your rights and choices</h2>
+<h2>9. Your rights and choices</h2>
 <p>Because your progress stays on your device and in your own iCloud or Google backup, you control it: clear the
 app's data or uninstall the app to delete it from the phone, and turn off iCloud or Google backup for the app to
 stop the cloud copy. You can change your ad consent in Settings &rarr; Privacy choices (where it applies) and your
-advertising ID in your phone's settings. For data that Google processes for ads or Play Games, see Google's
-privacy policy. You can also write to us with any request; we answer within 30 days. These rights apply wherever
+advertising ID in your phone's settings. Reinstalling the app gives it a new random identifier for the usage
+statistics. For data that Google processes for ads, usage statistics or Play Games, see Google's privacy policy. You can also write to us with any request; we answer within 30 days. These rights apply wherever
 you live, including under India's Digital Personal Data Protection Act, 2023 and the EU and UK GDPR.</p>
 
-<h2>9. Changes</h2>
+<h2>10. Changes</h2>
 <p>When the app starts collecting something new, or stops, we update this page and the dates at the top.</p>
 
 </div>

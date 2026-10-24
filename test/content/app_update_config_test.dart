@@ -127,7 +127,7 @@ void main() {
       expect(_decide(json, 7, platform: UpdatePlatform.android), AppUpdatePrompt.none);
     });
 
-    test("the repository's notice leaves the live Android build alone (iOS: nothing at all)", () {
+    test("the repository's notice leaves the live builds alone and forces older ones", () {
       final json = jsonDecode(File('content-src/app-update.json').readAsStringSync());
       final config = AppUpdateConfig.tryParse(json)!;
       final android = config.android!;
@@ -136,8 +136,14 @@ void main() {
       expect(_decide(json, android.latestBuild), AppUpdatePrompt.none);
       // Builds below the minimum must update (2026-10-17: 10, as 1.1.0+9 crashed at launch).
       if (android.minBuild > 0) expect(_decide(json, android.minBuild - 1).need, AppUpdateNeed.required);
-      for (final build in [0, 1, 4, 100]) {
-        expect(_decide(json, build, platform: UpdatePlatform.ios), AppUpdatePrompt.none);
+      // iOS (2026-10-24: 16, forced once 1.2.0 was live in every store).
+      final ios = config.ios!;
+      expect(ios.storeUrl, 'https://apps.apple.com/app/id6823729570');
+      expect(ios.minBuild, lessThanOrEqualTo(ios.latestBuild));
+      expect(_decide(json, ios.latestBuild, platform: UpdatePlatform.ios), AppUpdatePrompt.none);
+      expect(_decide(json, ios.latestBuild + 1, platform: UpdatePlatform.ios), AppUpdatePrompt.none);
+      if (ios.minBuild > 0) {
+        expect(_decide(json, ios.minBuild - 1, platform: UpdatePlatform.ios).need, AppUpdateNeed.required);
       }
     });
   });

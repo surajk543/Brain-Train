@@ -47,6 +47,10 @@ class RewardedAdsController extends ChangeNotifier with WidgetsBindingObserver {
   /// Settings shows "Privacy choices" only then (EEA/UK).
   bool get privacyOptionsRequired => ads.current.privacyOptionsRequired;
 
+  /// Whether the player is where privacy choices are required (EEA/UK):
+  /// null until the consent SDK has said so this run; false without ads.
+  bool? get privacyRegion => off ? false : (ads.current.privacyOptionsChecked ? privacyOptionsRequired : null);
+
   /// Configures ads for [group], gathers consent and loads the first ad, in
   /// the background. Safe to call more than once; nothing without a group.
   void start(AgeGroup? group) {

@@ -41,6 +41,19 @@ class SettingsRepository extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Whether the player was last found where privacy choices are required
+  /// (EEA/UK, from the consent SDK through the ads); null until it has said.
+  /// Analytics keeps no identifiers there (`AnalyticsController`). Kept on
+  /// the device only.
+  bool? get privacyRegion => _prefs.getBool(privacyRegionKey);
+
+  static const String privacyRegionKey = 'privacy.consentRegion';
+
+  /// Not a setting: nothing listens, so it does not notify.
+  Future<void> setPrivacyRegion(bool value) async {
+    await _prefs.setBool(privacyRegionKey, value);
+  }
+
   /// True once the first-play tutorial was finished or skipped (or found not
   /// needed: a player who has already won a level). Never reset.
   bool get firstPlayTutorialDone => _prefs.getBool(firstPlayTutorialKey) ?? false;

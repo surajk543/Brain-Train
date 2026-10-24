@@ -12,6 +12,7 @@ import 'package:brain_train/app/theme.dart';
 import 'package:brain_train/content/content_snapshot.dart';
 import 'package:brain_train/content/level_manifest.dart';
 import 'package:brain_train/data/progress_repository.dart';
+import 'package:brain_train/data/settings_repository.dart';
 import 'package:brain_train/features/gameplay/game_controller.dart';
 import 'package:brain_train/features/gameplay/game_screen.dart';
 import 'package:brain_train/features/gameplay/widgets/board_view.dart';
@@ -24,6 +25,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../platform/fake_analytics.dart';
 import '../platform/fake_rewarded_ads.dart';
 import 'lobby_support.dart';
 
@@ -69,8 +71,13 @@ PremiumButton _revive(WidgetTester tester) => tester.widget<PremiumButton>(find.
 void main() {
   late AppServices services;
   late FakeRewardedAds ads;
+  late FakeAnalytics analytics;
 
-  setUp(() => SharedPreferences.setMockInitialValues({}));
+  // Outside the EEA/UK: analytics collects at once.
+  setUp(() => SharedPreferences.setMockInitialValues({SettingsRepository.privacyRegionKey: false}));
+
+  /// The analytics events' names, in order.
+  List<String> logged() => [for (final (name, _) in analytics.events) name];
 
   /// Resumes a tray-full save of level 1 (as after an app restart, after
   /// [revives] revives) with the ads in [status]; the Tray full card is up.
@@ -84,7 +91,9 @@ void main() {
     // Built on the test's fake clock (not in runAsync): its stream callbacks
     // and the fallback's online check then run when the test pumps.
     final controller = RewardedAdsController(ads);
-    await tester.runAsync(() async => services = await testServices(ads: controller));
+    analytics = FakeAnalytics();
+    await tester.runAsync(() async => services = await testServices(ads: controller, analytics: analytics));
+    services.analytics.start();
     tester.view
       ..physicalSize = const Size(411 * 2.625, 914 * 2.625)
       ..devicePixelRatio = 2.625;
@@ -141,6 +150,9 @@ void main() {
     await _settle(tester);
     expect(find.text('Tray full'), findsNothing);
     expect(ads.shows, 1);
+    expect(logged(), ['level_start', 'revive']);
+    expect(analytics.events.first.$2['resumed'], 1);
+    expect(analytics.events.last.$2, {'level': 1, 'difficulty': '1', 'ad': 1});
     await leave(tester);
   });
 
@@ -157,6 +169,7 @@ void main() {
     expect(find.text('Tray full'), findsOneWidget);
     expect(find.text(kReviveDismissedNote), findsOneWidget);
     expect(_revive(tester).onPressed, isNotNull);
+    expect(logged(), isNot(contains('revive')));
     // Again, watched to the end this time.
     ads.showResult = RewardedAdResult.earned;
     await tester.tap(find.text('Revive'));
@@ -382,6 +395,7 @@ void main() {
     await tester.pump();
     expect(ads.shows, 0);
     expect(_gameOf(tester).state.status, GameStatus.playing);
+    expect(analytics.events.last.$2['ad'], 0);
     await _settle(tester);
     await leave(tester);
   });

@@ -73,13 +73,20 @@ class _HomeScreenState extends State<HomeScreen> {
   /// Play Games, ads and the update check start once, after the first frame.
   bool _servicesScheduled = false;
 
-  Future<void> _open(WidgetBuilder builder) async {
+  /// Opens a screen ([screen] names it for analytics; a game logs itself),
+  /// and logs the lobby again once it is back on top.
+  Future<void> _open(WidgetBuilder builder, {String? screen}) async {
     if (_navigating) return;
     _navigating = true;
+    final analytics = AppScope.of(context).analytics;
+    if (screen != null) analytics.screen(screen);
     try {
       await Navigator.of(context).push(MaterialPageRoute<void>(builder: builder));
     } finally {
-      if (mounted) _navigating = false;
+      if (mounted) {
+        _navigating = false;
+        analytics.screen('lobby');
+      }
     }
   }
 
@@ -99,13 +106,16 @@ class _HomeScreenState extends State<HomeScreen> {
     _servicesScheduled = true;
     final services = AppScope.of(context);
     // After the first frame: the lobby never waits for Play Games, ads (SDK
-    // start, consent, the first rewarded ad), the app update notice or the
-    // cloud save (restored progress shows when it arrives).
+    // start, consent, the first rewarded ad), the app update notice, the
+    // cloud save (restored progress shows when it arrives) or analytics.
     WidgetsBinding.instance.addPostFrameCallback((_) {
       services.playGames.start(services.settings.ageGroup);
       services.ads.start(services.settings.ageGroup);
       services.updates.start();
       services.cloudSync.start();
+      services.analytics
+        ..start()
+        ..screen('lobby');
     });
   }
 
@@ -205,7 +215,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     label: 'Levels',
                     icon: Icons.layers_rounded,
                     height: secondaryHeight,
-                    onPressed: () => _open((_) => const LevelSelectScreen()),
+                    onPressed: () => _open((_) => const LevelSelectScreen(), screen: 'levels'),
                   ),
                 ),
                 SizedBox(height: gap),
@@ -216,7 +226,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     label: 'Settings',
                     icon: Icons.settings_rounded,
                     height: secondaryHeight,
-                    onPressed: () => _open((_) => const SettingsScreen()),
+                    onPressed: () => _open((_) => const SettingsScreen(), screen: 'settings'),
                   ),
                 ),
                 const Spacer(flex: 2),

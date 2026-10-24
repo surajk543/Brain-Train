@@ -42,7 +42,8 @@ class FakeRewardedAds implements RewardedAds {
   /// waiting for the retry.
   void failLoad() => emit(_current.copyWith(ad: RewardedAdStatus.loading, loadFailed: true));
 
-  void setPrivacyOptionsRequired(bool required) => emit(_current.copyWith(privacyOptionsRequired: required));
+  void setPrivacyOptionsRequired(bool required) =>
+      emit(_current.copyWith(privacyOptionsRequired: required, privacyOptionsChecked: true));
 
   @override
   Stream<RewardedAdsState> get states => _states.stream;

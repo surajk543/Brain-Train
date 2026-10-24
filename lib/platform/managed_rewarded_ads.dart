@@ -210,7 +210,7 @@ class ManagedRewardedAds implements RewardedAds {
   Future<void> _refreshPrivacyOptions() async {
     try {
       final required = await _guard(backend.privacyOptionsRequired, callTimeout, 'privacy options status');
-      if (!_disposed) _set(_state.copyWith(privacyOptionsRequired: required));
+      if (!_disposed) _set(_state.copyWith(privacyOptionsRequired: required, privacyOptionsChecked: true));
     } on AdsFailure catch (failure) {
       debugPrint('Rewarded ads: $failure');
     }
